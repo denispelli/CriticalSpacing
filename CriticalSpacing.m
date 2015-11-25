@@ -1,4 +1,4 @@
-function o=CriticalSpacing(oIn)
+function oo=CriticalSpacing(oIn)
 % o=CriticalSpacing(o);
 % Pass all your parameters in the "o" struct, which will be returned with
 % all the results as additional fields. CriticalSpacing may adjust some of
@@ -102,6 +102,7 @@ oo(1:conditions)=o;
 % All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
 for condition=1:conditions
     fields=fieldnames(oIn(condition));
+%     oo(condition).(fields{:})=deal(oIn(condition).(fields{:}));
     for i=1:length(fields)
         oo(condition).(fields{i})=oIn(condition).(fields{i});
     end
@@ -118,8 +119,6 @@ switch o.fixationLocation
 end
 fix.y=RectHeight(screenRect)/2;
 
-ffprintf(ff,'observer %s\n',oo(1).observer);
-
 % Set up for KbCheck
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
@@ -132,7 +131,7 @@ for condition=1:conditions
     end
 end
 
-%Set up for Screen
+% Set up for Screen
 [screenWidthMm,screenHeightMm]=Screen('DisplaySize',0);
 screenWidthCm=screenWidthMm/10;
 screenRect=Screen('Rect',0);
@@ -144,23 +143,24 @@ try
     window=Screen('OpenWindow',0,255,screenRect);
     for condition=1:conditions
         ffprintf(ff,'%d: ',condition);
-        Screen('TextFont',window,oo(condition).textFont);
-        screenRect= Screen('Rect', window);
+        screenRect=Screen('Rect',window);
         screenWidth=RectWidth(screenRect);
         screenHeight=RectHeight(screenRect);
         pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
+        oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
+        Screen('TextSize',window,oo(condition).textSize);
+        Screen('TextFont',window,oo(condition).textFont);
         if length(oo(1).observer)==0
             black=0;
-            oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
-            Screen('TextSize',window, oo(condition).textSize);
-            Screen('TextFont',window,oo(condition).textFont);
             ListenChar(2);
-            name=GetEchoString(window,'Hi. Please type your name followed by Return:',50,screenRect(4)/2,black,255,1);
+            Screen('DrawText',window,'Hi. Please type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,255,1)
+            name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,255,1);
             ListenChar(0);
-            for condition=1:conditions
-                oo(condition).observer=name;
+            for i=1:conditions
+                oo(i).observer=name;
             end
             Screen('FillRect',window);
+            ffprintf(ff,'Observer %s\n',oo(1).observer);
         end
         oo(condition).eccentricityPix=round(oo(condition).eccentricityDeg*pixPerDeg);
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
@@ -173,11 +173,11 @@ try
         addonDeg=0.45;
         addonPix=pixPerDeg*addonDeg;
         oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+        oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+        oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
         if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
             oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetHeightDeg/2))); % flanker fits on screen.
             oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
-            oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-            oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
             oo(condition).nominalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
             oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
         end
@@ -293,28 +293,29 @@ try
     Screen('TextSize',window,oo(condition).textSize);
     Screen('TextFont',window,oo(condition).textFont);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
-    string=[string sprintf('Move this screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
+    string=[string sprintf('Please move this screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
     if any([oo.repeatedLetters])
         string=[string 'When the screen is covered with letters, whether \nmixed or segregated, please type both letters.\n'];
     end
     if ~all([oo.repeatedLetters])
         string=[string 'After each presentation of a few letters, please \ntype the middle letter, ignoring any flankers.\n'];
     end
+    string=[string '(You can quit anytime by pressing ESCAPE.)\n'];
     if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
-        string=[string 'Please type the SPACEBAR to begin, while you fixate the crosshairs below. '];
+        string=[string 'Please press the SPACEBAR to begin, while you fixate the crosshairs below. '];
     else
-        string=[string 'Type the SPACEBAR to begin. '];
+        string=[string 'Now, please press the SPACEBAR to begin. '];
     end
-    string=[string '\n\n(At any time, press ESCAPE to quit early.) '];
-    string=[string '\n\nCrowding and Acuity Test © 2015, Denis Pelli'];
     DrawFormattedText(window,string,oo(1).textSize*3,oo(1).textSize*3,black,80);
-
+    Screen('TextSize',window,round(oo(condition).textSize*0.7));
+    Screen('DrawText',window,'Crowding and Acuity Test © 2015, Denis Pelli',oo(1).textSize*3,screenRect(4)-oo(1).textSize,1);
+    Screen('TextSize',window,oo(condition).textSize);
     fix.eccentricityPix=oo(condition).eccentricityPix;
     fix.clipRect=screenRect;
     fix.fixationCrossPix=fixationCrossPix;
     for condition=1:conditions
-        fix.oo(condition).fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
+        fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
         fix.targetHeightPix=oo(condition).targetHeightPix;
         fixationLines=ComputeFixationLines(fix);
         if ~oo(condition).repeatedLetters

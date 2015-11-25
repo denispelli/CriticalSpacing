@@ -7,12 +7,12 @@ function response = GetKeypress(isKbLegacy,enableKeys)
 % Originally called "checkResponse" written by Hörmet Yiltiz, October 2015.
 % Renamed "GetKeypress" by Denis Pelli, November 2015.
     if nargin == 0
-        isKbLegacy = 0;
+        isKbLegacy=0;
     end
     if nargin >= 2
-        oldEnableKeys = RestrictKeysForKbCheck(enableKeys);
+        oldEnableKeys=RestrictKeysForKbCheck(enableKeys);
     end
-    ListenChar(0); % flush
+%     ListenChar(0); % flush
     ListenChar(2); % no echo
     while KbCheck
     end
@@ -24,8 +24,8 @@ function response = GetKeypress(isKbLegacy,enableKeys)
     else
         % use modern Kb* functions
         [secs, keyCode] = KbStrokeWait(); % we only need keyCode
-        ListenChar(0); % flush
-        ListenChar; % normal
+%         ListenChar(0); % flush
+%         ListenChar; % normal
         response = KbName(keyCode);
         %disp(sprintf('0:==>%s<==', response));
         
