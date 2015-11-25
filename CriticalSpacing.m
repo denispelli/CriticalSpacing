@@ -43,14 +43,14 @@ o.radialOrTangential='tangential'; % values 'radial', 'tangential'
 % o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
 screenRect= Screen('Rect',0);
-fix.x=50; % location of fixation
-fix.y=RectHeight(screenRect)/2;
+o.fixationLocation='center'; % 'left', 'right'
 o.trials=80; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
 o.fixationLineWeightDeg=0.005;
 o.measureBeta=0;
 o.task='identify';
+o.announceDistance=0;
 o.usePurring=1;
 minimumTargetPix=8;
 Screen('Preference', 'SkipSyncTests', 1);
@@ -73,24 +73,24 @@ end
 o.dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',o.functionNames,o.observer,round(t));
 o.dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
 if ~exist(o.dataFolder,'dir')
-   success=mkdir(o.dataFolder);
-   if ~success
-       error('Failed attempt to create data folder: %s',o.dataFolder);
-   end
+    success=mkdir(o.dataFolder);
+    if ~success
+        error('Failed attempt to create data folder: %s',o.dataFolder);
+    end
 end
 dataFid=fopen(fullfile(o.dataFolder,[o.dataFilename '.txt']),'rt');
 if dataFid~=-1
     error('Oops. There''s already a file called "%s.txt". Try again.',o.dataFilename);
 end
-[dataFid,msg]=fopen([o.dataFilename '.txt'],'wt');
+[dataFid,msg]=fopen(fullfile(o.dataFolder,[o.dataFilename '.txt']),'wt');
 if dataFid==-1
     error('%s. Could not create data file: %s',msg,[o.dataFilename '.txt']);
 end
 assert(dataFid>-1);
 ff=[1 dataFid];
-fprintf('\nSaving results in:\n');
-ffprintf(ff,'%s\n',o.dataFilename);
 ffprintf(ff,'%s %s\n',o.functionNames,datestr(now));
+ffprintf(ff,'Saving results in:\n');
+ffprintf(ff,'%s .txt and .mat\n',o.dataFilename);
 
 % Replicate o, once per supplied condition.
 conds=length(oIn);
@@ -102,7 +102,19 @@ for cond=1:conds
         oo(cond).(fields{i})=oIn(cond).(fields{i});
     end
 end
-ffprintf(ff,'observer %s\n',o.observer);
+switch o.fixationLocation
+    case 'left',
+        fix.x=50+screenRect(1);
+    case 'center',
+        fix.x=(screenRect(1)+screenRect(3))/2; % location of fixation
+    case 'right',
+        fix.x=screenRect(3)-50;
+    otherwise
+        error('Unknown o.fixationLocation %s',o.fixationLocation);
+end
+fix.y=RectHeight(screenRect)/2;
+
+ffprintf(ff,'observer %s\n',oo(1).observer);
 
 % Set up for KbCheck
 KbName('UnifyKeyNames');
@@ -127,6 +139,7 @@ end
 try
     window=Screen('OpenWindow',0,255,screenRect);
     for cond=1:conds
+        ffprintf(ff,'%d: ',cond);
         Screen('TextFont',window,oo(cond).textFont);
         screenRect= Screen('Rect', window);
         screenWidth=RectWidth(screenRect);
@@ -190,7 +203,7 @@ try
         grain=0.01;
         range=6;
     end % for cond=1:conds
-    if ~oo(1).repeatedLetters
+    if oo(1).announceDistance
         Speak(sprintf('Please make sure that your eye is %.0f centimeters from the screen.',oo(cond).viewingDistanceCm));
     end
     
@@ -203,28 +216,51 @@ try
         ffprintf(ff,'Using external monitor.\n');
     end
     for cond=1:conds
+        ffprintf(ff,'%d: ',cond);
         ffprintf(ff,'observer %s, task %s, measure threshold %s, alternatives %d,  beta %.1f,\n',oo(cond).observer,oo(cond).task,oo(cond).thresholdParameter,length(oo(cond).alphabet),oo(cond).beta);
+    end
+    for cond=1:conds
         if streq(oo(cond).thresholdParameter,'spacing')
-            ffprintf(ff,'Measuring threshold spacing of flankers\n');
-            ffprintf(ff,'Orientation %s\n',oo(cond).radialOrTangential);
-        end
-        ffprintf(ff,'Target eccentricityPix %.1f deg in right visual field.\n',oo(cond).eccentricityDeg);
-        if oo(cond).sizeProportionalToSpacing
-            ffprintf(ff,'Target scales with spacing: spacing= %.2f * size.\n',1/oo(cond).sizeProportionalToSpacing);
-            ffprintf(ff,'Minimum spacing is %.0f pixels, %.3f deg.\n',minimumTargetPix/oo(cond).sizeProportionalToSpacing,minimumTargetPix/pixPerDeg/oo(cond).sizeProportionalToSpacing);
-        else
-            if streq(oo(cond).thresholdParameter,'size')
-                ffprintf(ff,'Measuring threshold size, with no flankers.\n');
-            else
-                ffprintf(ff,'Target size %.2f deg, %.1f pixels.\n',oo(cond).targetHeightDeg,oo(cond).targetHeightDeg*pixPerDeg);
+            ffprintf(ff,'%d: Measuring threshold spacing of flankers\n',cond);
+            if ~oo(cond).repeatedLetters
+                if oo(cond).eccentricityDeg~=0
+                    ffprintf(ff,'%d: Orientation %s\n',cond,oo(cond).radialOrTangential);
+                else
+                    switch oo(cond).radialOrTangential
+                        case 'radial',
+                            ffprintf(ff,'%d: Orientation %s\n',cond,'horizontal');
+                        case 'tangential',
+                            ffprintf(ff,'%d: Orientation %s\n',cond,'vertical');
+                    end
+                end
             end
         end
-        ffprintf(ff,'Minimum letter size is %.0f pixels, %.3f deg.\n',minimumTargetPix,minimumTargetPix/pixPerDeg);
-        ffprintf(ff,'%s font\n',oo(cond).targetFont);
-        ffprintf(ff,'Duration %.2f s\n',oo(cond).durationSec);
-        ffprintf(ff,'%.0f trials.\n',oo(cond).trials);
+    end
+    for cond=1:conds
+        if oo(cond).sizeProportionalToSpacing
+            ffprintf(ff,'%d: Target scales with spacing: spacing= %.2f * size.\n',cond,1/oo(cond).sizeProportionalToSpacing);
+            ffprintf(ff,'%d: Minimum spacing is %.0f pixels, %.3f deg.\n',cond,minimumTargetPix/oo(cond).sizeProportionalToSpacing,minimumTargetPix/pixPerDeg/oo(cond).sizeProportionalToSpacing);
+        else
+            if streq(oo(cond).thresholdParameter,'size')
+                ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',cond);
+            else
+                ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',cond,oo(cond).targetHeightDeg,oo(cond).targetHeightDeg*pixPerDeg);
+            end
+        end
+    end
+    for cond=1:conds
+        ffprintf(ff,'%d: Minimum letter size is %.0f pixels, %.3f deg.\n',cond,minimumTargetPix,minimumTargetPix/pixPerDeg);
     end % for cond=1:conds
-    ffprintf(ff,'Viewing distance %.0f cm. ',oo(cond).viewingDistanceCm);
+    for cond=1:conds
+        ffprintf(ff,'%d: %s font\n',cond,oo(cond).targetFont);
+    end % for cond=1:conds
+    for cond=1:conds
+        ffprintf(ff,'%d: Duration %.2f s\n',cond,oo(cond).durationSec);
+    end
+    for cond=1:conds
+        ffprintf(ff,'%d: %.0f trials.\n',cond,oo(cond).trials);
+    end
+    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
     ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
     ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
     white=WhiteIndex(window);
@@ -236,14 +272,22 @@ try
     purr=MakeBeep(300,0.6,44100);
     purr(end)=0;
     Snd('Open');
-    Screen('FillRect', window,white);
+    Screen('FillRect',window,white);
     Screen('TextSize',window,oo(cond).textSize);
     Screen('TextFont',window,oo(cond).textFont);
     Screen('DrawText',window,sprintf('Observer %s',oo(cond).observer),100,30,black,0,1);
     Screen('DrawText',window,sprintf('Please make sure your eye is %.0f cm from the screen.',oo(cond).viewingDistanceCm),100,60,black,0,1);
-    Screen('DrawText',window,'After each presentation, please type the target letter, ignoring any flankers that might appear to right and left.',100,90,black,0,1);
-    Screen('DrawText',window,'It is very important that you be fixating the center of the crosshairs while the letters are presented.',100,120,black,0,1);
-    Screen('DrawText',window,'Once you are fixating the crosshairs below, then type the spacebar to begin',100,150,black,0,1);
+    y=90;
+    if any([oo.repeatedLetters])
+        Screen('DrawText',window,'When the screen is covered with letters, either mixed or segregated, please type both letters.',100,y,black,0,1); y=y+30;
+    end
+    if ~all([oo.repeatedLetters])
+        Screen('DrawText',window,'After each presentation of just one a few letters, please type the target letter in the middle, ignoring any flankers.',100,y,black,0,1); y=y+30;
+        Screen('DrawText',window,'It is very important that you be fixating the center of the crosshairs when the letters are presented.',100,y,black,0,1); y=y+30;
+        Screen('DrawText',window,'Once you are fixating the crosshairs below, then type the spacebar to begin',100,y,black,0,1); y=y+30;
+    else
+        Screen('DrawText',window,'Type the spacebar to begin',100,y,black,0,1); y=y+30;
+    end
     fix.eccentricityPix=oo(cond).eccentricityPix;
     fix.clipRect=screenRect;
     fix.fixationCrossPix=fixationCrossPix;
@@ -507,16 +551,19 @@ try
     
     Speak('Congratulations.  You are done.');
     for cond=1:conds
+        ffprintf(ff,'CONDITION %d **********\n',cond);
         % Ask Quest for the final estimate of threshold.
         t=QuestMean(oo(cond).q);
         sd=QuestSd(oo(cond).q);
         switch oo(cond).thresholdParameter
             case 'spacing',
-                switch(oo(cond).radialOrTangential)
-                    case 'radial'
-                        ffprintf(ff,'Radial spacing of far flanker from target.\n');
-                    case 'tangential'
-                        ffprintf(ff,'Tangential spacing up and down.\n');
+                if ~oo(cond).repeatedLetters
+                    switch(oo(cond).radialOrTangential)
+                        case 'radial'
+                            ffprintf(ff,'Radial spacing of far flanker from target.\n');
+                        case 'tangential'
+                            ffprintf(ff,'Tangential spacing up and down.\n');
+                    end
                 end
                 ffprintf(ff,'Threshold log spacing deg (mean±sd) is %.2f ± %.2f, which is %.2f deg\n',t,sd,10^t);
                 if oo(cond).count>1
@@ -535,37 +582,37 @@ try
                     ffprintf(ff,'%.2f             %.2f    %.2f    %d\n',[10.^t.intensity;QuestP(oo(cond).q,t.intensity-oo(cond).tGuess);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
                 end
         end
+        Screen('FillRect',window);
         Screen('DrawText',window,'Run completed',100,750,black,0,1);
         Screen('Flip',window);
-        if oo(cond).measureBeta
-            % reanalyze the data with beta as a free parameter.
-            ffprintf(ff,'o.measureBeta **************************************\n');
-            ffprintf(ff,'offsetToMeasureBeta %.1f to %.1f\n',min(offsetToMeasureBeta),max(offsetToMeasureBeta));
-            bestBeta=QuestBetaAnalysis(oo(cond).q);
-            qq=oo(cond).q;
-            qq.beta=bestBeta;
-            qq=QuestRecompute(qq);
-            ffprintf(ff,'thresh %.2f deg, log thresh %.2f, beta %.1f\n',10^QuestMean(qq),QuestMean(qq),qq.beta);
-            ffprintf(ff,' deg     t     P fit\n');
-            tt=QuestMean(qq);
-            for offset=sort(offsetToMeasureBeta)
-                t=tt+offset;
-                ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
-            end
-            if oo(cond).count>1
-                t=QuestTrials(qq);
-                switch oo(cond).thresholdParameter
-                    case 'spacing',
-                        ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
-                    case 'size',
-                        ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
+        for cond=1:conds
+            if oo(cond).measureBeta
+                % reanalyze the data with beta as a free parameter.
+                ffprintf(ff,'%d: o.measureBeta **************************************\n',cond);
+                ffprintf(ff,'offsetToMeasureBeta %.1f to %.1f\n',min(offsetToMeasureBeta),max(offsetToMeasureBeta));
+                bestBeta=QuestBetaAnalysis(oo(cond).q);
+                qq=oo(cond).q;
+                qq.beta=bestBeta;
+                qq=QuestRecompute(qq);
+                ffprintf(ff,'thresh %.2f deg, log thresh %.2f, beta %.1f\n',10^QuestMean(qq),QuestMean(qq),qq.beta);
+                ffprintf(ff,' deg     t     P fit\n');
+                tt=QuestMean(qq);
+                for offset=sort(offsetToMeasureBeta)
+                    t=tt+offset;
+                    ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
                 end
-                ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^t.intensity;QuestP(qq,t.intensity);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
+                if oo(cond).count>1
+                    t=QuestTrials(qq);
+                    switch oo(cond).thresholdParameter
+                        case 'spacing',
+                            ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
+                        case 'size',
+                            ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
+                    end
+                    ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^t.intensity;QuestP(qq,t.intensity);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
+                end
+                ffprintf(ff,'o.measureBeta done **********************************\n');
             end
-            ffprintf(ff,'o.measureBeta done **********************************\n');
-        end
-        if terminate
-            break;
         end
     end
     ListenChar; % reenable keyboard echo
@@ -574,6 +621,7 @@ try
     ShowCursor;
     for cond=1:conds
         if exist('results','var') && oo(cond).count>1
+            ffprintf(ff,'%d:',cond);
             t=QuestTrials(oo(cond).q);
             p=sum(t.responses(2,:))/sum(sum(t.responses));
             switch oo(cond).thresholdParameter
@@ -585,11 +633,11 @@ try
         end
     end
     save(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']),'oo');
-    ffprintf(ff,'Results saved in %s with extensions .txt and .mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
     if exist('dataFid','file')
         fclose(dataFid);
         dataFid=-1;
     end
+    fprintf('Results saved in %s with extensions .txt and .mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch
     sca; % screen close all. This cleans up without canceling the error message.
     ListenChar;
