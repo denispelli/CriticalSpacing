@@ -29,7 +29,7 @@ o=[];
 o.repeatedLetters=1;
 o.useFractionOfScreen=0;
 o.observer='practice';
-o.observer='Shivam';
+% o.observer='Shivam'; % specify actual observer name
 o.viewingDistanceCm=125;
 o.thresholdParameter='spacing';
 % o.thresholdParameter='size';
@@ -62,19 +62,49 @@ if o.measureBeta
     o.trials=200;
     o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
 end
+o.beginningTime=now;
+t=datevec(o.beginningTime);
+stack=dbstack;
+if length(stack)==1;
+    o.functionNames=stack.name;
+else
+    o.functionNames=[stack(2).name '-' stack(1).name];
+end
+o.dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',o.functionNames,o.observer,round(t));
+o.dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+if ~exist(o.dataFolder,'dir')
+   success=mkdir(o.dataFolder);
+   if ~success
+       error('Failed attempt to create data folder: %s',o.dataFolder);
+   end
+end
+dataFid=fopen(fullfile(o.dataFolder,[o.dataFilename '.txt']),'rt');
+if dataFid~=-1
+    error('Oops. There''s already a file called "%s.txt". Try again.',o.dataFilename);
+end
+[dataFid,msg]=fopen([o.dataFilename '.txt'],'wt');
+if dataFid==-1
+    error('%s. Could not create data file: %s',msg,[o.dataFilename '.txt']);
+end
+assert(dataFid>-1);
+ff=[1 dataFid];
+fprintf('\nSaving results in:\n');
+ffprintf(ff,'%s\n',o.dataFilename);
+ffprintf(ff,'%s %s\n',o.functionNames,datestr(now));
 
 % Replicate o, once per supplied condition.
 conds=length(oIn);
 oo(1:conds)=o;
-
+% All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
 for cond=1:conds
-    % All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
     fields=fieldnames(oIn(cond));
     for i=1:length(fields)
-        field=fields{i};
-        oo(cond).(field)=oIn(cond).(field);
+        oo(cond).(fields{i})=oIn(cond).(fields{i});
     end
 end
+ffprintf(ff,'observer %s\n',o.observer);
+
+% Set up for KbCheck
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
 Screen('Preference','SkipSyncTests',1);
@@ -85,12 +115,15 @@ for cond=1:conds
         oo(cond).responseKeys(i)=KbName(oo(cond).alphabet(i));
     end
 end
+
+%Set up for Screen
 [screenWidthMm,screenHeightMm]=Screen('DisplaySize',0);
 screenWidthCm=screenWidthMm/10;
 screenRect=Screen('Rect',0);
 if oo(cond).useFractionOfScreen
     screenRect=round(oo(cond).useFractionOfScreen*screenRect);
 end
+
 try
     window=Screen('OpenWindow',0,255,screenRect);
     for cond=1:conds
@@ -169,20 +202,6 @@ try
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
     end
-    beginningTime=now;
-    t=datevec(beginningTime);
-    datafilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d.txt',mfilename,oo(cond).observer,round(t));
-    datafullfilename=fullfile(fileparts(mfilename('fullpath')),datafilename);
-    dataFid=fopen(datafullfilename,'rt');
-    if dataFid~=-1
-        error('Oops. There''s already a file called "%s". Try again.',datafullfilename);
-    end
-    dataFid=fopen(datafullfilename,'wt');
-    assert(dataFid>-1);
-    ff=[1 dataFid];
-    ffprintf(ff,'\nSaving results in:\n');
-    ffprintf(ff,'%s\n',datafilename);
-    ffprintf(ff,'%s %s\n',mfilename,datestr(now));
     for cond=1:conds
         ffprintf(ff,'observer %s, task %s, measure threshold %s, alternatives %d,  beta %.1f,\n',oo(cond).observer,oo(cond).task,oo(cond).thresholdParameter,length(oo(cond).alphabet),oo(cond).beta);
         if streq(oo(cond).thresholdParameter,'spacing')
@@ -550,10 +569,6 @@ try
         end
     end
     ListenChar; % reenable keyboard echo
-    if exist('dataFid')
-        fclose(dataFid);
-        dataFid=-1;
-    end
     Snd('Close');
     Screen('CloseAll');
     ShowCursor;
@@ -569,18 +584,22 @@ try
             end
         end
     end
-    save([datafullfilename '.mat'],'oo');
-    ffprintf(ff,'Results saved in %s with extensions .txt and .mat\nin folder %s\n',o.datafilename,fileparts(datafullfilename));
-
+    save(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']),'oo');
+    ffprintf(ff,'Results saved in %s with extensions .txt and .mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
+    if exist('dataFid','file')
+        fclose(dataFid);
+        dataFid=-1;
+    end
 catch
     sca; % screen close all. This cleans up without canceling the error message.
     ListenChar;
+    % Some of these functions spoil psychlasterror, so i don't use them.
     %     ListenChar(0); % flush
     %     ListenChar;
     %     Screen('CloseAll');
     %     Snd('Close');
     %     ShowCursor;
-    if exist('dataFid') && dataFid~=-1
+    if exist('dataFid','file') && dataFid~=-1
         fclose(dataFid);
         dataFid=-1;
     end
