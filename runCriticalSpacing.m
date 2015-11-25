@@ -1,23 +1,27 @@
 clear o
+o.observer='practice';
+% o.observer='Shivam'; % Enter observer name here.
 o.repeatedLetters=1;
 o.useFractionOfScreen=0;
-o.observer='practice';
-% o.observer='Shivam';
 o.viewingDistanceCm=150;
 o.thresholdParameter='spacing';
-% o.thresholdParameter='size';
 o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
 o.durationSec=inf; % duration of display of target and flankers
-o.trials=80; % number of trials for the threshold estimate
+o.trials=20; % number of presentations (two response per presentation) for the threshold estimate
 o.measureBeta=0;
 o.task='identify';
 o.usePurring=1;
 minimumTargetPix=8;
-Screen('Preference', 'SkipSyncTests', 1);
 o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
 o.targetFont='Sloan';
 o.textFont='Calibri';
+o.fixationLocation='center';
 o(2)=o(1);
 o(2).thresholdParameter='size';
-CriticalSpacing(o);
+o(3)=o(1);
+o(3).repeatedLetters=0;
+o(4)=o(2);
+o(4).repeatedLetters=0;
+oRepeated=CriticalSpacing(o(1:2)); % dual targets, repeated indefinitely
+oSingle=CriticalSpacing(o(3:4)); % one target
