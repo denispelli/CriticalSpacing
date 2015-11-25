@@ -1,7 +1,9 @@
 clear o
-o.observer='practice';
+o.observer='junk';
 % o.observer='Shivam'; % Enter observer name here.
 o.repeatedLetters=1;
+o.fixationCrossDeg=0;
+o.useScreenCopyWindow=1; % Faster, but doesn't work on all Macs.
 o.useFractionOfScreen=0;
 o.viewingDistanceCm=150;
 o.thresholdParameter='spacing';
