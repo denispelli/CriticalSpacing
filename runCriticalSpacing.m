@@ -6,7 +6,7 @@ o.encouragement=1;
 o.repeatedLetters=1;
 o.fixationCrossDeg=0;
 o.useScreenCopyWindow=1; % Faster, but doesn't work on all Macs.
-o.useFractionOfScreen=0.6;
+o.useFractionOfScreen=0;
 o.viewingDistanceCm=150;
 o.thresholdParameter='spacing';
 o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
@@ -24,7 +24,8 @@ o.fixationLocation='center';
 o(2)=o(1);
 o(2).thresholdParameter='size';
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
-% We copy the observer name obtained during the first run.
+% We retain the observer name obtained during the first run for use in the
+% second run.
 o(1).repeatedLetters=0;
 o(2).repeatedLetters=0;
 o(1).observer=oRepeated(1).observer;
