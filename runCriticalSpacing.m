@@ -1,6 +1,8 @@
 clear o
-o.observer='junk';
+o.observer='';
 % o.observer='Shivam'; % Enter observer name here.
+o.negativeFeedback=0;
+o.encouragement=1;
 o.repeatedLetters=1;
 o.fixationCrossDeg=0;
 o.useScreenCopyWindow=1; % Faster, but doesn't work on all Macs.
@@ -21,9 +23,9 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o(2)=o(1);
 o(2).thresholdParameter='size';
-o(3)=o(1);
-o(3).repeatedLetters=0;
-o(4)=o(2);
-o(4).repeatedLetters=0;
 oRepeated=CriticalSpacing(o(1:2)); % dual targets, repeated indefinitely
-oSingle=CriticalSpacing(o(3:4)); % one target
+% We copy the observer name obtained during the first run.
+oSingle=oRepeated;
+oSingle(1).repeatedLetters=0;
+oSingle(2).repeatedLetters=0;
+oSingle=CriticalSpacing(oSingle); % one target

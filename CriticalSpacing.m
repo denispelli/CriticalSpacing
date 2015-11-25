@@ -25,6 +25,8 @@ end
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % folder in same directory as this file
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
+o.negativeFeedback=1;
+o.encouragement=0;
 o.repeatedLetters=1;
 o.useFractionOfScreen=0;
 o.observer='junk';
@@ -147,6 +149,19 @@ try
         screenWidth=RectWidth(screenRect);
         screenHeight=RectHeight(screenRect);
         pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
+        if length(oo(1).observer)==0
+            black=0;
+            oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
+            Screen('TextSize',window, oo(condition).textSize);
+            Screen('TextFont',window,oo(condition).textFont);
+            ListenChar(2);
+            name=GetEchoString(window,'Hi. Please type your name followed by Return:',50,screenRect(4)/2,black,255,1);
+            ListenChar(0);
+            for condition=1:conditions
+                oo(condition).observer=name;
+            end
+            Screen('FillRect',window);
+        end
         oo(condition).eccentricityPix=round(oo(condition).eccentricityDeg*pixPerDeg);
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
@@ -206,7 +221,7 @@ try
         range=6;
     end % for condition=1:conditions
     if oo(1).announceDistance
-        Speak(sprintf('Please make sure that your eye is %.0f centimeters from the screen.',oo(condition).viewingDistanceCm));
+        Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
     
     computer=Screen('Computer');
@@ -277,44 +292,24 @@ try
     Screen('FillRect',window,white);
     Screen('TextSize',window,oo(condition).textSize);
     Screen('TextFont',window,oo(condition).textFont);
-if 1
-    string='Denis Pelli''s Crowding and Acuity Test © 2015\n\n';
-    string=[string sprintf('Observer: %s\n\n',oo(condition).observer)];
+    string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
     string=[string sprintf('Move this screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
     if any([oo.repeatedLetters])
-        string=[string 'When the screen is covered with letters, whether \nmixed or segregated, please type both letters.\n']
+        string=[string 'When the screen is covered with letters, whether \nmixed or segregated, please type both letters.\n'];
     end
     if ~all([oo.repeatedLetters])
-        string=[string 'After each presentation of a few letters, please \ntype the target letter in the middle, ignoring any flankers.\n'];
+        string=[string 'After each presentation of a few letters, please \ntype the middle letter, ignoring any flankers.\n'];
     end
     if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
-        string=[string 'Please type the spacebar to begin, while you fixate the crosshairs below. '];
+        string=[string 'Please type the SPACEBAR to begin, while you fixate the crosshairs below. '];
     else
-        string=[string 'Type the spacebar to begin. '];
+        string=[string 'Type the SPACEBAR to begin. '];
     end
     string=[string '\n\n(At any time, press ESCAPE to quit early.) '];
+    string=[string '\n\nCrowding and Acuity Test © 2015, Denis Pelli'];
     DrawFormattedText(window,string,oo(1).textSize*3,oo(1).textSize*3,black,80);
-else
-    y=oo(1).textSize*3;
-    x=oo(1).textSize*2.5;
-    Screen('DrawText',window,sprintf('Observer: %s',oo(condition).observer),x,y,black,0,1); y=y+oo(1).textSize*3;
-    Screen('DrawText',window,sprintf('Please make sure your eye is %.0f cm from the screen.',oo(condition).viewingDistanceCm),x,y,black,0,1); y=y+oo(1).textSize*1.5;
-    if any([oo.repeatedLetters])
-        Screen('DrawText',window,'When the screen is covered with letters, whether mixed or segregated, please type both letters.',x,y,black,0,1); y=y+oo(1).textSize*1.5;
-    end
-    if ~all([oo.repeatedLetters])
-        Screen('DrawText',window,'After a presentation of just a few letters, please type the target letter in the middle, ignoring any flankers.',x,y,black,0,1); y=y+oo(1).textSize*1.5;
-    end
-    if any(isfinite([oo.durationSec]))
-        Screen('DrawText',window,'It is very important that you be fixating the center of the crosshairs when the letters appear.',x,y,black,0,1); y=y+oo(1).textSize*1.5;
-        Screen('DrawText',window,'Please type the spacebar to begin, while you fixate the crosshairs below.',x,y,black,0,1); y=y+oo(1).textSize*1.5;
-    else
-        Screen('DrawText',window,'Type the spacebar to begin.',x,y,black,0,1); y=y+oo(1).textSize*1.5;
-    end
-    y=y+oo(1).textSize*1.5;
-    Screen('DrawText',window,'(At any time, press ESCAPE to quit early.)',x,y,black,0,1); y=y+oo(1).textSize*1.5;
-end
+
     fix.eccentricityPix=oo(condition).eccentricityPix;
     fix.clipRect=screenRect;
     fix.fixationCrossPix=fixationCrossPix;
@@ -329,11 +324,12 @@ end
     end % for condition=1:conditions
     Screen('Flip',window);
     SetMouse(screenRect(3),screenRect(4),window);
-    input=GetKeypress(0,[spaceKey escapeKey]);
-    if streq(input,'ESCAPE')
+    answer=GetKeypress(0,[spaceKey escapeKey]);
+    if streq(answer,'ESCAPE')
         Speak('Escape. Done.');
         ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
         o.quit=1;
+        ListenChar(0);
         ShowCursor;
         sca;
         return
@@ -530,30 +526,45 @@ end
             Screen('Flip',window); % display response screen
         end
         FlushEvents('keyDown');
+        ListenChar(0);
         responseString='';
+        ListenChar(2);
         for i=1:length(targets)
             while(1)
-                input=upper(GetKeypress(0,[escapeKey oo(condition).responseKeys]));
-                if ~ismember(input,responseString)
+                answer=GetKeypress(0,[escapeKey oo(condition).responseKeys]);
+                answer=upper(answer);
+                if ~ismember(answer,responseString)
                     break
                 end
             end
-            ListenChar(2);
-            Speak(input);
-            ListenChar(0);
-            if streq(input,'ESCAPE')
+%             ListenChar(2);
+            Speak(answer);
+            if streq(answer,'ESCAPE')
+                ListenChar(0);
                 ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
                 terminate=1;
                 break;
             end
-            ListenChar(2);
-            if ismember(input,targets)
+            if ismember(answer,targets)
                 Snd('Play',rightBeep);
             else
-                Snd('Play',wrongBeep);
+                if oo(condition).negativeFeedback
+                    Snd('Play',wrongBeep);
+                end
             end
-            ListenChar(0);
-            responseString=[responseString input];
+            responseString=[responseString answer];
+        end
+        FlushEvents('keyDown');
+        ListenChar(0);
+        if oo(condition).encouragement
+            switch randi(3);
+                case 1
+                    Speak('Good!');
+                case 2
+                    Speak('Thank you');
+                case 3
+                    Speak('Very good');
+            end
         end
         if terminate
             break;
@@ -582,7 +593,7 @@ end
     %         Screen('DrawText',window,'Run completed',100,750,black,0,1);
     Screen('Flip',window);
     Speak('Congratulations.  You are done.');
-    ListenChar; % reenable keyboard echo
+    ListenChar(0); % reenable keyboard echo
     Snd('Close');
     Screen('CloseAll');
     ShowCursor;
@@ -669,7 +680,7 @@ end
     fprintf('Results saved in %s with extensions .txt and .mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch
     sca; % screen close all. This cleans up without canceling the error message.
-    ListenChar;
+    ListenChar(0);
     % Some of these functions spoil psychlasterror, so i don't use them.
     %     ListenChar(0); % flush
     %     ListenChar;
