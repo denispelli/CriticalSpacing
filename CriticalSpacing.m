@@ -30,6 +30,7 @@ o.repeatedLetters=1;
 o.useFractionOfScreen=0;
 o.observer='practice';
 % o.observer='Shivam'; % specify actual observer name
+o.quit=0;
 o.viewingDistanceCm=125;
 o.thresholdParameter='spacing';
 % o.thresholdParameter='size';
@@ -275,19 +276,22 @@ try
     Screen('FillRect',window,white);
     Screen('TextSize',window,oo(cond).textSize);
     Screen('TextFont',window,oo(cond).textFont);
-    Screen('DrawText',window,sprintf('Observer %s',oo(cond).observer),100,30,black,0,1);
+    Screen('DrawText',window,sprintf('Observer: %s',oo(cond).observer),100,30,black,0,1);
     Screen('DrawText',window,sprintf('Please make sure your eye is %.0f cm from the screen.',oo(cond).viewingDistanceCm),100,60,black,0,1);
     y=90;
     if any([oo.repeatedLetters])
-        Screen('DrawText',window,'When the screen is covered with letters, either mixed or segregated, please type both letters.',100,y,black,0,1); y=y+30;
+        Screen('DrawText',window,'When the screen is covered with letters, whether mixed or segregated, please type both letters.',100,y,black,0,1); y=y+30;
     end
     if ~all([oo.repeatedLetters])
-        Screen('DrawText',window,'After each presentation of just one a few letters, please type the target letter in the middle, ignoring any flankers.',100,y,black,0,1); y=y+30;
-        Screen('DrawText',window,'It is very important that you be fixating the center of the crosshairs when the letters are presented.',100,y,black,0,1); y=y+30;
-        Screen('DrawText',window,'Once you are fixating the crosshairs below, then type the spacebar to begin',100,y,black,0,1); y=y+30;
-    else
-        Screen('DrawText',window,'Type the spacebar to begin',100,y,black,0,1); y=y+30;
+        Screen('DrawText',window,'After a presentation of just a few letters, please type the target letter in the middle, ignoring any flankers.',100,y,black,0,1); y=y+30;
     end
+    if any(isfinite([oo.durationSec]))
+        Screen('DrawText',window,'It is very important that you be fixating the center of the crosshairs when the letters appear.',100,y,black,0,1); y=y+30;
+        Screen('DrawText',window,'Please type the spacebar to begin, while you fixate the crosshairs below.',100,y,black,0,1); y=y+30;
+    else
+        Screen('DrawText',window,'Type the spacebar to begin.',100,y,black,0,1); y=y+30;
+    end
+    y=y+30; Screen('DrawText',window,'At any time, press ESCAPE to quit early.',100,y,black,0,1); y=y+30;
     fix.eccentricityPix=oo(cond).eccentricityPix;
     fix.clipRect=screenRect;
     fix.fixationCrossPix=fixationCrossPix;
@@ -306,7 +310,8 @@ try
     if streq(input,'ESCAPE')
         Speak('Escape. Done.');
         ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
-        terminate=1;
+        o.quit=1;
+        sca;
         return
     end
     condList=[];
@@ -549,7 +554,14 @@ try
         end
     end % for trial=1:length(condList)
     
+    Screen('FillRect',window);
+    %         Screen('DrawText',window,'Run completed',100,750,black,0,1);
+    Screen('Flip',window);
     Speak('Congratulations.  You are done.');
+    ListenChar; % reenable keyboard echo
+    Snd('Close');
+    Screen('CloseAll');
+    ShowCursor;
     for cond=1:conds
         ffprintf(ff,'CONDITION %d **********\n',cond);
         % Ask Quest for the final estimate of threshold.
@@ -582,9 +594,6 @@ try
                     ffprintf(ff,'%.2f             %.2f    %.2f    %d\n',[10.^t.intensity;QuestP(oo(cond).q,t.intensity-oo(cond).tGuess);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
                 end
         end
-        Screen('FillRect',window);
-        Screen('DrawText',window,'Run completed',100,750,black,0,1);
-        Screen('Flip',window);
         for cond=1:conds
             if oo(cond).measureBeta
                 % reanalyze the data with beta as a free parameter.
@@ -615,10 +624,6 @@ try
             end
         end
     end
-    ListenChar; % reenable keyboard echo
-    Snd('Close');
-    Screen('CloseAll');
-    ShowCursor;
     for cond=1:conds
         if exist('results','var') && oo(cond).count>1
             ffprintf(ff,'%d:',cond);
