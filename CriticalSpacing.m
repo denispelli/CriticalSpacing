@@ -23,6 +23,10 @@ if nargin<1 || ~exist('oIn','var')
     oIn.noInputArgument=1;
 end
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % folder in same directory as this file
+Screen('Preference','VisualDebugLevel', 0);
+Screen('Preference', 'SkipSyncTests', 1);
+Screen('Preference','SuppressAllWarnings', 1);
+
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
 o.negativeFeedback=1;
@@ -35,6 +39,7 @@ o.useScreenCopyWindow=0; % Faster, but doesn't work on all Macs.
 o.quit=0;
 o.viewingDistanceCm=125;
 o.thresholdParameter='spacing';
+o.useQuest=1; % true(1) or false(0)
 % o.thresholdParameter='size';
 o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
 % o.sizeProportionalToSpacing=0; % Requests size proportional to spacing.
@@ -55,8 +60,7 @@ o.measureBeta=0;
 o.task='identify';
 o.announceDistance=0;
 o.usePurring=1;
-minimumTargetPix=8;
-Screen('Preference', 'SkipSyncTests', 1);
+o.minimumTargetPix=8;
 o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
 o.targetFont='Sloan';
@@ -67,14 +71,14 @@ if o.measureBeta
     o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
 end
 o.beginningTime=now;
-t=datevec(o.beginningTime);
+timeVector=datevec(o.beginningTime);
 stack=dbstack;
 if length(stack)==1;
     o.functionNames=stack.name;
 else
     o.functionNames=[stack(2).name '-' stack(1).name];
 end
-o.dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',o.functionNames,o.observer,round(t));
+o.dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',o.functionNames,o.observer,round(timeVector));
 o.dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
 if ~exist(o.dataFolder,'dir')
     success=mkdir(o.dataFolder);
@@ -94,7 +98,7 @@ assert(dataFid>-1);
 ff=[1 dataFid];
 ffprintf(ff,'%s %s\n',o.functionNames,datestr(now));
 ffprintf(ff,'Saving results in:\n');
-ffprintf(ff,'%s .txt and .mat\n',o.dataFilename);
+ffprintf(ff,'%s.txt and ".mat\n',o.dataFilename);
 
 % Replicate o, once per supplied condition.
 conditions=length(oIn);
@@ -107,18 +111,6 @@ for condition=1:conditions
         oo(condition).(fields{i})=oIn(condition).(fields{i});
     end
 end
-switch o.fixationLocation
-    case 'left',
-        fix.x=50+screenRect(1);
-    case 'center',
-        fix.x=(screenRect(1)+screenRect(3))/2; % location of fixation
-    case 'right',
-        fix.x=screenRect(3)-50;
-    otherwise
-        error('Unknown o.fixationLocation %s',o.fixationLocation);
-end
-fix.y=RectHeight(screenRect)/2;
-
 % Set up for KbCheck
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
@@ -140,9 +132,41 @@ if oo(condition).useFractionOfScreen
 end
 
 try
-    window=Screen('OpenWindow',0,255,screenRect);
+    if 0
+        oo(1).screen=0;
+        screenBufferRect=Screen('Rect',oo(1).screen);
+        screenRect=Screen('Rect',oo(1).screen,1);
+        % Detect HiDPI mode, e.g. on a Retina display.
+        % resolution=Screen('Resolution',oo(1).screen);
+        oo(1).hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
+        if oo(1).hiDPIMultiple~=1
+            ffprintf(ff,'HiDPI: ');
+            if ismac
+                str='Your Retina display';
+            else
+                str='Your display';
+            end
+            ffprintf(ff,'%s is in dual-resolution HiDPI mode.\n',str);
+            resolution=Screen('Resolution',oo(1).screen);
+            ffprintf(ff,'We are using it in its native %d x %d resolution.\n',resolution.width,resolution.height);
+            ffprintf(ff,'You can use Switch Res X (http://www.madrau.com/) to select a pure resolution (not HiDPI).\n');
+        end
+        PsychImaging('PrepareConfiguration');
+        if oo(1).flipScreenHorizontally
+            PsychImaging('AddTask','AllViews','FlipHorizontal');
+        end
+        if oo(1).hiDPIMultiple~=1
+            PsychImaging('AddTask','General','UseRetinaResolution');
+        end
+        if ~oo(1).useFractionOfScreen
+            [window,r]=PsychImaging('OpenWindow',oo(1).screen,255);
+        else
+            [window,r]=PsychImaging('OpenWindow',oo(1).screen,255,round(oo(1).useFractionOfScreen*screenBufferRect));
+        end
+    else
+        window=Screen('OpenWindow',0,255,screenRect);
+    end
     for condition=1:conditions
-        ffprintf(ff,'%d: ',condition);
         screenRect=Screen('Rect',window);
         screenWidth=RectWidth(screenRect);
         screenHeight=RectHeight(screenRect);
@@ -150,22 +174,44 @@ try
         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
         Screen('TextSize',window,oo(condition).textSize);
         Screen('TextFont',window,oo(condition).textFont);
-        if length(oo(1).observer)==0
-            black=0;
-            ListenChar(2);
-            Screen('DrawText',window,'Hi. Please type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,255,1)
-            name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,255,1);
-            ListenChar(0);
-            for i=1:conditions
-                oo(i).observer=name;
-            end
-            Screen('FillRect',window);
-            ffprintf(ff,'Observer %s\n',oo(1).observer);
+        boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
+        fraction=RectWidth(boundsRect)/(screenWidth-100);
+        if fraction>1
+            oo(condition).textSize=round(oo(condition).textSize/fraction);
+            Screen('TextSize',window,oo(condition).textSize);
         end
+                
+        % prepare to draw fixation cross
+        fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
+        fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
+        fixationLineWeightPix=round(oo(condition).fixationLineWeightDeg*pixPerDeg);
+        fixationLineWeightPix=max(1,fixationLineWeightPix);
+        fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
+        oo(condition).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
+        switch oo(condition).fixationLocation
+            case 'left',
+                oo(condition).fix.x=50+screenRect(1);
+            case 'center',
+                oo(condition).fix.x=(screenRect(1)+screenRect(3))/2; % location of fixation
+            case 'right',
+                oo(condition).fix.x=screenRect(3)-50;
+            otherwise
+                error('Unknown o.fixationLocation %s',o.fixationLocation);
+        end
+        oo(condition).fix.y=RectHeight(screenRect)/2;
         oo(condition).eccentricityPix=round(oo(condition).eccentricityDeg*pixPerDeg);
+        oo(condition).fix.eccentricityPix=oo(condition).eccentricityPix;
+        oo(condition).fix.clipRect=screenRect;
+        oo(condition).fix.fixationCrossPix=fixationCrossPix;
+        oo(condition).fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
+%         if ~oo(condition).repeatedLetters
+%             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+%         end
+        
+        oo(condition).count=1;
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
-        oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-fix.x-pixPerDeg*oo(condition).targetHeightDeg)); % target fits on screen, with half-target margin.
+        oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetHeightDeg)); % target fits on screen, with half-target margin.
         oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
@@ -176,41 +222,41 @@ try
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
         if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
-            oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetHeightDeg/2))); % flanker fits on screen.
+            oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetHeightDeg/2))); % flanker fits on screen.
             oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
             oo(condition).nominalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
             oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
         end
         oo(condition).spacings=oo(condition).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
         oo(condition).spacingsSequence=repmat(oo(condition).spacings,1,ceil(oo(condition).trials/length(oo(condition).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of trials.
-        fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
-        fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
-        fixationLineWeightPix=round(oo(condition).fixationLineWeightDeg*pixPerDeg);
-        fixationLineWeightPix=max(1,fixationLineWeightPix);
-        fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
-        oo(condition).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
-        useQuest=1; % true(1) or false(0)
-        if useQuest
-            ffprintf(ff,'Using QUEST to estimate threshold %s.\n',oo(condition).thresholdParameter);
+        if oo(condition).useQuest
+            ffprintf(ff,'%d: Using QUEST to estimate threshold %s.\n',condition,oo(condition).thresholdParameter);
         else
-            ffprintf(ff,'Using "method of constant stimuli" fixed list of spacings.');
+            ffprintf(ff,'%d: Using "method of constant stimuli" fixed list of spacings.\n',condition);
         end
-        oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
+        
+        % prepare to draw fixation cross
+        oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
+        fixationLines=ComputeFixationLines(oo(condition).fix);
+
         terminate=0;
+        nominalOverPossibleSize=oo(condition).nominalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
         switch oo(condition).thresholdParameter
             case 'spacing',
                 oo(condition).tGuess=log10(oo(condition).spacingDeg);
+                if oo(1).sizeProportionalToSpacing
+                    nominalOverPossibleSize=min(nominalOverPossibleSize,oo(1).sizeProportionalToSpacing*oo(1).nominalCriticalSpacingDeg*pixPerDeg/oo(condition).minimumTargetPix);
+                end
             case 'size',
                 oo(condition).tGuess=log10(oo(condition).targetHeightDeg);
-                if oo(condition).nominalAcuityDeg*pixPerDeg<0.5*minimumTargetPix
-                    ratio=0.5*minimumTargetPix/(oo(condition).nominalAcuityDeg*pixPerDeg); % too big
-                    Speak('You are too close to the screen.');
-                    msg=sprintf('Please increase viewing distance to at least %.0f cm.',ceil(ratio*oo(condition).viewingDistanceCm));
-                    Speak(msg);
-                    error(msg);
-                end
+        end
+        if nominalOverPossibleSize<2
+            Speak('You are too close to the screen.');
+            msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "viewingDistanceCm" in your script.',10*ceil((2/nominalOverPossibleSize)*oo(condition).viewingDistanceCm/10));
+            Speak(msg);
+            error(msg);
         end
         oo(condition).tGuessSd=2;
         oo(condition).pThreshold=0.7;
@@ -220,10 +266,33 @@ try
         grain=0.01;
         range=6;
     end % for condition=1:conditions
+
+    for condition=1:conditions
+        if oo(condition).repeatedLetters
+            ffprintf(ff,'%d: Two targets, repeated many times.\n',condition);
+        else
+            ffprintf(ff,'%d: One target.\n',condition);
+        end
+    end
+    
+    % Observer name
+    if length(oo(1).observer)==0
+        black=0;
+        ListenChar(2);
+        Screen('DrawText',window,'Hi. Please slowly type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,255,1);
+        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,255,1);
+        ListenChar(0);
+        for i=1:conditions
+            oo(i).observer=name;
+        end
+        Screen('FillRect',window);
+    end
+    
     if oo(1).announceDistance
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
     
+    % Identify the computer
     computer=Screen('Computer');
     cal.processUserLongName=computer.processUserLongName;
     cal.machineName=computer.machineName;
@@ -234,11 +303,11 @@ try
     end
     for condition=1:conditions
         ffprintf(ff,'%d: ',condition);
-        ffprintf(ff,'observer %s, task %s, measure threshold %s, alternatives %d,  beta %.1f,\n',oo(condition).observer,oo(condition).task,oo(condition).thresholdParameter,length(oo(condition).alphabet),oo(condition).beta);
+        ffprintf(ff,'Observer %s, task %s, measure threshold %s, alternatives %d,  beta %.1f,\n',oo(condition).observer,oo(condition).task,oo(condition).thresholdParameter,length(oo(condition).alphabet),oo(condition).beta);
     end
     for condition=1:conditions
         if streq(oo(condition).thresholdParameter,'spacing')
-            ffprintf(ff,'%d: Measuring threshold spacing of flankers\n',condition);
+%             ffprintf(ff,'%d: Measuring threshold spacing of flankers\n',condition);
             if ~oo(condition).repeatedLetters
                 if oo(condition).eccentricityDeg~=0
                     ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
@@ -255,8 +324,7 @@ try
     end
     for condition=1:conditions
         if oo(condition).sizeProportionalToSpacing
-            ffprintf(ff,'%d: Target scales with spacing: spacing= %.2f * size.\n',condition,1/oo(condition).sizeProportionalToSpacing);
-            ffprintf(ff,'%d: Minimum spacing is %.0f pixels, %.3f deg.\n',condition,minimumTargetPix/oo(condition).sizeProportionalToSpacing,minimumTargetPix/pixPerDeg/oo(condition).sizeProportionalToSpacing);
+            ffprintf(ff,'%d: Target scales with spacing: spacing is %.2f*size.\n',condition,1/oo(condition).sizeProportionalToSpacing);
         else
             if streq(oo(condition).thresholdParameter,'size')
                 ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',condition);
@@ -266,13 +334,18 @@ try
         end
     end
     for condition=1:conditions
-        ffprintf(ff,'%d: Minimum letter size is %.0f pixels, %.3f deg.\n',condition,minimumTargetPix,minimumTargetPix/pixPerDeg);
+        if oo(condition).sizeProportionalToSpacing
+            ffprintf(ff,'%d: Minimum spacing is %.0f pixels, %.3f deg.\n',condition,oo(condition).minimumTargetPix/oo(condition).sizeProportionalToSpacing,oo(condition).minimumTargetPix/pixPerDeg/oo(condition).sizeProportionalToSpacing);
+        end
     end % for condition=1:conditions
     for condition=1:conditions
-        ffprintf(ff,'%d: %s font\n',condition,oo(condition).targetFont);
+        ffprintf(ff,'%d: Minimum letter size is %.0f pixels, %.3f deg.\n',condition,oo(condition).minimumTargetPix,oo(condition).minimumTargetPix/pixPerDeg);
     end % for condition=1:conditions
     for condition=1:conditions
-        ffprintf(ff,'%d: Duration %.2f s\n',condition,oo(condition).durationSec);
+        ffprintf(ff,'%d: %s font. Alphabet ''%s''.\n',condition,oo(condition).targetFont,oo(condition).alphabet);
+    end % for condition=1:conditions
+    for condition=1:conditions
+        ffprintf(ff,'%d: Duration %.2f s.\n',condition,oo(condition).durationSec);
     end
     for condition=1:conditions
         ffprintf(ff,'%d: %.0f trials.\n',condition,oo(condition).trials);
@@ -280,6 +353,51 @@ try
     ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
     ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
     ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
+    
+    % Identify the computer
+    cal.screen=0;
+    computer=Screen('Computer');
+    [cal.screenWidthMm,cal.screenHeightMm]=Screen('DisplaySize',cal.screen);
+    if computer.windows
+        cal.processUserLongName=getenv('USERNAME');
+        cal.machineName=getenv('USERDOMAIN');
+        cal.macModelName=[];
+    elseif computer.linux
+        cal.processUserLongName=getenv('USER');
+        cal.machineName=strrep(computer.machineName,'閳�',''''); % work around bug in Screen('Computer')
+        cal.osversion=computer.kern.version;
+        cal.macModelName=[];
+    elseif computer.osx || computer.macintosh
+        cal.processUserLongName=computer.processUserLongName;
+        cal.machineName=strrep(computer.machineName,'閳�',''''); % work around bug in Screen('Computer')
+        cal.macModelName=MacModelName;
+    end
+    cal.screenOutput=[]; % only for Linux
+    cal.ScreenConfigureDisplayBrightnessWorks=1; % default value
+    cal.brightnessSetting=1.00; % default value
+    cal.brightnessRMSError=0; % default value
+    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
+    cal.screenWidthCm=screenWidthMm/10;
+    ffprintf(ff,'Computer: %s, %s, screen %d, %dx%d, %.1fx%.1f cm\n',cal.machineName,cal.macModelName,cal.screen,RectWidth(screenRect),RectHeight(screenRect),screenWidthMm/10,screenHeightMm/10);
+    assert(cal.screenWidthCm==screenWidthMm/10);
+    ffprintf(ff,'Computer account: %s.\n',cal.processUserLongName);
+%     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
+%     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
+    AutoBrightness(cal.screen,0);
+    cal.ScreenConfigureDisplayBrightnessWorks=1;
+    if cal.ScreenConfigureDisplayBrightnessWorks
+        cal.brightnessSetting=1;
+%         ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
+        % Psychtoolbox Bug. Screen ConfigureDisplay claims that it will
+        % silently do nothing if not supported. But when I used it on my
+        % video projector, Screen gave a fatal error. That's ok, but how do
+        % I figure out when it's safe to use?
+        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+    end
+    for condition=1:conditions
+        oo(condition).cal=cal;
+    end
+    
     white=WhiteIndex(window);
     black=BlackIndex(window);
     rightBeep=MakeBeep(2000,0.05,44100);
@@ -293,36 +411,24 @@ try
     Screen('TextSize',window,oo(condition).textSize);
     Screen('TextFont',window,oo(condition).textFont);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
-    string=[string sprintf('Please move this screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
+    string=[string sprintf('Please move screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
     if any([oo.repeatedLetters])
-        string=[string 'When the screen is covered with letters, whether \nmixed or segregated, please type both letters.\n'];
+        string=[string 'When you see many letters, they are all repetitions of just two letters. Please type both. '];
     end
     if ~all([oo.repeatedLetters])
-        string=[string 'After each presentation of a few letters, please \ntype the middle letter, ignoring any flankers.\n'];
+        string=[string 'After each presentation of a few letters, please type the middle letter, ignoring any flankers. '];
     end
-    string=[string '(You can quit anytime by pressing ESCAPE.)\n'];
+    string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.)\n'];
     if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
         string=[string 'Please press the SPACEBAR to begin, while you fixate the crosshairs below. '];
     else
         string=[string 'Now, please press the SPACEBAR to begin. '];
     end
-    DrawFormattedText(window,string,oo(1).textSize*3,oo(1).textSize*3,black,80);
+    DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('TextSize',window,round(oo(condition).textSize*0.7));
-    Screen('DrawText',window,'Crowding and Acuity Test � 2015, Denis Pelli',oo(1).textSize*3,screenRect(4)-oo(1).textSize,1);
+    Screen('DrawText',window,'Crowding and Acuity Test � 2015, Denis Pelli',50,screenRect(4)-oo(1).textSize,1);
     Screen('TextSize',window,oo(condition).textSize);
-    fix.eccentricityPix=oo(condition).eccentricityPix;
-    fix.clipRect=screenRect;
-    fix.fixationCrossPix=fixationCrossPix;
-    for condition=1:conditions
-        fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
-        fix.targetHeightPix=oo(condition).targetHeightPix;
-        fixationLines=ComputeFixationLines(fix);
-        if ~oo(condition).repeatedLetters
-            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-        end
-        oo(condition).count=1;
-    end % for condition=1:conditions
     Screen('Flip',window);
     SetMouse(screenRect(3),screenRect(4),window);
     answer=GetKeypress(0,[spaceKey escapeKey]);
@@ -343,13 +449,13 @@ try
         oo(condition).trial=0;
         oo(condition).spacingsSequence=Shuffle(oo(condition).spacingsSequence);
         oo(condition).q=QuestCreate(oo(condition).tGuess,oo(condition).tGuessSd,oo(condition).pThreshold,oo(condition).beta,delta,gamma,grain,range);
-        xT=fix.x+oo(condition).eccentricityPix; % target
-        yT=fix.y; % target
+        xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
+        yT=oo(condition).fix.y; % target
     end
     condList=Shuffle(condList);
     for trial=1:length(condList)
         condition=condList(trial);
-        if useQuest
+        if oo(condition).useQuest
             intensity=QuestQuantile(oo(condition).q);
             if oo(condition).measureBeta
                 offsetToMeasureBeta=Shuffle(offsetToMeasureBeta);
@@ -358,26 +464,24 @@ try
             switch oo(condition).thresholdParameter
                 case 'spacing',
                     oo(condition).spacingDeg=10^intensity;
+                    if oo(condition).sizeProportionalToSpacing
+                        oo(condition).targetHeightDeg=oo(condition).sizeProportionalToSpacing*oo(condition).spacingDeg;
+                    end
                 case 'size',
                     oo(condition).targetHeightDeg=10^intensity;
-            end
+              end
         else
             oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).count/2);
         end
-        if oo(condition).sizeProportionalToSpacing
-            oo(condition).targetHeightDeg=oo(condition).spacingDeg*oo(condition).sizeProportionalToSpacing;
-        end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
-        oo(condition).targetHeightPix=max(minimumTargetPix,oo(condition).targetHeightPix);
+        oo(condition).targetHeightPix=max(oo(condition).minimumTargetPix,oo(condition).targetHeightPix);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-        if oo(condition).sizeProportionalToSpacing
-            oo(condition).spacingDeg=max(oo(condition).spacingDeg,oo(condition).targetHeightDeg/oo(condition).sizeProportionalToSpacing);
-        else
-            oo(condition).spacingDeg=max(oo(condition).spacingDeg,oo(condition).targetHeightDeg*1.2);
+        if streq(oo(condition).thresholdParameter,'size') && oo(condition).sizeProportionalToSpacing
+            oo(condition).spacingDeg=oo(condition).targetHeightDeg/oo(condition).sizeProportionalToSpacing;
         end
         spacing=oo(condition).spacingDeg*pixPerDeg;
         spacing=min(spacing,screenHeight/3);
-        spacing=max(spacing,0);
+        spacing=max(spacing,oo(condition).minimumTargetPix/oo(condition).sizeProportionalToSpacing);
         spacing=round(spacing);
         switch oo(condition).radialOrTangential
             case 'tangential'
@@ -433,25 +537,26 @@ try
                 yFF=yT; % outer flanker
         end
         oo(condition).spacingDeg=spacing/pixPerDeg;
-        if oo(condition).sizeProportionalToSpacing
-            oo(condition).targetHeightDeg=oo(condition).spacingDeg*oo(condition).sizeProportionalToSpacing;
+        if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).sizeProportionalToSpacing
+            oo(condition).targetHeightDeg=oo(condition).sizeProportionalToSpacing*oo(condition).spacingDeg;
         end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
         oo(condition).targetHeightPix=min(oo(condition).targetHeightPix,RectHeight(screenRect));
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-        fix.targetHeightPix=oo(condition).targetHeightPix;
-        fix.bouma=max(0.5,(spacingOuter+oo(condition).targetHeightPix/2)/oo(condition).eccentricityPix);
-        fixationLines=ComputeFixationLines(fix);
+        oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
+        oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetHeightPix/2)/oo(condition).eccentricityPix);
+        fixationLines=ComputeFixationLines(oo(condition).fix);
         if ~oo(condition).repeatedLetters
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
         end
-        Screen('Flip',window); % display fixation
-        WaitSecs(1); % duration of fixation display
+        Screen('Flip',window); % blank display, except perhaps fixation
         if ~oo(condition).repeatedLetters
+            WaitSecs(1); % duration of fixation display
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
         end
         stimulus=Shuffle(oo(condition).alphabet);
         stimulus=stimulus(1:3); % three random letters, all different.
+%         ffprintf(ff,'%d: targetHeightPix %d, %.3f deg; spacing %d, %.3f deg\n',condition,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,spacing/pixPerDeg);
         Screen('textSize',window,oo(condition).targetHeightPix);
         Screen('TextFont',window,oo(condition).targetFont);
         %             rect=Screen('TextBounds',window,'N');
@@ -514,7 +619,7 @@ try
             end
             Screen('TextFont',window,oo(condition).textFont);
             Screen('TextSize',window,oo(condition).textSize);
-            Screen('DrawText',window,'Type your response, or escape to quit.',100,100,black,0,1);
+            Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,0,1);
             Screen('DrawText',window,sprintf('Trial %d of %d. Run %d of %d',trial,length(condList),run,runs),screenRect(3)-300,100,black,0,1);
             Screen('TextFont',window,oo(condition).targetFont);
             x=100;
@@ -557,7 +662,7 @@ try
         end
         FlushEvents('keyDown');
         ListenChar(0);
-        if oo(condition).encouragement
+        if oo(condition).encouragement && ~terminate
             switch randi(3);
                 case 1
                     Speak('Good!');
@@ -576,16 +681,17 @@ try
         for response=responses
             switch oo(condition).thresholdParameter
                 case 'spacing',
-                    oo(condition).results(oo(condition).count,1)=oo(condition).spacingDeg;
-                    oo(condition).results(oo(condition).count,2)=response;
+                    oo(condition).results(oo(condition).count,1:2)=[oo(condition).spacingDeg response];
+%                     oo(condition).results(oo(condition).count,2)=response;
                     oo(condition).count=oo(condition).count+1;
                     intensity=log10(oo(condition).spacingDeg);
                 case 'size'
-                    oo(condition).results(oo(condition).count,1)=oo(condition).targetHeightDeg;
-                    oo(condition).results(oo(condition).count,2)=response;
+                    oo(condition).results(oo(condition).count,1:2)=[oo(condition).targetHeightDeg response];
+%                     oo(condition).results(oo(condition).count,2)=response;
                     oo(condition).count=oo(condition).count+1;
                     intensity=log10(oo(condition).targetHeightDeg);
             end
+%             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetHeightDeg);
             oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
         end
     end % for trial=1:length(condList)
@@ -613,21 +719,21 @@ try
                             ffprintf(ff,'Tangential spacing up and down.\n');
                     end
                 end
-                ffprintf(ff,'Threshold log spacing deg (mean眘d) is %.2f � %.2f, which is %.2f deg\n',t,sd,10^t);
+                ffprintf(ff,'Threshold log spacing deg (mean眘d) is %.2f � %.2f, which is %.3f deg.\n',t,sd,10^t);
                 if oo(condition).count>1
-                    t=QuestTrials(oo(condition).q);
-                    if any(~isreal(t.intensity))
-                        error('t.intensity returned by Quest should be real, but is complex.');
+                    trials=QuestTrials(oo(condition).q);
+                    if any(~isreal(trials.intensity))
+                        error('trials.intensity returned by Quest should be real, but is complex.');
                     end
                     ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
-                    ffprintf(ff,'%.1f             %.2f    %.2f    %d\n',[10.^t.intensity;QuestP(oo(condition).q,t.intensity-oo(condition).tGuess);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
+                    ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(condition).q,trials.intensity-oo(condition).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
                 end
             case 'size',
-                ffprintf(ff,'Threshold log size deg (mean眘d) is %.2f � %.2f, which is %.3f deg\n',t,sd,10^t);
+                ffprintf(ff,'Threshold log size deg (mean眘d) is %.2f � %.2f, which is %.3f deg.\n',t,sd,10^t);
                 if oo(condition).count>1
-                    t=QuestTrials(oo(condition).q);
+                    trials=QuestTrials(oo(condition).q);
                     ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
-                    ffprintf(ff,'%.2f             %.2f    %.2f    %d\n',[10.^t.intensity;QuestP(oo(condition).q,t.intensity-oo(condition).tGuess);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
+                    ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(condition).q,trials.intensity-oo(condition).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
                 end
         end
         for condition=1:conditions
@@ -647,14 +753,14 @@ try
                     ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
                 end
                 if oo(condition).count>1
-                    t=QuestTrials(qq);
+                    trials=QuestTrials(qq);
                     switch oo(condition).thresholdParameter
                         case 'spacing',
                             ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
                         case 'size',
                             ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
                     end
-                    ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^t.intensity;QuestP(qq,t.intensity);t.responses(2,:)./sum(t.responses);sum(t.responses)]);
+                    ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^trials.intensity;QuestP(qq,trials.intensity);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
                 end
                 ffprintf(ff,'o.measureBeta done **********************************\n');
             end
@@ -663,13 +769,13 @@ try
     for condition=1:conditions
         if exist('results','var') && oo(condition).count>1
             ffprintf(ff,'%d:',condition);
-            t=QuestTrials(oo(condition).q);
-            p=sum(t.responses(2,:))/sum(sum(t.responses));
+            trials=QuestTrials(oo(condition).q);
+            p=sum(trials.responses(2,:))/sum(sum(trials.responses));
             switch oo(condition).thresholdParameter
                 case 'spacing',
                     ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. %.1f deg, critical spacing %.2f deg.\n',oo(condition).observer,100*p,oo(condition).targetHeightDeg,oo(condition).eccentricityDeg,10^QuestMean(oo(condition).q));
                 case 'size',
-                    ffprintf(ff,'%s: p %.0f%%, ecc. %.1f deg, threshold size %.3f deg.\n',oo(condition).observer,100*p,oo(condition).eccentricityDeg,10^QuestMean(oo(condition).q));
+                    ffprintf(ff,'%s: p %.0f%%, ecc. %.2f deg, threshold size %.3f deg.\n',oo(condition).observer,100*p,oo(condition).eccentricityDeg,10^QuestMean(oo(condition).q));
             end
         end
     end
@@ -678,7 +784,7 @@ try
         fclose(dataFid);
         dataFid=-1;
     end
-    fprintf('Results saved in %s with extensions .txt and .mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
+    fprintf('Results saved in %s.txt and ".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch
     sca; % screen close all. This cleans up without canceling the error message.
     ListenChar(0);
