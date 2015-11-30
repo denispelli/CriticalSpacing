@@ -22,6 +22,14 @@ o.trials=20; % Number of presentations (two response per presentation) for the t
 % viewing distance. And, of course, move the screen to that distance.
 o.viewingDistanceCm=300;
 
+% This parameter is important. We need to assure our readers that the
+% reported spacing threshold is independent of this value. I'd guess that
+% this is true for the range 1.2 to 2. But large values will prevent us
+% from measuring critical spacing that is not much bigger than acuity. We
+% need a graph of measured critical spacing vs. this scalar at values 1.2,
+% 1.4, 1.6, inf. We already have inf from the single-target size test.
+o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
+
 % You probably won't need to change any other parameters.
 o.repeatedLetters=1; % Repeated letter make the test immune to fixation errors.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.
@@ -33,7 +41,6 @@ o.encouragement=1; % Randomly say good, very good, or nice after every trial.
 o.fixationCrossDeg=0;
 o.useFractionOfScreen=0;
 o.thresholdParameter='spacing';
-o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
 o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.task='identify';
