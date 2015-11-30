@@ -23,9 +23,9 @@ if nargin<1 || ~exist('oIn','var')
     oIn.noInputArgument=1;
 end
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % folder in same directory as this file
-Screen('Preference','VisualDebugLevel', 0);
-Screen('Preference', 'SkipSyncTests', 1);
-Screen('Preference','SuppressAllWarnings', 1);
+Screen('Preference','VisualDebugLevel',0);
+Screen('Preference','SkipSyncTests',1);
+Screen('Preference','SuppressAllWarnings',1);
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
@@ -33,11 +33,13 @@ o.negativeFeedback=1;
 o.encouragement=0;
 o.repeatedLetters=1;
 o.useFractionOfScreen=0;
-o.observer='junk';
+% o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
+o.observer=''; % Name is requested at beginning of trial.
 o.useScreenCopyWindow=0; % Faster, but doesn't work on all Macs.
 o.quit=0;
-o.viewingDistanceCm=125;
+o.viewingDistanceCm=300;
+o.flipScreenHorizontally=0;
 o.thresholdParameter='spacing';
 o.useQuest=1; % true(1) or false(0)
 % o.thresholdParameter='size';
@@ -45,8 +47,6 @@ o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
 % o.sizeProportionalToSpacing=0; % Requests size proportional to spacing.
 o.eccentricityDeg=0; % location of target, relative to fixation, in degrees
 % o.eccentricityDeg=16;
-% IMPORTANT: WE WANT TO MEASURE CRITICAL SPACING BOTH RADIALLY AND
-% TANGENTIALLY, IN RANDOM ORDER.
 o.radialOrTangential='tangential'; % values 'radial', 'tangential'
 % o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
@@ -78,31 +78,11 @@ if length(stack)==1;
 else
     o.functionNames=[stack(2).name '-' stack(1).name];
 end
-o.dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',o.functionNames,o.observer,round(timeVector));
-o.dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
-if ~exist(o.dataFolder,'dir')
-    success=mkdir(o.dataFolder);
-    if ~success
-        error('Failed attempt to create data folder: %s',o.dataFolder);
-    end
-end
-dataFid=fopen(fullfile(o.dataFolder,[o.dataFilename '.txt']),'rt');
-if dataFid~=-1
-    error('Oops. There''s already a file called "%s.txt". Try again.',o.dataFilename);
-end
-[dataFid,msg]=fopen(fullfile(o.dataFolder,[o.dataFilename '.txt']),'wt');
-if dataFid==-1
-    error('%s. Could not create data file: %s',msg,[o.dataFilename '.txt']);
-end
-assert(dataFid>-1);
-ff=[1 dataFid];
-ffprintf(ff,'%s %s\n',o.functionNames,datestr(now));
-ffprintf(ff,'Saving results in:\n');
-ffprintf(ff,'%s.txt and ".mat\n',o.dataFilename);
 
 % Replicate o, once per supplied condition.
 conditions=length(oIn);
 oo(1:conditions)=o;
+
 % All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
 for condition=1:conditions
     fields=fieldnames(oIn(condition));
@@ -111,6 +91,7 @@ for condition=1:conditions
         oo(condition).(fields{i})=oIn(condition).(fields{i});
     end
 end
+
 % Set up for KbCheck
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
@@ -132,25 +113,16 @@ if oo(condition).useFractionOfScreen
 end
 
 try
-    if 0
-        oo(1).screen=0;
-        screenBufferRect=Screen('Rect',oo(1).screen);
-        screenRect=Screen('Rect',oo(1).screen,1);
-        % Detect HiDPI mode, e.g. on a Retina display.
-        % resolution=Screen('Resolution',oo(1).screen);
-        oo(1).hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
-        if oo(1).hiDPIMultiple~=1
-            ffprintf(ff,'HiDPI: ');
-            if ismac
-                str='Your Retina display';
-            else
-                str='Your display';
-            end
-            ffprintf(ff,'%s is in dual-resolution HiDPI mode.\n',str);
-            resolution=Screen('Resolution',oo(1).screen);
-            ffprintf(ff,'We are using it in its native %d x %d resolution.\n',resolution.width,resolution.height);
-            ffprintf(ff,'You can use Switch Res X (http://www.madrau.com/) to select a pure resolution (not HiDPI).\n');
-        end
+    black=0;
+    white=255;
+%     white=WhiteIndex(window);
+%     black=BlackIndex(window);
+    oo(1).screen=0;
+    screenBufferRect=Screen('Rect',oo(1).screen);
+    screenRect=Screen('Rect',oo(1).screen,1);
+    % Detect HiDPI mode, e.g. on a Retina display.
+    oo(1).hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
+    if 1
         PsychImaging('PrepareConfiguration');
         if oo(1).flipScreenHorizontally
             PsychImaging('AddTask','AllViews','FlipHorizontal');
@@ -159,27 +131,96 @@ try
             PsychImaging('AddTask','General','UseRetinaResolution');
         end
         if ~oo(1).useFractionOfScreen
-            [window,r]=PsychImaging('OpenWindow',oo(1).screen,255);
+            [window,r]=PsychImaging('OpenWindow',oo(1).screen,white);
         else
-            [window,r]=PsychImaging('OpenWindow',oo(1).screen,255,round(oo(1).useFractionOfScreen*screenBufferRect));
+            [window,r]=PsychImaging('OpenWindow',oo(1).screen,white,round(oo(1).useFractionOfScreen*screenBufferRect));
         end
     else
-        window=Screen('OpenWindow',0,255,screenRect);
+        window=Screen('OpenWindow',0,white,screenBufferRect);
     end
+    screenBufferRect=Screen('Rect',oo(1).screen)
+    screenRect=Screen('Rect',oo(1).screen,1)
+    resolution=Screen('Resolution',oo(1).screen)
+
+    screenRect=Screen('Rect',window);
+    screenWidth=RectWidth(screenRect);
+    screenHeight=RectHeight(screenRect);
+    pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
     for condition=1:conditions
-        screenRect=Screen('Rect',window);
-        screenWidth=RectWidth(screenRect);
-        screenHeight=RectHeight(screenRect);
-        pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
+        % Adjust textSize so our string fits on screen.
         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
         Screen('TextSize',window,oo(condition).textSize);
         Screen('TextFont',window,oo(condition).textFont);
         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
         fraction=RectWidth(boundsRect)/(screenWidth-100);
-        if fraction>1
-            oo(condition).textSize=round(oo(condition).textSize/fraction);
-            Screen('TextSize',window,oo(condition).textSize);
+        oo(condition).textSize=round(oo(condition).textSize/fraction);
+    end
+ 
+% Observer name
+    if length(oo(1).observer)==0
+        ListenChar(0); % flush
+        ListenChar(2);
+%         ListenChar;
+        Screen('TextSize',window,oo(1).textSize);
+        Screen('TextFont',window,oo(1).textFont);
+        Screen('DrawText',window,'Hi. Please slowly type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,white,1);
+        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,white,1);
+        ListenChar(0);
+        for i=1:conditions
+            oo(i).observer=name;
         end
+        Screen('FillRect',window);
+    end
+   
+    oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
+    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+    if ~exist(oo(1).dataFolder,'dir')
+        [success,msg]=mkdir(oo(1).dataFolder);
+        if ~success
+            error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
+        end
+    end
+    dataFid=fopen(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.txt']),'rt');
+    if dataFid~=-1
+        error('Oops. There''s already a file called "%s.txt". Try again.',oo(1).dataFilename);
+    end
+    [dataFid,msg]=fopen(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.txt']),'wt');
+    if dataFid==-1
+        error('%s. Could not create data file: %s',msg,[oo(1).dataFilename '.txt']);
+    end
+    assert(dataFid>-1);
+    ff=[1 dataFid];
+    ffprintf(ff,'%s %s\n',oo(1).functionNames,datestr(now));
+    ffprintf(ff,'Saving results in:\n');
+    ffprintf(ff,'%s.txt and "".mat\n',oo(1).dataFilename);
+
+    if oo(1).hiDPIMultiple~=1
+        ffprintf(ff,'HiDPI: ');
+        if ismac
+            str='Your Retina display';
+        else
+            str='Your display';
+        end
+        ffprintf(ff,'%s has a dual-resolution HiDPI mode.\n',str);
+        resolution=Screen('Resolution',oo(1).screen);
+        ffprintf(ff,'We are using a %d x %d buffer to drive %d x %d pixels.\n',screenBufferRect(3),screenBufferRect(4),resolution.width,resolution.height);
+        ffprintf(ff,'You can use Switch Res X (http://www.madrau.com/) to select a pure resolution (not HiDPI).\n');
+    end
+ 
+    for condition=1:conditions
+%         screenRect=Screen('Rect',window);
+%         screenWidth=RectWidth(screenRect);
+%         screenHeight=RectHeight(screenRect);
+%         pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
+%         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
+%         Screen('TextSize',window,oo(condition).textSize);
+%         Screen('TextFont',window,oo(condition).textFont);
+%         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
+%         fraction=RectWidth(boundsRect)/(screenWidth-100);
+%         if fraction>1
+%             oo(condition).textSize=round(oo(condition).textSize/fraction);
+%             Screen('TextSize',window,oo(condition).textSize);
+%         end
                 
         % prepare to draw fixation cross
         fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
@@ -196,7 +237,7 @@ try
             case 'right',
                 oo(condition).fix.x=screenRect(3)-50;
             otherwise
-                error('Unknown o.fixationLocation %s',o.fixationLocation);
+                error('Unknown o.fixationLocation %s',oo(condition).fixationLocation);
         end
         oo(condition).fix.y=RectHeight(screenRect)/2;
         oo(condition).eccentricityPix=round(oo(condition).eccentricityDeg*pixPerDeg);
@@ -208,7 +249,7 @@ try
 %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
 %         end
         
-        oo(condition).count=1;
+        oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen. 
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
         oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetHeightDeg)); % target fits on screen, with half-target margin.
@@ -273,19 +314,6 @@ try
         else
             ffprintf(ff,'%d: One target.\n',condition);
         end
-    end
-    
-    % Observer name
-    if length(oo(1).observer)==0
-        black=0;
-        ListenChar(2);
-        Screen('DrawText',window,'Hi. Please slowly type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,255,1);
-        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,255,1);
-        ListenChar(0);
-        for i=1:conditions
-            oo(i).observer=name;
-        end
-        Screen('FillRect',window);
     end
     
     if oo(1).announceDistance
@@ -398,8 +426,6 @@ try
         oo(condition).cal=cal;
     end
     
-    white=WhiteIndex(window);
-    black=BlackIndex(window);
     rightBeep=MakeBeep(2000,0.05,44100);
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
@@ -407,9 +433,9 @@ try
     purr=MakeBeep(300,0.6,44100);
     purr(end)=0;
     Snd('Open');
+   
+ % Instructions
     Screen('FillRect',window,white);
-    Screen('TextSize',window,oo(condition).textSize);
-    Screen('TextFont',window,oo(condition).textFont);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
     string=[string sprintf('Please move screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
     if any([oo.repeatedLetters])
@@ -419,21 +445,23 @@ try
         string=[string 'After each presentation of a few letters, please type the middle letter, ignoring any flankers. '];
     end
     string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.)\n'];
-    if any(isfinite([oo.durationSec]))
+    string=[string 'Please be patient when waiting for letters to appear. '];
+   if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
         string=[string 'Please press the SPACEBAR to begin, while you fixate the crosshairs below. '];
     else
         string=[string 'Now, please press the SPACEBAR to begin. '];
     end
-    DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
+    Screen('TextFont',window,oo(condition).textFont);
     Screen('TextSize',window,round(oo(condition).textSize*0.7));
-    Screen('DrawText',window,'Crowding and Acuity Test © 2015, Denis Pelli',50,screenRect(4)-oo(1).textSize,1);
+    Screen('DrawText',window,'Crowding and Acuity Test © 2015, Denis Pelli',50,screenRect(4)-oo(1).textSize,black,white,1);
     Screen('TextSize',window,oo(condition).textSize);
+    DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('Flip',window);
     SetMouse(screenRect(3),screenRect(4),window);
     answer=GetKeypress(0,[spaceKey escapeKey]);
     if streq(answer,'ESCAPE')
-        Speak('Escape. Done.');
+        Speak('Escape. This run is done.');
         ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
         o.quit=1;
         ListenChar(0);
@@ -471,7 +499,7 @@ try
                     oo(condition).targetHeightDeg=10^intensity;
               end
         else
-            oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).count/2);
+            oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).responseCount/2);
         end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
         oo(condition).targetHeightPix=max(oo(condition).minimumTargetPix,oo(condition).targetHeightPix);
@@ -562,10 +590,10 @@ try
         %             rect=Screen('TextBounds',window,'N');
         %             ffprintf(ff,'TextSize %.1f, "N" width %.0f pix, height %.0f pix\n',targetHeightPix,RectWidth(rect),RectHeight(rect));
         if ~oo(condition).repeatedLetters
-            Screen('DrawText',window,stimulus(2),xT-oo(condition).targetHeightPix/2,yT+oo(condition).targetHeightPix/2,black,0,1);
+            Screen('DrawText',window,stimulus(2),xT-oo(condition).targetHeightPix/2,yT+oo(condition).targetHeightPix/2,black,white,1);
             if streq(oo(condition).thresholdParameter,'spacing')
-                Screen('DrawText',window,stimulus(1),xF-oo(condition).targetHeightPix/2,yF+oo(condition).targetHeightPix/2,black,0,1);
-                Screen('DrawText',window,stimulus(3),xFF-oo(condition).targetHeightPix/2,yFF+oo(condition).targetHeightPix/2,black,0,1);
+                Screen('DrawText',window,stimulus(1),xF-oo(condition).targetHeightPix/2,yF+oo(condition).targetHeightPix/2,black,white,1);
+                Screen('DrawText',window,stimulus(3),xFF-oo(condition).targetHeightPix/2,yFF+oo(condition).targetHeightPix/2,black,white,1);
             end
         else
             xMin=xT-spacing*ceil((xT-0)/spacing);
@@ -592,7 +620,7 @@ try
                         else
                             letter=stimulus(1+whichTarget);
                         end
-                        Screen('DrawText',window,letter,x-oo(condition).targetHeightPix/2,y+oo(condition).targetHeightPix/2,black,0,1);
+                        Screen('DrawText',window,letter,x-oo(condition).targetHeightPix/2,y+oo(condition).targetHeightPix/2,black,white,1);
                     end
                 end
             end
@@ -619,13 +647,13 @@ try
             end
             Screen('TextFont',window,oo(condition).textFont);
             Screen('TextSize',window,oo(condition).textSize);
-            Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,0,1);
-            Screen('DrawText',window,sprintf('Trial %d of %d. Run %d of %d',trial,length(condList),run,runs),screenRect(3)-300,100,black,0,1);
+            Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
+            Screen('DrawText',window,sprintf('Trial %d of %d. Run %d of %d',trial,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
             Screen('TextFont',window,oo(condition).targetFont);
             x=100;
             y=screenRect(4)-50;
             for a=oo(condition).alphabet
-                [x,y]=Screen('DrawText',window,a,x,y,black,0,1);
+                [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
                 x=x+oo(condition).textSize/2;
             end
             Screen('TextFont',window,oo(condition).textFont);
@@ -667,7 +695,7 @@ try
                 case 1
                     Speak('Good!');
                 case 2
-                    Speak('Thank you');
+                    Speak('Nice');
                 case 3
                     Speak('Very good');
             end
@@ -681,14 +709,14 @@ try
         for response=responses
             switch oo(condition).thresholdParameter
                 case 'spacing',
-                    oo(condition).results(oo(condition).count,1:2)=[oo(condition).spacingDeg response];
-%                     oo(condition).results(oo(condition).count,2)=response;
-                    oo(condition).count=oo(condition).count+1;
+                    oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg response];
+%                     oo(condition).results(oo(condition).responseCount,2)=response;
+                    oo(condition).responseCount=oo(condition).responseCount+1;
                     intensity=log10(oo(condition).spacingDeg);
                 case 'size'
-                    oo(condition).results(oo(condition).count,1:2)=[oo(condition).targetHeightDeg response];
-%                     oo(condition).results(oo(condition).count,2)=response;
-                    oo(condition).count=oo(condition).count+1;
+                    oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetHeightDeg response];
+%                     oo(condition).results(oo(condition).responseCount,2)=response;
+                    oo(condition).responseCount=oo(condition).responseCount+1;
                     intensity=log10(oo(condition).targetHeightDeg);
             end
 %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetHeightDeg);
@@ -697,9 +725,9 @@ try
     end % for trial=1:length(condList)
     
     Screen('FillRect',window);
-    %         Screen('DrawText',window,'Run completed',100,750,black,0,1);
+    %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
     Screen('Flip',window);
-    Speak('Congratulations.  You are done.');
+    Speak('Congratulations.  This run is done.');
     ListenChar(0); % reenable keyboard echo
     Snd('Close');
     Screen('CloseAll');
@@ -720,7 +748,7 @@ try
                     end
                 end
                 ffprintf(ff,'Threshold log spacing deg (mean±sd) is %.2f ± %.2f, which is %.3f deg.\n',t,sd,10^t);
-                if oo(condition).count>1
+                if oo(condition).responseCount>1
                     trials=QuestTrials(oo(condition).q);
                     if any(~isreal(trials.intensity))
                         error('trials.intensity returned by Quest should be real, but is complex.');
@@ -730,7 +758,7 @@ try
                 end
             case 'size',
                 ffprintf(ff,'Threshold log size deg (mean±sd) is %.2f ± %.2f, which is %.3f deg.\n',t,sd,10^t);
-                if oo(condition).count>1
+                if oo(condition).responseCount>1
                     trials=QuestTrials(oo(condition).q);
                     ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
                     ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(condition).q,trials.intensity-oo(condition).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
@@ -752,7 +780,7 @@ try
                     t=tt+offset;
                     ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
                 end
-                if oo(condition).count>1
+                if oo(condition).responseCount>1
                     trials=QuestTrials(qq);
                     switch oo(condition).thresholdParameter
                         case 'spacing',
@@ -767,7 +795,7 @@ try
         end
     end
     for condition=1:conditions
-        if exist('results','var') && oo(condition).count>1
+        if exist('results','var') && oo(condition).responseCount>1
             ffprintf(ff,'%d:',condition);
             trials=QuestTrials(oo(condition).q);
             p=sum(trials.responses(2,:))/sum(sum(trials.responses));
@@ -784,7 +812,7 @@ try
         fclose(dataFid);
         dataFid=-1;
     end
-    fprintf('Results saved in %s.txt and ".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
+    fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch
     sca; % screen close all. This cleans up without canceling the error message.
     ListenChar(0);
@@ -799,4 +827,5 @@ catch
         dataFid=-1;
     end
     psychrethrow(psychlasterror);
+end
 end
