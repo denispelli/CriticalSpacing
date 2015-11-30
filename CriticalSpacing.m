@@ -525,7 +525,7 @@ try
     end
     Screen('TextFont',window,oo(condition).textFont);
     Screen('TextSize',window,round(oo(condition).textSize*0.7));
-    Screen('DrawText',window,double('Crowding and Acuity Test © 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1);
+    Screen('DrawText',window,double('Crowding and Acuity Test © 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1); % © shows up as garbage in MATLAB 2015a Linux 64-bit; Octave 4.0 Linux 64-bit, OSX 64bit MATLAB is okay though
     Screen('TextSize',window,oo(condition).textSize);
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('Flip',window);
