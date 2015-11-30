@@ -42,7 +42,8 @@ o(2).thresholdParameter='size';
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 % We retain the observer name obtained during the first run for use in the
 % second run.
-o.trials=2*o.trials;
+o(1).trials=2*o(1).trials;
+o(2).trials=2*o(2).trials;
 o(1).repeatedLetters=0;
 o(2).repeatedLetters=0;
 o(1).observer=oRepeated(1).observer;
