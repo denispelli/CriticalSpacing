@@ -1,6 +1,13 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
+% This script drives CriticalSpacing.m to measure four thresholds:
+% threshold size (acuity) and critical spacing (of crowding), with single
+% and repeated targets. The repeated targets have the virtue of being
+% immune to eye movements. The first empirical question is to check that
+% normal adults (who presumably have good fixation) give practically the
+% same thresholds with and without repeating of the target.
+%
 % I don't know yet how many trials are needed. Note that each "trial"
 % is one presentation. Thus testing repeated letters, there are two
 % targets, and two responses per "trial". You'll probably want twice as
@@ -8,11 +15,13 @@ clear o
 % will give an accurate threshold estimate. Perhaps 20 would be enough.
 % When there are two targets (repeatedLetters==1) we thus set trials=20.
 o.trials=20; % Number of presentations (two response per presentation) for the threshold estimate.
+
 % The viewing distance is set here. The program will try to use what you
 % selected, otherwise it will abort and tell you the minimum viewing
 % distance that you need. You must then modify this file to set the new
 % viewing distance. And, of course, move the screen to that distance.
 o.viewingDistanceCm=300;
+
 % You probably won't need to change any other parameters.
 o.repeatedLetters=1; % Repeated letter make the test immune to fixation errors.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.

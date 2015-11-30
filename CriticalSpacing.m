@@ -5,6 +5,36 @@ function oo=CriticalSpacing(oIn)
 % your parameters to satisfy physical constraints. Constraints include the
 % screen size and the maximum possible contrast.
 %
+% MATLAB: To run this program you need a computer, preferably a Macintosh
+% laptop, with MATLAB and the Psychtoolbox installed. You must install the
+% Sloan.otf font file in one of your computer OS font folders.
+%
+% SLOAN FONT. Please copy the font file "Sloan.otf" from the
+% CriticalSpacing folder to one of your computer OS font folders. Once
+% you've installed the font, quit and restart MATLAB to get it to notice
+% the newly available font.
+% 
+% CriticalSpacing.m is meant to be driven by a brief user-written script. I
+% have provided runCriticalSpacing as a example. Many parameters
+% controlling the behavior of CriticalSpacing are specifed in the fields of
+% a struct called "o". If you provide several, as an o array, then
+% CriticalSpacing runs all the conditions interleaved.
+% CriticalSpacing asks for the observer's name and presents a page of
+% instructions. The rest is just eye charts. Adults find it easy and
+% intuitive. I don't know whether it's yet ready for children. I welcome
+% suggestions. The targets are currently drawn from 9 letters of the Sloan
+% font: DHKNORSVZ. 
+%
+% RESPONSE PAGE. Inside the CriticalSpacing folder you'll find a file
+% "Response page.pdf" that should be printed and given to the observer. It
+% shows the possible letters: DHKNORSVZ. Adults will find it helpful to
+% consult this page while choosing an answer when they have little idea
+% what letter the target(s) might be. Children may prefer to point at the
+% target letters, one by one, on the response page.
+%
+% ILLITERATE FONT: I imagine that we might find a set of icons for an illiterate
+% font. I can easily modify the program to use them instead of Sloan.
+%
 % CriticalSpacing measures threshold spacing or size (i.e. acuity). This
 % program measures the critical spacing of crowding in either of two
 % directions, selected by the variable "o.radialOrTangential". Target size
