@@ -1,3 +1,5 @@
+% MATLAB script to run CriticalSpacing.m
+% Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
 o.trials=20; % Number of presentations (two response per presentation) for the threshold estimate.
 % The viewing distance is set here. The program will try to use what you
