@@ -9,6 +9,17 @@ function oo=CriticalSpacing(oIn)
 % laptop, with MATLAB and the Psychtoolbox installed. You must install the
 % Sloan.otf font file in one of your computer OS font folders.
 %
+% MACINTOSH (or Windows or Linux) LAPTOP  This program should run with
+% little or no modification on any computer with MATLAB and Psychtoolbox.
+% However, I developed it on a Mac, so there may be wrinkles to iron out on
+% Windows or Linux. A Macintosh laptop is ideal. On a Mac laptop, the
+% software automatically reads the screen size.
+%
+% WIRELESS OR LONG-CABLE KEYBOARD. A wireless keyboard or long keyboard
+% cable is highly desirable as the viewing distance will be 3 m or more. If
+% you must use the laptop keyboard then have the experimenter type the
+% observer's verbal answers.
+%
 % SLOAN FONT. Please copy the font file "Sloan.otf" from the
 % CriticalSpacing folder to one of your computer OS font folders. Once
 % you've installed the font, quit and restart MATLAB to get it to notice
@@ -25,6 +36,11 @@ function oo=CriticalSpacing(oIn)
 % suggestions. The targets are currently drawn from 9 letters of the Sloan
 % font: DHKNORSVZ. 
 %
+% ESCAPE. Try running runCriticalSpacing. It will measure four thresholds.
+% You can always terminate the current run by hitting Escape.
+% CriticalSpacing will then print out results so far and begin the next
+% run.
+%
 % RESPONSE PAGE. Inside the CriticalSpacing folder you'll find a file
 % "Response page.pdf" that should be printed and given to the observer. It
 % shows the possible letters: DHKNORSVZ. Adults will find it helpful to
@@ -32,8 +48,9 @@ function oo=CriticalSpacing(oIn)
 % what letter the target(s) might be. Children may prefer to point at the
 % target letters, one by one, on the response page.
 %
-% ILLITERATE FONT: I imagine that we might find a set of icons for an illiterate
-% font. I can easily modify the program to use them instead of Sloan.
+% ILLITERATE FONT: I imagine that we might find a set of icons for an
+% illiterate font. I can easily modify the program to use them instead of
+% Sloan.
 %
 % CriticalSpacing measures threshold spacing or size (i.e. acuity). This
 % program measures the critical spacing of crowding in either of two
