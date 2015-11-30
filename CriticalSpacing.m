@@ -26,7 +26,7 @@ function oo=CriticalSpacing(oIn)
 % CriticalSpacing folder to one of your computer OS font folders. Once
 % you've installed the font, quit and restart MATLAB to get it to notice
 % the newly available font.
-% 
+%
 % CriticalSpacing.m is meant to be driven by a brief user-written script. I
 % have provided runCriticalSpacing as a example. Many parameters
 % controlling the behavior of CriticalSpacing are specifed in the fields of
@@ -36,7 +36,7 @@ function oo=CriticalSpacing(oIn)
 % instructions. The rest is just eye charts. Adults find it easy and
 % intuitive. I don't know whether it's yet ready for children. I welcome
 % suggestions. The targets are currently drawn from 9 letters of the Sloan
-% font: DHKNORSVZ. 
+% font: DHKNORSVZ.
 %
 % ESCAPE. Try running runCriticalSpacing. It will measure four thresholds.
 % You can always terminate the current run by hitting Escape.
@@ -142,6 +142,9 @@ for condition=1:conditions
 end
 
 % Set up for KbCheck
+% we can safely use this mode AND collect kb responses without worrying
+% about writing to MATLAB console/editor
+ListenChar(2); % no echo
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
 Screen('Preference','SkipSyncTests',1);
@@ -204,7 +207,7 @@ try
         fraction=RectWidth(boundsRect)/(screenWidth-100);
         oo(condition).textSize=round(oo(condition).textSize/fraction);
     end
- 
+
 % Observer name
     if length(oo(1).observer)==0
         ListenChar(0); % flush
@@ -220,7 +223,8 @@ try
         end
         Screen('FillRect',window);
     end
-   
+        ListenChar(2); % no echo
+
     oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
     if ~exist(oo(1).dataFolder,'dir')
@@ -255,7 +259,7 @@ try
         ffprintf(ff,'We are using a %d x %d buffer to drive %d x %d pixels.\n',screenBufferRect(3),screenBufferRect(4),resolution.width,resolution.height);
         ffprintf(ff,'You can use Switch Res X (http://www.madrau.com/) to select a pure resolution (not HiDPI).\n');
     end
- 
+
     for condition=1:conditions
 %         screenRect=Screen('Rect',window);
 %         screenWidth=RectWidth(screenRect);
@@ -270,7 +274,7 @@ try
 %             oo(condition).textSize=round(oo(condition).textSize/fraction);
 %             Screen('TextSize',window,oo(condition).textSize);
 %         end
-                
+
         % prepare to draw fixation cross
         fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
         fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
@@ -297,8 +301,8 @@ try
 %         if ~oo(condition).repeatedLetters
 %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
 %         end
-        
-        oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen. 
+
+        oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
         oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(screenRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetHeightDeg)); % target fits on screen, with half-target margin.
@@ -326,7 +330,7 @@ try
         end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-        
+
         % prepare to draw fixation cross
         oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
         fixationLines=ComputeFixationLines(oo(condition).fix);
@@ -364,16 +368,29 @@ try
             ffprintf(ff,'%d: One target.\n',condition);
         end
     end
-    
+
     if oo(1).announceDistance
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
-    
+
     % Identify the computer
     computer=Screen('Computer');
-    cal.processUserLongName=computer.processUserLongName;
-    cal.machineName=computer.machineName;
-    cal.macModelName=MacModelName;
+    if computer.windows
+      cal.processUserLongName=getenv('USERNAME');
+      cal.machineName=getenv('USERDOMAIN');
+      cal.macModelName=[];
+    elseif computer.linux
+      cal.processUserLongName=getenv('USER');
+      cal.machineName=computer.machineName;
+      cal.osversion=computer.kern.version;
+      cal.macModelName=[];
+    elseif computer.osx || computer.macintosh
+      cal.processUserLongName=computer.processUserLongName;
+      cal.machineName=computer.machineName;
+      cal.macModelName=MacModelName;
+    end
+
+
     cal.screen=max(Screen('Screens'));
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
@@ -430,7 +447,7 @@ try
     ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
     ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
     ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
-    
+
     % Identify the computer
     cal.screen=0;
     computer=Screen('Computer');
@@ -469,12 +486,17 @@ try
         % silently do nothing if not supported. But when I used it on my
         % video projector, Screen gave a fatal error. That's ok, but how do
         % I figure out when it's safe to use?
-        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+
+        %try
+        %Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+      %catch
+        %disp('Dang! We encountered enother Psychtoolbox bug!');
+      %end
     end
     for condition=1:conditions
         oo(condition).cal=cal;
     end
-    
+
     rightBeep=MakeBeep(2000,0.05,44100);
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
@@ -482,7 +504,7 @@ try
     purr=MakeBeep(300,0.6,44100);
     purr(end)=0;
     Snd('Open');
-   
+
  % Instructions
     Screen('FillRect',window,white);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
@@ -503,7 +525,7 @@ try
     end
     Screen('TextFont',window,oo(condition).textFont);
     Screen('TextSize',window,round(oo(condition).textSize*0.7));
-    Screen('DrawText',window,'Crowding and Acuity Test © 2015, Denis Pelli',50,screenRect(4)-oo(1).textSize,black,white,1);
+    Screen('DrawText',window,double('Crowding and Acuity Test © 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1);
     Screen('TextSize',window,oo(condition).textSize);
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('Flip',window);
@@ -708,10 +730,10 @@ try
             Screen('TextFont',window,oo(condition).textFont);
             Screen('Flip',window); % display response screen
         end
-        FlushEvents('keyDown');
-        ListenChar(0);
+        %FlushEvents('keyDown');
+        %ListenChar(0);
         responseString='';
-        ListenChar(2);
+        %ListenChar(2);
         for i=1:length(targets)
             while(1)
                 answer=GetKeypress(0,[escapeKey oo(condition).responseKeys]);
@@ -737,8 +759,8 @@ try
             end
             responseString=[responseString answer];
         end
-        FlushEvents('keyDown');
-        ListenChar(0);
+        %FlushEvents('keyDown');
+        %ListenChar(0);
         if oo(condition).encouragement && ~terminate
             switch randi(3);
                 case 1
@@ -772,7 +794,7 @@ try
             oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
         end
     end % for trial=1:length(condList)
-    
+
     Screen('FillRect',window);
     %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
     Screen('Flip',window);

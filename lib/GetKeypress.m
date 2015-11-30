@@ -4,7 +4,7 @@ function response = GetKeypress(isKbLegacy,enableKeys)
 % number key on the main or separate numeric keyboard; we just return the
 % one-digit number as a character.
 %
-% Originally called "checkResponse" written by Hörmet Yiltiz, October 2015.
+% Originally called "checkResponse" written by Hormet Yiltiz, October 2015.
 % Renamed "GetKeypress" by Denis Pelli, November 2015.
     if nargin == 0
         isKbLegacy=0;
@@ -28,7 +28,7 @@ function response = GetKeypress(isKbLegacy,enableKeys)
 %         ListenChar; % normal
         response = KbName(keyCode);
         %disp(sprintf('0:==>%s<==', response));
-        
+
         % KbName returns 2 characters, e.g. '0)', when you press a number
         % key on the main keyboard. So when KbName returns two characters,
         % we return the first and discard the second.  Thus we do not
