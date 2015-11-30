@@ -18,7 +18,9 @@ function oo=CriticalSpacing(oIn)
 % WIRELESS OR LONG-CABLE KEYBOARD. A wireless keyboard or long keyboard
 % cable is highly desirable as the viewing distance will be 3 m or more. If
 % you must use the laptop keyboard then have the experimenter type the
-% observer's verbal answers.
+% observer's verbal answers. I like this $86 solar-powered wireless, for
+% which the batteries never run out: Logitech Wireless Solar Keyboard K760
+% for Mac/iPad/iPhone http://www.amazon.com/gp/product/B007VL8Y2C
 %
 % SLOAN FONT. Please copy the font file "Sloan.otf" from the
 % CriticalSpacing folder to one of your computer OS font folders. Once
@@ -484,14 +486,14 @@ try
  % Instructions
     Screen('FillRect',window,white);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
-    string=[string sprintf('Please move screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
+    string=[string sprintf('Please move the screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
     if any([oo.repeatedLetters])
         string=[string 'When you see many letters, they are all repetitions of just two letters. Please type both. '];
     end
     if ~all([oo.repeatedLetters])
         string=[string 'After each presentation of a few letters, please type the middle letter, ignoring any flankers. '];
     end
-    string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.)\n'];
+    string=[string 'Type slowly. Look in the middle area, ignoring the the edges of the screen. (Quit anytime by pressing ESCAPE.) '];
     string=[string 'Please be patient when waiting for letters to appear. '];
    if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
