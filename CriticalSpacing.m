@@ -115,6 +115,7 @@ o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
 o.targetFont='Sloan';
 o.textFont='Calibri';
 o.textSizeDeg=0.4;
+o.deviceIndex=-3; % all keyboard and keypad devices
 if o.measureBeta
     o.trials=200;
     o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
@@ -216,7 +217,7 @@ try
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont);
         Screen('DrawText',window,'Hi. Please slowly type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,white,1);
-        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,white,1);
+        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,white,1, o.deviceIndex);
         ListenChar(0);
         for i=1:conditions
             oo(i).observer=name;
@@ -720,7 +721,7 @@ try
         %ListenChar(2);
         for i=1:length(targets)
             while(1)
-                answer=GetKeypress(0,[escapeKey oo(condition).responseKeys]);
+                answer=GetKeypress(0,[escapeKey oo(condition).responseKeys],o.deviceIndex);
                 answer=upper(answer);
                 if ~ismember(answer,responseString)
                     break
