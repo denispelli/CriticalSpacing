@@ -373,24 +373,6 @@ try
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
 
-    % Identify the computer
-    computer=Screen('Computer');
-    if computer.windows
-      cal.processUserLongName=getenv('USERNAME');
-      cal.machineName=getenv('USERDOMAIN');
-      cal.macModelName=[];
-    elseif computer.linux
-      cal.processUserLongName=getenv('USER');
-      cal.machineName=computer.machineName;
-      cal.osversion=computer.kern.version;
-      cal.macModelName=[];
-    elseif computer.osx || computer.macintosh
-      cal.processUserLongName=computer.processUserLongName;
-      cal.machineName=computer.machineName;
-      cal.macModelName=MacModelName;
-    end
-
-
     cal.screen=max(Screen('Screens'));
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
@@ -458,7 +440,7 @@ try
         cal.macModelName=[];
     elseif computer.linux
         cal.processUserLongName=getenv('USER');
-        cal.machineName=strrep(computer.machineName,'閳�',''''); % work around bug in Screen('Computer')
+        cal.machineName=computer.machineName;
         cal.osversion=computer.kern.version;
         cal.macModelName=[];
     elseif computer.osx || computer.macintosh
@@ -477,7 +459,10 @@ try
     ffprintf(ff,'Computer account: %s.\n',cal.processUserLongName);
 %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
 %     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
+%
+  if computer.osx || computer.macintosh
     AutoBrightness(cal.screen,0);
+  end
     cal.ScreenConfigureDisplayBrightnessWorks=1;
     if cal.ScreenConfigureDisplayBrightnessWorks
         cal.brightnessSetting=1;
@@ -487,11 +472,10 @@ try
         % video projector, Screen gave a fatal error. That's ok, but how do
         % I figure out when it's safe to use?
 
-        %try
-        %Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
-      %catch
-        %disp('Dang! We encountered enother Psychtoolbox bug!');
-      %end
+  if computer.osx || computer.macintosh
+        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+        disp('Dang! We encountered enother Psychtoolbox bug!');
+      end
     end
     for condition=1:conditions
         oo(condition).cal=cal;
