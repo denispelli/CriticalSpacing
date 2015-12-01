@@ -27,4 +27,15 @@ power. The data will be lost if the computer hibernates or goes to
 1. Have fun!
 
 
+## Software Requirements
+
+All versions in the *Release* page is tested under the platforms below.
+Platforms relatively similar to these might also work. You may test your
+own platform before upgrading your software.
+
+- Psychtoolbox 3.0.10
+- MATLAB R2015a (or GNU Octave 4.0)
+- OS X El Capitan, Windows 8.1, Debian Testing (Linux 4.2)
+
+
 > Copyright 2015, Denis Pelli, denis.pelli@nyu.edu
