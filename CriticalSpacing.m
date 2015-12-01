@@ -515,7 +515,7 @@ try
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('Flip',window);
     SetMouse(screenRect(3),screenRect(4),window);
-    answer=GetKeypress(0,[spaceKey escapeKey]);
+    answer=GetKeypress(0,[spaceKey escapeKey],o.deviceIndex);
     if streq(answer,'ESCAPE')
         Speak('Escape. This run is done.');
         ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
