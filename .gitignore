@@ -42,7 +42,6 @@ octave-workspace
 *.xlsx
 *.doc
 *.docx
-*.pdf
 *.numbers
 *.svg
 .Rproj.user
