@@ -475,7 +475,6 @@ try
 
   if computer.osx || computer.macintosh
         Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
-        disp('Dang! We encountered enother Psychtoolbox bug!');
       end
     end
     for condition=1:conditions
