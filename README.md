@@ -30,11 +30,11 @@ order to run this code in your machine, please do the following:
 ## Software Requirements
 
 All versions in the *Releases* page is tested under the platforms below.
-Platforms relatively similar to these might also work. You may test your
-own platform before upgrading your software.
+Versions close to the ones below might *also work*. You may test your
+own platform (it may just work!) before upgrading your software.
 
 - Psychtoolbox 3.0.10
-- MATLAB R2015a (or GNU Octave 4.0)
+- MATLAB R2015a, R2015b (or GNU Octave 4.0)
 - OS X El Capitan, Windows 8.1, Debian Testing (Linux 4.2)
 
 
