@@ -4,7 +4,7 @@ This code is developed in Pelli lab. Software development is hosted at
 Github this [page](https://github.com/denispelli/CriticalSpacing). In
 order to run this code in your machine, please do the following:
 
-1. Install MATLAB R2015a (or GNU Octave 4.0) and Psychtoolbox 3.0.10.
+1. Install MATLAB (or GNU Octave) and Psychtoolbox.
    If you haven't already installed, You can find a detailed instruction
    here:
    [bit.ly/SetupPsychtoolbox](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.md)
