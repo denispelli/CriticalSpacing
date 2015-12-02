@@ -16,15 +16,27 @@ order to run this code in your machine, please do the following:
    keyboard to your computer. *Restart MATLAB*. Try `GetKeyboardIndex`
    to see if the keyboard is registered to MATLAB (the number of outputs
    is the number of keybaord devices registered to MATLAB; so we are
-   looking for at least 2 numbers).
-1. Extract the `zip` archive. Then from MATLAB, change *Current
-   Directory* to the extracted archive.
-1. Type `runCriticalSpacing` to run the program. The program will save
-   the data to the `data` folder automatically. The program will run
-   about 20min for each observer. Please make sure the computer is
-   connected to power. The data will be lost if the computer hibernates
-   or goes to "sleep" mode before the program exists successfully.
-1. Have fun!
+   looking for at least 2 numbers). If you must use the laptop keyboard
+   then have the experimenter type the observer's verbal answers. 
+1. Extract the `zip` archive. Please copy the font file "Sloan.otf" from
+   the `CriticalSpacing` folder to one of your computer OS font folders.
+   *Restart MATLAB* so that the newly installed font is noticed by
+   MATLAB. Then from MATLAB, change *Current Directory* to the extracted
+   archive.
+1. Response Page. Inside the `CriticalSpacing` folder you'll find a file
+   `Response page.pdf` that should be printed and given to the observer.
+   It shows the possible letters: `DHKNORSVZ`. Adults will find it helpful
+   to consult this page while choosing an answer when they have little
+   idea what letter the target(s) might be. Children may prefer to point
+   at the target letters, one by one, on the response page.
+1. Type `runCriticalSpacing` to run the program. You can always
+   terminate the current run by hitting `Escape`.  `CriticalSpacing`
+   will then print out results so far and begin the next run.  The
+   program will save the data to the `data` folder automatically. The
+   program will run about 20min for each observer. Please make sure the
+   computer is connected to power. The data will be lost if the computer
+   hibernates or goes to "sleep" mode before the program exists
+   successfully.
 
 
 ## Software Requirements
