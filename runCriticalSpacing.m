@@ -13,7 +13,7 @@ clear o
 % targets, and two responses per "trial". You'll probably want twice as
 % many "trials" when testing with a single target. I think 40 responses
 % will give an accurate threshold estimate. Perhaps 20 would be enough.
-% When there are two targets (repeatedLetters==1) we thus set trials=20.
+% When there are two targets (repeatedTargets==1) we thus set trials=20.
 o.trials=20; % Number of presentations (two response per presentation) for the threshold estimate.
 
 % The viewing distance is set here. The program will try to use what you
@@ -31,12 +31,14 @@ o.viewingDistanceCm=410;
 o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
 
 % You probably won't need to change any other parameters.
-o.repeatedLetters=1; % Repeated letter make the test immune to fixation errors.
+o.repeatedTargets=1; % Repeated letter make the test immune to fixation errors.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
 o.useScreenCopyWindow=1; % Faster, but fails on some Macs. If your repeated-letters screen is incomplete, set this to 0.
 o.negativeFeedback=0;
+% THIS INDISCRIMINATE ENCOURAGEMENT MAY HELP CHILDREN, BUT MIGHT BE CLOYING
+% TO ADULTS.
 o.encouragement=1; % Randomly say good, very good, or nice after every trial.
 o.fixationCrossDeg=0;
 o.useFractionOfScreen=0;
@@ -53,21 +55,21 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o.radialOrTangential='tangential'; % vertically arranged flankers
 o.radialOrTangential='radial'; % horizontally arranged flankers
-o.frameTheTarget=1;
+o.frameTheTarget=0; % Handy for debugging the display.
+o.thresholdParameter='size';
+% o.thresholdParameter='spacing';
+o.repeatedTargets=0;
 o(2)=o(1);
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-oRepeated=o;
-% oRepeated=CriticalSpacing(oRepeated); % dual targets, repeated indefinitely
+oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 % We retain the observer name obtained during the first run for use in the
 % second run.
-o(1).trials=2*o(1).trials;
-o(2).trials=2*o(2).trials;
-o(1).repeatedLetters=0;
-o(2).repeatedLetters=0;
+o(1).repeatedTargets=0;
+o(2).repeatedTargets=0;
 o(1).observer=oRepeated(1).observer;
 o(2).observer=oRepeated(2).observer;
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
-oSingle=CriticalSpacing(o(2)); % one target
+oSingle=CriticalSpacing(o); % one target
