@@ -9,7 +9,7 @@ function oo=CriticalSpacing(oIn)
 % laptop, with MATLAB and the Psychtoolbox installed. You must install the
 % Sloan.otf font file in one of your computer OS font folders.
 %
-% MACINTOSH (or Windows or Linux) LAPTOP  This program should run with
+% MACINTOSH (or Wind ows or Linux) LAPTOP  This program should run with
 % little or no modification on any computer with MATLAB and Psychtoolbox.
 % However, I developed it on a Mac, so there may be wrinkles to iron out on
 % Windows or Linux. A Macintosh laptop is ideal. On a Mac laptop, the
@@ -170,7 +170,7 @@ try
     white=255;
 %     white=WhiteIndex(window);
 %     black=BlackIndex(window);
-    oo(1).screen=0;
+    oo(1).screen=max(Screen('Screens'));
     screenBufferRect=Screen('Rect',oo(1).screen);
     screenRect=Screen('Rect',oo(1).screen,1);
     % Detect HiDPI mode, e.g. on a Retina display.
@@ -207,7 +207,12 @@ try
         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
         fraction=RectWidth(boundsRect)/(screenWidth-100);
         oo(condition).textSize=round(oo(condition).textSize/fraction);
+        oo(condition).textSize=min(oo(condition).textSize, round((screenWidth-100)/25));
     end
+
+
+    if IsWindows; Screen('Preference', 'TextRenderer', 0); end
+
 
 % Observer name
     if length(oo(1).observer)==0
@@ -446,7 +451,7 @@ try
         cal.macModelName=[];
     elseif computer.osx || computer.macintosh
         cal.processUserLongName=computer.processUserLongName;
-        cal.machineName=strrep(computer.machineName,'éˆ„1¤7',''''); % work around bug in Screen('Computer')
+        cal.machineName=strrep(computer.machineName,'éˆ??',''''); % work around bug in Screen('Computer')
         cal.macModelName=MacModelName;
     end
     cal.screenOutput=[]; % only for Linux
@@ -509,7 +514,7 @@ try
     end
     Screen('TextFont',window,oo(condition).textFont);
     Screen('TextSize',window,round(oo(condition).textSize*0.7));
-    Screen('DrawText',window,double('Crowding and Acuity Test © 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1); % © shows up as garbage in MATLAB 2015a Linux 64-bit; Octave 4.0 Linux 64-bit, OSX 64bit MATLAB is okay though
+    Screen('DrawText',window,double('Crowding and Acuity Test Copyright 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1); % ?shows up as garbage in MATLAB 2015a Linux 64-bit; Octave 4.0 Linux 64-bit, OSX 64bit MATLAB is okay though
     Screen('TextSize',window,oo(condition).textSize);
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('Flip',window);
@@ -535,6 +540,7 @@ try
         xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
         yT=oo(condition).fix.y; % target
     end
+
     condList=Shuffle(condList);
     for trial=1:length(condList)
         condition=condList(trial);
@@ -640,7 +646,7 @@ try
         stimulus=Shuffle(oo(condition).alphabet);
         stimulus=stimulus(1:3); % three random letters, all different.
 %         ffprintf(ff,'%d: targetHeightPix %d, %.3f deg; spacing %d, %.3f deg\n',condition,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,spacing/pixPerDeg);
-        Screen('textSize',window,oo(condition).targetHeightPix);
+        Screen('textSize',window,round(oo(condition).targetHeightPix/1.28));
         Screen('TextFont',window,oo(condition).targetFont);
         %             rect=Screen('TextBounds',window,'N');
         %             ffprintf(ff,'TextSize %.1f, "N" width %.0f pix, height %.0f pix\n',targetHeightPix,RectWidth(rect),RectHeight(rect));
@@ -657,7 +663,8 @@ try
             yMax=yT+spacing*ceil((screenRect(4)-yT)/spacing);
             for y=yMin:spacing:yMax
                 whichTarget=mod(round((y-yMin)/spacing),2);
-                if oo(condition).useScreenCopyWindow && y>=yMin+4*spacing && y<=yMax-2*spacing
+%               
+                if ~IsWindows && oo(condition).useScreenCopyWindow && y>=yMin+4*spacing && y<=yMax-2*spacing
                     dstRect=screenRect;
                     dstRect(2)=0;
                     dstRect(4)=spacing;
@@ -802,7 +809,7 @@ try
                             ffprintf(ff,'Tangential spacing up and down.\n');
                     end
                 end
-                ffprintf(ff,'Threshold log spacing deg (mean±sd) is %.2f ± %.2f, which is %.3f deg.\n',t,sd,10^t);
+                ffprintf(ff,'Threshold log spacing deg (mean±sd) is %.2f ?%.2f, which is %.3f deg.\n',t,sd,10^t);
                 if oo(condition).responseCount>1
                     trials=QuestTrials(oo(condition).q);
                     if any(~isreal(trials.intensity))
@@ -812,7 +819,7 @@ try
                     ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(condition).q,trials.intensity-oo(condition).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
                 end
             case 'size',
-                ffprintf(ff,'Threshold log size deg (mean±sd) is %.2f ± %.2f, which is %.3f deg.\n',t,sd,10^t);
+                ffprintf(ff,'Threshold log size deg (mean±sd) is %.2f ?%.2f, which is %.3f deg.\n',t,sd,10^t);
                 if oo(condition).responseCount>1
                     trials=QuestTrials(oo(condition).q);
                     ffprintf(ff,'Size(deg)	P fit	P       Trials\n');

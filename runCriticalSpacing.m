@@ -20,7 +20,7 @@ o.trials=20; % Number of presentations (two response per presentation) for the t
 % selected, otherwise it will abort and tell you the minimum viewing
 % distance that you need. You must then modify this file to set the new
 % viewing distance. And, of course, move the screen to that distance.
-o.viewingDistanceCm=310;
+o.viewingDistanceCm=410;
 
 % This parameter is important. We need to assure our readers that the
 % reported spacing threshold is independent of this value. I'd guess that
@@ -66,4 +66,4 @@ o(1).observer=oRepeated(1).observer;
 o(2).observer=oRepeated(2).observer;
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
-oSingle=CriticalSpacing(o); % one target
+% oSingle=CriticalSpacing(o); % one target
