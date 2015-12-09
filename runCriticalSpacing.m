@@ -51,6 +51,9 @@ o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
 o.targetFont='Sloan';
 o.textFont='Calibri';
 o.fixationLocation='center';
+o.radialOrTangential='tangential'; % vertically arranged flankers
+o.radialOrTangential='radial'; % horizontally arranged flankers
+o.frameTheTarget=1;
 o(2)=o(1);
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
@@ -66,4 +69,4 @@ o(1).observer=oRepeated(1).observer;
 o(2).observer=oRepeated(2).observer;
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
-oSingle=CriticalSpacing(o(1)); % one target
+oSingle=CriticalSpacing(o(2)); % one target

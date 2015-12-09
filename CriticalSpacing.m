@@ -96,8 +96,8 @@ o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
 % o.sizeProportionalToSpacing=0; % Requests size proportional to spacing.
 o.eccentricityDeg=0; % location of target, relative to fixation, in degrees
 % o.eccentricityDeg=16;
-o.radialOrTangential='tangential'; % values 'radial', 'tangential'
-% o.radialOrTangential='radial'; % values 'radial', 'tangential'
+% o.radialOrTangential='tangential'; % values 'radial', 'tangential'
+o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
 screenRect= Screen('Rect',0);
 o.fixationLocation='center'; % 'left', 'right'
@@ -120,6 +120,7 @@ if o.measureBeta
     o.trials=200;
     o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
 end
+o.frameTheTarget=0;
 o.beginningTime=now;
 timeVector=datevec(o.beginningTime);
 stack=dbstack;
@@ -136,7 +137,7 @@ oo(1:conditions)=o;
 % All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
 for condition=1:conditions
     fields=fieldnames(oIn(condition));
-%     oo(condition).(fields{:})=deal(oIn(condition).(fields{:}));
+    %     oo(condition).(fields{:})=deal(oIn(condition).(fields{:}));
     for i=1:length(fields)
         oo(condition).(fields{i})=oIn(condition).(fields{i});
     end
@@ -168,8 +169,8 @@ end
 try
     black=0;
     white=255;
-%     white=WhiteIndex(window);
-%     black=BlackIndex(window);
+    %     white=WhiteIndex(window);
+    %     black=BlackIndex(window);
     oo(1).screen=max(Screen('Screens'));
     screenBufferRect=Screen('Rect',oo(1).screen);
     screenRect=Screen('Rect',oo(1).screen,1);
@@ -194,7 +195,7 @@ try
     screenBufferRect=Screen('Rect',oo(1).screen)
     screenRect=Screen('Rect',oo(1).screen,1)
     resolution=Screen('Resolution',oo(1).screen)
-
+    
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
     screenHeight=RectHeight(screenRect);
@@ -207,18 +208,21 @@ try
         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
         fraction=RectWidth(boundsRect)/(screenWidth-100);
         oo(condition).textSize=round(oo(condition).textSize/fraction);
-        oo(condition).textSize=min(oo(condition).textSize, round((screenWidth-100)/20));
+        % The TextBounds seem to be wrong on Windows, so we enforce a
+        % reasonable textSize.
+        oo(condition).textSize=min(oo(condition).textSize,round((screenWidth-100)/25)); % For Windows
     end
-
-
-    if IsWindows; Screen('Preference', 'TextRenderer', 0); end
-
-
-% Observer name
+    if IsWindows
+        % The high-quality text renderer on Windows clips the Sloan font.
+        % So we select the low-quality renderer instead.
+        Screen('Preference','TextRenderer',0);
+    end
+    
+    % Observer name
     if length(oo(1).observer)==0
         ListenChar(0); % flush
         ListenChar(2);
-%         ListenChar;
+        %         ListenChar;
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont);
         Screen('DrawText',window,'Hi. Please slowly type your name followed by RETURN.',50,screenRect(4)/2-1.5*oo(1).textSize,black,white,1);
@@ -229,8 +233,8 @@ try
         end
         Screen('FillRect',window);
     end
-        ListenChar(2); % no echo
-
+    ListenChar(2); % no echo
+    
     oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
     if ~exist(oo(1).dataFolder,'dir')
@@ -252,7 +256,7 @@ try
     ffprintf(ff,'%s %s\n',oo(1).functionNames,datestr(now));
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'%s.txt and "".mat\n',oo(1).dataFilename);
-
+    
     if oo(1).hiDPIMultiple~=1
         ffprintf(ff,'HiDPI: ');
         if ismac
@@ -265,22 +269,22 @@ try
         ffprintf(ff,'We are using a %d x %d buffer to drive %d x %d pixels.\n',screenBufferRect(3),screenBufferRect(4),resolution.width,resolution.height);
         ffprintf(ff,'You can use Switch Res X (http://www.madrau.com/) to select a pure resolution (not HiDPI).\n');
     end
-
+    
     for condition=1:conditions
-%         screenRect=Screen('Rect',window);
-%         screenWidth=RectWidth(screenRect);
-%         screenHeight=RectHeight(screenRect);
-%         pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
-%         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
-%         Screen('TextSize',window,oo(condition).textSize);
-%         Screen('TextFont',window,oo(condition).textFont);
-%         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
-%         fraction=RectWidth(boundsRect)/(screenWidth-100);
-%         if fraction>1
-%             oo(condition).textSize=round(oo(condition).textSize/fraction);
-%             Screen('TextSize',window,oo(condition).textSize);
-%         end
-
+        %         screenRect=Screen('Rect',window);
+        %         screenWidth=RectWidth(screenRect);
+        %         screenHeight=RectHeight(screenRect);
+        %         pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
+        %         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
+        %         Screen('TextSize',window,oo(condition).textSize);
+        %         Screen('TextFont',window,oo(condition).textFont);
+        %         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
+        %         fraction=RectWidth(boundsRect)/(screenWidth-100);
+        %         if fraction>1
+        %             oo(condition).textSize=round(oo(condition).textSize/fraction);
+        %             Screen('TextSize',window,oo(condition).textSize);
+        %         end
+        
         % prepare to draw fixation cross
         fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
         fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
@@ -304,10 +308,10 @@ try
         oo(condition).fix.clipRect=screenRect;
         oo(condition).fix.fixationCrossPix=fixationCrossPix;
         oo(condition).fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
-%         if ~oo(condition).repeatedLetters
-%             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-%         end
-
+        %         if ~oo(condition).repeatedLetters
+        %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+        %         end
+        
         oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
@@ -336,11 +340,11 @@ try
         end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-
+        
         % prepare to draw fixation cross
         oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
         fixationLines=ComputeFixationLines(oo(condition).fix);
-
+        
         terminate=0;
         nominalOverPossibleSize=oo(condition).nominalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
         switch oo(condition).thresholdParameter
@@ -366,7 +370,7 @@ try
         grain=0.01;
         range=6;
     end % for condition=1:conditions
-
+    
     for condition=1:conditions
         if oo(condition).repeatedLetters
             ffprintf(ff,'%d: Two targets, repeated many times.\n',condition);
@@ -374,11 +378,11 @@ try
             ffprintf(ff,'%d: One target.\n',condition);
         end
     end
-
+    
     if oo(1).announceDistance
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
-
+    
     cal.screen=max(Screen('Screens'));
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
@@ -389,7 +393,7 @@ try
     end
     for condition=1:conditions
         if streq(oo(condition).thresholdParameter,'spacing')
-%             ffprintf(ff,'%d: Measuring threshold spacing of flankers\n',condition);
+            %             ffprintf(ff,'%d: Measuring threshold spacing of flankers\n',condition);
             if ~oo(condition).repeatedLetters
                 if oo(condition).eccentricityDeg~=0
                     ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
@@ -435,7 +439,7 @@ try
     ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
     ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
     ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
-
+    
     % Identify the computer
     cal.screen=0;
     computer=Screen('Computer');
@@ -463,29 +467,29 @@ try
     ffprintf(ff,'Computer: %s, %s, screen %d, %dx%d, %.1fx%.1f cm\n',cal.machineName,cal.macModelName,cal.screen,RectWidth(screenRect),RectHeight(screenRect),screenWidthMm/10,screenHeightMm/10);
     assert(cal.screenWidthCm==screenWidthMm/10);
     ffprintf(ff,'Computer account: %s.\n',cal.processUserLongName);
-%     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
-%     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
-%
-  if computer.osx || computer.macintosh
-    AutoBrightness(cal.screen,0);
-  end
+    %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
+    %     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
+    %
+    if computer.osx || computer.macintosh
+        AutoBrightness(cal.screen,0);
+    end
     cal.ScreenConfigureDisplayBrightnessWorks=1;
     if cal.ScreenConfigureDisplayBrightnessWorks
         cal.brightnessSetting=1;
-%         ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
+        %         ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
         % Psychtoolbox Bug. Screen ConfigureDisplay claims that it will
         % silently do nothing if not supported. But when I used it on my
         % video projector, Screen gave a fatal error. That's ok, but how do
         % I figure out when it's safe to use?
-
-  if computer.osx || computer.macintosh
-        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
-      end
+        
+        if computer.osx || computer.macintosh
+            Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+        end
     end
     for condition=1:conditions
         oo(condition).cal=cal;
     end
-
+    
     rightBeep=MakeBeep(2000,0.05,44100);
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
@@ -493,8 +497,8 @@ try
     purr=MakeBeep(300,0.6,44100);
     purr(end)=0;
     Snd('Open');
-
- % Instructions
+    
+    % Instructions
     Screen('FillRect',window,white);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
     string=[string sprintf('Please move the screen to be %.0f cm from your eye.\n',oo(condition).viewingDistanceCm)];
@@ -506,7 +510,7 @@ try
     end
     string=[string 'Type slowly. Look in the middle area, ignoring the the edges of the screen. (Quit anytime by pressing ESCAPE.) '];
     string=[string 'Please be patient when waiting for letters to appear. '];
-   if any(isfinite([oo.durationSec]))
+    if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
         string=[string 'Please press the SPACEBAR to begin, while you fixate the crosshairs below. '];
     else
@@ -540,7 +544,7 @@ try
         xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
         yT=oo(condition).fix.y; % target
     end
-
+    
     condList=Shuffle(condList);
     for trial=1:length(condList)
         condition=condList(trial);
@@ -558,7 +562,7 @@ try
                     end
                 case 'size',
                     oo(condition).targetHeightDeg=10^intensity;
-              end
+            end
         else
             oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).responseCount/2);
         end
@@ -574,14 +578,11 @@ try
         spacing=round(spacing);
         switch oo(condition).radialOrTangential
             case 'tangential'
-                % requestedSpacing=spacing;
                 % flanker must fit on screen
                 if oo(condition).sizeProportionalToSpacing
-                    spacing=min(spacing,(screenHeight-yT)/(1+oo(condition).sizeProportionalToSpacing/2));
-                    spacing=min(spacing,yT/(1+oo(condition).sizeProportionalToSpacing/2));
+                    spacing=min(spacing,screenHeight/(2+oo(condition).sizeProportionalToSpacing));
                 else
-                    spacing=min(spacing,screenHeight-yT-oo(condition).targetHeightPix/2);
-                    spacing=min(spacing,yT-oo(condition).targetHeightPix/2);
+                    spacing=min(spacing,(screenHeight-oo(condition).targetHeightPix)/2);
                 end
                 assert(spacing>=0);
                 xF=xT;
@@ -592,38 +593,51 @@ try
                 spacingOuter=0;
             case 'radial'
                 if oo(condition).eccentricityPix==0
-                    error('Cannot test radial crowding at zero eccentricity. Make o.eccentricityDeg greater than zero.');
-                end
-                spacing=min(oo(condition).eccentricityPix,spacing); % Inner flanker must be between fixation and target.
-                if oo(condition).sizeProportionalToSpacing
-                    spacing=min(spacing,xT/(1+oo(condition).sizeProportionalToSpacing/2)); % Inner flanker is on screen.
+                    % flanker must fit on screen
+                    if oo(condition).sizeProportionalToSpacing
+                        spacing=min(spacing,screenWidth/(2+oo(condition).sizeProportionalToSpacing));
+                    else
+                        spacing=min(spacing,(screenWidth-oo(condition).targetHeightPix)/2);
+                    end
                     assert(spacing>=0);
-                    for i=1:100
-                        spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacing)-(oo(condition).eccentricityPix+addonPix);
-                        assert(spacingOuter>=0);
-                        if spacingOuter<=screenWidth-xT-spacing*oo(condition).sizeProportionalToSpacing/2; % Outer flanker is on screen.
-                            break;
-                        else
-                            spacing=0.9*spacing;
+                    yF=yT;
+                    yFF=yT;
+                    xF=xT-spacing;
+                    xFF=xT+spacing;
+                    % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacing,requestedSpacing/pixPerDeg,spacing/pixPerDeg);
+                    spacingOuter=0;
+                else % eccentricity not zero
+                    spacing=min(oo(condition).eccentricityPix,spacing); % Inner flanker must be between fixation and target.
+                    if oo(condition).sizeProportionalToSpacing
+                        spacing=min(spacing,xT/(1+oo(condition).sizeProportionalToSpacing/2)); % Inner flanker is on screen.
+                        assert(spacing>=0);
+                        for i=1:100
+                            spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacing)-(oo(condition).eccentricityPix+addonPix);
+                            assert(spacingOuter>=0);
+                            if spacingOuter<=screenWidth-xT-spacing*oo(condition).sizeProportionalToSpacing/2; % Outer flanker is on screen.
+                                break;
+                            else
+                                spacing=0.9*spacing;
+                            end
                         end
+                        if i==100
+                            ffprintf(ff,'ERROR: spacingOuter %.1f pix exceeds max %.1f pix.\n',spacing,spacingOuter,screenWidth-xT-spacing*oo(condition).sizeProportionalToSpacing/2)
+                            error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
+                        end
+                    else
+                        spacing=min(spacing,xT-oo(condition).targetHeightPix/2); % inner flanker on screen
+                        spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacing)-(oo(condition).eccentricityPix+addonPix);
+                        spacingOuter=min(spacingOuter,screenWidth-xT-oo(condition).targetHeightPix/2); % outer flanker on screen
                     end
-                    if i==100
-                        ffprintf(ff,'ERROR: spacingOuter %.1f pix exceeds max %.1f pix.\n',spacing,spacingOuter,screenWidth-xT-spacing*oo(condition).sizeProportionalToSpacing/2)
-                        error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
-                    end
-                else
-                    spacing=min(spacing,xT-oo(condition).targetHeightPix/2); % inner flanker on screen
-                    spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacing)-(oo(condition).eccentricityPix+addonPix);
-                    spacingOuter=min(spacingOuter,screenWidth-xT-oo(condition).targetHeightPix/2); % outer flanker on screen
+                    assert(spacingOuter>=0);
+                    spacing=oo(condition).eccentricityPix+addonPix-(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix+spacingOuter);
+                    assert(spacing>=0);
+                    spacing=round(spacing);
+                    xF=xT-spacing; % inner flanker
+                    yF=yT; % inner flanker
+                    xFF=xT+round(spacingOuter); % outer flanker
+                    yFF=yT; % outer flanker
                 end
-                assert(spacingOuter>=0);
-                spacing=oo(condition).eccentricityPix+addonPix-(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix+spacingOuter);
-                assert(spacing>=0);
-                spacing=round(spacing);
-                xF=xT-spacing; % inner flanker
-                yF=yT; % inner flanker
-                xFF=xT+round(spacingOuter); % outer flanker
-                yFF=yT; % outer flanker
         end
         oo(condition).spacingDeg=spacing/pixPerDeg;
         if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).sizeProportionalToSpacing
@@ -645,25 +659,34 @@ try
         end
         stimulus=Shuffle(oo(condition).alphabet);
         stimulus=stimulus(1:3); % three random letters, all different.
-%         ffprintf(ff,'%d: targetHeightPix %d, %.3f deg; spacing %d, %.3f deg\n',condition,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,spacing/pixPerDeg);
-        Screen('textSize',window,round(oo(condition).targetHeightPix/1.28));
+        %         ffprintf(ff,'%d: targetHeightPix %d, %.3f deg; spacing %d, %.3f deg\n',condition,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,spacing/pixPerDeg);
+        if IsWindows
+            textSizeScalar=1.28;
+        else
+            textSizeScalar=1.0;
+        end
+        Screen('textSize',window,round(oo(condition).targetHeightPix/textSizeScalar));
         Screen('TextFont',window,oo(condition).targetFont);
         %             rect=Screen('TextBounds',window,'N');
         %             ffprintf(ff,'TextSize %.1f, "N" width %.0f pix, height %.0f pix\n',targetHeightPix,RectWidth(rect),RectHeight(rect));
         if ~oo(condition).repeatedLetters
             Screen('DrawText',window,stimulus(2),xT-oo(condition).targetHeightPix/2,yT+oo(condition).targetHeightPix/2,black,white,1);
+            if oo(condition).frameTheTarget
+                letterRect=OffsetRect([-0.5 -0.5 0.5 0.5]*oo(condition).targetHeightPix,xT,yT);
+                Screen('FrameRect',window,[255 0 0],letterRect);
+                fprintf('screenHeight %d, letterRect height %d, targetHeightPix %d, textSize %d\n',screenHeight,RectHeight(letterRect),oo(condition).targetHeightPix,Screen('TextSize',window));
+            end
             if streq(oo(condition).thresholdParameter,'spacing')
                 Screen('DrawText',window,stimulus(1),xF-oo(condition).targetHeightPix/2,yF+oo(condition).targetHeightPix/2,black,white,1);
                 Screen('DrawText',window,stimulus(3),xFF-oo(condition).targetHeightPix/2,yFF+oo(condition).targetHeightPix/2,black,white,1);
             end
         else
-            xMin=xT-spacing*ceil((xT-0)/spacing);
-            xMax=xT+spacing*ceil((screenRect(3)-xT)/spacing);
-            yMin=yT-spacing*ceil((yT-0)/spacing);
-            yMax=yT+spacing*ceil((screenRect(4)-yT)/spacing);
+            xMin=xT-spacing*ceil(xT/spacing);
+            xMax=xT+spacing*ceil((screenWidth-xT)/spacing);
+            yMin=yT-spacing*ceil(yT/spacing);
+            yMax=yT+spacing*ceil((screenHeight-yT)/spacing);
             for y=yMin:spacing:yMax
                 whichTarget=mod(round((y-yMin)/spacing),2);
-%               
                 if ~IsWindows && oo(condition).useScreenCopyWindow && y>=yMin+4*spacing && y<=yMax-2*spacing
                     dstRect=screenRect;
                     dstRect(2)=0;
@@ -721,10 +744,7 @@ try
             Screen('TextFont',window,oo(condition).textFont);
             Screen('Flip',window); % display response screen
         end
-        %FlushEvents('keyDown');
-        %ListenChar(0);
         responseString='';
-        %ListenChar(2);
         for i=1:length(targets)
             while(1)
                 answer=GetKeypress(0,[escapeKey oo(condition).responseKeys],o.deviceIndex);
@@ -733,7 +753,6 @@ try
                     break
                 end
             end
-%             ListenChar(2);
             Speak(answer);
             if streq(answer,'ESCAPE')
                 ListenChar(0);
@@ -772,20 +791,20 @@ try
             switch oo(condition).thresholdParameter
                 case 'spacing',
                     oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg response];
-%                     oo(condition).results(oo(condition).responseCount,2)=response;
+                    %                     oo(condition).results(oo(condition).responseCount,2)=response;
                     oo(condition).responseCount=oo(condition).responseCount+1;
                     intensity=log10(oo(condition).spacingDeg);
                 case 'size'
                     oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetHeightDeg response];
-%                     oo(condition).results(oo(condition).responseCount,2)=response;
+                    %                     oo(condition).results(oo(condition).responseCount,2)=response;
                     oo(condition).responseCount=oo(condition).responseCount+1;
                     intensity=log10(oo(condition).targetHeightDeg);
             end
-%             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetHeightDeg);
+            %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetHeightDeg);
             oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
         end
     end % for trial=1:length(condList)
-
+    
     Screen('FillRect',window);
     %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
     Screen('Flip',window);
