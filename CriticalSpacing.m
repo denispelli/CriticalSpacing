@@ -9,7 +9,7 @@ function oo=CriticalSpacing(oIn)
 % laptop, with MATLAB and the Psychtoolbox installed. You must install the
 % Sloan.otf font file in one of your computer OS font folders.
 %
-% MACINTOSH (or Wind ows or Linux) LAPTOP  This program should run with
+% MACINTOSH (or Windows or Linux) LAPTOP  This program should run with
 % little or no modification on any computer with MATLAB and Psychtoolbox.
 % However, I developed it on a Mac, so there may be wrinkles to iron out on
 % Windows or Linux. A Macintosh laptop is ideal. On a Mac laptop, the
@@ -514,7 +514,7 @@ try
     end
     Screen('TextFont',window,oo(condition).textFont);
     Screen('TextSize',window,round(oo(condition).textSize*0.7));
-    Screen('DrawText',window,double('Crowding and Acuity Test Copyright 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1); % ?shows up as garbage in MATLAB 2015a Linux 64-bit; Octave 4.0 Linux 64-bit, OSX 64bit MATLAB is okay though
+    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli'),50,screenRect(4)-oo(1).textSize,black,white,1); % ?shows up as garbage in MATLAB 2015a Linux 64-bit; Octave 4.0 Linux 64-bit, OSX 64bit MATLAB is okay though
     Screen('TextSize',window,oo(condition).textSize);
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,52);
     Screen('Flip',window);
@@ -569,7 +569,7 @@ try
             oo(condition).spacingDeg=oo(condition).targetHeightDeg/oo(condition).sizeProportionalToSpacing;
         end
         spacing=oo(condition).spacingDeg*pixPerDeg;
-        spacing=min(spacing,screenHeight/3);
+        % spacing=min(spacing,screenHeight/(1+2/oo(condition).sizeProportionalToSpacing));
         spacing=max(spacing,oo(condition).minimumTargetPix/oo(condition).sizeProportionalToSpacing);
         spacing=round(spacing);
         switch oo(condition).radialOrTangential
