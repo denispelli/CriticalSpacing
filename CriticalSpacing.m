@@ -809,7 +809,7 @@ try
                             ffprintf(ff,'Tangential spacing up and down.\n');
                     end
                 end
-                ffprintf(ff,'Threshold log spacing deg (mean±sd) is %.2f ?%.2f, which is %.3f deg.\n',t,sd,10^t);
+                ffprintf(ff,'Threshold log spacing deg (mean+-sd) is %.2f ?%.2f, which is %.3f deg.\n',t,sd,10^t);
                 if oo(condition).responseCount>1
                     trials=QuestTrials(oo(condition).q);
                     if any(~isreal(trials.intensity))
@@ -819,7 +819,7 @@ try
                     ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(condition).q,trials.intensity-oo(condition).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
                 end
             case 'size',
-                ffprintf(ff,'Threshold log size deg (mean±sd) is %.2f ?%.2f, which is %.3f deg.\n',t,sd,10^t);
+                ffprintf(ff,'Threshold log size deg (mean+-sd) is %.2f ?%.2f, which is %.3f deg.\n',t,sd,10^t);
                 if oo(condition).responseCount>1
                     trials=QuestTrials(oo(condition).q);
                     ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
