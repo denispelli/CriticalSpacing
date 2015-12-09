@@ -58,7 +58,8 @@ o(2)=o(1);
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-% oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+oRepeated=o;
+% oRepeated=CriticalSpacing(oRepeated); % dual targets, repeated indefinitely
 % We retain the observer name obtained during the first run for use in the
 % second run.
 o(1).trials=2*o(1).trials;
