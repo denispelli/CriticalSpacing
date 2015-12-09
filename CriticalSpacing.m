@@ -207,7 +207,7 @@ try
         boundsRect=Screen('TextBounds',window,'Hi. Please slowly type your name followed by RETURN.');
         fraction=RectWidth(boundsRect)/(screenWidth-100);
         oo(condition).textSize=round(oo(condition).textSize/fraction);
-        oo(condition).textSize=min(oo(condition).textSize, round((screenWidth-100)/25));
+        oo(condition).textSize=min(oo(condition).textSize, round((screenWidth-100)/20));
     end
 
 
