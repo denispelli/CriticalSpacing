@@ -1,10 +1,7 @@
-
-
-
 % This shows a triplet, a target and two flankers.
 clear o
 % o.observer='Shivam'; % Enter observer name here.
-o.repeatedLetters=0;
+o.repeatedTargets=0;
 %o.fixationCrossDeg=0;
 %o.useScreenCopyWindow=1; % Faster, but doesn't work on all Macs.
 o.thresholdParameter='spacing';
@@ -18,7 +15,7 @@ oOut=CriticalSpacing(o); % dual targets, repeated indefinitely
 % both are targets.
 clear o
 % o.observer='Shivam'; % Enter observer name here.
-o.repeatedLetters=1;
+o.repeatedTargets=1;
 %o.fixationCrossDeg=0;
 %o.useScreenCopyWindow=1; % Faster, but doesn't work on all Macs.
 o.thresholdParameter='spacing';

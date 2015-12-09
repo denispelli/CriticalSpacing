@@ -11,8 +11,11 @@ clear o
 % I don't know yet how many trials are needed. Note that each "trial"
 % is one presentation. Thus testing repeated letters, there are two
 % targets, and two responses per "trial". You'll probably want twice as
-% many "trials" when testing with a single target. I think 40 responses
-% will give an accurate threshold estimate. Perhaps 20 would be enough.
+% many "trials" when testing with a single target. 40 responses per
+% threshold
+% gives a very accurate threshold estimate. 20 might be enough. Running
+% this script measures 4 thresholds. That takes about 20 minutes when at 40
+% trials per threshold, and about 10 minutes at 20 trials perthreshold.
 % When there are two targets (repeatedTargets==1) we thus set trials=20.
 o.trials=20; % Number of presentations (two response per presentation) for the threshold estimate.
 
@@ -22,44 +25,51 @@ o.trials=20; % Number of presentations (two response per presentation) for the t
 % viewing distance. And, of course, move the screen to that distance.
 o.viewingDistanceCm=410;
 
-% This parameter is important. We need to assure our readers that the
-% reported spacing threshold is independent of this value. I'd guess that
-% this is true for the range 1.2 to 2. But large values will prevent us
-% from measuring critical spacing that is not much bigger than acuity. We
-% need a graph of measured critical spacing vs. this scalar at values 1.2,
-% 1.4, 1.6, inf. We already have inf from the single-target size test.
-o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
+% This enables an encouraging word after every trial, regardless of
+% accuracy. I anticipate that young children will like this, whereas adults
+% might not.
+o.encouragement=0; % Randomly say good, very good, or nice after every trial.
 
-% You probably won't need to change any other parameters.
+% We use this parameter a lot to test observer with and without repeated
+% targets. The repeated targets make the test immune to fixation errors,
+% but we also want to test in the gold-standard condition without
+% repetition in order to validate (in observers who fixate well) or assess
+% the effect of eye position errors in young children and patients.
 o.repeatedTargets=1; % Repeated letter make the test immune to fixation errors.
-o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.
+
+% Selecting "spacing" measures the critical spacing of crowding. Selecting
+% "size" measures letter acuity. We will test both, usually interleaved.
+o.thresholdParameter='spacing';
+% o.thresholdParameter='size';
+
+% You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
+o.usePurring=1; % Play purring sound while awaiting user response.
+% o.radialOrTangential='tangential'; % vertically arranged flankers for single target
+o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
+o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.
 o.useScreenCopyWindow=1; % Faster, but fails on some Macs. If your repeated-letters screen is incomplete, set this to 0.
 o.negativeFeedback=0;
-% THIS INDISCRIMINATE ENCOURAGEMENT MAY HELP CHILDREN, BUT MIGHT BE CLOYING
-% TO ADULTS.
-o.encouragement=1; % Randomly say good, very good, or nice after every trial.
 o.fixationCrossDeg=0;
 o.useFractionOfScreen=0;
-o.thresholdParameter='spacing';
 o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.task='identify';
-o.usePurring=1;
 minimumTargetPix=8; % Make sure the letters are well rendered.
-o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
 o.targetFont='Sloan';
 o.textFont='Calibri';
 o.fixationLocation='center';
-o.radialOrTangential='tangential'; % vertically arranged flankers
-o.radialOrTangential='radial'; % horizontally arranged flankers
 o.frameTheTarget=0; % Handy for debugging the display.
-o.thresholdParameter='size';
-% o.thresholdParameter='spacing';
-o.repeatedTargets=0;
-o(2)=o(1);
+
+% Set up for interleaved testing of size and spacing thresholds. In the
+% first run we'll use repeated targets. In the second run we'll use single
+% targets.
+o.repeatedTargets=1;
+o.thresholdParameter='spacing';
+o(2)=o(1); % Copy the condition
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
@@ -68,8 +78,12 @@ oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 % second run.
 o(1).repeatedTargets=0;
 o(2).repeatedTargets=0;
+o(1).trials=2*o(1).trials(1); % doubled because just one response per trial
+o(2).trials=o(1).trials;
 o(1).observer=oRepeated(1).observer;
 o(2).observer=oRepeated(2).observer;
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
 oSingle=CriticalSpacing(o); % one target
+
+% Results are printed in the command window and saved in the "data" folder.
