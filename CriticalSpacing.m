@@ -661,8 +661,10 @@ try
         stimulus=stimulus(1:3); % three random letters, all different.
         %         ffprintf(ff,'%d: targetHeightPix %d, %.3f deg; spacing %d, %.3f deg\n',condition,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,spacing/pixPerDeg);
         if IsWindows
-            textSizeScalar=1.28;
+            textSizeScalar=1.336;
+            textYOffset=0.75;
         else
+            textYOffset=0;
             textSizeScalar=1.0;
         end
         Screen('textSize',window,round(oo(condition).targetHeightPix/textSizeScalar));
@@ -670,7 +672,7 @@ try
         %             rect=Screen('TextBounds',window,'N');
         %             ffprintf(ff,'TextSize %.1f, "N" width %.0f pix, height %.0f pix\n',targetHeightPix,RectWidth(rect),RectHeight(rect));
         if ~oo(condition).repeatedLetters
-            Screen('DrawText',window,stimulus(2),xT-oo(condition).targetHeightPix/2,yT+oo(condition).targetHeightPix/2,black,white,1);
+            Screen('DrawText',window,stimulus(2),xT-oo(condition).targetHeightPix/2,yT+(0.5-textYOffset)*oo(condition).targetHeightPix,black,white,1);
             if oo(condition).frameTheTarget
                 letterRect=OffsetRect([-0.5 -0.5 0.5 0.5]*oo(condition).targetHeightPix,xT,yT);
                 Screen('FrameRect',window,[255 0 0],letterRect);
@@ -705,7 +707,7 @@ try
                         else
                             letter=stimulus(1+whichTarget);
                         end
-                        Screen('DrawText',window,letter,x-oo(condition).targetHeightPix/2,y+oo(condition).targetHeightPix/2,black,white,1);
+                        Screen('DrawText',window,letter,x-oo(condition).targetHeightPix/2,y+(0.5-textYOffset)*oo(condition).targetHeightPix,black,white,1);
                     end
                 end
             end
