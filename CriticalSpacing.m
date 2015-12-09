@@ -644,7 +644,8 @@ try
             oo(condition).targetHeightDeg=oo(condition).sizeProportionalToSpacing*oo(condition).spacingDeg;
         end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
-        oo(condition).targetHeightPix=min(oo(condition).targetHeightPix,RectHeight(screenRect));
+        oo(condition).targetHeightPix=min(oo(condition).targetHeightPix,screenWidth);
+        oo(condition).targetHeightPix=min(oo(condition).targetHeightPix,screenHeight);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
         oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
         oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetHeightPix/2)/oo(condition).eccentricityPix);
@@ -679,8 +680,8 @@ try
                 fprintf('screenHeight %d, letterRect height %d, targetHeightPix %d, textSize %d\n',screenHeight,RectHeight(letterRect),oo(condition).targetHeightPix,Screen('TextSize',window));
             end
             if streq(oo(condition).thresholdParameter,'spacing')
-                Screen('DrawText',window,stimulus(1),xF-oo(condition).targetHeightPix/2,yF+oo(condition).targetHeightPix/2,black,white,1);
-                Screen('DrawText',window,stimulus(3),xFF-oo(condition).targetHeightPix/2,yFF+oo(condition).targetHeightPix/2,black,white,1);
+                Screen('DrawText',window,stimulus(1),xF-oo(condition).targetHeightPix/2,yF+(0.5-textYOffset)*oo(condition).targetHeightPix,black,white,1);
+                Screen('DrawText',window,stimulus(3),xFF-oo(condition).targetHeightPix/2,yFF+(0.5-textYOffset)*oo(condition).targetHeightPix,black,white,1);
             end
         else
             xMin=xT-spacing*ceil(xT/spacing);
