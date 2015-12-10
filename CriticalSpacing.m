@@ -84,7 +84,7 @@ o.repeatedTargets=1;
 o.useFractionOfScreen=0;
 % o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
-o.observer=''; % Name is requested at beginning of trial.
+o.observer=''; % Name is requested at beginning of run.
 o.useScreenCopyWindow=0; % Faster, but doesn't work on all Macs.
 o.quit=0;
 o.viewingDistanceCm=300;
@@ -101,7 +101,7 @@ o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
 screenRect= Screen('Rect',0);
 o.fixationLocation='center'; % 'left', 'right'
-o.trials=80; % number of trials for the threshold estimate
+o.trials=40; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
 o.fixationLineWeightDeg=0.005;
@@ -123,6 +123,7 @@ end
 % DEBUGGING AIDS
 o.frameTheTarget=0;
 o.printSizeAndSpacing=0;
+o.printScreenResolution=0;
 
 o.beginningTime=now;
 timeVector=datevec(o.beginningTime);
@@ -138,9 +139,9 @@ conditions=length(oIn);
 oo(1:conditions)=o;
 
 % All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
+% o is a single struct, and oIn may be an array of structs.
 for condition=1:conditions
     fields=fieldnames(oIn(condition));
-    %     oo(condition).(fields{:})=deal(oIn(condition).(fields{:}));
     for i=1:length(fields)
         oo(condition).(fields{i})=oIn(condition).(fields{i});
     end
@@ -195,9 +196,11 @@ try
     else
         window=Screen('OpenWindow',0,white,screenBufferRect);
     end
-    screenBufferRect=Screen('Rect',oo(1).screen)
-    screenRect=Screen('Rect',oo(1).screen,1)
-    resolution=Screen('Resolution',oo(1).screen)
+    if oo(1).printScreenResolution
+        screenBufferRect=Screen('Rect',oo(1).screen)
+        screenRect=Screen('Rect',oo(1).screen,1)
+        resolution=Screen('Resolution',oo(1).screen)
+    end
     
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
@@ -288,6 +291,13 @@ try
         %             Screen('TextSize',window,oo(condition).textSize);
         %         end
         
+        if oo(condition).repeatedTargets
+            oo(condition).presentations=ceil(oo(condition).trials/2);
+            oo(condition).trials=2*oo(condition).presentations;
+        else
+            oo(condition).presentations=oo(condition).trials;
+        end
+        
         % prepare to draw fixation cross
         fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
         fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
@@ -336,7 +346,7 @@ try
             oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
         end
         oo(condition).spacings=oo(condition).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
-        oo(condition).spacingsSequence=repmat(oo(condition).spacings,1,ceil(oo(condition).trials/length(oo(condition).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of trials.
+        oo(condition).spacingsSequence=repmat(oo(condition).spacings,1,ceil(oo(condition).presentations/length(oo(condition).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
         if oo(condition).useQuest
             ffprintf(ff,'%d: Using QUEST to estimate threshold %s.\n',condition,oo(condition).thresholdParameter);
         else
@@ -539,10 +549,9 @@ try
     end
     condList=[];
     for condition=1:conditions
-        % Run the specified number of trials of each condition, in random
+        % Run the specified number of presentations of each condition, in random
         % order
-        condList = [condList repmat(condition,1,oo(condition).trials)];
-        oo(condition).trial=0;
+        condList = [condList repmat(condition,1,oo(condition).presentations)];
         oo(condition).spacingsSequence=Shuffle(oo(condition).spacingsSequence);
         oo(condition).q=QuestCreate(oo(condition).tGuess,oo(condition).tGuessSd,oo(condition).pThreshold,oo(condition).beta,delta,gamma,grain,range);
         xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
@@ -550,8 +559,8 @@ try
     end
     
     condList=Shuffle(condList);
-    for trial=1:length(condList)
-        condition=condList(trial);
+    for presentation=1:length(condList)
+        condition=condList(presentation);
         if oo(condition).useQuest
             intensity=QuestQuantile(oo(condition).q);
             if oo(condition).measureBeta
@@ -757,7 +766,7 @@ try
             Screen('TextFont',window,oo(condition).textFont);
             Screen('TextSize',window,oo(condition).textSize);
             Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
-            Screen('DrawText',window,sprintf('Trial %d of %d. Run %d of %d',trial,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
+            Screen('DrawText',window,sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
             Screen('TextFont',window,oo(condition).targetFont);
             x=100;
             y=screenRect(4)-50;
@@ -827,7 +836,7 @@ try
             %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetHeightDeg);
             oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
         end
-    end % for trial=1:length(condList)
+    end % for presentation=1:length(condList)
     
     Screen('FillRect',window);
     %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
