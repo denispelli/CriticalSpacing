@@ -83,6 +83,7 @@ o(2)=o(1); % Copy the condition
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
+for run=1:4
     for trials=[10 20 40]
         for i=1:2
             o(i).trials=trials;

@@ -48,6 +48,16 @@ o.viewingDistanceCm=410;
 % might not.
 o.encouragement=0; % Randomly say good, very good, or nice after every trial.
 
+% For normal adults we use the restricted standard Sloan alphabet
+% (excluding C, which has been shown to be too similar to O).
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+
+% For children, past investigators, including the Cambridge Crowding Cards,
+% have used symmetric letters HOTVX, so we provide that option too.
+% o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
+% o.borderLetter='N';
+
 % You don't need to change any of these parameters.
 o.useScreenCopyWindow=1; % Faster, but fails on some Macs. If your repeated-letters screen is incomplete, set this to 0.
 o.observer=''; % Ask for name at beginning of run, or
