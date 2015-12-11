@@ -78,7 +78,7 @@ Screen('Preference','SuppressAllWarnings',1);
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
-o.negativeFeedback=1;
+o.negativeFeedback=0;
 o.encouragement=0;
 o.repeatedTargets=1;
 o.useFractionOfScreen=0;
@@ -111,7 +111,12 @@ o.announceDistance=0;
 o.usePurring=1;
 o.minimumTargetPix=8;
 o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
+% This produces the standard adult condition:
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+% And this produces the HOTVX condition:
+% o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
+% o.borderLetter='N';
 o.targetFont='Sloan';
 o.textFont='Calibri';
 o.textSizeDeg=0.4;
@@ -166,8 +171,17 @@ end
 [screenWidthMm,screenHeightMm]=Screen('DisplaySize',0);
 screenWidthCm=screenWidthMm/10;
 screenRect=Screen('Rect',0);
-if oo(condition).useFractionOfScreen
+if oo(1).useFractionOfScreen
     screenRect=round(oo(condition).useFractionOfScreen*screenRect);
+end
+
+for condition=1:conditions
+    if ismember(oo(condition).borderLetter,oo(condition).alphabet)
+        ListenChar(0);
+        error('The o.borderLetter "%c" should not be included in the o.alphabet "%s".',oo(condition).borderLetter,oo(condition).alphabet);
+    end
+    assert(oo(condition).viewingDistanceCm==oo(1).viewingDistanceCm);
+    assert(oo(condition).useFractionOfScreen==oo(1).useFractionOfScreen);
 end
 
 try
@@ -205,7 +219,7 @@ try
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
     screenHeight=RectHeight(screenRect);
-    pixPerDeg=screenWidth/(screenWidthCm*57/oo(condition).viewingDistanceCm);
+    pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
     for condition=1:conditions
         % Adjust textSize so our string fits on screen.
         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
@@ -729,7 +743,7 @@ try
                             whichTarget=x>mean([xMin xMax]);
                         end
                         if ismember(x,[xMin xMax]) || ismember(y,[yMin yMax])
-                            letter='X';
+                            letter=oo(condition).borderLetter;
                         else
                             letter=stimulus(1+whichTarget);
                         end

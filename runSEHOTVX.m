@@ -71,8 +71,8 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o.frameTheTarget=0; % For debugging.
 
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
+o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
+o.borderLetter='N';
 
 % Set up for interleaved testing of size and spacing thresholds with
 % repeated targets. Each run has a different number of trials: 10, 20, 40,
@@ -83,7 +83,6 @@ o(2)=o(1); % Copy the condition
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-for i=1:4
     for trials=[10 20 40]
         for i=1:2
             o(i).trials=trials;
@@ -91,7 +90,7 @@ for i=1:4
         o=CriticalSpacing(o);
     end
 end
- 
+
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
 % Ignore spurious error messages from the Psychtoolbox about
