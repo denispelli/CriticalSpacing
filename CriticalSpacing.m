@@ -73,6 +73,8 @@ if nargin<1 || ~exist('oIn','var')
 end
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % folder in same directory as this file
 Screen('Preference','VisualDebugLevel',0);
+
+Screen('Preference', 'Verbosity', 0); % mute Psychtoolbox's INFOs and WARNINGs
 Screen('Preference','SkipSyncTests',1);
 Screen('Preference','SuppressAllWarnings',1);
 
@@ -215,7 +217,7 @@ try
         screenRect=Screen('Rect',oo(1).screen,1)
         resolution=Screen('Resolution',oo(1).screen)
     end
-    
+
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
     screenHeight=RectHeight(screenRect);
@@ -237,7 +239,7 @@ try
         % So we select the low-quality renderer instead.
         Screen('Preference','TextRenderer',0);
     end
-    
+
     % Observer name
     if length(oo(1).observer)==0
         ListenChar(0); % flush
@@ -254,7 +256,7 @@ try
         Screen('FillRect',window);
     end
     ListenChar(2); % no echo
-    
+
     oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
     if ~exist(oo(1).dataFolder,'dir')
@@ -276,7 +278,7 @@ try
     ffprintf(ff,'%s %s\n',oo(1).functionNames,datestr(now));
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'%s.txt and "".mat\n',oo(1).dataFilename);
-    
+
     if oo(1).hiDPIMultiple~=1
         ffprintf(ff,'HiDPI: ');
         if ismac
@@ -289,7 +291,7 @@ try
         ffprintf(ff,'We are using a %d x %d buffer to drive %d x %d pixels.\n',screenBufferRect(3),screenBufferRect(4),resolution.width,resolution.height);
         ffprintf(ff,'You can use Switch Res X (http://www.madrau.com/) to select a pure resolution (not HiDPI).\n');
     end
-    
+
     for condition=1:conditions
         %         screenRect=Screen('Rect',window);
         %         screenWidth=RectWidth(screenRect);
@@ -304,14 +306,14 @@ try
         %             oo(condition).textSize=round(oo(condition).textSize/fraction);
         %             Screen('TextSize',window,oo(condition).textSize);
         %         end
-        
+
         if oo(condition).repeatedTargets
             oo(condition).presentations=ceil(oo(condition).trials/2);
             oo(condition).trials=2*oo(condition).presentations;
         else
             oo(condition).presentations=oo(condition).trials;
         end
-        
+
         % prepare to draw fixation cross
         fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
         fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
@@ -339,7 +341,7 @@ try
         %         if ~oo(condition).repeatedTargets
         %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
         %         end
-        
+
         oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetHeightDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
@@ -368,11 +370,11 @@ try
         end
         oo(condition).targetHeightPix=round(oo(condition).targetHeightDeg*pixPerDeg);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-        
+
         % prepare to draw fixation cross
         oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
         fixationLines=ComputeFixationLines(oo(condition).fix);
-        
+
         terminate=0;
         nominalOverPossibleSize=oo(condition).nominalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
         switch oo(condition).thresholdParameter
@@ -398,7 +400,7 @@ try
         grain=0.01;
         range=6;
     end % for condition=1:conditions
-    
+
     for condition=1:conditions
         if oo(condition).repeatedTargets
             ffprintf(ff,'%d: Two targets, repeated many times.\n',condition);
@@ -406,11 +408,11 @@ try
             ffprintf(ff,'%d: One target.\n',condition);
         end
     end
-    
+
     if oo(1).announceDistance
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
-    
+
     cal.screen=max(Screen('Screens'));
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
@@ -467,7 +469,7 @@ try
     ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
     ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
     ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
-    
+
     % Identify the computer
     cal.screen=0;
     computer=Screen('Computer');
@@ -509,7 +511,7 @@ try
         % silently do nothing if not supported. But when I used it on my
         % video projector, Screen gave a fatal error. That's ok, but how do
         % I figure out when it's safe to use?
-        
+
         if computer.osx || computer.macintosh
             Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
         end
@@ -517,7 +519,7 @@ try
     for condition=1:conditions
         oo(condition).cal=cal;
     end
-    
+
     rightBeep=MakeBeep(2000,0.05,44100);
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
@@ -525,7 +527,7 @@ try
     purr=MakeBeep(300,0.6,44100);
     purr(end)=0;
     Snd('Open');
-    
+
     % Instructions
     Screen('FillRect',window,white);
     string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
@@ -571,7 +573,7 @@ try
         xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
         yT=oo(condition).fix.y; % target
     end
-    
+
     condList=Shuffle(condList);
     for presentation=1:length(condList)
         condition=condList(presentation);
@@ -613,7 +615,7 @@ try
             end
         end
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-        if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end; 
+        if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end;
         spacing=round(spacing);
         switch oo(condition).radialOrTangential
             case 'tangential'
@@ -645,7 +647,7 @@ try
                     xFF=xT+spacing;
                     % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacing,requestedSpacing/pixPerDeg,spacing/pixPerDeg);
                     spacingOuter=0;
-                    if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end; 
+                    if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end;
                 else % eccentricity not zero
                     spacing=min(oo(condition).eccentricityPix,spacing); % Inner flanker must be between fixation and target.
                     if oo(condition).sizeProportionalToSpacing
@@ -687,7 +689,7 @@ try
         oo(condition).targetHeightPix=min(oo(condition).targetHeightPix,screenWidth);
         oo(condition).targetHeightPix=min(oo(condition).targetHeightPix,screenHeight);
         oo(condition).targetHeightDeg=oo(condition).targetHeightPix/pixPerDeg;
-        if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end; 
+        if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end;
         oo(condition).fix.targetHeightPix=oo(condition).targetHeightPix;
         oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetHeightPix/2)/oo(condition).eccentricityPix);
         fixationLines=ComputeFixationLines(oo(condition).fix);
@@ -725,7 +727,7 @@ try
             xMax=xT+spacing*floor((screenWidth-xT-0.5*oo(condition).targetHeightPix)/spacing);
             yMin=yT-spacing*floor((yT-0.5*oo(condition).targetHeightPix)/spacing);
             yMax=yT+spacing*floor((screenHeight-yT-0.5*oo(condition).targetHeightPix)/spacing);
-            if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end; 
+            if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacing %.0f, spacing deg %.1f\n',MFileLineNr,oo(condition).targetHeightPix,oo(condition).targetHeightDeg,spacing,oo(condition).spacingDeg); end;
             fprintf('x %d %d, y %d %d, screenRect %d %d %d %d, target %d, spacing %d\n', xMin,xMax,yMin,yMax,screenRect,oo(condition).targetHeightPix,spacing);
             for y=yMin:spacing:yMax
                 whichTarget=mod(round((y-yMin)/spacing),2);
@@ -851,7 +853,7 @@ try
             oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
         end
     end % for presentation=1:length(condList)
-    
+
     Screen('FillRect',window);
     %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
     Screen('Flip',window);
