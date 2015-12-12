@@ -218,6 +218,22 @@ try
         resolution=Screen('Resolution',oo(1).screen)
     end
 
+=======
+<<<<<<< HEAD
+    for condition=1:conditions
+        % Check availability of fonts.
+        Screen('TextFont',window,oo(condition).targetFont);
+        font=Screen('TextFont',window);
+        if ~streq(font,oo(condition).targetFont)
+            error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
+        end
+        Screen('TextFont',window,oo(condition).textFont);
+        font=Screen('TextFont',window);
+        if ~streq(font,oo(condition).textFont)
+            warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
+        end
+    end
+=======
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
     screenHeight=RectHeight(screenRect);
