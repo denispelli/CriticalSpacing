@@ -571,7 +571,7 @@ try
     end
     for condition=1:conditions
         if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'spacing')
-            string=[string 'When you see three letters, please type just middle letter. '];
+            string=[string 'When you see three letters, please type just the middle letter. '];
             break;
         end
     end
