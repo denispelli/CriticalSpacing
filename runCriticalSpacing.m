@@ -23,6 +23,16 @@ clear o
 % o.repeatedTargets=0; % 
 o.repeatedTargets=1; % Repeating the target letters make the test immune to fixation errors.
 
+% The standard Sloan font has an aspect ratio of 1:1, which is too fat to
+% measure the critical spacing of crowding in a normal adult fovea. The
+% parameter o.targetHeightOverWidth squeezes the letters, to achieve the
+% specified ratio of height to width. A value of 3 produces letters that
+% seem easy to recognize. This is the default, but you can explicitly
+% override it to get any ratio you like, including 1. It seems important
+% that the Response page be printed with letters having the same aspect
+% ratio.
+o.targetHeightOverWidth=3;
+
 % Selecting "spacing" measures the critical spacing of crowding. Selecting
 % "size" measures letter acuity. We will test both, usually interleaved.
 o.thresholdParameter='spacing';
@@ -33,47 +43,58 @@ o.thresholdParameter='spacing';
 % counts as two trials. 40 trials per threshold gives a very accurate
 % threshold estimate. 20 might be enough. Running this script measures 4
 % thresholds, one for each of 4 conditions. That takes about 20 minutes
-% when at 40 trials per threshold, and about 10 minutes at 20 trials per
-% threshold.
-o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
+% with 40 trials per threshold, which drops to 10 minutes with 20 trials
+% per threshold.
+o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 
 % The viewing distance is set here. The program will try to use what you
 % selected, otherwise it will abort and tell you the minimum viewing
 % distance that you need. You must then modify this file to set the new
 % viewing distance. And, of course, move the screen to that distance.
-o.viewingDistanceCm=410;
+o.viewingDistanceCm=500;
+
+% MIRROR: In a small room, you can use a mirror to achieve a long viewing
+% distance. This switch tells our software to display a mirror image, so
+% that the observer looking in your mirror will see normally oriented
+% letters.
+o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 
 % This speaks an encouraging word after every trial, regardless of
 % accuracy. I anticipate that young children will like this, whereas adults
 % might not.
-o.encouragement=0; % Randomly say good, very good, or nice after every trial.
+o.encouragement=0; % Say "good," "very good," or "nice" after every trial.
 
 % For normal adults we use the restricted standard Sloan alphabet
 % (excluding C, which has been shown to be too similar to O).
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 
-% For children, past investigators, including the Cambridge Crowding Cards,
-% have used symmetric letters HOTVX, so we provide that option too.
+% For children, past investigators, including Jan Atkinson's Cambridge
+% Crowding Cards, have used symmetric letters HOTVX, so we provide that
+% option too. 
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 
+% Song, Levi, and Pelli (2014) suggest a 1.4 ratio of spacing to size
+% because it is large enough to avoid overlap masking and small enough to
+% measure critical spacing that is a least 1.4x bigger than acuity. To
+% prove that your measured critical spacing is independent of letter size,
+% you might want to test with another value as well, e.g. 1.2 or 1.8.
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+
 % You don't need to change any of these parameters.
-o.useScreenCopyWindow=1; % Faster, but fails on some Macs. If your repeated-letters screen is incomplete, set this to 0.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
 o.usePurring=1; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
-o.sizeProportionalToSpacing=1/1.4; % Requests size proportional to spacing.
-o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.
 o.negativeFeedback=0;
 o.fixationCrossDeg=0;
 o.useFractionOfScreen=0;
 o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.task='identify';
-minimumTargetPix=8; % Make sure the letters are well rendered.
+o.minimumTargetPix=8; % Make sure the letters are well rendered.
 o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
 o.targetFont='Sloan';
 o.textFont='Calibri';
@@ -90,7 +111,7 @@ o(2)=o(1); % Copy the condition
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-% oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % SECOND RUN (measures two thresholds, interleaved)
 % We retain the observer name obtained during the first run for use in the
@@ -105,8 +126,3 @@ oSingle=CriticalSpacing(o); % one target
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
-
-% Ignore spurious error messages from the Psychtoolbox about
-% synchronization failure. The CriticalSpacing test uses static
-% presentation and the reported timing errors are utterly irrelevant.
-% "! PTB - ERROR: SYNCHRONIZATION FAILURE !"
