@@ -750,7 +750,7 @@ try
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
         end
         Screen('Flip',window); % blank display, except perhaps fixation
-        if ~oo(condition).repeatedTargets
+        if isfinite(oo(condition).durationSec)
             WaitSecs(1); % duration of fixation display
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
         end
