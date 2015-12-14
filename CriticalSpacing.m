@@ -32,17 +32,18 @@ function oo=CriticalSpacing(oIn)
 % you've installed the font, quit and restart MATLAB to get it to notice
 % the newly available font.
 %
-% CriticalSpacing.m is meant to be driven by a brief user-written script. I
-% have provided runCriticalSpacing as a example. Many parameters
-% controlling the behavior of CriticalSpacing are specifed in the fields of
-% a struct called "o". That defines a condition for which a threshold will
-% be measured. If you provide several conditions, as an o array, then
-% CriticalSpacing runs all the conditions interleaved, measuring a
-% threshold for each. CriticalSpacing initially asks for the observer's
-% name and presents a page of instructions. The rest is just eye charts.
-% Adults find it easy and intuitive. I don't know whether it's yet ready
-% for children. I welcome suggestions. The targets are currently drawn from
-% 9 letters of the Sloan font: DHKNORSVZ.
+% RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
+% user-written script. I have provided runCriticalSpacing as a example.
+% Many parameters controlling the behavior of CriticalSpacing are specifed
+% in the fields of a struct called "o". That defines a condition for which
+% a threshold will be measured. If you provide several conditions, as an o
+% array, then CriticalSpacing runs all the conditions interleaved,
+% measuring a threshold for each. CriticalSpacing initially asks for the
+% observer's name and presents a page of instructions. The rest is just one
+% eye chart after another, each showing one or two targets (with or without
+% repetitions). Adults find it easy and intuitive. I don't know whether
+% it's yet ready for children. I welcome suggestions. The targets are
+% currently drawn from 9 letters of the Sloan font: DHKNORSVZ.
 %
 % ESCAPE TO QUIT. Try running runCriticalSpacing. It will measure four
 % thresholds. You can always terminate the current run by hitting Escape.
@@ -289,6 +290,9 @@ try
         Screen('TextFont',window,oo(1).textFont);
         Screen('DrawText',window,'Hi.',50,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',50,screenRect(4)/2-3*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(oo(1).textSize*0.4));
+        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),50,screenRect(4)-50,black,white,1);
+        Screen('TextSize',window,oo(1).textSize);
         name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,white,1,o.deviceIndex);
         for i=1:conditions
             oo(i).observer=name;

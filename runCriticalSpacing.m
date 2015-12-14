@@ -21,7 +21,7 @@ clear o
 % fixate well. And assesses the effect of eye position errors in young
 % children and patients.
 % o.repeatedTargets=0; % 
-o.repeatedTargets=1; % Repeating the target letters make the test immune to fixation errors.
+o.repeatedTargets=1; % Repeat target letters for immunity to fixation errors.
 
 % The standard Sloan font has an aspect ratio of 1:1, which is too fat to
 % measure the critical spacing of crowding in a normal adult fovea. The
@@ -90,20 +90,21 @@ o.usePurring=1; % Play purring sound while awaiting user response.
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.negativeFeedback=0;
 o.fixationCrossDeg=0;
-o.useFractionOfScreen=0;
 o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
-o.alphabet='DHKNORSVZ'; % for the Sloan alphabet
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding 'C'
 o.targetFont='Sloan';
 o.textFont='Calibri';
 o.fixationLocation='center';
 o.frameTheTarget=0; % For debugging.
+o.useFractionOfScreen=0; % For debugging.
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single
 % targets.
+
 % FIRST RUN (measures two thresholds, interleaved)
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
