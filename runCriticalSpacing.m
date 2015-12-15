@@ -86,7 +86,7 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.usePurring=1; % Play purring sound while awaiting user response.
+o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.negativeFeedback=0;

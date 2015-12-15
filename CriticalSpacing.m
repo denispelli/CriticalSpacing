@@ -125,7 +125,7 @@ o.fixationLineWeightDeg=0.005;
 o.measureBeta=0;
 o.task='identify';
 o.announceDistance=0;
-o.usePurring=1;
+o.usePurring=0;
 o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 % This produces the standard adult condition:
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -547,14 +547,14 @@ try
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
     wrongBeep(end)=0;
-    purr=MakeBeep(70,1.0,44100);
+    purr=MakeBeep(140,1.0,44100);
     purr(end)=0;
     Snd('Open');
     
     % Instructions
     Screen('FillRect',window,white);
     string=[sprintf('Hello %s,\n',oo(condition).observer)];
-    string=[string sprintf('Please move the screen to be %.0f cm from your eye. ',oo(condition).viewingDistanceCm)];
+    string=[string sprintf('Please move the screen to be %.0f cm from your eye. Turn the computer sound on. ',oo(condition).viewingDistanceCm)];
     string=[string sprintf('You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. ')];
     for condition=1:conditions
         if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
@@ -571,7 +571,7 @@ try
     if any([oo.repeatedTargets])
         string=[string 'When you see many letters, they are all repetitions of just two letters. Please report both. '];
     end
-    string=[string '(Type slowly.) Look in the middle of the screen, ignoring the edges of the screen. (Quit anytime by pressing ESCAPE.) '];
+    string=[string '(Type slowly. Quit anytime by pressing ESCAPE.) Look in the middle of the screen, ignoring the edges of the screen. '];
     if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
         string=[string 'To begin, please fixate the crosshairs below, and, while fixating, press the SPACEBAR. '];
