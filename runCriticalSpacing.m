@@ -100,8 +100,9 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o.frameTheTarget=0; % For debugging.
 o.useFractionOfScreen=0; % For debugging.
-o.readLettersFromDisk=1; % Avoids bugs in font rendering in Windows.
-o.printSizeAndSpacing=0;
+o.readLettersFromDisk=1; % Makes program more portable.
+o.printSizeAndSpacing=0; % For debugging.
+o.displayAlphabet=0; % For debugging.
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single
