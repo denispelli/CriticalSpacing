@@ -34,8 +34,6 @@ for i=1:length(letters)
 end
 Screen('Close',w);
 Screen('Close',window);
-save('SavedLetters','savedLetters');
-%             Screen('Flip',window);
-%             Speak('Click to continue');
-%             GetClicks;
-
+filename=fullfile(fileparts(mfilename('fullpath')),'savedLetters');
+save(filename,'savedLetters');
+fprintf('Done.\n');

@@ -101,7 +101,7 @@ o.saveLettersToDisk=0;
 % o.observer='Shivam'; % specify actual observer name
 o.observer=''; % Name is requested at beginning of run.
 o.quit=0;
-o.viewingDistanceCm=300;
+o.viewingDistanceCm=600;
 o.flipScreenHorizontally=0;
 o.useQuest=1; % true(1) or false(0)
 o.thresholdParameter='spacing';
@@ -779,7 +779,8 @@ try
         white=255;
         if oo(condition).readLettersFromDisk
             if ~exist('savedLetters','var')
-                load('savedLetters.mat','savedLetters');
+                filename=fullfile(fileparts(mfilename('fullpath')),'lib','savedLetters');
+                load(filename,'savedLetters');
             end
             for i=1:length(letters)
                 which=strfind([savedLetters.letter],letters(i));
