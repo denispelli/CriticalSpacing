@@ -51,7 +51,7 @@ o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 % selected, otherwise it will abort and tell you the minimum viewing
 % distance that you need. You must then modify this file to set the new
 % viewing distance. And, of course, move the screen to that distance.
-o.viewingDistanceCm=500;
+o.viewingDistanceCm=1000;
 
 % MIRROR: In a small room, you can use a mirror to achieve a long viewing
 % distance. This switch tells our software to display a mirror image, so
@@ -94,7 +94,6 @@ o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding 'C'
 o.targetFont='Sloan';
 o.textFont='Calibri';
 o.fixationLocation='center';

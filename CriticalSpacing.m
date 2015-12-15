@@ -95,7 +95,8 @@ o.negativeFeedback=0;
 o.encouragement=0;
 o.repeatedTargets=1;
 o.useFractionOfScreen=0;
-o.useTextures=1;
+o.readLettersFromDisk=1;
+o.saveLettersToDisk=0;
 % o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
 o.observer=''; % Name is requested at beginning of run.
@@ -258,6 +259,8 @@ try
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
         end
     end
+    
+           
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
     screenHeight=RectHeight(screenRect);
@@ -276,7 +279,7 @@ try
             oo(condition).textSize=round((screenWidth-100)/22/textSizeScalar);
         end
     end
-    if 1 || IsWindows
+    if IsWindows
         % The high-quality text renderer on Windows clips the Sloan font.
         % So we select the low-quality renderer instead.
         Screen('Preference','TextRenderer',0);
@@ -555,31 +558,31 @@ try
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
     wrongBeep(end)=0;
-    purr=MakeBeep(300,0.6,44100);
+    purr=MakeBeep(70,1.0,44100);
     purr(end)=0;
     Snd('Open');
     
     % Instructions
     Screen('FillRect',window,white);
-    string=[sprintf('Hello %s,\n\n',oo(condition).observer)];
+    string=[sprintf('Hello %s,\n',oo(condition).observer)];
     string=[string sprintf('Please move the screen to be %.0f cm from your eye. ',oo(condition).viewingDistanceCm)];
+    string=[string sprintf('You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. ')];
     for condition=1:conditions
         if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
-            string=[string 'When you see one letter, please type it. '];
+            string=[string 'When you see one letter, please report it. '];
             break;
         end
     end
     for condition=1:conditions
         if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'spacing')
-            string=[string 'When you see three letters, please type just the middle letter. '];
+            string=[string 'When you see three letters, please report just the middle letter. '];
             break;
         end
     end
     if any([oo.repeatedTargets])
-        string=[string 'When you see many letters, they are all repetitions of just two letters. Please type both. '];
+        string=[string 'When you see many letters, they are all repetitions of just two letters. Please report both. '];
     end
-    string=[string 'Type slowly. Look in the middle of the screen, ignoring the edges of the screen. (Quit anytime by pressing ESCAPE.) '];
-    string=[string 'Please be patient when waiting for letters to appear. '];
+    string=[string '(Type slowly.) Look in the middle of the screen, ignoring the edges of the screen. (Quit anytime by pressing ESCAPE.) '];
     if any(isfinite([oo.durationSec]))
         string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
         string=[string 'To begin, please fixate the crosshairs below, and, while fixating, press the SPACEBAR. '];
@@ -767,17 +770,25 @@ try
         Screen('TextSize',window,sizePix);
         Screen('TextFont',window,oo(condition).targetFont);
         
-        if oo(condition).useTextures
-            % Create textures, one per letter
-            assert(streq(oo(condition).targetFont,'Sloan'));
-            letters=[oo(condition).alphabet oo(condition).borderLetter];
-            if oo(condition).measureThresholdParameterVertically
-                canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
-            else
-                canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix]*oo(condition).targetHeightOverWidth;
+         
+        % Create textures, one per letter
+        assert(streq(oo(condition).targetFont,'Sloan'));
+        letters=[oo(condition).alphabet oo(condition).borderLetter];
+        canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
+        black=0;
+        white=255;
+        if oo(condition).readLettersFromDisk
+            if ~exist('savedLetters','var')
+                load('savedLetters.mat','savedLetters');
             end
-            black=0;
-            white=255;
+            for i=1:length(letters)
+                which=strfind([savedLetters.letter],letters(i));
+                assert(length(which)==1);
+                letterImage=imresize(savedLetters(which).image,[oo(condition).targetPix oo(condition).targetPix]);
+                letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
+                letterStruct(i).rect=[0 0 oo(condition).targetPix oo(condition).targetPix]
+            end
+        else
             for i=1:length(letters)
                 [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
                 Screen('TextFont',letterStruct(i).texture,'Sloan');
@@ -786,13 +797,14 @@ try
                 Screen('TextSize',letterStruct(i).texture,sizePix);
                 Screen('FillRect',letterStruct(i).texture,white);
                 Screen('DrawText',letterStruct(i).texture,letters(i),letterStruct(i).rect(1),letterStruct(i).rect(4)-textYOffset,black,white,1);
-                %                 Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(letterStruct(i).rect,i*letterStruct(i).rect(3),0));
             end
-            %             Screen('Flip',window);
-            %             Speak('Click to continue');
-            %             GetClicks;
-            textureIndex=1;
+            %                 Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(letterStruct(i).rect,i*letterStruct(i).rect(3),0));
         end
+        %             Screen('Flip',window);
+        %             Speak('Click to continue');
+        %             GetClicks;
+        textureIndex=1;
+        
         spacingPix=round(spacingPix);
         if oo(condition).measureThresholdParameterVertically
             ySpacing=spacingPix;
@@ -872,9 +884,7 @@ try
                 lineIndex=lineIndex+1;
             end
         end
-        if oo(condition).useTextures
-            Screen('DrawTextures',window,textures,[],dstRects);
-        end
+        Screen('DrawTextures',window,textures,[],dstRects);
         if oo(condition).frameTheTarget
             letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
             Screen('FrameRect',window,[255 0 0],letterRect);
@@ -885,14 +895,13 @@ try
             Snd('Play',purr);
         end
         Screen('Flip',window); % show target and flankers
-        if oo(condition).useTextures
-            for i=1:length(letterStruct)
-                Screen('Close',letterStruct(i).texture);
-            end
-            if exist('lineTexture','var')
-                for i=1:length(lineTexture)
-                    Screen('Close',lineTexture(i));
-                end
+        % Discard all the textures, to free graphics memory.
+        for i=1:length(letterStruct)
+            Screen('Close',letterStruct(i).texture);
+        end
+        if exist('lineTexture','var')
+            for i=1:length(lineTexture)
+                Screen('Close',lineTexture(i));
             end
         end
         if oo(condition).repeatedTargets
