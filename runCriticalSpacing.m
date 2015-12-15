@@ -40,11 +40,12 @@ o.thresholdParameter='spacing';
 
 % Each "trial" is one response. When testing with repeated targets, each
 % presentation includes two targets, and demands two responses, so it
-% counts as two trials. 40 trials per threshold gives a very accurate
-% threshold estimate. 20 might be enough. Running this script measures 4
-% thresholds, one for each of 4 conditions. That takes about 20 minutes
-% with 40 trials per threshold, which drops to 10 minutes with 20 trials
-% per threshold.
+% counts as two trials. With nine possible letters, 20 trials per threshold
+% results in a threshold estimate with an SD that is about 10% of the mean.
+% (Reducing the number of letters to 5 doubles the SD.) Running this script
+% measures 4 thresholds, one for each of 4 conditions. That takes about 10
+% minutes with 20 trials per threshold. Doubling the nubmer of trials
+% halves the standard deviation.
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 
 % The viewing distance is set here. The program will try to use what you
@@ -99,6 +100,8 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o.frameTheTarget=0; % For debugging.
 o.useFractionOfScreen=0; % For debugging.
+o.readLettersFromDisk=1; % Avoids bugs in font rendering in Windows.
+o.printSizeAndSpacing=0;
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single

@@ -324,17 +324,6 @@ try
     ffprintf(ff,'\n%s %s\n',oo(1).functionNames,datestr(now));
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
-    if 0 && oo(1).hiDPIMultiple~=1
-        ffprintf(ff,'HiDPI: ');
-        if ismac
-            str='Your Retina display';
-        else
-            str='Your display';
-        end
-        ffprintf(ff,'%s has a dual-resolution HiDPI mode.\n',str);
-        resolution=Screen('Resolution',oo(1).screen);
-        ffprintf(ff,'Your System Preferences request a %d x %d buffer to drive %d x %d pixels.\n',screenBufferRect(3),screenBufferRect(4),resolution.width,resolution.height);
-    end
     resolution=Screen('Resolution',oo(1).screen);
 %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
     
@@ -655,11 +644,13 @@ try
         if oo(condition).repeatedTargets
             if oo(condition).measureThresholdParameterVertically
                 screenPix=min(screenHeight,screenWidth*oo(condition).targetHeightOverWidth);
+%                 screenPix=screenHeight;
             else
                 screenPix=min(screenWidth,screenHeight/oo(condition).targetHeightOverWidth);
+%                 screenPix=screenWidth;
             end
             if oo(condition).fixedSpacingOverSize
-                spacingPix=min(spacingPix,screenPix/(4+1/oo(condition).fixedSpacingOverSize));
+                spacingPix=min(spacingPix,screenPix/(2+1/oo(condition).fixedSpacingOverSize));
                 oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
             else
                 spacingPix=min(spacingPix,(screenPix-oo(condition).targetPix)/4);
@@ -769,12 +760,15 @@ try
         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
         Screen('TextSize',window,sizePix);
         Screen('TextFont',window,oo(condition).targetFont);
-        
          
         % Create textures, one per letter
         assert(streq(oo(condition).targetFont,'Sloan'));
         letters=[oo(condition).alphabet oo(condition).borderLetter];
-        canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
+        if oo(condition).measureThresholdParameterVertically
+            canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
+        else
+            canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix]*oo(condition).targetHeightOverWidth;
+        end
         black=0;
         white=255;
         if oo(condition).readLettersFromDisk
@@ -785,9 +779,9 @@ try
             for i=1:length(letters)
                 which=strfind([savedLetters.letter],letters(i));
                 assert(length(which)==1);
-                letterImage=imresize(savedLetters(which).image,[oo(condition).targetPix oo(condition).targetPix]);
+                letterImage=imresize(savedLetters(which).image,[sizePix sizePix]*textSizeScalar);
                 letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
-                letterStruct(i).rect=[0 0 oo(condition).targetPix oo(condition).targetPix]
+                letterStruct(i).rect=[0 0 sizePix sizePix]*textSizeScalar;
             end
         else
             for i=1:length(letters)
@@ -799,11 +793,15 @@ try
                 Screen('FillRect',letterStruct(i).texture,white);
                 Screen('DrawText',letterStruct(i).texture,letters(i),letterStruct(i).rect(1),letterStruct(i).rect(4)-textYOffset,black,white,1);
             end
-            %                 Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(letterStruct(i).rect,i*letterStruct(i).rect(3),0));
         end
-        %             Screen('Flip',window);
-        %             Speak('Click to continue');
-        %             GetClicks;
+        if oo(condition).printSizeAndSpacing
+            for i=1:length(letters)
+                Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(letterStruct(i).rect,i*letterStruct(i).rect(3),0));
+            end
+            Screen('Flip',window);
+            Speak('Click to continue');
+            GetClicks;
+        end
         textureIndex=1;
         
         spacingPix=round(spacingPix);
@@ -839,8 +837,9 @@ try
             xMax=xT+xSpacing*floor((screenWidth-xT-0.5*xPix)/xSpacing);
             yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
             yMax=yT+ySpacing*floor((screenHeight-yT-0.5*yPix)/ySpacing);
+            if oo(condition).printSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
+            if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing); end;
             if oo(condition).printSizeAndSpacing; fprintf('%d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-%             fprintf('%s: targetPix %.0f, spacingPix %.0f\n',oo(condition).thresholdParameter,oo(condition).targetPix,spacingPix);
             clear textures dstRects
             n=length(xMin:xSpacing:xMax);
             textures=zeros(1,n);
@@ -880,7 +879,7 @@ try
                     which=2+mod(lineIndex,2);
                 end
                 textures(lineIndex)=lineTexture(which);
-                dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-yMin));
+                dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
 %                 fprintf('line %d, which %d, texture %d, dstRect %d %d %d %d\n',lineIndex,which,lineTexture(which),dstRects(1:4,lineIndex));
                 lineIndex=lineIndex+1;
             end
