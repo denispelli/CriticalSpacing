@@ -60,11 +60,6 @@ o.viewingDistanceCm=1000;
 % letters.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 
-% This speaks an encouraging word after every trial, regardless of
-% accuracy. I anticipate that young children will like this, whereas adults
-% might not.
-o.encouragement=0; % Say "good," "very good," or "nice" after every trial.
-
 % For normal adults we use the restricted standard Sloan alphabet
 % (excluding C, which has been shown to be too similar to O).
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -85,6 +80,29 @@ o.borderLetter='X';
 % prove that your measured critical spacing is independent of letter size,
 % you might want to test with another value as well, e.g. 1.2 or 1.8.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+
+% SPEAK ENCOURAGEMENT. This speaks an encouraging word after every trial,
+% regardless of accuracy. I anticipate that young children will like this,
+% whereas adults might not.
+o.speakEncouragement=0; % Say "good," "very good," or "nice" after every trial.
+
+% SPEAK EACH LETTER. For testing children, I think it helps to give
+% auditory acknowledgement of each letter selected (typed). Adult
+% participants who type the answers themselves may prefer silence. So this
+% is optional.
+o.speakEachLetter=1; 
+
+% SPEECH. Some environments require silence, and Octave (like MATLB) on
+% Linux does not currently support the Psychtoolbox Speak.m command.
+% Turning this off suppresses all speech (except for debugging).
+% Positive-feedback beeps, which are not speech, are not affected.
+o.useSpeech=1;
+
+% I like getting a positive beep for right, and nothing for wrong. The
+% current purring sound is not attractive enough, so I prefer silence.
+o.beepPositiveFeedback=1;
+o.beepNegativeFeedback=0;
+o.usePurring=0;
 
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or

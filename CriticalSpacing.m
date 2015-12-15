@@ -89,10 +89,17 @@ Screen('Preference', 'Verbosity', 0); % mute Psychtoolbox's INFOs and WARNINGs
 Screen('Preference','SkipSyncTests',1);
 Screen('Preference','SuppressAllWarnings',1);
 
+% Sound
+o.beepPositiveFeedback=1;
+o.beepNegativeFeedback=0;
+o.usePurring=0;
+o.useSpeech=1;
+o.speakEachLetter=1; 
+o.speakEncouragement=0;
+o.speakViewingDistance=0;
+
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
-o.negativeFeedback=0;
-o.encouragement=0;
 o.repeatedTargets=1;
 o.useFractionOfScreen=0;
 o.readLettersFromDisk=1;
@@ -124,8 +131,6 @@ o.fixationCrossDeg=inf;
 o.fixationLineWeightDeg=0.005;
 o.measureBeta=0;
 o.task='identify';
-o.announceDistance=0;
-o.usePurring=0;
 o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 % This produces the standard adult condition:
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -423,9 +428,11 @@ try
                 oo(condition).tGuess=log10(oo(condition).targetDeg);
         end
         if nominalOverPossibleSize<2
-            Speak('You are too close to the screen.');
             msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "viewingDistanceCm" in your script.',10*ceil((2/nominalOverPossibleSize)*oo(condition).viewingDistanceCm/10));
-            Speak(msg);
+            if oo(condition).useSpeech
+                Speak('You are too close to the screen.');
+                Speak(msg);
+            end
             error(msg);
         end
         oo(condition).tGuessSd=2;
@@ -437,7 +444,7 @@ try
         range=6;
     end % for condition=1:conditions
     
-    if oo(1).announceDistance
+    if oo(1).speakViewingDistance && oo(1).useSpeech
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
     
@@ -588,9 +595,11 @@ try
     SetMouse(screenRect(3),screenRect(4),window);
     answer=GetKeypress(0,[spaceKey escapeKey],o.deviceIndex);
     if streq(answer,'ESCAPE')
-        Speak('Escape. This run is done.');
+        if oo(1).speakEachLetter && oo(1).useSpeech
+            Speak('Escape. This run is done.');
+        end
         ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
-        o.quit=1;
+        oo(1).quit=1;
         ListenChar(0);
         ShowCursor;
         sca;
@@ -943,7 +952,9 @@ try
                     break
                 end
             end
-            Speak(answer);
+            if oo(condition).speakEachLetter && oo(condition).useSpeech
+                Speak(answer);
+            end
             if streq(answer,'ESCAPE')
                 ListenChar(0);
                 ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
@@ -951,15 +962,17 @@ try
                 break;
             end
             if ismember(answer,targets)
-                Snd('Play',rightBeep);
+                if oo(condition).beepPositiveFeedback
+                    Snd('Play',rightBeep);
+                end
             else
-                if oo(condition).negativeFeedback
+                if oo(condition).beepNegativeFeedback
                     Snd('Play',wrongBeep);
                 end
             end
             responseString=[responseString answer];
         end
-        if oo(condition).encouragement && ~terminate
+        if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate
             switch randi(3);
                 case 1
                     Speak('Good!');
@@ -996,7 +1009,9 @@ try
     Screen('FillRect',window);
     %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
     Screen('Flip',window);
-    Speak('Congratulations.  This run is done.');
+    if oo(1).useSpeech
+        Speak('Congratulations.  This run is done.');
+    end
     ListenChar(0); % flush and reenable keyboard
     Snd('Close');
     Screen('CloseAll');

@@ -7,7 +7,7 @@ o.thresholdParameter='spacing';
 % o.thresholdParameter='size';
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=500;
-o.encouragement=0; % Randomly say good, very good, or nice after every trial.
+o.speakEncouragement=0; % Randomly say good, very good, or nice after every trial.
 
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
@@ -17,7 +17,7 @@ o.usePurring=1; % Play purring sound while awaiting user response.
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror to achieve a long viewing distance.
-o.negativeFeedback=0;
+o.beepNegativeFeedback=0;
 o.fixationCrossDeg=0;
 o.useFractionOfScreen=0;
 o.durationSec=inf; % duration of display of target and flankers
