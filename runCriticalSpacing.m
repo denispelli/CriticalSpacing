@@ -72,7 +72,10 @@ o.borderLetter='X';
 
 % For children, past investigators, including Jan Atkinson's Cambridge
 % Crowding Cards, have used symmetric letters HOTVX, so we provide that
-% option too. 
+% option too. However, pilot testing indicates that it takes more trials
+% with 5 possible targets to get the same precision (SD) as with 9 possible
+% targets. Time is paramount, so we're sticking with the 9 Sloan letters
+% for the time being.
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 
@@ -86,6 +89,7 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
+o.readLettersFromDisk=1; % Makes program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -100,7 +104,6 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o.frameTheTarget=0; % For debugging.
 o.useFractionOfScreen=0; % For debugging.
-o.readLettersFromDisk=1; % Makes program more portable.
 o.printSizeAndSpacing=0; % For debugging.
 o.displayAlphabet=0; % For debugging.
 
