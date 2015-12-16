@@ -102,7 +102,7 @@ o.speakViewingDistance=0;
 % They are overridden by what you provide in the argument struct oIn.
 o.repeatedTargets=1;
 o.useFractionOfScreen=0;
-o.readLettersFromDisk=1;
+o.readLettersFromDisk=0;
 o.saveLettersToDisk=0;
 % o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
@@ -254,10 +254,33 @@ try
     end
     for condition=1:conditions
         % Check availability of fonts.
-        Screen('TextFont',window,oo(condition).targetFont);
-        font=Screen('TextFont',window);
-        if ~streq(font,oo(condition).targetFont)
-            error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
+        if IsOSX
+            fontInfo=FontInfo('Fonts');
+            % Match full name, including style.
+            hits=streq({fontInfo.name},oo(condition).targetFont);
+            if sum(hits)<1
+                % Match family name, omitting style.
+                hits=streq({fontInfo.familyName},oo(condition).targetFont);
+            end
+            if sum(hits)==0
+                error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
+            end
+            if sum(hits)>1
+                hits
+                error('Multiple fonts with name "%s".',oo(condition).targetFont);
+            end
+            fontNumber=fontInfo(hits).number;
+            Screen('TextFont',window,fontNumber);
+            [font,number]=Screen('TextFont',window);
+            if ~(number==fontNumber)
+                error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
+            end
+        else
+            Screen('TextFont',window,oo(condition).targetFont);
+            font=Screen('TextFont',window);
+            if ~streq(font,oo(condition).targetFont)
+                error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
+            end
         end
         Screen('TextFont',window,oo(condition).textFont);
         font=Screen('TextFont',window);
@@ -788,6 +811,9 @@ try
             end
             for i=1:length(letters)
                 which=strfind([savedLetters.letter],letters(i));
+                if length(which)~=1
+                    error('Letter %c is not in savedLetters "%s".',letters(i),[savedLetters.letter]);
+                end
                 assert(length(which)==1);
                 letterImage=imresize(savedLetters(which).image,[sizePix sizePix]*textSizeScalar);
                 letterStruct(i).texture=Screen('MakeTexture',window,letterImage);

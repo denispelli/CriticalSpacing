@@ -64,6 +64,8 @@ o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 % (excluding C, which has been shown to be too similar to O).
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
+% o.alphabet='ijt'; 
+% o.borderLetter='!';
 
 % For children, past investigators, including Jan Atkinson's Cambridge
 % Crowding Cards, have used symmetric letters HOTVX, so we provide that
@@ -118,6 +120,10 @@ o.measureBeta=0;
 o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
 o.targetFont='Sloan';
+% o.targetFont='ClearviewText';
+% o.targetFont='Gotham Cond SSm Medium';
+% o.targetFont='Gotham Cond SSm Book';
+% o.targetFont='Retina Micro';
 o.textFont='Calibri';
 o.fixationLocation='center';
 o.frameTheTarget=0; % For debugging.

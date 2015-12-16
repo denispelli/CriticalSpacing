@@ -33,6 +33,9 @@ fi=FontInfo('Fonts');
 Screen('TextFont',w,fi(streq({fi.name},'Gotham Cond SSm Medium')).number);
 Screen('TextFont',w)
 Screen('TextFont',w,'Sloan');
+Screen('TextFont',w,'Gotham Cond SSm','Medium');
+Screen('TextFont',w)
+Screen('TextFont',w,'Sloan');
 % Screen('TextFont',w,'Gotham Cond SSm',33); % bold
 % Screen('TextFont',w)
 % Screen('TextFont',w,'Gotham Cond SSm',);
