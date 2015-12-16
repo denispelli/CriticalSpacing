@@ -139,6 +139,7 @@ o.borderLetter='X';
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 o.targetFont='Sloan';
+o.targetFontNumber=[];
 o.textFont='Calibri';
 o.textSizeDeg=0.4;
 o.deviceIndex=-3; % all keyboard and keypad devices
@@ -266,25 +267,29 @@ try
                 error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
             if sum(hits)>1
-                hits
                 error('Multiple fonts with name "%s".',oo(condition).targetFont);
             end
-            fontNumber=fontInfo(hits).number;
-            Screen('TextFont',window,fontNumber);
+            oo(condition).targetFontNumber=fontInfo(hits).number;
+            Screen('TextFont',window,oo(condition).targetFontNumber);
             [font,number]=Screen('TextFont',window);
-            if ~(number==fontNumber)
+            if ~(number==oo(condition).targetFontNumber)
                 error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
         else
+            oo(condition).targetFontNumber=[];
             Screen('TextFont',window,oo(condition).targetFont);
-            font=Screen('TextFont',window);
+            [font,oo(condition).targetFontNumber]=Screen('TextFont',window);
             if ~streq(font,oo(condition).targetFont)
                 error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
         end
-        Screen('TextFont',window,oo(condition).textFont);
+        % Due to a bug in Screen TextFont, it is imperative to specify a
+        % style number of zero in the next call after calling it with a
+        % fontNumber, as we did above.
+        Screen('TextFont',window,oo(condition).textFont,0);
         font=Screen('TextFont',window);
         if ~streq(font,oo(condition).textFont)
+%             error('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
         end
     end
@@ -791,11 +796,11 @@ try
             oo(condition).targetPix=sizePix*textSizeScalar/oo(condition).targetHeightOverWidth;
         end
         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-        Screen('TextSize',window,sizePix);
-        Screen('TextFont',window,oo(condition).targetFont);
          
         % Create textures, one per letter
-        assert(streq(oo(condition).targetFont,'Sloan'));
+%         assert(streq(oo(condition).targetFont,'Sloan'));
+        Screen('TextSize',window,sizePix);
+        Screen('TextFont',window,oo(condition).targetFontNumber);
         letters=[oo(condition).alphabet oo(condition).borderLetter];
         if oo(condition).measureThresholdParameterVertically
             canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
@@ -822,9 +827,9 @@ try
         else
             for i=1:length(letters)
                 [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
-                Screen('TextFont',letterStruct(i).texture,'Sloan');
-                font=Screen('TextFont',letterStruct(i).texture);
-                assert(streq(font,'Sloan'));
+                Screen('TextFont',letterStruct(i).texture,oo(condition).targetFontNumber);
+                [font,number]=Screen('TextFont',letterStruct(i).texture);
+                assert(number==oo(condition).targetFontNumber);
                 Screen('TextSize',letterStruct(i).texture,sizePix);
                 Screen('FillRect',letterStruct(i).texture,white);
                 Screen('DrawText',letterStruct(i).texture,letters(i),letterStruct(i).rect(1),letterStruct(i).rect(4)-textYOffset,black,white,1);
@@ -959,7 +964,7 @@ try
             Screen('TextSize',window,oo(condition).textSize);
             Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
             Screen('DrawText',window,sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
-            Screen('TextFont',window,oo(condition).targetFont);
+            Screen('TextFont',window,oo(condition).targetFontNumber);
             x=100;
             y=screenRect(4)-50;
             for a=oo(condition).alphabet

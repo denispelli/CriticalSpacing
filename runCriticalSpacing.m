@@ -32,6 +32,7 @@ o.repeatedTargets=1; % Repeat target letters for immunity to fixation errors.
 % that the Response page be printed with letters having the same aspect
 % ratio.
 o.targetHeightOverWidth=3;
+o.targetHeightOverWidth=1;
 
 % Selecting "spacing" measures the critical spacing of crowding. Selecting
 % "size" measures letter acuity. We will test both, usually interleaved.
@@ -64,8 +65,6 @@ o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 % (excluding C, which has been shown to be too similar to O).
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
-% o.alphabet='ijt'; 
-% o.borderLetter='!';
 
 % For children, past investigators, including Jan Atkinson's Cambridge
 % Crowding Cards, have used symmetric letters HOTVX, so we provide that
@@ -109,7 +108,7 @@ o.usePurring=0;
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readLettersFromDisk=1; % Makes program more portable.
+o.readLettersFromDisk=0; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
