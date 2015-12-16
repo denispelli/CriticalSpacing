@@ -1,7 +1,9 @@
 function SaveLettersToDisk(o)
 if nargin<1
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+    o.alphabet = ':lijt{}()'; % PTB3 does NOT allow ][;
     o.borderLetter='X';
+    o.borderLetter='!';
     o.targetFont='Sloan';
 end
 letterPix=512;
