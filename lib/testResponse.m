@@ -22,6 +22,7 @@ Snd('Open');
 condition = 1;
 oo.deviceIndex = -3;
 oo.alphabet='!7ij:()[]/|'; % Sloan alphabet, excluding C
+oo.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
 oo.borderLetter='!';
 
 stimulus=Shuffle(oo(condition).alphabet);
@@ -31,8 +32,9 @@ targets=stimulus(1:2);
 
 terminate=0;
 responseString='';
-for i=1:length(oo(condition).alphabet)
-  oo(condition).responseKeys(i)=KbName(oo(condition).alphabet(i));
+% for i=1:length(oo(condition).alphabet)
+for i=1:length(oo(condition).validKeys)
+  oo(condition).responseKeys(i)=KbName(oo(condition).validKeys{i}); % this returns keyCode as integer
 end
 disp('Targets are:');
 disp(targets);
@@ -43,24 +45,31 @@ disp(' ');
 
 for i=1:length(targets)
   while(1)
-    answer=GetKeypress(0,[escapeKey oo(condition).responseKeys],oo.deviceIndex,1);
-    answer=upper(answer);
-    if ~ismember(answer,responseString)
-      break
-    end
-  end
-  if oo(condition).speakEachLetter && oo(condition).useSpeech
-    Speak(answer);
+    answer=GetKeypress(0,[escapeKey oo(condition).responseKeys],oo.deviceIndex,0); % no filtering!
+    % answer=upper(answer); % be loyal to values; we will filter reported
+    % target from true response soon
+    
+    % if already recorded, then wait for press for the next target!
+    if ~ismember(answer,responseString);break;end
+    
   end
   
-  if streq(answer,'ESCAPE')
+    if streq(answer,'ESCAPE')
     ListenChar(0);
     ffprintf('*** Observer typed escape. Run terminated.\n');
     terminate=1;
     break;
+    end
+  
+  reportedTarget = oo.alphabet(ismember(oo.alphabet, answer));
+  fprintf('Target seen ==>%s<==\n', reportedTarget);
+
+  if oo(condition).speakEachLetter && oo(condition).useSpeech
+    % speak the target 1 observer saw, not the keyCode '1!'
+    Speak(reportedTarget);
   end
   
-  if ismember(answer,targets)
+  if ismember(reportedTarget,targets)
     if oo(condition).beepPositiveFeedback
       Snd('Play',rightBeep);
     end
@@ -69,7 +78,7 @@ for i=1:length(targets)
       Snd('Play',wrongBeep);
     end
   end
-  responseString=[responseString answer];
+  responseString=[responseString reportedTarget];
 end
 
 if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate
