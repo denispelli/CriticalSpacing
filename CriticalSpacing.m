@@ -67,7 +67,7 @@ function oo=CriticalSpacing(oIn)
 % o.measureThresholdParameterVertically, 1 for vertically, and 0 for
 % horizontally. Target size can be made proportional to spacing, allowing
 % measurement of critical spacing without knowing the acuity, because
-% we use the largest possible letter for each spacing. 
+% we use the largest possible letter for each spacing.
 %
 % ECCENTRICITY 0. Current testing is focussed on eccentricity 0.
 %
@@ -94,7 +94,7 @@ o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;
 o.usePurring=0;
 o.useSpeech=1;
-o.speakEachLetter=1; 
+o.speakEachLetter=1;
 o.speakEncouragement=0;
 o.speakViewingDistance=0;
 
@@ -135,10 +135,15 @@ o.task='identify';
 o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 % This produces the standard adult condition:
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.validKeys = {'D','H','K','N','O','R','S','V','Z'}; % valid key codes ('4$') corresponding to alphabet
 o.borderLetter='X';
 % And this produces the HOTVX condition:
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
+%oo.alphabet='!7ij:()[]/|'; % bar-symbol alphabet
+%oo.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
+%oo.borderLetter='!';
+o.simulateGetChar=0; %if 1, only output single char for keypress, instead of true keycode like '4$'
 o.targetFont='Sloan';
 o.targetFontNumber=[];
 o.textFont='Calibri';
@@ -202,8 +207,8 @@ Screen('Preference','SkipSyncTests',1);
 escapeKey=KbName('ESCAPE');
 spaceKey=KbName('space');
 for condition=1:conditions
-    for i=1:length(oo(condition).alphabet)
-        oo(condition).responseKeys(i)=KbName(oo(condition).alphabet(i));
+    for i=1:length(oo(condition).validKeys)
+        oo(condition).responseKeys(i)=KbName(oo(condition).validKeys{i}); % this returns keyCode as integer
     end
 end
 
@@ -295,8 +300,8 @@ try
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
         end
     end
-    
-           
+
+
     screenRect=Screen('Rect',window);
     screenWidth=RectWidth(screenRect);
     screenHeight=RectHeight(screenRect);
@@ -322,7 +327,7 @@ try
     end
     ListenChar(0); % flush
     ListenChar(2); % no echo
-    
+
     % Observer name
     if length(oo(1).observer)==0
         Screen('TextSize',window,oo(1).textSize);
@@ -338,7 +343,7 @@ try
         end
         Screen('FillRect',window);
     end
-    
+
     oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
     if ~exist(oo(1).dataFolder,'dir')
@@ -362,7 +367,7 @@ try
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
     resolution=Screen('Resolution',oo(1).screen);
 %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
-    
+
     for condition=1:conditions
         if oo(condition).repeatedTargets
             oo(condition).presentations=ceil(oo(condition).trials/2);
@@ -370,7 +375,7 @@ try
         else
             oo(condition).presentations=oo(condition).trials;
         end
-        
+
         % prepare to draw fixation cross
         fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
         fixationCrossPix=min(fixationCrossPix,2*screenWidth); % full width and height, can extend off screen
@@ -398,7 +403,7 @@ try
         %         if ~oo(condition).repeatedTargets
         %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
         %         end
-        
+
         oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
         oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
         oo(condition).targetDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
@@ -458,6 +463,7 @@ try
             bounds=TextBounds(scratchWindow,lettersInCells,1);
             Screen('Close',scratchWindow);
             oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
+
         end
 
         terminate=0;
@@ -490,11 +496,11 @@ try
         grain=0.01;
         range=6;
     end % for condition=1:conditions
-    
+
     if oo(1).speakViewingDistance && oo(1).useSpeech
         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
     end
-    
+
     cal.screen=max(Screen('Screens'));
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
@@ -547,7 +553,7 @@ try
     ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
     ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
     ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
-    
+
     % Identify the computer
     cal.screen=0;
     computer=Screen('Computer');
@@ -589,7 +595,7 @@ try
         % silently do nothing if not supported. But when I used it on my
         % video projector, Screen gave a fatal error. That's ok, but how do
         % I figure out when it's safe to use?
-        
+
         if computer.osx || computer.macintosh
             Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
         end
@@ -597,7 +603,7 @@ try
     for condition=1:conditions
         oo(condition).cal=cal;
     end
-    
+
     rightBeep=MakeBeep(2000,0.05,44100);
     rightBeep(end)=0;
     wrongBeep=MakeBeep(500,0.5,44100);
@@ -605,7 +611,7 @@ try
     purr=MakeBeep(140,1.0,44100);
     purr(end)=0;
     Snd('Open');
-    
+
     % Instructions
     Screen('FillRect',window,white);
     string=[sprintf('Hello %s,\n',oo(condition).observer)];
@@ -640,7 +646,7 @@ try
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,51);
     Screen('Flip',window);
     SetMouse(screenRect(3),screenRect(4),window);
-    answer=GetKeypress(0,[spaceKey escapeKey],o.deviceIndex);
+    answer=GetKeypress([spaceKey escapeKey],o.deviceIndex, o.simulateGetChar);
     if streq(answer,'ESCAPE')
         if oo(1).speakEachLetter && oo(1).useSpeech
             Speak('Escape. This run is done.');
@@ -662,7 +668,7 @@ try
         xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
         yT=oo(condition).fix.y; % target
     end
-    
+
     condList=Shuffle(condList);
     for presentation=1:length(condList)
         condition=condList(presentation);
@@ -815,7 +821,7 @@ try
             oo(condition).targetPix=sizePix*textSizeScalar/oo(condition).targetHeightOverWidth;
         end
         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         
+
         % Create textures, one per letter
         Screen('TextSize',window,sizePix);
         Screen('TextFont',window,oo(condition).targetFontNumber);
@@ -879,6 +885,7 @@ try
             Speak('Click to continue');
             GetClicks;
         end
+        
         % Create texture for each line, for first 3 lines. The rest are the
         % copies.
         textureIndex=1;       
@@ -1043,14 +1050,10 @@ try
         responseString='';
         for i=1:length(targets)
             while(1)
-                answer=GetKeypress(0,[escapeKey oo(condition).responseKeys],o.deviceIndex);
-                answer=upper(answer);
-                if ~ismember(answer,responseString)
-                    break
-                end
-            end
-            if oo(condition).speakEachLetter && oo(condition).useSpeech
-                Speak(answer);
+                answer=GetKeypress([escapeKey oo(condition).responseKeys],oo.deviceIndex,o.simulateGetChar); % no filtering!
+
+                % if already recorded, then wait for press for the next target!
+                if ~ismember(answer,responseString);break;end
             end
             if streq(answer,'ESCAPE')
                 ListenChar(0);
@@ -1058,7 +1061,17 @@ try
                 terminate=1;
                 break;
             end
-            if ismember(answer,targets)
+
+            reportedTarget = oo.alphabet(ismember(oo.alphabet, answer));
+            fprintf('Target seen ==>%s<==\n', reportedTarget);
+
+            if oo(condition).speakEachLetter && oo(condition).useSpeech
+              % speak the target 1 observer saw, not the keyCode '1!'
+              Speak(reportedTarget);
+             end
+
+
+            if ismember(reportedTarget,targets)
                 if oo(condition).beepPositiveFeedback
                     Snd('Play',rightBeep);
                 end
@@ -1067,7 +1080,7 @@ try
                     Snd('Play',wrongBeep);
                 end
             end
-            responseString=[responseString answer];
+            responseString=[responseString reportedTarget];
         end
         if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate
             switch randi(3);
@@ -1102,7 +1115,7 @@ try
             oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
         end
     end % for presentation=1:length(condList)
-    
+
     Screen('FillRect',window);
     %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
     Screen('Flip',window);
