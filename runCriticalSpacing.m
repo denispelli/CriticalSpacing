@@ -124,8 +124,8 @@ o.targetFont='Sloan';
 o.targetFont='Gotham Cond SSm Book';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
-% o.alphabet='0123456789'; 
-
+o.alphabet='0123456789'; 
+o.showLineOfLetters=0;
 
 o.textFont='Calibri';
 o.fixationLocation='center';
@@ -141,8 +141,8 @@ o.displayAlphabet=0; % For debugging.
 % FIRST RUN (measures two thresholds, interleaved)
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
-o(2)=o(1); % Copy the condition
-o(2).thresholdParameter='size';
+% o(2)=o(1); % Copy the condition
+% o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
@@ -150,10 +150,10 @@ oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 % SECOND RUN (measures two thresholds, interleaved)
 % We retain the observer name obtained during the first run for use in the
 % second run.
-o(1).repeatedTargets=0;
-o(2).repeatedTargets=0;
-o(1).observer=oRepeated(1).observer;
-o(2).observer=oRepeated(2).observer;
+% o(1).repeatedTargets=0;
+% o(2).repeatedTargets=0;
+% o(1).observer=oRepeated(1).observer;
+% o(2).observer=oRepeated(2).observer;
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
 %oSingle=CriticalSpacing(o); % one target

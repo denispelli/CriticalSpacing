@@ -153,6 +153,7 @@ o.displayAlphabet=0;
 o.frameTheTarget=0;
 o.printSizeAndSpacing=0;
 o.printScreenResolution=0;
+o.showLineOfLetters=0;
 if IsWindows
     textSizeScalar=1.336;
     textYOffset=0.75;
@@ -442,21 +443,26 @@ try
         oo(condition).fix.targetHeightPix=oo(condition).targetPix;
         fixationLines=ComputeFixationLines(oo(condition).fix);
         
-        % Measure o.targetHeightOverWidth
-        sizePix=100;
-        scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
-        Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-        Screen('TextSize',scratchWindow,sizePix);
-        for i=1:length(oo(condition).alphabet)
-            lettersInCells{i}=oo(condition).alphabet(i);
+        % Set or measure o.targetHeightOverWidth
+        if oo(condition).setTargetHeightOverWidth
+            oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth;
+        else
+            assert(~oo(condition).readLettersFromDisk);
+            sizePix=100;
+            scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
+            Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
+            Screen('TextSize',scratchWindow,sizePix);
+            for i=1:length(oo(condition).alphabet)
+                lettersInCells{i}=oo(condition).alphabet(i);
+            end
+            bounds=TextBounds(scratchWindow,lettersInCells,1);
+            Screen('Close',scratchWindow);
+            oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
         end
-        bounds=TextBounds(scratchWindow,lettersInCells,1);
-        Screen('Close',scratchWindow);
-        oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
 
         terminate=0;
         assert(oo(condition).targetHeightOverWidth>=1);
-        % nominal over possible VERTICAL size
+        % Nominal acuity size over smallest possible VERTICAL size
         possiblePix=oo(condition).targetHeightOverWidth*oo(condition).minimumTargetPix;
         nominalOverPossibleSize=oo(condition).nominalAcuityDeg*pixPerDeg/possiblePix;
         switch oo(condition).thresholdParameter
@@ -837,6 +843,7 @@ try
                 letterStruct(i).rect=[0 0 sizePix sizePix]*textSizeScalar;
             end
         else
+            % Get bounds of font
             scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
             Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
             Screen('TextSize',scratchWindow,sizePix);
@@ -845,6 +852,8 @@ try
             end
             bounds=TextBounds(scratchWindow,lettersInCells,1);
             Screen('Close',scratchWindow);
+            
+            % Create texture for each letter
             canvasRect=bounds;
             canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
             fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f, bounds %.0f %.0f %.0f %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds),bounds);
@@ -856,6 +865,9 @@ try
                 Screen('TextSize',letterStruct(i).texture,sizePix);
                 Screen('FillRect',letterStruct(i).texture,white);
                 Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1),-bounds(2)-textYOffset,black,white,1);
+%                 image1=Screen('GetImage',letterStruct(i).texture,[],'backBuffer',0,1);
+%                 figure
+%                 imshow(image1);
            end
         end
         if oo(condition).displayAlphabet
@@ -867,6 +879,8 @@ try
             Speak('Click to continue');
             GetClicks;
         end
+        % Create texture for each line, for first 3 lines. The rest are the
+        % copies.
         textureIndex=1;       
         spacingPix=floor(spacingPix);
         if oo(condition).measureThresholdParameterVertically
@@ -935,16 +949,30 @@ try
 %                     fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
                     xPos=round(x-xPix/2);
 
-                    % o.targetHeightOverWidth
+                    % Compute o.targetHeightOverWidth, and, if requested,
+                    % o.setTargetHeightOverWidth
                     r=round(letterStruct(which).rect);
                     oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                     if oo(condition).setTargetHeightOverWidth
                         r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
                         oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+                        dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
+                    else
+                        dstRects(1:4,textureIndex)=OffsetRect(round(letterStruct(which).rect),xPos,0);
                     end
-                    dstRects(1:4,textureIndex)=OffsetRect(round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1)),xPos,0);
+                    % One dst rect for each letter in the line.
+                    if oo(condition).showLineOfLetters
+                        Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
+                        fprintf('x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',x,xPos,textureIndex,dstRects(1:4,textureIndex));
+                    end
                     textureIndex=textureIndex+1;
                 end
+                if oo(condition).showLineOfLetters
+                    Screen('Flip',window);
+                    Speak('Line of letters. Click to continue.');
+                    GetClicks;
+                end
+                % Create a texture holding one line of letters.
                 [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 screenWidth RectHeight(canvasRect)],8,0);
                 Screen('FillRect',lineTexture(lineIndex),white);
                 Screen('DrawTextures',lineTexture(lineIndex),textures,[],dstRects);
