@@ -20,7 +20,7 @@ clear o
 % repetition. Having both measures validates the new test in observers who
 % fixate well. And assesses the effect of eye position errors in young
 % children and patients.
-% o.repeatedTargets=0; % 
+% o.repeatedTargets=0; %
 o.repeatedTargets=1; % Repeat target letters for immunity to fixation errors.
 
 % The standard Sloan font has an aspect ratio of 1:1, which is too fat to
@@ -75,6 +75,11 @@ o.borderLetter='X';
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 
+% Skinny letters are better for testing critical spacing.
+% o.alphabet='!7ij:()[]/|'; % bar-symbol alphabet
+% o.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
+% o.borderLetter='!';
+
 % Song, Levi, and Pelli (2014) suggest a 1.4 ratio of spacing to size
 % because it is large enough to avoid overlap masking and small enough to
 % measure critical spacing that is a least 1.4x bigger than acuity. To
@@ -91,7 +96,7 @@ o.speakEncouragement=0; % Say "good," "very good," or "nice" after every trial.
 % auditory acknowledgement of each letter selected (typed). Adult
 % participants who type the answers themselves may prefer silence. So this
 % is optional.
-o.speakEachLetter=1; 
+o.speakEachLetter=1;
 
 % SPEECH. Some environments require silence, and Octave (like MATLB) on
 % Linux does not currently support the Psychtoolbox Speak.m command.
@@ -124,7 +129,7 @@ o.targetFont='Sloan';
 o.targetFont='Gotham Cond SSm Book';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
-% o.alphabet='0123456789'; 
+% o.alphabet='0123456789';
 
 
 o.textFont='Calibri';
