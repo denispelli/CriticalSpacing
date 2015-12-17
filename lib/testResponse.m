@@ -45,7 +45,7 @@ disp(' ');
 
 for i=1:length(targets)
   while(1)
-    answer=GetKeypress(0,[escapeKey oo(condition).responseKeys],oo.deviceIndex,0); % no filtering!
+    answer=GetKeypress([escapeKey oo(condition).responseKeys],oo.deviceIndex,0); % no filtering!
     % answer=upper(answer); % be loyal to values; we will filter reported
     % target from true response soon
     
