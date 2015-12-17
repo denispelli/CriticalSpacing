@@ -1,9 +1,7 @@
 function SaveLettersToDisk(o)
 if nargin<1
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-    o.alphabet = ':lijt{}()'; % PTB3 does NOT allow ][;
     o.borderLetter='X';
-    o.borderLetter='!';
     o.targetFont='Sloan';
 end
 letterPix=512;
@@ -17,15 +15,15 @@ end
 window=Screen('OpenWindow',0,255);
 Screen('FillRect',window);
 Screen('Flip',window);
-assert(streq(o.targetFont,'Sloan'));
+assert(streq(o.targetFont,o.targetFont));
 letters=[o.alphabet o.borderLetter];
 canvasRect=[0 0 letterPix letterPix];
 black=0;
 white=255;
 [w,wRect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
-Screen('TextFont',w,'Sloan');
+Screen('TextFont',w,o.targetFont);
 font=Screen('TextFont',w);
-assert(streq(font,'Sloan'));
+assert(streq(font,o.targetFont));
 Screen('TextSize',w,letterPix/textSizeScalar);
 for i=1:length(letters)
     savedLetters(i).letter=letters(i);
@@ -40,5 +38,5 @@ Screen('Close',w);
 Screen('Close',window);
 filename=fullfile(fileparts(mfilename('fullpath')),'savedLetters');
 save(filename,'savedLetters');
-fprintf('Saved images of Sloan letters %s.\n',letters);
+fprintf('Saved images of %s letters "%s".\n',o.targetFont,letters);
 fprintf('Done.\n');
