@@ -116,15 +116,14 @@ o.thresholdParameter='spacing';
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.measureThresholdParameterVertically=nan; % depends on parameter
-o.setTargetHeightOverWidth=0;
-o.targetHeightOverWidth=nan;
+o.targetHeightOverWidth=3;
 o.minimumTargetPix=6;
 o.eccentricityDeg=0; % location of target, relative to fixation, in degrees
 % o.eccentricityDeg=16;
 % o.radialOrTangential='tangential'; % values 'radial', 'tangential'
 o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
-screenRect=Screen('Rect',0);
+screenRect= Screen('Rect',0);
 o.fixationLocation='center'; % 'left', 'right'
 o.trials=40; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
@@ -140,7 +139,6 @@ o.borderLetter='X';
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 o.targetFont='Sloan';
-o.targetFontNumber=[];
 o.textFont='Calibri';
 o.textSizeDeg=0.4;
 o.deviceIndex=-3; % all keyboard and keypad devices
@@ -202,7 +200,7 @@ escapeKey=KbName('ESCAPE');
 spaceKey=KbName('space');
 for condition=1:conditions
     for i=1:length(oo(condition).alphabet)
-        oo(condition).responseKeys(i)=KbName(oo(condition).alphabet(i));
+        oo(condition).responseKeys(i)=KbName(oo(condition).alphabet(i)); %FIXME: response key (code) for ! is returned only by 1!
     end
 end
 
@@ -268,29 +266,25 @@ try
                 error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
             if sum(hits)>1
+                hits
                 error('Multiple fonts with name "%s".',oo(condition).targetFont);
             end
-            oo(condition).targetFontNumber=fontInfo(hits).number;
-            Screen('TextFont',window,oo(condition).targetFontNumber);
+            fontNumber=fontInfo(hits).number;
+            Screen('TextFont',window,fontNumber);
             [font,number]=Screen('TextFont',window);
-            if ~(number==oo(condition).targetFontNumber)
+            if ~(number==fontNumber)
                 error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
         else
-            oo(condition).targetFontNumber=[];
             Screen('TextFont',window,oo(condition).targetFont);
-            [font,oo(condition).targetFontNumber]=Screen('TextFont',window);
+            font=Screen('TextFont',window);
             if ~streq(font,oo(condition).targetFont)
                 error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
         end
-        % Due to a bug in Screen TextFont, it is imperative to specify a
-        % style number of zero in the next call after calling it with a
-        % fontNumber, as we did above.
-        Screen('TextFont',window,oo(condition).textFont,0);
+        Screen('TextFont',window,oo(condition).textFont);
         font=Screen('TextFont',window);
         if ~streq(font,oo(condition).textFont)
-%             error('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
         end
     end
@@ -304,7 +298,7 @@ try
         % Adjust textSize so our string fits on screen.
         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
         Screen('TextSize',window,oo(condition).textSize);
-        Screen('TextFont',window,oo(condition).textFont,0);
+        Screen('TextFont',window,oo(condition).textFont);
         boundsRect=Screen('TextBounds',window,'Please slowly type your name followed by RETURN.');
         fraction=RectWidth(boundsRect)/(screenWidth-100);
         oo(condition).textSize=round(oo(condition).textSize/fraction);
@@ -325,7 +319,7 @@ try
     % Observer name
     if length(oo(1).observer)==0
         Screen('TextSize',window,oo(1).textSize);
-        Screen('TextFont',window,oo(1).textFont,0);
+        Screen('TextFont',window,oo(1).textFont);
         Screen('DrawText',window,'Hi.',50,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',50,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.4));
@@ -442,18 +436,6 @@ try
         oo(condition).fix.targetHeightPix=oo(condition).targetPix;
         fixationLines=ComputeFixationLines(oo(condition).fix);
         
-        % Measure o.targetHeightOverWidth
-        sizePix=100;
-        scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
-        Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-        Screen('TextSize',scratchWindow,sizePix);
-        for i=1:length(oo(condition).alphabet)
-            lettersInCells{i}=oo(condition).alphabet(i);
-        end
-        bounds=TextBounds(scratchWindow,lettersInCells,1);
-        Screen('Close',scratchWindow);
-        oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
-
         terminate=0;
         assert(oo(condition).targetHeightOverWidth>=1);
         % nominal over possible VERTICAL size
@@ -627,7 +609,7 @@ try
     else
         string=[string 'Now, to begin, please press the SPACEBAR. '];
     end
-    Screen('TextFont',window,oo(condition).textFont,0);
+    Screen('TextFont',window,oo(condition).textFont);
     Screen('TextSize',window,round(oo(condition).textSize*0.4));
     Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),50,screenRect(4)-50,black,white,1);
     Screen('TextSize',window,oo(condition).textSize);
@@ -809,10 +791,11 @@ try
             oo(condition).targetPix=sizePix*textSizeScalar/oo(condition).targetHeightOverWidth;
         end
         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
+        Screen('TextSize',window,sizePix);
+        Screen('TextFont',window,oo(condition).targetFont);
          
         % Create textures, one per letter
-        Screen('TextSize',window,sizePix);
-        Screen('TextFont',window,oo(condition).targetFontNumber);
+        assert(streq(oo(condition).targetFont,'Sloan'));
         letters=[oo(condition).alphabet oo(condition).borderLetter];
         if oo(condition).measureThresholdParameterVertically
             canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
@@ -837,38 +820,27 @@ try
                 letterStruct(i).rect=[0 0 sizePix sizePix]*textSizeScalar;
             end
         else
-            scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
-            Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-            Screen('TextSize',scratchWindow,sizePix);
-            for i=1:length(letters)
-                lettersInCells{i}=letters(i);
-            end
-            bounds=TextBounds(scratchWindow,lettersInCells,1);
-            Screen('Close',scratchWindow);
-            canvasRect=bounds;
-            canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
-            fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f, bounds %.0f %.0f %.0f %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds),bounds);
             for i=1:length(letters)
                 [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
-                Screen('TextFont',letterStruct(i).texture,oo(condition).targetFontNumber);
-                [font,number]=Screen('TextFont',letterStruct(i).texture);
-                assert(number==oo(condition).targetFontNumber);
+                Screen('TextFont',letterStruct(i).texture,'Sloan');
+                font=Screen('TextFont',letterStruct(i).texture);
+                assert(streq(font,'Sloan'));
                 Screen('TextSize',letterStruct(i).texture,sizePix);
                 Screen('FillRect',letterStruct(i).texture,white);
-                Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1),-bounds(2)-textYOffset,black,white,1);
-           end
+                Screen('DrawText',letterStruct(i).texture,letters(i),letterStruct(i).rect(1),letterStruct(i).rect(4)-textYOffset,black,white,1);
+            end
         end
         if oo(condition).displayAlphabet
             for i=1:length(letters)
-                r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
-                Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
+                Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(letterStruct(i).rect,i*letterStruct(i).rect(3),0));
             end
             Screen('Flip',window);
             Speak('Click to continue');
             GetClicks;
         end
-        textureIndex=1;       
-        spacingPix=floor(spacingPix);
+        textureIndex=1;
+        
+        spacingPix=round(spacingPix);
         if oo(condition).measureThresholdParameterVertically
             ySpacing=spacingPix;
             xSpacing=spacingPix/oo(condition).targetHeightOverWidth;
@@ -888,14 +860,8 @@ try
                 which=strfind(letters,stimulus(textureIndex));
                 assert(length(which)==1)
                 textures(textureIndex)=letterStruct(which).texture;
-                r=round(letterStruct(which).rect);
-                oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                if oo(condition).setTargetHeightOverWidth
-                    r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
-                    oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                end
+                r=round(ScaleRect(letterStruct(which).rect,1/oo(condition).targetHeightOverWidth,1));
                 dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
-                fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
             end
             if ~streq(oo(condition).thresholdParameter,'spacing')
                 % Show only the target, omitting both flankers.
@@ -910,7 +876,6 @@ try
             if oo(condition).printSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
             if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
             if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-            if oo(condition).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',condition,MFileLineNr,xMin,screenWidth-xMax,yMin,screenHeight-yMax); end;
             clear textures dstRects
             n=length(xMin:xSpacing:xMax);
             textures=zeros(1,n);
@@ -934,15 +899,7 @@ try
                     textures(textureIndex)=letterStruct(which).texture;
 %                     fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
                     xPos=round(x-xPix/2);
-
-                    % o.targetHeightOverWidth
-                    r=round(letterStruct(which).rect);
-                    oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                    if oo(condition).setTargetHeightOverWidth
-                        r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
-                        oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                    end
-                    dstRects(1:4,textureIndex)=OffsetRect(round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1)),xPos,0);
+                    dstRects(1:4,textureIndex)=OffsetRect(round(ScaleRect(letterStruct(which).rect,1/oo(condition).targetHeightOverWidth,1)),xPos,0);
                     textureIndex=textureIndex+1;
                 end
                 [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 screenWidth RectHeight(canvasRect)],8,0);
@@ -967,9 +924,9 @@ try
         if oo(condition).frameTheTarget
             letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
             Screen('FrameRect',window,[255 0 0],letterRect);
-            fprintf('screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f\n',screenHeight,RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window));
+            fprintf('screenHeight %d, letterRect height %d, targetPix %d, textSize %d\n',screenHeight,RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window));
         end
-        Screen('TextFont',window,oo(condition).textFont,0);
+        Screen('TextFont',window,oo(condition).textFont);
         if oo(condition).usePurring
             Snd('Play',purr);
         end
@@ -998,18 +955,18 @@ try
             if ~oo(condition).repeatedTargets
                 Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
             end
-            Screen('TextFont',window,oo(condition).textFont,0);
+            Screen('TextFont',window,oo(condition).textFont);
             Screen('TextSize',window,oo(condition).textSize);
             Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
             Screen('DrawText',window,sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
-            Screen('TextFont',window,oo(condition).targetFontNumber);
+            Screen('TextFont',window,oo(condition).targetFont);
             x=100;
             y=screenRect(4)-50;
             for a=oo(condition).alphabet
                 [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
                 x=x+oo(condition).textSize/2;
             end
-            Screen('TextFont',window,oo(condition).textFont,0);
+            Screen('TextFont',window,oo(condition).textFont);
             Screen('Flip',window); % display response screen
         end
         responseString='';

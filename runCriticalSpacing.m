@@ -31,8 +31,8 @@ o.repeatedTargets=1; % Repeat target letters for immunity to fixation errors.
 % override it to get any ratio you like, including 1. It seems important
 % that the Response page be printed with letters having the same aspect
 % ratio.
-o.targetHeightOverWidth=3;
-o.targetHeightOverWidth=1;
+o.setTargetHeightOverWidth=3;
+o.setTargetHeightOverWidth=0;
 
 % Selecting "spacing" measures the critical spacing of crowding. Selecting
 % "size" measures letter acuity. We will test both, usually interleaved.
@@ -121,13 +121,17 @@ o.minimumTargetPix=8; % Make sure the letters are well rendered.
 o.targetFont='Sloan';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm Medium';
-% o.targetFont='Gotham Cond SSm Book';
+o.targetFont='Gotham Cond SSm Book';
 % o.targetFont='Retina Micro';
+% o.targetFont='Calibri';
+% o.alphabet='0123456789'; 
+
+
 o.textFont='Calibri';
 o.fixationLocation='center';
-o.frameTheTarget=0; % For debugging.
+o.frameTheTarget=1; % For debugging.
 o.useFractionOfScreen=0; % For debugging.
-o.printSizeAndSpacing=0; % For debugging.
+o.printSizeAndSpacing=1; % For debugging.
 o.displayAlphabet=0; % For debugging.
 
 % Set up for interleaved testing of size and spacing thresholds. In the
@@ -152,7 +156,7 @@ o(1).observer=oRepeated(1).observer;
 o(2).observer=oRepeated(2).observer;
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
-oSingle=CriticalSpacing(o); % one target
+%oSingle=CriticalSpacing(o); % one target
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
