@@ -1,3 +1,5 @@
+% Quick tests to access my Gotham font, which has many styles.
+
 fi=FontInfo('Fonts');
 hits=[streq({fi.familyName},'Gotham Cond SSm')];
 myfi=fi(hits);
