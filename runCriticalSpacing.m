@@ -113,7 +113,7 @@ o.usePurring=0;
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readLettersFromDisk=0; % 1 makes the program more portable.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -129,9 +129,11 @@ o.targetFont='Gotham Cond SSm Medium';
 % o.targetFont='Gotham Cond SSm Book';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
-o.alphabet='123456789'; 
-o.borderLetter='0';
-o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
+% o.alphabet='123456789'; 
+% o.borderLetter='0';
+% o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
+o.targetFont='Sticks';
+o.minimumTargetPix=2; % Make sure the letters are well rendered.
 
 o.textFont='Calibri';
 o.fixationLocation='center';
@@ -156,18 +158,20 @@ o(2)=o(1); % Copy the condition
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-% oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % SECOND RUN (measures two thresholds, interleaved)
 % We retain the observer name obtained during the first run for use in the
 % second run.
+o(1).thresholdParameter='size';
 o(1).repeatedTargets=0;
 o(2).repeatedTargets=0;
-% o(1).observer=oRepeated(1).observer;
-% o(2).observer=oRepeated(2).observer;
+o(1).observer=oRepeated(1).observer;
+o(2).observer=oRepeated(2).observer;
+o=o(1);
 % Test two conditions interleaved: 'spacing' and 'size', with single
 % target.
-oSingle=CriticalSpacing(o); % one target
+%oSingle=CriticalSpacing(o); % one target
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
