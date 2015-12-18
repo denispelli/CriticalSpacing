@@ -85,12 +85,12 @@ for i=1:length(letters)
    Screen('DrawingFinished',scratchWindow); % Might make GetImage more reliable. Suggested by Mario Kleiner.
    WaitSecs(0.05);
    Screen('DrawTexture',window,scratchWindow,savedAlphabet(ia).rect,windowRect);
-   letterImage=Screen('GetImage',scratchWindow);
-   imshow(letterImage);
-%    letterImage=Screen('GetImage',scratchWindow,bounds,'drawBuffer');
+%    letterImage=Screen('GetImage',scratchWindow);
+%    imshow(letterImage);
+   letterImage=Screen('GetImage',scratchWindow,bounds,'drawBuffer');
    savedAlphabet(ia).images{i}=letterImage;
 %    savedAlphabet(ia).images{i}=letterImage(:,:,2);
-   imshow(savedAlphabet(ia).images{i});
+%    imshow(savedAlphabet(ia).images{i});
 %    Screen('DrawText',window,letters(i),-bounds(1)+savedAlphabet(ia).dx(i),-bounds(2),black,white,1);
    Screen('Flip',window);
 end

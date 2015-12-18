@@ -980,7 +980,7 @@ try
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
             Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
-            Screen('FrameRect',window,0,letterStruct(i).rect);
+            Screen('FrameRect',window,0,OffsetRect(r,i*RectWidth(r),RectHeight(r)));
          end
          Screen('Flip',window);
          Speak('Click to continue');
