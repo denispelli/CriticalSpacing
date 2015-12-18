@@ -1,3 +1,4 @@
+function SaveStickLettersToDisk
 s = [ ...
   '111'
   '211'
