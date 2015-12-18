@@ -880,7 +880,9 @@ try
             for i=1:length(letters)
                 desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
                 letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
+                letterStruct(i).width=RectWidth(letterStruct(i).bounds);
             end
+            oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
             Screen('Close',scratchWindow);
             
             % Create texture for each letter
