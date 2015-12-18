@@ -47,11 +47,10 @@ if simulateGetChar %KbStrokeWait/KbWait ignores shift
   if streq(response,'space'); response=' '; end
   if ismember(response, {'period', '.>', '.'}); response = '.'; end
   if isDebug;fprintf('We recorded ==>%s<==\n', response);end
-
-
+  
+  
 else
   % return all that is captured
-
   if isDebug;fprintf('We recorded ==>%s<==\n', response);end
 end
 

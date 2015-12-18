@@ -340,7 +340,7 @@ try
         Screen('TextSize',window,round(oo(1).textSize*0.4));
         Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),50,screenRect(4)-50,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
-        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,white,1,o.deviceIndex);
+        name=GetEchoString(window,'Name:',50,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
         for i=1:conditions
             oo(i).observer=name;
         end
@@ -665,7 +665,7 @@ try
     DrawFormattedText(window,string,50,50-0.5*oo(1).textSize,black,51);
     Screen('Flip',window);
     SetMouse(screenRect(3),screenRect(4),window);
-    answer=GetKeypress([spaceKey escapeKey],o.deviceIndex, o.simulateGetChar);
+    answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex, oo(condition).simulateGetChar);
     if streq(answer,'ESCAPE')
         if oo(1).speakEachLetter && oo(1).useSpeech
             Speak('Escape. This run is done.');
@@ -1077,7 +1077,8 @@ try
         responseString='';
         for i=1:length(targets)
             while(1)
-                answer=GetKeypress([escapeKey oo(condition).responseKeys],oo.deviceIndex,o.simulateGetChar); % no filtering!
+                [escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,oo(condition).simulateGetChar,
+                answer=GetKeypress([escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,oo(condition).simulateGetChar); % no filtering!
 
                 % if already recorded, then wait for press for the next target!
                 if ~ismember(answer,responseString);break;end
@@ -1089,8 +1090,7 @@ try
                 break;
             end
 
-            reportedTarget = oo.alphabet(ismember(oo.alphabet, answer));
-            fprintf('Target seen ==>%s<==\n', reportedTarget);
+            reportedTarget = oo(condition).alphabet(ismember(oo.alphabet, answer));
 
             if oo(condition).speakEachLetter && oo(condition).useSpeech
               % speak the target 1 observer saw, not the keyCode '1!'
