@@ -104,7 +104,7 @@ else
 end
 
 % Read back only 1 color channel for efficiency reasons:
-image1=Screen('GetImage', w, [], 'backBuffer', 0, 1);
+image1=Screen('GetImage',w,[],'backBuffer',0,1);
 
 % Find all nonzero, i.e. non background, pixels:
 [y,x]=find(image1(:,:));

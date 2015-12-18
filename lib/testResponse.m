@@ -96,6 +96,6 @@ end
 %   end
 assert(length(targets)==length(responseString))
 responses=sort(targets)==sort(responseString);
-fprintf('responses sending to QUEST are:%d %d\n', responses(1), responses(2));
+fprintf('Recorded responses are:%d %d\n', responses(1), responses(2));
 ListenChar(1);
 end
