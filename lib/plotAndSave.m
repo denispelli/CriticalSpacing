@@ -1,6 +1,6 @@
-letters = '123456789';
+letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-for i=1:1%numel(letters)
+for i=1:numel(letters)
     figure('Units', 'pixels', 'Position', [0 0 600 600]);
     text(0,300, letters(i), 'Units', 'pixels', 'FontName', 'Sloan','FontUnits', 'pixels', 'FontSize', 600);
     box off
@@ -14,12 +14,12 @@ for i=1:1%numel(letters)
     [ss, Map] = frame2im(F);
     
 %     ss = imread('this.png');
-    close;
+    close; 
     
-    
+       
     % we just use the ss here, dont actually need to plot the stuff as
     % below
     figure;image(ss);pause;close; % see the coordinates, for programming the clipping
-    figure;imshow(ss);pause;close; % this is what we see
+%     figure;imshow(ss);pause;close; % this is what we see
     
 end
