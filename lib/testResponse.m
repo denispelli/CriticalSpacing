@@ -1,4 +1,5 @@
 function testResponse
+ListenChar(2);
 % emulates CriticalSpacing procedure for response collection and processing
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
@@ -36,31 +37,30 @@ responseString='';
 for i=1:length(oo(condition).validKeys)
   oo(condition).responseKeys(i)=KbName(oo(condition).validKeys{i}); % this returns keyCode as integer
 end
-disp('Targets are:');
-disp(targets);
+fprintf('Targets are: ==>%s<==\n', targets);
 disp('Checking for the responseKeys list below:');
 disp(oo(condition).responseKeys);
 disp(KbName(oo.responseKeys));
-disp(' ');
+disp('-----------------------------------------');
 
 for i=1:length(targets)
   while(1)
     answer=GetKeypress([escapeKey oo(condition).responseKeys],oo.deviceIndex,0); % no filtering!
     % answer=upper(answer); % be loyal to values; we will filter reported
     % target from true response soon
-    
+
     % if already recorded, then wait for press for the next target!
     if ~ismember(answer,responseString);break;end
-    
+
   end
-  
+
     if streq(answer,'ESCAPE')
     ListenChar(0);
     ffprintf('*** Observer typed escape. Run terminated.\n');
     terminate=1;
     break;
     end
-  
+
   reportedTarget = oo.alphabet(ismember(oo.alphabet, answer));
   fprintf('Target seen ==>%s<==\n', reportedTarget);
 
@@ -68,7 +68,7 @@ for i=1:length(targets)
     % speak the target 1 observer saw, not the keyCode '1!'
     Speak(reportedTarget);
   end
-  
+
   if ismember(reportedTarget,targets)
     if oo(condition).beepPositiveFeedback
       Snd('Play',rightBeep);
@@ -96,7 +96,6 @@ end
 %   end
 assert(length(targets)==length(responseString))
 responses=sort(targets)==sort(responseString);
-disp('responses sending to QUEST are:')
-disp(responses);
-
+fprintf('responses sending to QUEST are:%d %d\n', responses(1), responses(2));
+ListenChar(1);
 end

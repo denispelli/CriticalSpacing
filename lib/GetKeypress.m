@@ -17,7 +17,8 @@ if nargin >= 1
   if isDebug; disp('Enabled keys list is:');disp(enableKeys);end
 end
 if nargin<2
-  deviceIndex=-3; % All keyboards and keypads.
+  % All keyboards and keypads.
+  deviceIndex=-3;
 end
 if nargin<3
   % simulate the bahavior of GetChar() -- only return the character response
@@ -25,6 +26,7 @@ if nargin<3
   simulateGetChar = 1;
 end
 KbName('UnifyKeyNames'); % make sure this is set
+
 
 while KbCheck; end
 response=0;
@@ -53,21 +55,8 @@ else
   if isDebug;fprintf('We recorded ==>%s<==\n', response);end
 end
 
-if 0
-  %[keyIsDown, secs, keyCode] = KbCheck(); % we only need keyIsDown and keyCode
-  if keyIsDown
-    % several keys pressed at once is ignored here for simplicity!
-    whichKey = find(keyCode,1);
-    if ~isempty(whichKey)
-      response = KbName(find(keyCode,1));
-    end
-  end
-  while KbCheck;end
-end
 
-
-
-if nargin >= 2
+if nargin >= 1
   RestrictKeysForKbCheck(oldEnableKeys);
 end
 end
