@@ -1089,8 +1089,8 @@ try
                 terminate=1;
                 break;
             end
-
-            reportedTarget = oo(condition).alphabet(ismember(oo.alphabet, answer));
+            
+            reportedTarget = oo(condition).alphabet(ismember(oo(condition).alphabet, answer));
 
             if oo(condition).speakEachLetter && oo(condition).useSpeech
               % speak the target 1 observer saw, not the keyCode '1!'
