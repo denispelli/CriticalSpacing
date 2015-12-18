@@ -79,17 +79,28 @@ white = 1;
 Screen('FillRect',w,0);
 
 screenRect=Screen('Rect',w);
+for i=1:length(text);
+   if iscell(text)
+      len(i)=length(text{i});
+   else
+      len(i)=length(text(i,:));
+   end
+end
+n=max(len);
+textSize=Screen('TextSize',w);
+rect=[0 0 n*textSize 1.5*textSize];
+rect=CenterRect(rect,screenRect);
 if yPositionIsBaseline
     % Draw text string baseline at location x,y with a wide margin from lower
     % left corner of screen. The left and lower margins accommodate the many
     % fonts with descenders, and the occasional fonts that have fancy capital
     % letters with flourishes that extend to the left of the starting point.
-    x0=screenRect(1)+min(2*Screen('TextSize',w),RectWidth(screenRect)/20);
-    y0=screenRect(4)-min(2*Screen('TextSize',w),RectHeight(screenRect)/2);
+    x0=rect(1);
+    y0=rect(4)-0.5*textSize;
 else
     % Draw text string with bounding box origin at upper left corner of screen.
-    x0=0;
-    y0=0;
+    x0=rect(1);
+    y0=rect(2);
 end
 if iscell(text)
     for i=1:length(text)
