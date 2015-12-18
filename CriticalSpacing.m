@@ -159,11 +159,14 @@ o.frameTheTarget=0;
 o.printSizeAndSpacing=0;
 o.printScreenResolution=0;
 o.showLineOfLetters=0;
+o.showBounds=0;
+o.speakSizeAndSpacing=0;
+
 if IsWindows
-    textSizeScalar=1.336;
+    o.textFontHeightOverNominal=1.336;
     textYOffset=0.75;
 else
-    textSizeScalar=1.0;
+    o.textFontHeightOverNominal=1.0;
     textYOffset=0;
 end
 
@@ -317,7 +320,7 @@ try
         % The TextBounds seem to be wrong on Windows, so we explicitly set
         % a reasonable textSize.
         if IsWindows
-            oo(condition).textSize=round((screenWidth-100)/22/textSizeScalar);
+            oo(condition).textSize=round((screenWidth-100)/22/oo(condition).textFontHeightOverNominal);
         end
     end
     if IsWindows
@@ -448,11 +451,8 @@ try
         oo(condition).fix.targetHeightPix=oo(condition).targetPix;
         fixationLines=ComputeFixationLines(oo(condition).fix);
         
-        % Set or measure o.targetHeightOverWidth
-        if oo(condition).setTargetHeightOverWidth
-            oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth;
-        else
-            assert(~oo(condition).readLettersFromDisk);
+        if ~oo(condition).readLettersFromDisk
+            % calibrate font size
             sizePix=100;
             scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
             Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
@@ -463,7 +463,26 @@ try
             bounds=TextBounds(scratchWindow,lettersInCells,1);
             Screen('Close',scratchWindow);
             oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
-
+            if oo(conditions).showBounds
+                % Currently useless, because you can't see the letters.
+                % They are drawn with color 1, alas. Could change
+                % TextBounds to use color 255.
+                bounds=TextBounds(window,lettersInCells,1);
+                %                 Screen('DrawText',window,lettersInCells{1},0,0,0,255,1);
+                Screen('FrameRect',window,[255 0 0],bounds+100);
+                Screen('Flip',window);
+                Speak('Bounds. Click to continue.');
+                GetClicks;
+            end
+            oo(condition).targetFontHeightOverNominal=RectHeight(bounds)/sizePix;
+        else
+            oo(condition).targetFontHeightOverNominal=nan;
+            oo(condition).targetHeightOverWidth=nan; % get it from savedLetters
+        end
+        
+        % Set o.targetHeightOverWidth
+        if oo(condition).setTargetHeightOverWidth
+            oo(condition).targetHeightOverWidth=nan; % get it from savedLetters
         end
 
         terminate=0;
@@ -703,7 +722,7 @@ try
         if oo(condition).fixedSpacingOverSize
             spacingPix=max(spacingPix,oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
         end
-        if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+        if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominal %.2f, targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominal,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
         if oo(condition).repeatedTargets
             if oo(condition).measureThresholdParameterVertically
                 screenPix=min(screenHeight,screenWidth*oo(condition).targetHeightOverWidth);
@@ -814,11 +833,11 @@ try
         stimulus=Shuffle(oo(condition).alphabet);
         stimulus=stimulus(1:3); % three random letters, all different.
         if oo(condition).measureThresholdParameterVertically
-            sizePix=round(oo(condition).targetPix/textSizeScalar);
-            oo(condition).targetPix=sizePix*textSizeScalar;
+            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominal);
+            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominal;
         else
-            sizePix=round(oo(condition).targetPix/textSizeScalar*oo(condition).targetHeightOverWidth);
-            oo(condition).targetPix=sizePix*textSizeScalar/oo(condition).targetHeightOverWidth;
+            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominal*oo(condition).targetHeightOverWidth);
+            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominal/oo(condition).targetHeightOverWidth;
         end
         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
 
@@ -844,9 +863,9 @@ try
                     error('Letter %c is not in savedLetters "%s".',letters(i),[savedLetters.letter]);
                 end
                 assert(length(which)==1);
-                letterImage=imresize(savedLetters(which).image,[sizePix sizePix]*textSizeScalar);
+                letterImage=imresize(savedLetters(which).image,[sizePix sizePix]*oo(condition).targetFontHeightOverNominal);
                 letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
-                letterStruct(i).rect=[0 0 sizePix sizePix]*textSizeScalar;
+                letterStruct(i).rect=[0 0 sizePix sizePix]*oo(condition).targetFontHeightOverNominal;
             end
         else
             % Get bounds of font
@@ -855,8 +874,13 @@ try
             Screen('TextSize',scratchWindow,sizePix);
             for i=1:length(letters)
                 lettersInCells{i}=letters(i);
+                letterStruct(i).bounds=TextBounds(scratchWindow,letters(i),1);
             end
             bounds=TextBounds(scratchWindow,lettersInCells,1);
+            for i=1:length(letters)
+                desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
+                letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
+            end
             Screen('Close',scratchWindow);
             
             % Create texture for each letter
@@ -870,7 +894,7 @@ try
                 assert(number==oo(condition).targetFontNumber);
                 Screen('TextSize',letterStruct(i).texture,sizePix);
                 Screen('FillRect',letterStruct(i).texture,white);
-                Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1),-bounds(2)-textYOffset,black,white,1);
+                Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2)-textYOffset,black,white,1);
 %                 image1=Screen('GetImage',letterStruct(i).texture,[],'backBuffer',0,1);
 %                 figure
 %                 imshow(image1);
@@ -928,7 +952,7 @@ try
             xMax=xT+xSpacing*floor((screenWidth-xT-0.5*xPix)/xSpacing);
             yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
             yMax=yT+ySpacing*floor((screenHeight-yT-0.5*yPix)/ySpacing);
-            if oo(condition).printSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
+            if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
             if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
             if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
             if oo(condition).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',condition,MFileLineNr,xMin,screenWidth-xMax,yMin,screenHeight-yMax); end;
@@ -969,6 +993,7 @@ try
                     end
                     % One dst rect for each letter in the line.
                     if oo(condition).showLineOfLetters
+                        Screen('DrawTexture',window,textures(textureIndex),[],dstRects(1:4,textureIndex));
                         Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
                         fprintf('x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',x,xPos,textureIndex,dstRects(1:4,textureIndex));
                     end
@@ -1002,7 +1027,7 @@ try
         if oo(condition).frameTheTarget
             letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
             Screen('FrameRect',window,[255 0 0],letterRect);
-            fprintf('screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f\n',screenHeight,RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window));
+            fprintf('%d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',condition,screenHeight,RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
         end
         Screen('TextFont',window,oo(condition).textFont,0);
         if oo(condition).usePurring

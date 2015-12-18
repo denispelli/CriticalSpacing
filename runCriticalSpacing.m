@@ -76,8 +76,8 @@ o.borderLetter='X';
 % o.borderLetter='N';
 
 % Skinny letters are better for testing critical spacing.
-% o.alphabet='!7ij:()[]/|'; % bar-symbol alphabet
-% o.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
+% o.alphabet='7ij:()[]/|'; % bar-symbol alphabet
+% o.validKeys = {'7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
 % o.borderLetter='!';
 
 % Song, Levi, and Pelli (2014) suggest a 1.4 ratio of spacing to size
@@ -125,18 +125,24 @@ o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
 o.targetFont='Sloan';
 % o.targetFont='ClearviewText';
-% o.targetFont='Gotham Cond SSm Medium';
-o.targetFont='Gotham Cond SSm Book';
+o.targetFont='Gotham Cond SSm Medium';
+% o.targetFont='Gotham Cond SSm Book';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
-o.alphabet='0123456789'; 
-o.showLineOfLetters=0;
+o.alphabet='123456789'; 
+o.borderLetter='0';
+o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 o.textFont='Calibri';
 o.fixationLocation='center';
-o.frameTheTarget=1; % For debugging.
+
+% DEBUGGING AIDS
+o.showLineOfLetters=0;
+o.showBounds=0;
+o.speakSizeAndSpacing=0;
+o.frameTheTarget=0; % For debugging.
 o.useFractionOfScreen=0; % For debugging.
-o.printSizeAndSpacing=1; % For debugging.
+o.printSizeAndSpacing=0; % For debugging.
 o.displayAlphabet=0; % For debugging.
 
 % Set up for interleaved testing of size and spacing thresholds. In the

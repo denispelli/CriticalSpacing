@@ -96,7 +96,7 @@ end
 %   end
 assert(length(targets)==length(responseString))
 responses=sort(targets)==sort(responseString);
-disp('responses sending to QUEST are:')
+disp('recorded responses are:')
 disp(responses);
 
 end
