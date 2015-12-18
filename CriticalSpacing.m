@@ -101,7 +101,7 @@ o.speakViewingDistance=0;
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
 o.repeatedTargets=1;
-o.useFractionOfScreen=.2;
+o.useFractionOfScreen=0;
 o.readAlphabetFromDisk=1;
 o.saveLettersToDisk=0;
 % o.observer='junk';
@@ -146,7 +146,7 @@ o.borderLetter='X';
 o.simulateGetChar=0; %if 1, only output single char for keypress, instead of true keycode like '4$'
 o.targetFont='Sloan';
 o.targetFontNumber=[];
-o.textFont='Verdana';
+o.textFont='Trebuchet MS';
 o.textSizeDeg=0.4;
 o.deviceIndex=-3; % all keyboard and keypad devices
 if o.measureBeta
@@ -154,7 +154,7 @@ if o.measureBeta
    o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
 end
 % DEBUGGING AIDS
-o.displayAlphabet=0;
+o.displayAlphabet=1;
 o.frameTheTarget=0;
 o.printSizeAndSpacing=0;
 o.printScreenResolution=0;
@@ -980,6 +980,7 @@ try
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
             Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
+            Screen('FrameRect',window,0,letterStruct(i).rect);
          end
          Screen('Flip',window);
          Speak('Click to continue');
