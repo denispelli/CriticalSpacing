@@ -1,4 +1,29 @@
 function savedAlphabet=SaveAlphabetToDisk(o)
+
+% Accessory to CriticalSpacing, to enhance portability by doing font
+% rendering once on a Mac with all the fancy fonts, and doing all
+% subsequent work, on every platform, with the saved rendering. Saves a
+% rendered font and alphabet in a MAT file, savedAlphabet, which can hold
+% any number.
+
+% When you save a new font to the MAT file, SaveAlphabetToDisk first looks
+% for that font in the MAT file. if it finds it, it overwrites it.
+% Otherwise it adds the new font. Thus one can freely write many fonts to
+% it and always be sure of retrieving the latest of what's available in the
+% file.
+% 
+% Right now, we save a list of letters to use, in the MAT file. i think it
+% would be more elegant to consider the MAT file as a data base and allow
+% the user to use any set of letters that is present in the MAT file,
+% without necessarily using them all. this will require only minor changes
+% to CriticalSpacing.m, giving preference to the new request over what is
+% saved.
+
+% December 18, 2015. Written by Denis Pelli, with a big assist from Hormet
+% Yiltiz. Hormet wrote the code that gets MATLAB to render a letter,
+% independent of the psychtoolbox. We need this because the Psychtoolbox
+% Screen GetImage command is very flakey.
+
 if nargin<1
    sca
    
