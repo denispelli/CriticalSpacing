@@ -129,11 +129,11 @@ o.targetFont='Gotham Cond SSm Medium';
 % o.targetFont='Gotham Cond SSm Book';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
-% o.alphabet='123456789'; 
-% o.borderLetter='0';
-% o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
-o.targetFont='Sticks';
-o.minimumTargetPix=2; % Make sure the letters are well rendered.
+o.alphabet='123456789'; 
+o.borderLetter='0';
+o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
+% o.targetFont='Sticks';
+% o.minimumTargetPix=2; % Make sure the letters are well rendered.
 
 o.textFont='Calibri';
 o.fixationLocation='center';
