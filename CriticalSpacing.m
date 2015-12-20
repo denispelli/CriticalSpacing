@@ -295,9 +295,9 @@ try
                error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
          end
-         % Due to a bug in Screen TextFont, it is imperative to specify a
-         % style number of zero in the next call after calling it with a
-         % fontNumber, as we did above.
+         % Due to a bug in Screen TextFont (in December 2015), it is
+         % imperative to specify a style number of zero in the next call
+         % after calling it with a fontNumber, as we did above.
          Screen('TextFont',window,oo(condition).textFont,0);
          font=Screen('TextFont',window);
          if ~streq(font,oo(condition).textFont)
@@ -342,7 +342,7 @@ try
       Screen('DrawText',window,'Hi.',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       name=GetEchoString(window,'Name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
       for i=1:conditions
@@ -696,9 +696,9 @@ try
    end
    Screen('TextFont',window,oo(condition).textFont,0);
    Screen('TextSize',window,round(oo(condition).textSize*0.4));
-   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-instructionalMargin,black,white,1);
+   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
    Screen('TextSize',window,oo(condition).textSize);
-   DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLine),[],[],1.1);
+   DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLine)+3,[],[],1.1);
    Screen('Flip',window);
    SetMouse(screenRect(3),screenRect(4),window);
    answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex, oo(condition).simulateGetChar);
@@ -923,9 +923,14 @@ try
                error('Letter %c is not in savedAlphabet "%s".',letters(i),savedAlphabet(ia).letters);
             end
             assert(length(which)==1);
-            letterImage=imresize(savedAlphabet(ia).images{which},sizePix*[1 oo(condition).targetHeightOverWidth]);
+            if oo(condition).targetHeightOverWidth~=1
+               letterImage=imresize(savedAlphabet(ia).images{which},sizePix*[1 oo(condition).targetHeightOverWidth]);
+            else
+               letterImage=savedAlphabet(ia).images{which};
+            end
             letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
-            letterStruct(i).rect=[0 0 sizePix sizePix*oo(condition).targetHeightOverWidth];
+            letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
+%             letterStruct(i).rect=[0 0 sizePix sizePix*oo(condition).targetHeightOverWidth];
          end
       else
          % Get bounds of font
@@ -1070,7 +1075,8 @@ try
                end
                % One dst rect for each letter in the line.
                if oo(condition).showLineOfLetters
-                  Screen('DrawTexture',window,textures(textureIndex),[],dstRects(1:4,textureIndex));
+                  r=Screen('Rect',textures(textureIndex));
+                  Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
                   Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
                   fprintf('x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',x,xPos,textureIndex,dstRects(1:4,textureIndex));
                end
@@ -1084,7 +1090,8 @@ try
             % Create a texture holding one line of letters.
             [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 screenWidth RectHeight(canvasRect)],8,0);
             Screen('FillRect',lineTexture(lineIndex),white);
-            Screen('DrawTextures',lineTexture(lineIndex),textures,[],dstRects);
+            r=Screen('Rect',textures(1));
+            Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
          end
          clear textures dstRects
          lineIndex=1;
