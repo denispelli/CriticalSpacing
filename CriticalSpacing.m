@@ -154,7 +154,7 @@ if o.measureBeta
    o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
 end
 % DEBUGGING AIDS
-o.displayAlphabet=1;
+o.displayAlphabet=0;
 o.frameTheTarget=0;
 o.printSizeAndSpacing=0;
 o.printScreenResolution=0;
@@ -923,14 +923,11 @@ try
                error('Letter %c is not in savedAlphabet "%s".',letters(i),savedAlphabet(ia).letters);
             end
             assert(length(which)==1);
-            if oo(condition).targetHeightOverWidth~=1
-               letterImage=imresize(savedAlphabet(ia).images{which},sizePix*[1 oo(condition).targetHeightOverWidth]);
-            else
-               letterImage=savedAlphabet(ia).images{which};
-            end
+            letterImage=savedAlphabet(ia).images{which};
             letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
             letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
-%             letterStruct(i).rect=[0 0 sizePix sizePix*oo(condition).targetHeightOverWidth];
+            % The texture command will make the original rect to the
+            % display rect and automatically scale and stretch, as needed.
          end
       else
          % Get bounds of font
@@ -1071,7 +1068,12 @@ try
                   oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                   dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
                else
-                  dstRects(1:4,textureIndex)=OffsetRect(round(letterStruct(which).rect),xPos,0);
+                  if oo(condition).measureThresholdVertically
+                     heightPix=oo(condition).targetPix;
+                  else
+                     heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
+                  end
+                  dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect),xPos,0);
                end
                % One dst rect for each letter in the line.
                if oo(condition).showLineOfLetters
