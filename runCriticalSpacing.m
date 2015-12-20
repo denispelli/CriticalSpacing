@@ -61,11 +61,6 @@ o.viewingDistanceCm=1000;
 % letters.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 
-% For normal adults we use the restricted standard Sloan alphabet
-% (excluding C, which has been shown to be too similar to O).
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
-
 % For children, past investigators, including Jan Atkinson's Cambridge
 % Crowding Cards, have used symmetric letters HOTVX, so we provide that
 % option too. However, pilot testing indicates that it takes more trials
@@ -75,7 +70,7 @@ o.borderLetter='X';
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 
-% Skinny letters are better for testing critical spacing.
+% UNTESTED: Skinny letters are better for testing critical spacing.
 % o.alphabet='7ij:()[]/|'; % bar-symbol alphabet
 % o.validKeys = {'7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
 % o.borderLetter='!';
@@ -123,16 +118,24 @@ o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
+
+% For normal adults we use the restricted standard Sloan alphabet
+% (excluding C, which has been shown to be too similar to O).
 o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+o.validKeys={'D','H','K','N','O','R','S','V','Z'};
+
+% THESE FONTS ARE DESIGNED TO BE LEGIBLE AT SMALL SIZES.
 % o.targetFont='ClearviewText';
-o.targetFont='Gotham Cond SSm Medium';
 % o.targetFont='Gotham Cond SSm Book';
+% o.targetFont='Gotham Cond SSm Medium';
+o.targetFont='Gotham Cond SSm Bold';
 % o.targetFont='Retina Micro';
-% o.targetFont='Calibri';
+% o.targetFont='Sticks'; % Available only through savedAlphabet.
 o.alphabet='123456789'; 
 o.borderLetter='0';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
-% o.targetFont='Sticks';
 
 o.textFont='Calibri';
 o.fixationLocation='center';

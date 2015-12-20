@@ -79,6 +79,16 @@ function oo=CriticalSpacing(oIn)
 % target scaling eccentricity, as the target scaling eccentricity does to
 % the inner-flanker scaling eccentricity.
 %
+% VIEWING DISTANCE. The minimum viewing distance depends on
+% minimumTargetPix and pixPerCm. At that distance a minimumTargetPix-size
+% letter is half the normal acuity, so we can measure acuity on people who
+% are slightly better than normal. Normal acuity is 0.1 deg. Thus, if
+% minimumTargetPix=8, then we want 8 pixels to be less than 0.05 deg =
+% 0.05/57 radians. Thus
+% 0.05/57 <= 8/pixPerCm/distanceCm
+% solving for distanceCm
+% distanceCm >= (57/0.05)*8/pixPerCm = 9120/pixPerCm
+
 % Copyright 2015, Denis Pelli, denis.pelli@nyu.edu
 if nargin<1 || ~exist('oIn','var')
    oIn.noInputArgument=1;
@@ -341,6 +351,8 @@ try
       Screen('TextFont',window,oo(1).textFont,0);
       Screen('DrawText',window,'Hi.',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
+%       Screen('DrawText',window,'[The viewing distance %.0f cm can be changed (to at least ',instructionalMargin,screenRect(4)/2+2*oo(1).textSize,black,white);
+%       Screen('DrawText',window,'%.0f cm) only by quitting and editing the program.]',instructionalMargin,screenRect(4)/2+3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
@@ -523,25 +535,29 @@ try
       
       terminate=0;
       assert(oo(condition).targetHeightOverWidth>=1);
-      % Nominal acuity size over smallest possible VERTICAL size
-      possiblePix=oo(condition).targetHeightOverWidth*oo(condition).minimumTargetPix;
+      possiblePix=oo(condition).minimumTargetPix;
       nominalOverPossibleSize=oo(condition).nominalAcuityDeg*pixPerDeg/possiblePix;
       switch oo(condition).thresholdParameter
          case 'spacing',
-            oo(condition).tGuess=log10(oo(condition).spacingDeg);
             if oo(condition).fixedSpacingOverSize
                nominalOverPossibleSize=min(nominalOverPossibleSize,oo(condition).nominalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/possiblePix);
             end
-         case 'size',
-            oo(condition).tGuess=log10(oo(condition).targetDeg);
       end
+      minimumViewingDistanceCm=10*ceil((2/nominalOverPossibleSize)*oo(condition).viewingDistanceCm/10);
       if nominalOverPossibleSize<2
-         msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "viewingDistanceCm" in your script.',10*ceil((2/nominalOverPossibleSize)*oo(condition).viewingDistanceCm/10));
+         msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',minimumViewingDistanceCm);
          if oo(condition).useSpeech
             Speak('You are too close to the screen.');
             Speak(msg);
          end
          error(msg);
+      end
+      
+      switch oo(condition).thresholdParameter
+         case 'spacing',
+            oo(condition).tGuess=log10(oo(condition).spacingDeg);
+         case 'size',
+            oo(condition).tGuess=log10(oo(condition).targetDeg);
       end
       oo(condition).tGuessSd=2;
       oo(condition).pThreshold=0.7;
