@@ -11,7 +11,7 @@ function savedAlphabet=SaveAlphabetToDisk(o)
 % Otherwise it adds the new font. Thus one can freely write many fonts to
 % it and always be sure of retrieving the latest of what's available in the
 % file.
-% 
+%
 % Right now, we save a list of letters to use, in the MAT file. i think it
 % would be more elegant to consider the MAT file as a data base and allow
 % the user to use any set of letters that is present in the MAT file,
@@ -29,15 +29,14 @@ if nargin<1
    
    o.targetFont='Sloan';
    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-   o.validKeys = {'d','h','k','n','o','r','s','v','z'};
    o.borderLetter='X';
+   o.validKeys = {'d','h','k','n','o','r','s','v','z'};
    
-   o.targetFont='Gotham Cond SSm Medium';
-   o.targetFont='Gotham Cond SSm Black';
-   o.alphabet='123456789';
-   o.borderLetter='0';
-   o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
-
+%    o.targetFont='Gotham Cond SSm Medium';
+%    o.alphabet='123456789';
+%    o.borderLetter='0';
+%    o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
+   
    o.useMATLABFontRendering=1;
    showProgress=1;
    useWindow=0;
@@ -142,15 +141,16 @@ if useWindow
 end
 for i=1:length(letters)
    if o.useMATLABFontRendering
-      figure('Units','pixels','Position',[0 0 1024 1024]);
-      h=text(0,256,letters(i),'Units','pixels','FontName',o.targetFont,'FontUnits','pixels','FontSize',512);
+      f=figure('Units','pixels','Position',[0 0 1024 1024]);
+      h=text(0,256,letters(i),'Units','pixels','FontName',o.targetFont,'FontUnits','pixels','FontSize',512,'BackgroundColor',[1 1 1]);
+      set(f,'InvertHardcopy','off'); % Attempts to keep background white when we copy it.
       box off
       axis off
-      set(gca,'Color',[1 1 1],'XTick',[],'YTick',[]); % White background, no ticks.
+      set(gca,'XTick',[],'YTick',[]); 
       letterImage=frame2im(getframe(gcf));
       close; % figure
       letterImage=letterImage(:,:,2); % Convert RGB to grayscale.
-      savedAlphabet(ia).bounds{i}=ImageBounds(letterImage,letterImage(1,1));
+      savedAlphabet(ia).bounds{i}=ImageBounds(letterImage,letterImage(end,1));
       savedAlphabet(ia).images{i}=letterImage;
    else
       if useWindow
@@ -176,15 +176,29 @@ for i=1:length(letters)
    end
 end
 if o.useMATLABFontRendering
+   % Each letter is black on white, surrounded by gray.
+   % First we crop to exclude the general gray.
+   % Here we extract the black/white letter from the gray.
    b=savedAlphabet(ia).bounds{1};
    for i=1:length(letters)
       b=UnionRect(b,savedAlphabet(ia).bounds{i});
    end
    for i=1:length(letters)
       savedAlphabet(ia).images{i}=savedAlphabet(ia).images{i}(1+b(2):b(4),1+b(1):b(3));
-      %       size(savedAlphabet(ia).images{i})
+      % Now we find bounds of the black letter in its local white background.
+      % We trim off the excess white, and then get a tight bounding box for each
+      % letter. We use the union as a cropping rect for the alphabet, and
+      % we return a bounding box, within that, for each letter.
+      savedAlphabet(ia).bounds{i}=ImageBounds(savedAlphabet(ia).images{i});
+   end
+   b=savedAlphabet(ia).bounds{1};
+   for i=1:length(letters)
+      b=UnionRect(b,savedAlphabet(ia).bounds{i});
+   end
+   for i=1:length(letters)
+      savedAlphabet(ia).images{i}=savedAlphabet(ia).images{i}(1+b(2):b(4),1+b(1):b(3));
       savedAlphabet(ia).bounds{i}=OffsetRect(savedAlphabet(ia).bounds{i},-b(1),-b(2));
-      %       savedAlphabet(ia).bounds{i}
+      savedAlphabet(ia).width(i)=RectWidth(savedAlphabet(ia).bounds{i});
       savedAlphabet(ia).rect=OffsetRect(b,-b(1),-b(2));
       if showProgress
          if useWindow
