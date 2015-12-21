@@ -5,6 +5,8 @@ if nargin<1
   o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
   o.targetFont='Sticks';
   % this seed ensures no symmetry in a 3x2 block of binary matrix
+  % note that they are 14 > 10, which is currectly used, thus last four
+  % sticks were NOT in use now
   o.stickSeed = ['111'; '211'; '311'; '121'; '221'; '321'; '131'; '231'; '331'; '122'; '113'; '213'; '313'; '133'];
   o.stickUnitHeight = 10;
   o.stickUnitWidth = 3;
