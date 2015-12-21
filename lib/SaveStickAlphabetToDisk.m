@@ -8,8 +8,8 @@ if nargin<1
   % note that they are 14 > 10, which is currectly used, thus last four
   % sticks were NOT in use now
   o.stickSeed = ['111'; '211'; '311'; '121'; '221'; '321'; '131'; '231'; '331'; '122'; '113'; '213'; '313'; '133'];
-  o.stickUnitHeight = 10;
-  o.stickUnitWidth = 3;
+  o.stickUnitHeight = 5;
+  o.stickUnitWidth = 1;
   % 0 is segmented sticks but always single blocks horizontally; wosegmented
   % single stick could be potentially perceived as two objects
   % 1 is conected sticks but 2 blocks horizontally sometimes, and since
@@ -89,7 +89,7 @@ if o.generateResponsePage
   for i=1:numel(savedAlphabet(ia).images)-1 % last stick is border letter
     subplot(ceil(numel(savedAlphabet(ia).images)/3),3,i);
     imshow(savedAlphabet(ia).images{i});
-    title(num2str(i));
+    title(num2str(o.validKeys{i}(1)));
   end
 %   suptitle('Response Page')
 end

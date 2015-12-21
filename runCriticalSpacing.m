@@ -149,7 +149,7 @@ else
    o.targetFont='Gotham Cond SSm Medium';
    % o.targetFont='Gotham Cond SSm Bold';
    % o.targetFont='Retina Micro';
-   % o.targetFont='Sticks'; % Available only if o.readAlphabetFromDisk=1
+   o.targetFont='Sticks'; % Available only if o.readAlphabetFromDisk=1
    o.alphabet='123456789';
    o.borderLetter='0';
    o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
