@@ -1035,7 +1035,9 @@ try
                oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
             end
             dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
-            fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
+            if oo(condition).printSizeAndSpacing
+               fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
+            end
          end
          if ~streq(oo(condition).thresholdParameter,'spacing')
             % Show only the target, omitting both flankers.
