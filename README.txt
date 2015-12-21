@@ -5,11 +5,13 @@ order to run CriticalSpacing on your machine, please do the following:
 
 1. Install MATLAB (or GNU Octave) and Psychtoolbox. If you haven't
    already installed, you can find detailed instructions here:
-   [bit.ly/SetupPsychtoolbox](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.md)
+   [bit.ly/SetupPsychtoolbox](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt)
 1. Download the CriticalSpacing software
    [here](https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip).
 1. Extract the `zip` archive, producing a folder called CriticalSpacing.
-1. Copy the font file `Sloan.otf` from the `CriticalSpacing` folder to
+1. OPTIONAL, NOT NEEDED IF YOU SET readAlphabetFromDisk=1. 
+   Copy the desired font file or folder (e.g. `Sloan.otf` or ‘GothamCondensed’) 
+   from the  `CriticalSpacing/font` folder to
    one of your computer OS font folders.  *Restart MATLAB* so that the
    newly installed font is noticed by MATLAB. 
 1. Deal with remote typing. The observer must be 3 m (or more) away from
@@ -19,11 +21,13 @@ order to run CriticalSpacing on your machine, please do the following:
    a wireless or long-cable keyboard. In that case,  connect the
    keyboard to your computer, and *Restart MATLAB*. Try
    `GetKeyboardIndex` to see if the keyboard is registered to MATLAB
-   (the number of outputs is the number of keybaord devices registered
+   (the number of outputs is the number of keyboard devices registered
    to MATLAB; so we are looking for at least 2 numbers). 
-1. Print the `Response Page`. Inside the `CriticalSpacing` folder you'll
-   find a file `Response page.pdf` that should be printed and given to
-   the observer.  It shows the possible letters: `DHKNORSVZ`. Adults
+1. Choose a font, currently Sloan or Gotham. Print the `Response Page` 
+   PDF for your font. Inside the `CriticalSpacing` folder you'll
+   find files `Response page for Sloan.pdf` and `Response page for Gotham.pdf`.
+   Print the appropriate one and give it to your observer. The response page 
+   shows the possible letters, e.g. `DHKNORSVZ` or ‘1234567889’. Adults
    will find it helpful to consult this page while choosing an answer
    when they have little idea what letter the target(s) might be.
    Children may prefer to point at the target letters, one by one, on
