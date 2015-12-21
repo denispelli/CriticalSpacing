@@ -27,17 +27,17 @@ function savedAlphabet=SaveAlphabetToDisk(o)
 if nargin<1
    sca
    
-%    o.targetFont='Sloan';
-%    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-%    o.borderLetter='X';
-%    o.validKeys = {'d','h','k','n','o','r','s','v','z'};
+   %    o.targetFont='Sloan';
+   %    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+   %    o.borderLetter='X';
+   %    o.validKeys = {'d','h','k','n','o','r','s','v','z'};
    
-o.targetFont='Gotham Cond SSm Book';
-% o.targetFont='Gotham Cond SSm Medium';
-% o.targetFont='Gotham Cond SSm Bold';
-o.alphabet='123456789';
-o.borderLetter='0';
-o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
+   o.targetFont='Gotham Cond SSm Book';
+   % o.targetFont='Gotham Cond SSm Medium';
+   % o.targetFont='Gotham Cond SSm Bold';
+   o.alphabet='123456789';
+   o.borderLetter='0';
+   o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
    
    o.useMATLABFontRendering=1;
    showProgress=1;
@@ -148,7 +148,7 @@ for i=1:length(letters)
       set(f,'InvertHardcopy','off'); % Attempts to keep background white when we copy it.
       box off
       axis off
-      set(gca,'XTick',[],'YTick',[]); 
+      set(gca,'XTick',[],'YTick',[]);
       letterImage=frame2im(getframe(gcf));
       close; % figure
       letterImage=letterImage(:,:,2); % Convert RGB to grayscale.

@@ -7,14 +7,30 @@ if nargin<1
 end
 filename=fullfile(fileparts(mfilename('fullpath')),'savedAlphabet');
 try
-    load(filename,'savedAlphabet');
+   load(filename,'savedAlphabet');
 catch
-    clear savedAlphabet
+   clear savedAlphabet
 end
 if exist('savedAlphabet','var')
-    ia=length(savedAlphabet)+1;
+   for ia=1:length(savedAlphabet)
+      match=streq(savedAlphabet(ia).targetFont,o.targetFont);
+      if match
+         savedAlphabet(ia).letters='';
+         savedAlphabet(ia).validKeys={};
+         savedAlphabet(ia).bounds={};
+         savedAlphabet(ia).images={};
+         savedAlphabet(ia).rect=[];
+         savedAlphabet(ia).dx=[];
+         savedAlphabet(ia).width=[];
+         savedAlphabet(ia).meanOverMaxTargetWidth=[];
+         break;
+      end;
+   end
+   if ~match
+      ia=length(savedAlphabet)+1;
+   end
 else
-    ia=1;
+   ia=1;
 end
 letters=[o.alphabet o.borderLetter];
 s = ['111'; '211'; '311'; '121'; '221'; '321'; '131'; '231'; '331'; '122'; '113'; '213'; '313'; '133'];
@@ -30,7 +46,7 @@ savedAlphabet(ia).meanOverMaxTargetWidth=1;
 for i=1:length(letters)
     m = zeros(3*unitHeight,2);
     for j=1:size(m,1)/unitHeight
-        if ismember(s(i,j),'12') %ignore 3
+        if ismember(s(i,j),'12') % ignore 3
             m((j-1)*unitHeight+1:j*unitHeight,str2num(s(i,j)))=1;
         end
     end
@@ -42,6 +58,8 @@ for i=1:length(letters)
 %     print(['stick' num2str(i) '.png'], '-dpng');
 %     close
 end
+filename=fullfile(fileparts(mfilename('fullpath')),'savedAlphabet');
 save(filename,'savedAlphabet');
-fprintf('Saved images of "%s" alphabet "%s".\n',o.targetFont,letters);
+fprintf('Saved images of "%s" alphabet "%s" in file "savedAlphabet".\n',o.targetFont,letters);
 fprintf('Done.\n');
+sca
