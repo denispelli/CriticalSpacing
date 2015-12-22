@@ -320,7 +320,11 @@ try
    screenRect=Screen('Rect',window);
    screenWidth=RectWidth(screenRect);
    screenHeight=RectHeight(screenRect);
-   pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
+   if oo(1).useFractionOfScreen
+      pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
+   else
+      pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
+   end
    for condition=1:conditions
       % Adjust textSize so our string fits on screen.
       instructionalMargin=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
@@ -431,6 +435,9 @@ try
       oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
       oo(condition).targetDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
       oo(condition).nominalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+      if oo(condition).eccentricityDeg==0
+         oo(condition).nominalCriticalSpacingDeg=0.05;
+      end
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
       oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
@@ -534,18 +541,13 @@ try
       end
       
       terminate=0;
-      assert(oo(condition).targetHeightOverWidth>=1);
-      possiblePix=oo(condition).minimumTargetPix;
-      nominalOverPossibleSize=oo(condition).nominalAcuityDeg*pixPerDeg/possiblePix;
-      switch oo(condition).thresholdParameter
-         case 'spacing',
-            if oo(condition).fixedSpacingOverSize
-               nominalOverPossibleSize=min(nominalOverPossibleSize,oo(condition).nominalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/possiblePix);
-            end
+      nominalOverMinimumSize=oo(condition).nominalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
+      if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
+         nominalOverMinimumSize=min(nominalOverMinimumSize,oo(condition).nominalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/oo(condition).minimumTargetPix);
       end
-      minimumViewingDistanceCm=10*ceil((2/nominalOverPossibleSize)*oo(condition).viewingDistanceCm/10);
-      if nominalOverPossibleSize<2
-         msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',minimumViewingDistanceCm);
+      oo(condition).minimumViewingDistanceCm=10*ceil((2/nominalOverMinimumSize)*oo(condition).viewingDistanceCm/10);
+      if nominalOverMinimumSize<2
+         msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
          if oo(condition).useSpeech
             Speak('You are too close to the screen.');
             Speak(msg);
@@ -604,6 +606,9 @@ try
             ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',condition,oo(condition).targetDeg,oo(condition).targetDeg*pixPerDeg);
          end
       end
+   end
+   for condition=1:conditions
+      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm);
    end
    for condition=1:conditions
       sizesPix=oo(condition).minimumTargetPix*[oo(condition).targetHeightOverWidth 1];
@@ -942,8 +947,7 @@ try
             letterImage=savedAlphabet(ia).images{which};
             letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
             letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
-            % The texture command will make the original rect to the
-            % display rect and automatically scale and stretch, as needed.
+            % Screen DrawTexture will scale and stretch, as needed.
          end
       else
          % Get bounds of font
@@ -1024,21 +1028,30 @@ try
          xStimulus=[xF xT xFF];
          yStimulus=[yF yT yFF];
          clear textures dstRects
-         for textureIndex=1:3
-            which=strfind(letters,stimulus(textureIndex));
-            assert(length(which)==1)
-            textures(textureIndex)=letterStruct(which).texture;
-            r=round(letterStruct(which).rect);
-            oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-            if oo(condition).setTargetHeightOverWidth
-               r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
-               oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-            end
-            dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
-            if oo(condition).printSizeAndSpacing
-               fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
-            end
-         end
+ 
+         
+               for textureIndex=1:3
+                  which=strfind(letters,stimulus(textureIndex));
+                  assert(length(which)==1)
+                  textures(textureIndex)=letterStruct(which).texture;
+                  r=round(letterStruct(which).rect);
+                  oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+                  if oo(condition).setTargetHeightOverWidth
+                     r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
+                     oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+%                      dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
+                  end
+                  if oo(condition).measureThresholdVertically
+                     heightPix=oo(condition).targetPix;
+                  else
+                     heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
+                  end
+                  r=round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect);
+                  dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
+                  if oo(condition).printSizeAndSpacing
+                     fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
+                  end
+               end
          if ~streq(oo(condition).thresholdParameter,'spacing')
             % Show only the target, omitting both flankers.
             textures=textures(2);
