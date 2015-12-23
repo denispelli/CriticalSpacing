@@ -630,7 +630,7 @@ try
       end
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: %s font. Alphabet ''%s'' and borderLetter ''%s''. o.targetHeightOverWidth %.1f\n',condition,oo(condition).targetFont,oo(condition).alphabet,oo(condition).borderLetter,oo(condition).targetHeightOverWidth);
+      ffprintf(ff,'%d: %s font. Alphabet ''%s'' and borderLetter ''%s''. o.targetHeightOverWidth %.2f\n',condition,oo(condition).targetFont,oo(condition).alphabet,oo(condition).borderLetter,oo(condition).targetHeightOverWidth);
    end % for condition=1:conditions
    for condition=1:conditions
       ffprintf(ff,'%d: Duration %.2f s.\n',condition,oo(condition).durationSec);
