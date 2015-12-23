@@ -14,11 +14,19 @@ clear o
 % estimate(s). A presentation displays one or two targets, which require
 % one or two responses. We count each response as a "trial".
 
-% FOR CHILDREN
-o.showProgressBar=1;
-o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
-o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
-o.speakEachLetter=1;
+if 1
+   % FOR CHILDREN
+   o.showProgressBar=1;
+   o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
+   o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
+   o.speakEachLetter=1;
+else
+   % FOR ADULTS
+   o.showProgressBar=0;
+   o.fractionEasyTrials=0; % 0.2 adds 20% easy trials. 0 adds none.
+   o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
+   o.speakEachLetter=1;
+end
 
 % We use this parameter to test the observer with and without repeated
 % targets. The repeated targets make the test immune to fixation errors,
@@ -66,17 +74,17 @@ o.viewingDistanceCm=1000;
 % letters.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 
-% NOT RECOMMENDED BECAUSE THE SMALLER ALPHABET DOUBLES THE STANDARD ERROR
-% OF THE THRESHOLD ESTIMATE. For children, past investigators, including
-% Jan Atkinson's Cambridge Crowding Cards, have used symmetric letters
-% HOTVX, so we provide that option too. However, pilot testing indicates
-% that it takes more trials with 5 possible targets to get the same
-% precision (SD) as with 9 possible targets. Time is paramount, so we're
-% sticking with the 9 Sloan letters for the time being.
+% HOTVX ALPHABET: NOT RECOMMENDED BECAUSE THE SMALLER ALPHABET DOUBLES THE
+% STANDARD ERROR OF THE THRESHOLD ESTIMATE. For children, past
+% investigators, including Jan Atkinson's Cambridge Crowding Cards, have
+% used symmetric letters HOTVX, so we provide that option too. However,
+% pilot testing indicates that it takes more trials with 5 possible targets
+% to get the same precision (SD) as with 9 possible targets. Time is
+% paramount, so we're sticking with the 9 Sloan letters for the time being.
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='N';
 
-% UNTESTED: Skinny symbols might be better for testing critical spacing.
+% SKINNY SYMBOLS: Skinny symbols might be better for testing critical spacing.
 % o.alphabet='7ij:()[]/|'; % bar-symbol alphabet
 % o.validKeys = {'7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
 % o.borderLetter='!';
