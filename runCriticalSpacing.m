@@ -22,7 +22,7 @@ if 1
    o.speakEachLetter=1;
 else
    % FOR ADULTS
-   o.showProgressBar=0;
+   o.showProgressBar=1;
    o.fractionEasyTrials=0; % 0.2 adds 20% easy trials. 0 adds none.
    o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
    o.speakEachLetter=1;
