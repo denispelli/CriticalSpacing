@@ -1,13 +1,26 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
+
+if 1
+   % FOR CHILDREN
+   o.showProgressBar=1;
+   o.fractionEasyTrials=0.2; % Add 20% extra easy trials. 0 for none.
+   o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
+   o.speakEachLetter=1;
+else
+   % FOR ADULTS
+   o.showProgressBar=0;
+   o.fractionEasyTrials=0; % Add 20% extra easy trials. 0 for none.
+   o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
+   o.speakEachLetter=1;
+end
+
 o.setTargetHeightOverWidth=0;
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=230;
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
-o.speakEncouragement=1; % Say "good," "very good," or "nice" after every trial.
-o.speakEachLetter=1;
 o.useSpeech=1;
 o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;

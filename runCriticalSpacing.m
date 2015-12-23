@@ -13,7 +13,13 @@ clear o
 % A "run" is an uninterrupted series of trials, ending in threshold
 % estimate(s). A presentation displays one or two targets, which require
 % one or two responses. We count each response as a "trial".
-%
+
+% FOR CHILDREN
+o.showProgressBar=1;
+o.fractionEasyTrials=0.2; % Add 20% extra easy trials. 0 for none.
+o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
+o.speakEachLetter=1;
+
 % We use this parameter to test the observer with and without repeated
 % targets. The repeated targets make the test immune to fixation errors,
 % but we also want to test in the gold-standard condition, without
@@ -31,7 +37,6 @@ o.repeatedTargets=1; % Repeat target letters for immunity to fixation errors.
 % override it to get any ratio you like, including 1. It seems important
 % that the Response page be printed with letters having the same aspect
 % ratio.
-o.setTargetHeightOverWidth=3;
 o.setTargetHeightOverWidth=0;
 
 % Selecting "spacing" measures the critical spacing of crowding. Selecting
@@ -82,17 +87,6 @@ o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 % prove that your measured critical spacing is independent of letter size,
 % you might want to test with another value as well, e.g. 1.2 or 1.8.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
-
-% SPEAK ENCOURAGEMENT. This speaks an encouraging word after every trial,
-% regardless of accuracy. I anticipate that young children will like this,
-% whereas adults might not.
-o.speakEncouragement=0; % Say "good," "very good," or "nice" after every trial.
-
-% SPEAK EACH LETTER. For testing children, I think it helps to give
-% auditory acknowledgement of each letter selected (typed). Adult
-% participants who type the answers themselves may prefer silence. So this
-% is optional.
-o.speakEachLetter=1;
 
 % SPEECH. Some environments require silence, and Octave (like MATLB) on
 % Linux does not currently support the Psychtoolbox Speak.m command.
