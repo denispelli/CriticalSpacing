@@ -73,6 +73,7 @@ o(1).fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+o(1).observer=oRepeated(1).observer;
 
 % SECOND RUN (measures two thresholds, interleaved)
 % We retain the observer name obtained during the first run for use in the

@@ -70,10 +70,11 @@ o.repeatedTargets=1;
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
 o(1).fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
-% o(2).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
+o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-% oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+o(1).observer=oRepeated(1).observer;
 
 % SECOND RUN (measures two thresholds, interleaved)
 % We retain the observer name obtained during the first run for use in the
