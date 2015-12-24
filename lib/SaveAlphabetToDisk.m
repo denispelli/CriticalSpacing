@@ -33,6 +33,8 @@ if nargin<1
    %    o.validKeys = {'d','h','k','n','o','r','s','v','z'};
    
    o.targetFont='Gotham Cond SSm Book';
+   o.targetFont='GothamCondSSm-XLight'; 
+   o.matchFontFile = 1; % when font file is used (for MATLAB text()
    % o.targetFont='Gotham Cond SSm Medium';
    % o.targetFont='Gotham Cond SSm Bold';
    o.alphabet='123456789';
@@ -87,8 +89,16 @@ end
 % Set font.
 if IsOSX
    fontInfo=FontInfo('Fonts');
+   if o.matchFontFile
+     matches = regexp({fontInfo.file},o.targetFont, 'match');
+     firstHit = find(cellfun(@(x) ~isempty(x),matches , 'UniformOutput', true),1);
+     hits = logical(zeros(size(fontInfo)));
+     hits(firstHit) = 1;
+   else
    % Match full name, including style.
    hits=streq({fontInfo.name},o.targetFont);
+   end
+   
    if sum(hits)<1
       % Match family name, omitting style.
       hits=streq({fontInfo.familyName},o.targetFont);
@@ -97,7 +107,7 @@ if IsOSX
       error('The o.targetFont "%s" is not available. Please install it.',o.targetFont);
    end
    if sum(hits)>1
-      error('Multiple fonts with name "%s".',o.targetFont);
+      error('Multiple fonts with name "%s". Using the first match.',o.targetFont);      
    end
    o.targetFontNumber=fontInfo(hits).number;
    if useWindow
@@ -144,13 +154,13 @@ end
 for i=1:length(letters)
    if o.useMATLABFontRendering
       f=figure('Units','pixels','Position',[0 0 1024 1024]);
-      h=text(0,256,letters(i),'Units','pixels','FontName',o.targetFont,'FontUnits','pixels','FontSize',512,'BackgroundColor',[1 1 1]);
+      h=text(0,256,letters(i),'Units','pixels','FontName',o.targetFont, 'FontUnits','pixels','FontSize',512,'BackgroundColor',[1 1 1]);
       set(f,'InvertHardcopy','off'); % Attempts to keep background white when we copy it.
       box off
       axis off
       set(gca,'XTick',[],'YTick',[]);
       letterImage=frame2im(getframe(gcf));
-      close; % figure
+%       close; % figure
       letterImage=letterImage(:,:,2); % Convert RGB to grayscale.
       savedAlphabet(ia).bounds{i}=ImageBounds(letterImage,letterImage(end,1));
       savedAlphabet(ia).images{i}=letterImage;
