@@ -43,7 +43,11 @@ o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Sloan';
 o.alphabet='123456789'; 
-o.borderLetter='$';
+if streq(o.targetFont,'Sticks')
+   o.borderLetter='0';
+else
+   o.borderLetter='$';
+end
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
@@ -66,6 +70,10 @@ o(2)=o(1); % Copy the condition
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 o=o(1);
 o.observer=oRepeated(1).observer;
+o.targetFont='ClearviewHwy-1-B';
+o(2)=o(1); % Copy the condition
+oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+o=o(1);
 o.targetFont='Gotham Cond SSm Medium';
 o(2)=o(1); % Copy the condition
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
@@ -75,6 +83,10 @@ o(2)=o(1); % Copy the condition
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 o=o(1);
 o.targetFont='Gotham Cond SSm Light';
+o(2)=o(1); % Copy the condition
+oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+o=o(1);
+o.targetFont='Gotham Cond SSm XLight';
 o(2)=o(1); % Copy the condition
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 o=o(1);
