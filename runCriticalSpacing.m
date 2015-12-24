@@ -146,6 +146,7 @@ if 1
    o.validKeys={'D','H','K','N','O','R','S','V','Z'};
 else
    % THESE FONTS ARE DESIGNED TO BE LEGIBLE AT SMALL SIZES.
+   % o.targetFont='ClearviewHwy-1-B';
    % o.targetFont='ClearviewText';
    % o.targetFont='Gotham Cond SSm Book';
    o.targetFont='Gotham Cond SSm Medium';
@@ -153,7 +154,11 @@ else
    % o.targetFont='Retina Micro';
    o.targetFont='Sticks'; % Available only if o.readAlphabetFromDisk=1
    o.alphabet='123456789';
-   o.borderLetter='$';
+   if streq(o.targetFont,'Sticks')
+      o.borderLetter='0';
+   else
+      o.borderLetter='$';
+   end
    o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 end
 

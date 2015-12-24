@@ -144,7 +144,6 @@ o.fixationCrossDeg=inf;
 o.fixationLineWeightDeg=0.005;
 o.measureBeta=0;
 o.task='identify';
-o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 % This produces the standard adult condition:
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.validKeys = {'D','H','K','N','O','R','S','V','Z'}; % valid key codes ('4$') corresponding to alphabet
