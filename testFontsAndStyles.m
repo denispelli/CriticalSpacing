@@ -43,7 +43,7 @@ o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Sloan';
 o.alphabet='123456789'; 
-o.borderLetter='0';
+o.borderLetter='$';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS

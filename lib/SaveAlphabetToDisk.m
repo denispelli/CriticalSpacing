@@ -36,7 +36,7 @@ if nargin<1
    % o.targetFont='Gotham Cond SSm Medium';
    % o.targetFont='Gotham Cond SSm Bold';
    o.alphabet='123456789';
-   o.borderLetter='0';
+   o.borderLetter='$';
    o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
    
    o.useMATLABFontRendering=1;
