@@ -15,12 +15,6 @@ if nargin<1
   
   o.stickUnitHeight = 5;
   o.stickUnitWidth = 1;
-  % 0 is segmented sticks but always single blocks horizontally; wosegmented
-  % single stick could be potentially perceived as two objects
-  % 1 is conected sticks but 2 blocks horizontally sometimes, and since
-  % connected, is always easy to be perceived as single object
-  % a block is unitHeight*unitWidth
-  o.isSegmented = 0;
   o.generateResponsePage = 1;
 end
 filename=fullfile(fileparts(mfilename('fullpath')),'savedAlphabet');
@@ -72,11 +66,7 @@ for i=1:length(letters)
       m(unitBlock.h, :)=3; % tag with value 3
     end
   end
-  if o.isSegmented % sticks are linked always, with wider parts for 3
-    m(m==3) = 0;
-  else % sticks are ALWAYS single block horizontally, and segmented by 3
-    m(m==3) = 1;
-  end
+  m(m==3) = 1;
   % now transform into RGB space
   m = white*(~m);
   savedAlphabet(ia).images{i}=m;
