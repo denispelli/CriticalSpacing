@@ -41,7 +41,16 @@ order to run CriticalSpacing on your machine, please do the following:
    test one observer (depending on trials per threshold), measuring four
    thresholds. (Set o.trials to 20 or 40 for a total runtime of 10 or 20
    minutes.)
-
+1. Threshold width. When you ask CriticalSpacing.m to measure "size", the 
+   program   always measures it vertically, so, in that case, the returned 
+   "size" is height. Thus the reported threshold is height, and you should 
+   compute width:
+   width = height / heightOverWidth;
+1. Threshold width continued. When you ask to measure “spacing”, by default 
+   it’s horizontal. The ratio
+   SpacingOverSize always measures both along the same axis, usually 
+   horizontally. So the letter width at threshold spacing is:
+   width = spacing/SpacingOverSize;
 
 ## Software requirements:
 
