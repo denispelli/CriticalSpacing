@@ -14,7 +14,7 @@ clear o
 % estimate(s). A presentation displays one or two targets, which require
 % one or two responses. We count each response as a "trial".
 
-if 1
+if 0
    % FOR CHILDREN
    o.showProgressBar=1;
    o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
@@ -137,7 +137,7 @@ o.displayAlphabet=0; % For debugging.
 % FROM DISK. THIS IS RECOMMENDED TO AVOID COMPATIBILITY ISSUES IN FONT
 % RENDERING.
 o.readAlphabetFromDisk=1; % 1 makes the program more portable.
-if 0
+if 1
    % For normal adults we use the restricted standard Sloan alphabet
    % (excluding C, which has been shown to be too similar to O).
    o.targetFont='Sloan';
