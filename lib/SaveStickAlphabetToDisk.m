@@ -7,7 +7,12 @@ if nargin<1
   % this seed ensures no symmetry in a 3x2 block of binary matrix
   % note that they are 14 > 10, which is currectly used, thus last four
   % sticks were NOT in use now
-  o.stickSeed = ['111'; '211'; '311'; '121'; '221'; '321'; '131'; '231'; '331'; '122'; '113'; '213'; '313'; '133'];
+  o.stickSeed = ['111'; '122'; '311'; '121'; '313'; '321'; '232'; '231'; '233';'333'];
+  
+  % display border letter as well in the response page
+  %   o.stickSeed = ['111'; '122'; '311'; '121'; '313'; '321'; '232'; '231'; '233';'333'; '333']; % last one gets ignored automatically, so add another
+  %   o.alphabet='123456789X'; % also generate border letter
+  
   o.stickUnitHeight = 5;
   o.stickUnitWidth = 1;
   % 0 is segmented sticks but always single blocks horizontally; wosegmented
@@ -89,9 +94,9 @@ if o.generateResponsePage
   for i=1:numel(savedAlphabet(ia).images)-1 % last stick is border letter
     subplot(ceil(numel(savedAlphabet(ia).images)/3),3,i);
     imshow(savedAlphabet(ia).images{i});
-    title(num2str(o.validKeys{i}(1)));
+    title(num2str(o.alphabet(i)));
   end
-%   suptitle('Response Page')
+  %   suptitle('Response Page')
 end
 
 
