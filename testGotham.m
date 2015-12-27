@@ -2,7 +2,7 @@
 % Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
 
-if 1
+if 0
    % FOR CHILDREN
    o.showProgressBar=1;
    o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
