@@ -26,21 +26,21 @@ function savedAlphabet=SaveAlphabetToDisk(o)
 
 if nargin<1
    sca
-   
    %    o.targetFont='Sloan';
    %    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
    %    o.borderLetter='X';
    %    o.validKeys = {'d','h','k','n','o','r','s','v','z'};
-   
-   o.targetFont='Gotham Cond SSm Book';
-   o.targetFont='GothamCondSSm-XLight'; 
-   o.matchFontFile = 1; % when font file is used (for MATLAB text()
-   % o.targetFont='Gotham Cond SSm Medium';
-   % o.targetFont='Gotham Cond SSm Bold';
+   o.generateResponsePage=1;
+   o.matchFontFilename = 1; % Needed to select among the Gotham fonts.
+   o.targetFont='GothamCondSSm-XLight';
+%    o.targetFont='GothamCondSSm-Light';
+%    o.targetFont='GothamCondSSm-Book';
+%    o.targetFont='GothamCondSSm-Medium';
+%    o.targetFont='GothamCondSSm-Bold';
+%    o.targetFont='GothamCondSSm-Black';
    o.alphabet='123456789';
    o.borderLetter='$';
    o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
-   
    o.useMATLABFontRendering=1;
    showProgress=1;
    useWindow=0;
@@ -89,16 +89,15 @@ end
 % Set font.
 if IsOSX
    fontInfo=FontInfo('Fonts');
-   if o.matchFontFile
-     matches = regexp({fontInfo.file},o.targetFont, 'match');
-     firstHit = find(cellfun(@(x) ~isempty(x),matches , 'UniformOutput', true),1);
-     hits = logical(zeros(size(fontInfo)));
-     hits(firstHit) = 1;
+   if o.matchFontFilename
+      matches = regexp({fontInfo.file},o.targetFont, 'match');
+      firstHit = find(cellfun(@(x) ~isempty(x),matches , 'UniformOutput', true),1);
+      hits = logical(zeros(size(fontInfo)));
+      hits(firstHit) = 1;
    else
-   % Match full name, including style.
-   hits=streq({fontInfo.name},o.targetFont);
+      % Match full name, including style.
+      hits=streq({fontInfo.name},o.targetFont);
    end
-   
    if sum(hits)<1
       % Match family name, omitting style.
       hits=streq({fontInfo.familyName},o.targetFont);
@@ -107,7 +106,7 @@ if IsOSX
       error('The o.targetFont "%s" is not available. Please install it.',o.targetFont);
    end
    if sum(hits)>1
-      error('Multiple fonts with name "%s". Using the first match.',o.targetFont);      
+      error('Multiple fonts with name "%s". Using the first match.',o.targetFont);
    end
    o.targetFontNumber=fontInfo(hits).number;
    if useWindow
@@ -160,7 +159,7 @@ for i=1:length(letters)
       axis off
       set(gca,'XTick',[],'YTick',[]);
       letterImage=frame2im(getframe(gcf));
-%       close; % figure
+      %       close; % figure
       letterImage=letterImage(:,:,2); % Convert RGB to grayscale.
       savedAlphabet(ia).bounds{i}=ImageBounds(letterImage,letterImage(end,1));
       savedAlphabet(ia).images{i}=letterImage;
@@ -234,3 +233,15 @@ save(filename,'savedAlphabet');
 fprintf('Saved images of "%s" alphabet "%s" in file "savedAlphabet".\n',o.targetFont,letters);
 fprintf('Done.\n');
 sca
+% show Response Page
+if o.generateResponsePage
+  figure('PaperType','usletter');
+  for i=1:length(savedAlphabet(ia).images)-1 % skip border letter, which is last
+    subplot(ceil(numel(savedAlphabet(ia).images)/3),3,i);
+    imshow(savedAlphabet(ia).images{i});
+%     title(num2str(o.alphabet(i)));
+  end
+  %   suptitle('Response Page')
+  saveas(gcf,fullfile(fileparts(mfilename('fullpath')),['Draft response page for ' o.targetFont '.png']));
+end
+
