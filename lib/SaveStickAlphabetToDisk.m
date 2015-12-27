@@ -78,10 +78,10 @@ for i=1:length(letters)
   close
 end
 
-% show Response Page for Sticks
+% show Response Page
 if o.generateResponsePage
   figure('PaperType','usletter');
-  for i=1:numel(savedAlphabet(ia).images)-1 % last stick is border letter
+  for i=1:numel(savedAlphabet(ia).images)-1 % don't show border letter, which is last
     subplot(ceil(numel(savedAlphabet(ia).images)/3),3,i);
     imshow(savedAlphabet(ia).images{i});
     title(num2str(o.alphabet(i)));
