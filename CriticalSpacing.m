@@ -317,7 +317,7 @@ try
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
          end
       end
-   end
+   end % if ~oo(1).readAlphabetFromDisk
    
    screenRect=Screen('Rect',window);
    screenWidth=RectWidth(screenRect);
@@ -514,28 +514,42 @@ try
             GetClicks;
          end
          oo(condition).targetFontHeightOverNominal=RectHeight(bounds)/sizePix;
-      else
-         % Read alphabet from disk.
-         if ~exist('savedAlphabet','var')
-            filename=fullfile(fileparts(mfilename('fullpath')),'lib','savedAlphabet');
-            load(filename,'savedAlphabet');
+      else % if ~oo(condition).readAlphabetFromDisk
+         alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'lib','alphabets');
+         if ~exist(alphabetsFolder,'dir')
+            error('Folder missing: "%s"',alphabetsFolder);
          end
-         for ia=1:length(savedAlphabet)
-            ok=0;
-            if streq(savedAlphabet(ia).targetFont,oo(condition).targetFont)
-               ok=1;
-               break;
-            end;
+         folder=fullfile(alphabetsFolder,urlencode(oo(condition).targetFont));
+         if ~exist(alphabetsFolder,'dir')
+            error('Folder missing: "%s". Target font "%s" has not been saved.',folder,oo(condition).targetFont);
          end
-         if ~ok
-            error('Sorry. Target font "%s" is not in the savedAlphabet file.',oo(condition).targetFont);
+         d=dir(folder);
+         ok=~[d.isdir];
+         d=d(ok);
+         if length(d)<length(oo(condition).alphabet)
+            error('Sorry. Saved %s alphabet has only %d letters, and you requested %d letters.',oo(condition).targetFont,length(d),length(oo(condition).alphabet));
+         end
+         savedAlphabet.letters=[];
+         savedAlphabet.images={};
+         savedAlphabet.rect=[];
+         for i=1:length(d)
+            filename=fullfile(folder,d(i).name);
+            savedAlphabet.images{i}=imread(filename,'png');
+            savedAlphabet.letters(i)=urldecode(d(i).name);
+            if isempty(savedAlphabet.images{i})
+               error('Cannot read file "%s".',filename);
+            end
+            savedAlphabet.bounds{i}=RectOfMatrix(savedAlphabet.images{i});
+            if isempty(savedAlphabet.rect)
+               savedAlphabet.rect=savedAlphabet.bounds{i};
+            else
+               savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
+            end
          end
          oo(condition).targetFontHeightOverNominal=1; % NAN should work, but doesn't yet.
-         oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet(ia).rect)/RectWidth(savedAlphabet(ia).rect);
-         oo(condition).letters=savedAlphabet(ia).letters;
-         oo(condition).alphabet=savedAlphabet(ia).letters(1:end-1);
-         oo(condition).borderLetter=savedAlphabet(ia).letters(end);
-         oo(condition).validKeys=savedAlphabet(ia).validKeys;
+         oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet.rect)/RectWidth(savedAlphabet.rect);
+%          oo(condition).letters=savedAlphabet.letters;
+%          oo(condition).images=savedAlphabet.images;
          for cd=1:conditions
             for i=1:length(oo(cd).validKeys)
                oo(cd).responseKeys(i)=KbName(oo(cd).validKeys{i}); % this returns keyCode as integer
@@ -945,28 +959,14 @@ try
          black=0;
          white=255;
          if oo(condition).readAlphabetFromDisk
-            if ~exist('savedAlphabet','var')
-               filename=fullfile(fileparts(mfilename('fullpath')),'lib','savedAlphabet');
-               load(filename,'savedAlphabet');
-            end
-            for ia=1:length(savedAlphabet)
-               ok=0;
-               if streq(savedAlphabet(ia).targetFont,oo(condition).targetFont)
-                  ok=1;
-                  break;
-               end;
-            end
-            if ~ok
-               error('Sorry. Target font "%s" is not in the savedAlphabet file.',oo(condition).targetFont);
-            end
-            letters=oo(condition).letters;
+            letters=[oo(condition).alphabet oo(condition).borderLetter];
             for i=1:length(letters)
-               which=strfind([savedAlphabet(ia).letters],letters(i));
+               which=strfind([savedAlphabet.letters],letters(i));
                if length(which)~=1
-                  error('Letter %c is not in savedAlphabet "%s".',letters(i),savedAlphabet(ia).letters);
+                  error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),oo(condition).targetFont,savedAlphabet.letters);
                end
                assert(length(which)==1);
-               letterImage=savedAlphabet(ia).images{which};
+               letterImage=savedAlphabet.images{which};
                letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
                letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
                % Screen DrawTexture will scale and stretch, as needed.
