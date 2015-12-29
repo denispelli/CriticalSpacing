@@ -1,7 +1,6 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
-
 if 0
    % FOR CHILDREN
    o.showProgressBar=1;
@@ -15,7 +14,6 @@ else
    o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
    o.speakEachLetter=1;
 end
-
 o.setTargetHeightOverWidth=0;
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=230;
@@ -29,7 +27,7 @@ o.usePurring=0;
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readAlphabetFromDisk=1; % 1 makes the program more portable.
+o.readAlphabetFromDisk=0; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -43,12 +41,16 @@ o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Sloan';
 % o.targetFont='ClearviewText';
-o.targetFont='Gotham Cond SSm Medium';
+o.targetFont='Gotham Cond SSm XLight';
+% o.targetFont='Gotham Cond SSm Light';
+% o.targetFont='Gotham Cond SSm Medium';
 % o.targetFont='Gotham Cond SSm Book';
+% o.targetFont='Gotham Cond SSm Bold';
+% o.targetFont='Gotham Cond SSm Black';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
 o.alphabet='123456789'; 
-o.borderLetter='0';
+o.borderLetter='$';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
