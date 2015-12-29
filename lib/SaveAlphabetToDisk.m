@@ -20,19 +20,19 @@ function SaveAlphabetToDisk(o)
 % e.g. in any graphic editing app, like GraphicConverter.
 if nargin<1
    sca
-%    o.targetFont='Sloan';
-%    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-%    o.borderLetter='X';
-o.generateResponsePage=1;
-o.targetFont='Gotham Cond SSm XLight';
-o.targetFont='Gotham Cond SSm Light';
-o.targetFont='Gotham Cond SSm Book';
-%    o.targetFont='Gotham Cond SSm Medium';
-%    o.targetFont='Gotham Cond SSm Bold';
-%    o.targetFont='Gotham Cond SSm Black';
-o.alphabet='123456789';
-o.borderLetter='$';
-   o.useMATLABFontRendering=1;
+   %    o.targetFont='Sloan';
+   %    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+   %    o.borderLetter='X';
+   o.generateResponsePage=1;
+   o.targetFont='Gotham Cond SSm XLight';
+   o.targetFont='Gotham Cond SSm Light';
+   o.targetFont='Gotham Cond SSm Book';
+   o.targetFont='Gotham Cond SSm Medium';
+   o.targetFont='Gotham Cond SSm Bold';
+   o.targetFont='Gotham Cond SSm Black';
+   o.alphabet='123456789';
+   o.borderLetter='$';
+   o.useMATLABFontRendering=0;
    showProgress=1;
    useWindow=1;
 end
@@ -148,20 +148,12 @@ for i=1:length(letters)
       if useWindow
          Screen('FillRect',scratchWindow,white);
          Screen('DrawText',scratchWindow,letters(i),-bounds(1)+savedAlphabet.dx(i),-bounds(2),black,white,1);
-         %     Screen('DrawingFinished',scratchWindow); % Might make GetImage more reliable. Suggested by Mario Kleiner.
-         %     Screen('DrawTexture',window,scratchWindow,savedAlphabet.rect,windowRect);
-         %     letterImage=Screen('GetImage',scratchWindow,bounds);
-         letterImage=Screen('GetImage',window,bounds,'drawBuffer');
-         %    imshow(letterImage);
-         %    letterImage=Screen('GetImage',scratchWindow,bounds,'drawBuffer');
+         letterImage=Screen('GetImage',scratchWindow,OffsetRect(bounds,-bounds(1),-bounds(2)),'drawBuffer');
          savedAlphabet.images{i}=letterImage;
-         %    savedAlphabet.images{i}=letterImage(:,:,2);
-         %    imshow(savedAlphabet.images{i});
-         %    Screen('DrawText',window,letters(i),-bounds(1)+savedAlphabet.dx(i),-bounds(2),black,white,1);
       end
    end
    if useWindow
-      Screen('PutImage',window,letterImage,OffsetRect(bounds,400,400));
+      Screen('PutImage',window,letterImage,OffsetRect(bounds,-bounds(1),-bounds(2)));
       Screen('Flip',window);
       WaitSecs(0.5);
    end

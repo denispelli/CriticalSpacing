@@ -1015,9 +1015,6 @@ try
                Screen('TextSize',letterStruct(i).texture,sizePix);
                Screen('FillRect',letterStruct(i).texture,white);
                Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2)-textYOffset,black,white,1);
-               %                 image1=Screen('GetImage',letterStruct(i).texture,[],'backBuffer',0,1);
-               %                 figure
-               %                 imshow(image1);
             end
          end
          if oo(condition).displayAlphabet
