@@ -74,7 +74,8 @@ if o.generateResponsePage
    for i=1:length(savedAlphabet.images)-1 % skip border letter, which is last
       subplot(ceil(numel(savedAlphabet.images)/3),3,i);
       imshow(savedAlphabet.images{i});
-   end
+      title(num2str(savedAlphabet.letters(i)));
+  end
    suptitle(sprintf('Response page for %s',o.targetFont));
    saveas(gcf,fullfile(fileparts(mfilename('fullpath')),['Draft+response+page+for+' urlencode(o.targetFont) '.png']));
 end
