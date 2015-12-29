@@ -1109,7 +1109,7 @@ try
                   which=strfind(letters,letter);
                   assert(length(which)==1)
                   textures(textureIndex)=letterStruct(which).texture;
-                  %                     fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
+                  % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
                   xPos=round(x-xPix/2);
                   
                   % Compute o.targetHeightOverWidth, and, if requested,
