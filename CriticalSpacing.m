@@ -520,7 +520,7 @@ try
             error('Folder missing: "%s"',alphabetsFolder);
          end
          folder=fullfile(alphabetsFolder,urlencode(oo(condition).targetFont));
-         if ~exist(alphabetsFolder,'dir')
+         if ~exist(folder,'dir')
             error('Folder missing: "%s". Target font "%s" has not been saved.',folder,oo(condition).targetFont);
          end
          d=dir(folder);
