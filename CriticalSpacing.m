@@ -688,11 +688,11 @@ try
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
       cal.brightnessSetting=1;
-      %         ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
+      % ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
       % Psychtoolbox Bug. Screen ConfigureDisplay claims that it will
       % silently do nothing if not supported. But when I used it on my
-      % video projector, Screen gave a fatal error. That's ok, but how do
-      % I figure out when it's safe to use?
+      % video projector, Screen gave a fatal error. That's tolerable, but
+      % how do I figure out when it's safe to use?
       
       if computer.osx || computer.macintosh
          Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
