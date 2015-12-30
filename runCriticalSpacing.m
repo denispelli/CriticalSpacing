@@ -14,7 +14,7 @@ clear o
 % estimate(s). A presentation displays one or two targets, which require
 % one or two responses. We count each response as a "trial".
 
-if 0
+if 1
    % FOR CHILDREN
    o.showProgressBar=1;
    o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
