@@ -5,15 +5,14 @@ function oo=CriticalSpacing(oIn)
 % your parameters to satisfy physical constraints. Constraints include the
 % screen size and the maximum possible contrast.
 %
-% MATLAB: To run this program you need a computer, preferably a Macintosh
-% laptop, with MATLAB and the Psychtoolbox installed. You must install the
-% Sloan.otf font file in one of your computer OS font folders.
+% MATLAB: To run this program, you need a computer with MATLAB and the
+% Psychtoolbox installed.
 %
-% COMPUTER: Apple Macintosh or Windows or Linux with a digital display.
-% This program runs on any computer with MATLAB and Psychtoolbox. The
-% software automatically reads the screen size, in cm. That won't work with
-% an analog display, but we could add code to allow you to measure it
-% manually. Let me know.
+% COMPUTER: Apple Macintosh, Windows, or Linux computer with a digital
+% screen. CriticalSpacing.m runs on any computer with MATLAB and
+% Psychtoolbox. The software automatically reads the screen resolution in
+% pixels and size in cm. That won't work with an analog display, but we
+% could add code to allow you to measure it manually. Let me know.
 %
 % WIRELESS OR LONG-CABLE KEYBOARD. A wireless keyboard or long keyboard
 % cable is highly desirable as the viewing distance will be 3 m or more. If
@@ -27,10 +26,14 @@ function oo=CriticalSpacing(oIn)
 % o.flipScreenHorizontally=0; so the observer sees all the letters normally
 % oriented.
 %
-% SLOAN FONT. Please copy the font file "Sloan.otf" from the
-% CriticalSpacing folder to one of your computer OS font folders. Once
-% you've installed the font, quit and restart MATLAB to get it to notice
-% the newly available font.
+% FONTS. If you use o.readAlphabetFromDisk=1 then your computer can be
+% Macintosh, Windows, or Linux and you don't need to install any fonts. If
+% you have a Macintosh, you can render fonts live by setting
+% o.readAlphabetFromDisk=0, and installing the fonts you need from the
+% CriticalSpacing/fonts folder into your computer's font folder. You can
+% just double-click the font file and say "yes" when your computer offers
+% to install it for you. Once you've installed the font, quit and restart
+% MATLAB to get it to notice the newly available font.
 %
 % RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. I have provided runCriticalSpacing as a example.
@@ -51,15 +54,14 @@ function oo=CriticalSpacing(oIn)
 % run.
 %
 % RESPONSE PAGE. Inside the CriticalSpacing folder you'll find a file
-% "Response page.pdf" that should be printed and given to the observer. It
-% shows the possible letters: DHKNORSVZ. Adults will find it helpful to
-% consult this page while choosing an answer when they have little idea
-% what letter the target(s) might be. Children may prefer to point at the
-% target letters, one by one, on the response page.
-%
-% ILLITERATE FONT: I imagine that we might find a set of icons for an
-% illiterate font. I can easily modify the program to use them instead of
-% Sloan. We are sticking with Sloan (squeezed) for now.
+% "Response page FONT.pdf" (where FONT is the name of the font you're
+% using) that should be printed and given to the observer. It shows the
+% nine possible letters. Adults will find it helpful to consult this page
+% while choosing an answer when they have little idea what letter the
+% target(s) might be. Children may prefer to point at the target letters,
+% one by one, on the response page. Patients who have trouble directing
+% their attention may be better off without the response page, so they can
+% maintain their undivided attention on the display.
 %
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures the critical spacing of crowding in either
@@ -181,21 +183,12 @@ else
    textYOffset=0;
 end
 
-o.beginningTime=now;
-timeVector=datevec(o.beginningTime);
-stack=dbstack;
-if length(stack)==1;
-   o.functionNames=stack.name;
-else
-   o.functionNames=[stack(2).name '-' stack(1).name];
-end
-
 % Replicate o, once per supplied condition.
 conditions=length(oIn);
 oo(1:conditions)=o;
 
-% All fields in the user-supplied "oIn" overwrite corresponding fields in "o".
-% o is a single struct, and oIn may be an array of structs.
+% All fields in the user-supplied "oIn" overwrite corresponding fields in
+% "o". o is a single struct, and oIn may be an array of structs.
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
    for i=1:length(fields)
@@ -211,9 +204,8 @@ for condition=1:conditions
          oo(condition).measureThresholdVertically=0;
    end
 end
-% Set up for KbCheck
-% we can safely use this mode AND collect kb responses without worrying
-% about writing to MATLAB console/editor
+% Set up for KbCheck. We can safely use this mode AND collect kb responses
+% without worrying about writing to MATLAB console/editor
 ListenChar(2); % no echo
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
@@ -313,7 +305,6 @@ try
          Screen('TextFont',window,oo(condition).textFont,0);
          font=Screen('TextFont',window);
          if ~streq(font,oo(condition).textFont)
-            % error('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
          end
       end
@@ -369,6 +360,15 @@ try
       Screen('FillRect',window);
    end
    
+   oo(1).beginSecs=GetSecs;
+   oo(1).beginningTime=now;
+   timeVector=datevec(oo(1).beginningTime);
+   stack=dbstack;
+   if length(stack)==1;
+      oo(1).functionNames=stack.name;
+   else
+      oo(1).functionNames=[stack(2).name '-' stack(1).name];
+   end
    oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
    if ~exist(oo(1).dataFolder,'dir')
@@ -678,7 +678,7 @@ try
    cal.screenWidthCm=screenWidthMm/10;
    ffprintf(ff,'%s, %s, %s, screen %d, %dx%d pixels, %.1fx%.1f cm\n',cal.processUserLongName,cal.machineName,cal.macModelName,cal.screen,RectWidth(stimulusRect),RectHeight(screenRect),screenWidthMm/10,screenHeightMm/10);
    assert(cal.screenWidthCm==screenWidthMm/10);
-   ffprintf(ff,'You can use System Preferences or Switch Res X (http://www.madrau.com/) to change resolution.\n');
+   ffprintf(ff,'(You can use System Preferences or Switch Res X, http://www.madrau.com/, to change resolution.)\n');
    %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
    %     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
    %
@@ -1299,6 +1299,12 @@ try
    Snd('Close');
    Screen('CloseAll');
    ShowCursor;
+   trials=0;
+   oo(1).totalSecs=GetSecs-oo(1).beginSecs;
+   for condition=1:conditions
+      trials=trials+oo(condition).responseCount;
+   end
+   ffprintf(ff,'Took %.0f s for %.0f trials, or %.0f s/trial.\n',oo(1).totalSecs,trials,oo(1).totalSecs/trials);
    for condition=1:conditions
       ffprintf(ff,'CONDITION %d **********\n',condition);
       % Ask Quest for the final estimate of threshold.
