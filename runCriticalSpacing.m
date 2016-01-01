@@ -123,13 +123,13 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 
 % DEBUGGING AIDS
+o.displayAlphabet=0; 
 o.showLineOfLetters=0;
 o.showBounds=0;
+o.frameTheTarget=0; 
+o.printSizeAndSpacing=0;
 o.speakSizeAndSpacing=0;
-o.frameTheTarget=0; % For debugging.
-o.useFractionOfScreen=0; % For debugging.
-o.printSizeAndSpacing=0; % For debugging.
-o.displayAlphabet=0; % For debugging.
+o.useFractionOfScreen=0; 
 
 % CHOOSE FONT & ALPHABET
 % CURRENTLY ONLY GOTHAM & SLOAN ARE INCLUDED IN savedAlphabet, SO YOU

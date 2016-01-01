@@ -54,13 +54,13 @@ o.borderLetter='$';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
+o.displayAlphabet=0; 
 o.showLineOfLetters=0;
 o.showBounds=0;
-o.speakSizeAndSpacing=0;
 o.frameTheTarget=0; 
-o.useFractionOfScreen=0; 
 o.printSizeAndSpacing=0;
-o.displayAlphabet=0; 
+o.speakSizeAndSpacing=0;
+o.useFractionOfScreen=0; 
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single

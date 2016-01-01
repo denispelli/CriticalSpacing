@@ -2,7 +2,7 @@
 % Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
 
-if 1
+if 0
    % FOR CHILDREN
    o.showProgressBar=1;
    o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
@@ -24,7 +24,6 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.useSpeech=1;
 o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;
-o.usePurring=0;
 
 % You don't need to change any of these parameters.
 o.observer=''; % Ask for name at beginning of run, or
@@ -53,13 +52,13 @@ o.borderLetter='0';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
-o.showLineOfLetters=0;
-o.showBounds=1;
-o.speakSizeAndSpacing=0;
-o.printSizeAndSpacing=0;
-o.frameTheTarget=1; 
 o.displayAlphabet=0; 
-o.useFractionOfScreen=0.2; 
+o.showLineOfLetters=0;
+o.showBounds=0;
+o.frameTheTarget=0; 
+o.printSizeAndSpacing=0;
+o.speakSizeAndSpacing=0;
+o.useFractionOfScreen=0; 
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single
