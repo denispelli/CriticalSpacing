@@ -63,6 +63,7 @@ for i=1:length(letters)
 end
 for i=1:length(savedAlphabet.images)
    filename=fullfile(folder,urlencode(savedAlphabet.letters(i)));
+   filename=[filename '.png'];
    imwrite(savedAlphabet.images{i},filename,'png');
 end
 fprintf('Images of "%s" alphabet "%s" have been saved in folder "alphabets%s%s".\n',o.targetFont,letters,filesep,urlencode(o.targetFont));
