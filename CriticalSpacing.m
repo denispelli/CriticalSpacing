@@ -5,6 +5,16 @@ function oo=CriticalSpacing(oIn)
 % your parameters to satisfy physical constraints. Constraints include the
 % screen size and the maximum possible contrast.
 %
+% RESPONSE PAGE. Inside the CriticalSpacing folder you'll find a file
+% "Response page FONT.pdf" (where FONT is the name of the font you're
+% using) that should be printed and given to the observer. It shows the
+% nine possible letters. Adults will find it helpful to consult this page
+% while choosing an answer when they have little idea what letter the
+% target(s) might be. Children may prefer to point at the target letters,
+% one by one, on the response page. Patients who have trouble directing
+% their attention may be better off without the response page, so they can
+% maintain their undivided attention on the display.
+%
 % MATLAB: To run this program, you need a computer with MATLAB and the
 % Psychtoolbox installed.
 %
@@ -19,7 +29,8 @@ function oo=CriticalSpacing(oIn)
 % you must use the laptop keyboard then have the experimenter type the
 % observer's verbal answers. I like this $86 solar-powered wireless, for
 % which the batteries never run out: Logitech Wireless Solar Keyboard K760
-% for Mac/iPad/iPhone http://www.amazon.com/gp/product/B007VL8Y2C
+% for Mac/iPad/iPhone
+% http://www.amazon.com/gp/product/B007VL8Y2C
 %
 % MIRROR. You might want to use a mirror to achieve a long viewing distance
 % in a small room. In that case, add a line to your running script,
@@ -52,16 +63,6 @@ function oo=CriticalSpacing(oIn)
 % thresholds. You can always terminate the current run by hitting Escape.
 % CriticalSpacing will then print out results so far and begin the next
 % run.
-%
-% RESPONSE PAGE. Inside the CriticalSpacing folder you'll find a file
-% "Response page FONT.pdf" (where FONT is the name of the font you're
-% using) that should be printed and given to the observer. It shows the
-% nine possible letters. Adults will find it helpful to consult this page
-% while choosing an answer when they have little idea what letter the
-% target(s) might be. Children may prefer to point at the target letters,
-% one by one, on the response page. Patients who have trouble directing
-% their attention may be better off without the response page, so they can
-% maintain their undivided attention on the display.
 %
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures the critical spacing of crowding in either
@@ -550,10 +551,8 @@ try
                savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
             end
          end
-         oo(condition).targetFontHeightOverNominalPtSize=nan; % NAN should work, but doesn't yet.
+         oo(condition).targetFontHeightOverNominalPtSize=nan; 
          oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet.rect)/RectWidth(savedAlphabet.rect);
-%          oo(condition).letters=savedAlphabet.letters;
-%          oo(condition).images=savedAlphabet.images;
          for cd=1:conditions
             for i=1:length(oo(cd).validKeys)
                oo(cd).responseKeys(i)=KbName(oo(cd).validKeys{i}); % this returns keyCode as integer
