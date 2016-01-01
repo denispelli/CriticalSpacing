@@ -176,10 +176,10 @@ o.showBounds=0;
 o.speakSizeAndSpacing=0;
 
 if IsWindows
-   o.textFontHeightOverNominal=1.336;
+   o.textFontHeightOverNormal=1.336;
    textYOffset=0.75;
 else
-   o.textFontHeightOverNominal=1.0;
+   o.textFontHeightOverNormal=1.0;
    textYOffset=0;
 end
 
@@ -331,7 +331,7 @@ try
       % The TextBounds seem to be wrong on Windows, so we explicitly set
       % a reasonable textSize.
       %       if IsWindows
-      %          oo(condition).textSize=round((screenWidth-100)/22/oo(condition).textFontHeightOverNominal);
+      %          oo(condition).textSize=round((screenWidth-100)/22/oo(condition).textFontHeightOverNormal);
       %       end
    end
    if IsWindows && ~oo(1).readAlphabetFromDisk
@@ -436,26 +436,26 @@ try
       %         end
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
-      oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-      oo(condition).targetDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
+      oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg)); % target fits on screen, with half-target margin.
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
-      oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-      oo(condition).targetDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
-      oo(condition).nominalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+      oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
       if oo(condition).eccentricityDeg==0
-         oo(condition).nominalCriticalSpacingDeg=0.05;
+         oo(condition).normalCriticalSpacingDeg=0.05;
       end
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
-      oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
-      oo(condition).nominalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-      oo(condition).targetDeg=2*oo(condition).nominalAcuityDeg; % initial guess for threshold size.
+      oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+      oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
          oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetDeg/2))); % flanker fits on screen.
          oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
-         oo(condition).nominalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
-         oo(condition).spacingDeg=oo(condition).nominalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+         oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+         oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       end
       oo(condition).spacings=oo(condition).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
       oo(condition).spacingsSequence=repmat(oo(condition).spacings,1,ceil(oo(condition).presentations/length(oo(condition).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
@@ -513,7 +513,7 @@ try
             Speak('Bounds. Click to continue.');
             GetClicks;
          end
-         oo(condition).targetFontHeightOverNominal=RectHeight(bounds)/sizePix;
+         oo(condition).targetFontHeightOverNominalPtSize=RectHeight(bounds)/sizePix;
       else % if ~oo(condition).readAlphabetFromDisk
          alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'lib','alphabets');
          if ~exist(alphabetsFolder,'dir')
@@ -546,7 +546,7 @@ try
                savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
             end
          end
-         oo(condition).targetFontHeightOverNominal=1; % NAN should work, but doesn't yet.
+         oo(condition).targetFontHeightOverNominalPtSize=nan; % NAN should work, but doesn't yet.
          oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet.rect)/RectWidth(savedAlphabet.rect);
 %          oo(condition).letters=savedAlphabet.letters;
 %          oo(condition).images=savedAlphabet.images;
@@ -563,12 +563,12 @@ try
       end
       
       terminate=0;
-      nominalOverMinimumSize=oo(condition).nominalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
+      normalOverMinimumSize=oo(condition).normalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
       if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
-         nominalOverMinimumSize=min(nominalOverMinimumSize,oo(condition).nominalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/oo(condition).minimumTargetPix);
+         normalOverMinimumSize=min(normalOverMinimumSize,oo(condition).normalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/oo(condition).minimumTargetPix);
       end
-      oo(condition).minimumViewingDistanceCm=10*ceil((2/nominalOverMinimumSize)*oo(condition).viewingDistanceCm/10);
-      if nominalOverMinimumSize<2
+      oo(condition).minimumViewingDistanceCm=10*ceil((2/normalOverMinimumSize)*oo(condition).viewingDistanceCm/10);
+      if normalOverMinimumSize<2
          msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
          if oo(condition).useSpeech
             Speak('You are too close to the screen.');
@@ -644,7 +644,10 @@ try
    end
    for condition=1:conditions
       ffprintf(ff,'%d: %s font. Alphabet ''%s'' and borderLetter ''%s''. o.targetHeightOverWidth %.2f\n',condition,oo(condition).targetFont,oo(condition).alphabet,oo(condition).borderLetter,oo(condition).targetHeightOverWidth);
-   end % for condition=1:conditions
+   end
+   for condition=1:conditions
+      ffprintf(ff,'%d: %s font. o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetFont,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
+   end
    for condition=1:conditions
       ffprintf(ff,'%d: Duration %.2f s.\n',condition,oo(condition).durationSec);
    end
@@ -815,7 +818,7 @@ try
          if oo(condition).fixedSpacingOverSize
             spacingPix=max(spacingPix,oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
          end
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominal %.2f, targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominal,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
          if oo(condition).repeatedTargets
             if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
                minSpacesY=4;
@@ -941,11 +944,11 @@ try
          stimulus=Shuffle(oo(condition).alphabet);
          stimulus=stimulus(1:3); % three random letters, all different.
          if oo(condition).measureThresholdVertically
-            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominal);
-            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominal;
+            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize);
+            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize;
          else
-            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominal*oo(condition).targetHeightOverWidth);
-            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominal/oo(condition).targetHeightOverWidth;
+            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize*oo(condition).targetHeightOverWidth);
+            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize/oo(condition).targetHeightOverWidth;
          end
          oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
          
