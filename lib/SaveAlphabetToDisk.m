@@ -20,18 +20,18 @@ function SaveAlphabetToDisk(o)
 % e.g. in any graphic editing app, like GraphicConverter.
 if nargin<1
    sca
-   %    o.targetFont='Sloan';
-   %    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-   %    o.borderLetter='X';
+      o.targetFont='Sloan';
+      o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+      o.borderLetter='X';
    o.generateResponsePage=1;
-   o.targetFont='Gotham Cond SSm XLight';
-   o.targetFont='Gotham Cond SSm Light';
-   o.targetFont='Gotham Cond SSm Book';
-   o.targetFont='Gotham Cond SSm Medium';
-   o.targetFont='Gotham Cond SSm Bold';
-   o.targetFont='Gotham Cond SSm Black';
-   o.alphabet='123456789';
-   o.borderLetter='$';
+%    o.targetFont='Gotham Cond SSm XLight';
+%    o.targetFont='Gotham Cond SSm Light';
+%    o.targetFont='Gotham Cond SSm Book';
+%    o.targetFont='Gotham Cond SSm Medium';
+%    o.targetFont='Gotham Cond SSm Bold';
+%    o.targetFont='Gotham Cond SSm Black';
+%    o.alphabet='123456789';
+%    o.borderLetter='$';
    o.useMATLABFontRendering=0;
    showProgress=1;
    useWindow=1;
