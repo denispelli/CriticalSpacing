@@ -54,12 +54,12 @@ o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
 o.showLineOfLetters=0;
-o.showBounds=0;
+o.showBounds=1;
 o.speakSizeAndSpacing=0;
-o.frameTheTarget=0; 
-o.useFractionOfScreen=0; 
 o.printSizeAndSpacing=0;
+o.frameTheTarget=1; 
 o.displayAlphabet=0; 
+o.useFractionOfScreen=0.2; 
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single
@@ -68,15 +68,15 @@ o.displayAlphabet=0;
 % FIRST RUN (measures two thresholds, interleaved)
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o(2)=o(1); % Copy the condition
-o(1).fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o(2).thresholdParameter='size';
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
 oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
 o(1).observer=oRepeated(1).observer;
 
-% SECOND RUN (measures two thresholds, interleaved)
+% SECOND RUN (measures one threshold for single letter size acuity.)
 % We retain the observer name obtained during the first run for use in the
 % second run.
 o=o(1);

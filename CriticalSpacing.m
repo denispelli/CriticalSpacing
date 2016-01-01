@@ -438,7 +438,7 @@ try
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
       oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
       oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
-      oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg)); % target fits on screen, with half-target margin.
+      oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
       oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
       oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
@@ -535,10 +535,14 @@ try
          for i=1:length(d)
             filename=fullfile(folder,d(i).name);
             savedAlphabet.images{i}=imread(filename,'png');
-            savedAlphabet.letters(i)=urldecode(d(i).name);
             if isempty(savedAlphabet.images{i})
                error('Cannot read file "%s".',filename);
             end
+            [~,name]=fileparts(urldecode(d(i).name));
+            if length(name)~=1
+               error('Saved "%s" alphabet letter image file "%s" must have a one-character filename after urldecoding.',oo(condition).targetFont,name);
+            end
+            savedAlphabet.letters(i)=name;
             savedAlphabet.bounds{i}=RectOfMatrix(savedAlphabet.images{i});
             if isempty(savedAlphabet.rect)
                savedAlphabet.rect=savedAlphabet.bounds{i};
@@ -653,7 +657,7 @@ try
    end
    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
    ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
-   ffprintf(ff,'pixPerDeg %.1f\n',pixPerDeg);
+   ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
    
    % Identify the computer
    cal.screen=0;
@@ -818,7 +822,7 @@ try
          if oo(condition).fixedSpacingOverSize
             spacingPix=max(spacingPix,oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
          end
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
          if oo(condition).repeatedTargets
             if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
                minSpacesY=4;
@@ -850,7 +854,7 @@ try
             end
          end
          oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
          spacingPix=round(spacingPix);
          switch oo(condition).radialOrTangential
             case 'tangential'
@@ -882,7 +886,7 @@ try
                   xFF=xT+spacingPix;
                   % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
                   spacingOuter=0;
-                  if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+                  if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
                else % eccentricity not zero
                   spacingPix=min(oo(condition).eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
                   if oo(condition).fixedSpacingOverSize
@@ -929,7 +933,7 @@ try
             oo(condition).targetPix=min(oo(condition).targetPix,RectHeight(stimulusRect)/oo(condition).targetHeightOverWidth);
          end
          oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
          oo(condition).fix.targetHeightPix=oo(condition).targetPix;
          oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetPix/2)/oo(condition).eccentricityPix);
          fixationLines=ComputeFixationLines(oo(condition).fix);
@@ -943,12 +947,14 @@ try
          end
          stimulus=Shuffle(oo(condition).alphabet);
          stimulus=stimulus(1:3); % three random letters, all different.
-         if oo(condition).measureThresholdVertically
-            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize);
-            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize;
-         else
-            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize*oo(condition).targetHeightOverWidth);
-            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize/oo(condition).targetHeightOverWidth;
+         if isfinite(oo(condition).targetFontHeightOverNominalPtSize)
+            if oo(condition).measureThresholdVertically
+               sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize);
+               oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize;
+            else
+               sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize*oo(condition).targetHeightOverWidth);
+               oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize/oo(condition).targetHeightOverWidth;
+            end
          end
          oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
          
@@ -1086,7 +1092,7 @@ try
             yMax=yT+ySpacing*floor((RectHeight(stimulusRect)-yT-0.5*yPix)/ySpacing);
             if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
             if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
-            if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.1f, spacingPix %.0f, spacingDeg %.1f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+            if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
             if oo(condition).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',condition,MFileLineNr,xMin,RectWidth(stimulusRect)-xMax,yMin,RectHeight(stimulusRect)-yMax); end;
             clear textures dstRects
             n=length(xMin:xSpacing:xMax);
