@@ -199,7 +199,9 @@ end
 for condition=1:conditions
    switch oo(condition).thresholdParameter
       case 'size',
-         oo(condition).measureThresholdVertically=1;
+         if ~isfinite(oo(condition).measureThresholdVertically)
+            oo(condition).measureThresholdVertically=1;
+         end
       case 'spacing',
          assert(streq(oo(condition).radialOrTangential,'radial'));
          oo(condition).measureThresholdVertically=0;
