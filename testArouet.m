@@ -16,7 +16,7 @@ else
 end
 o.setTargetHeightOverWidth=0;
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
-o.viewingDistanceCm=230;
+o.viewingDistanceCm=200;
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.useSpeech=1;
@@ -25,9 +25,10 @@ o.beepNegativeFeedback=0;
 o.usePurring=0;
 
 % You don't need to change any of these parameters.
+o.measureThresholdVertically=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readAlphabetFromDisk=0; % 1 makes the program more portable.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -51,7 +52,7 @@ o.targetFont='Arouet';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
 o.alphabet='123456789'; 
-o.borderLetter='$';
+o.borderLetter='0';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
@@ -71,7 +72,8 @@ o.useFractionOfScreen=0;
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
-o(1).fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+o(2).thresholdParameter='size';
+o(1).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 % o(2).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
@@ -84,7 +86,7 @@ o(1).observer=oRepeated(1).observer;
 o=o(1);
 o.thresholdParameter='size';
 o.repeatedTargets=0;
-% oSingle=CriticalSpacing(o); % one target
+oSingle=CriticalSpacing(o); % one target
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.

@@ -32,6 +32,9 @@ if nargin<1
 %    o.targetFont='Gotham Cond SSm Black';
 %    o.alphabet='123456789';
 %    o.borderLetter='$';
+   o.targetFont='Arouet';
+   o.alphabet='123456789';
+   o.borderLetter='0';
    o.useMATLABFontRendering=0;
    showProgress=1;
    useWindow=1;
