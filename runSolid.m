@@ -18,7 +18,6 @@ o.setTargetHeightOverWidth=0;
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=200;
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
-o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.useSpeech=1;
 o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;
@@ -69,12 +68,14 @@ o.useFractionOfScreen=0;
 % first run we'll use repeated targets. In the second run we'll use single
 % targets.
 
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+
 % FIRST RUN (measures two thresholds, interleaved)
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
 o(2).thresholdParameter='size';
-o(1).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+% o(1).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 % o(2).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.

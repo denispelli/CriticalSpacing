@@ -14,7 +14,7 @@ order to run CriticalSpacing on your machine, please do the following:
    from the  `CriticalSpacing/font` folder to
    one of your computer OS font folders.  *Restart MATLAB* so that the
    newly installed font is noticed by MATLAB. 
-1. Deal with remote typing. The observer must be 3 m (or more) away from
+1. Deal with remote typing. The observer must be 2 m (or more) away from
    the screen, and thus unable to reach a laptop keyboard attached to
    the screen. The quickest way to overcome this is for the experimenter
    to type what the observer says. A more convenient solution is to get
@@ -22,7 +22,9 @@ order to run CriticalSpacing on your machine, please do the following:
    keyboard to your computer, and *Restart MATLAB*. Try
    `GetKeyboardIndex` to see if the keyboard is registered to MATLAB
    (the number of outputs is the number of keyboard devices registered
-   to MATLAB; so we are looking for at least 2 numbers). 
+   to MATLAB; so you are hoping for at least 2 numbers). If MATLAB Command 
+   Window responds to the keyboard, but CriticalSpacing.m does not, try 
+   quitting and restarting MATLAB. 
 1. Choose a font, currently Sloan or Gotham. Print the `Response Page` 
    PDF for your font. Inside the `CriticalSpacing` folder you'll
    find files `Response page for Sloan.pdf` and `Response page for Gotham.pdf`.
