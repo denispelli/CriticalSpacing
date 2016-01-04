@@ -528,6 +528,10 @@ try
          end
          d=dir(folder);
          ok=~[d.isdir];
+         for i=1:length(ok)
+            systemFile=streq(d(i).name(1),'.') && length(d(i).name)>1;
+            ok(i)=ok(i) && ~systemFile;
+         end
          d=d(ok);
          if length(d)<length(oo(condition).alphabet)
             error('Sorry. Saved %s alphabet has only %d letters, and you requested %d letters.',oo(condition).targetFont,length(d),length(oo(condition).alphabet));
@@ -537,16 +541,27 @@ try
          savedAlphabet.rect=[];
          for i=1:length(d)
             filename=fullfile(folder,d(i).name);
-            savedAlphabet.images{i}=imread(filename,'png');
+            try
+               savedAlphabet.images{i}=imread(filename);
+            catch
+               sca;
+               error('Cannot read image file "%s".',filename);
+               psychrethrow(psychlasterror);
+            end
             if isempty(savedAlphabet.images{i})
-               error('Cannot read file "%s".',filename);
+               error('Cannot read image file "%s".',filename);
             end
             [~,name]=fileparts(urldecode(d(i).name));
             if length(name)~=1
                error('Saved "%s" alphabet letter image file "%s" must have a one-character filename after urldecoding.',oo(condition).targetFont,name);
             end
             savedAlphabet.letters(i)=name;
-            savedAlphabet.bounds{i}=RectOfMatrix(savedAlphabet.images{i});
+            savedAlphabet.bounds{i}=ImageBounds(savedAlphabet.images{i},255);
+            savedAlphabet.imageBounds{i}=RectOfMatrix(savedAlphabet.images{i});
+            if RectWidth(savedAlphabet.bounds{i})>1000
+               fprintf('Uh oh, image(%d) width %d\n',i,RectWidth(savedAlphabet.bounds{i}))
+               fprintf('bound %d %d %d %d, image %d %d %d %d, letter %c\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i},savedAlphabet.letters(i));
+            end
             if isempty(savedAlphabet.rect)
                savedAlphabet.rect=savedAlphabet.bounds{i};
             else
@@ -976,7 +991,8 @@ try
                   error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),oo(condition).targetFont,savedAlphabet.letters);
                end
                assert(length(which)==1);
-               letterImage=savedAlphabet.images{which};
+               r=savedAlphabet.rect;
+               letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
                letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
                letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
                % Screen DrawTexture will scale and stretch, as needed.
@@ -986,7 +1002,7 @@ try
             scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
             if ~isempty(oo(condition).targetFontNumber)
                Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-               [font,number]=Screen('TextFont',scratchWindow);
+               [~,number]=Screen('TextFont',scratchWindow);
                assert(number==oo(condition).targetFontNumber);
             else
                Screen('TextFont',scratchWindow,oo(condition).targetFont);
