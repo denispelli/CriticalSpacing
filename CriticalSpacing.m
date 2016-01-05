@@ -119,6 +119,10 @@ o.readAlphabetFromDisk=1;
 o.saveLettersToDisk=0;
 o.showProgressBar=1;
 o.fractionEasyTrials=0.2; % Add extra easy trials.
+o.easyBoost=0.3; % Increase the log threshold parameter of easy trials by this much.
+o.easyCount=0;
+o.guessCount=0; % artificial guesses
+o.timeRequiredForGuessOnSkip=8;
 % o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
 o.observer=''; % Name is requested at beginning of run.
@@ -157,7 +161,6 @@ o.borderLetter='X';
 %oo.alphabet='!7ij:()[]/|'; % bar-symbol alphabet
 %oo.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
 %oo.borderLetter='!';
-o.simulateGetChar=0; %if 1, only output single char for keypress, instead of true keycode like '4$'
 o.targetFont='Sloan';
 o.targetFontNumber=[];
 o.textFont='Trebuchet MS';
@@ -327,8 +330,8 @@ try
       oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
       Screen('TextSize',window,oo(condition).textSize);
       Screen('TextFont',window,oo(condition).textFont,0);
-      instructionalTextLine='Please slowly type your name followed by RETURN. xxxx';
-      boundsRect=Screen('TextBounds',window,instructionalTextLine);
+      instructionalTextLineSample='Please slowly type your name followed by RETURN. xxxxXX';
+      boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
       fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
       oo(condition).textSize=round(oo(condition).textSize/fraction);
       % The TextBounds seem to be wrong on Windows, so we explicitly set
@@ -568,7 +571,7 @@ try
                savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
             end
          end
-         oo(condition).targetFontHeightOverNominalPtSize=nan; 
+         oo(condition).targetFontHeightOverNominalPtSize=nan;
          oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet.rect)/RectWidth(savedAlphabet.rect);
          for cd=1:conditions
             for i=1:length(oo(cd).validKeys)
@@ -725,9 +728,9 @@ try
       oo(condition).cal=cal;
    end
    
-   rightBeep=MakeBeep(2000,0.05,44100);
+   rightBeep=0.05*MakeBeep(2000,0.05,44100);
    rightBeep(end)=0;
-   wrongBeep=MakeBeep(500,0.5,44100);
+   wrongBeep=0.05*MakeBeep(500,0.5,44100);
    wrongBeep(end)=0;
    purr=MakeBeep(140,1.0,44100);
    purr(end)=0;
@@ -738,7 +741,7 @@ try
    string=[sprintf('Hello %s,\n',oo(condition).observer)];
    string=[string sprintf('Please move the screen to be %.0f cm from your eye. Turn the computer sound on. ',oo(condition).viewingDistanceCm)];
    string=[string sprintf('You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. ')];
-   for condition=1:conditions
+     for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
          string=[string 'When you see one letter, please report it. '];
          break;
@@ -752,6 +755,7 @@ try
    end
    if any([oo.repeatedTargets])
       string=[string 'When you see many letters, they are all repetitions of just two letters. Please report both. '];
+      string=[string 'The two kinds of letter can be mixed together, or in separate groups on left and right. '];
    end
    string=[string '(Type slowly. Quit anytime by pressing ESCAPE.) Look in the middle of the screen, ignoring the edges of the screen. '];
    if any(isfinite([oo.durationSec]))
@@ -764,10 +768,13 @@ try
    Screen('TextSize',window,round(oo(condition).textSize*0.4));
    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
    Screen('TextSize',window,oo(condition).textSize);
-   DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLine)+3,[],[],1.1);
+   if all(ismember(oo(1).alphabet,'0123456789'))
+      string=strrep(string,'letter','number');
+   end
+   DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window);
    SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex, oo(condition).simulateGetChar);
+   answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
    if streq(answer,'ESCAPE')
       if oo(1).speakEachLetter && oo(1).useSpeech
          Speak('Escape. This run is done.');
@@ -779,10 +786,15 @@ try
       sca;
       return
    end
+   easeRequest=0; % Positive to request easier trials.
+   easyCount=0; % Number of easy presentations
+   guessCount=0; % Number of artificial guess responses
+   skipCount=0;
+   skipping=0;
    condList=[];
    for condition=1:conditions
-      % Run the specified number of presentations of each condition, in random
-      % order
+      % Run the specified number of presentations of each condition, in
+      % random order
       condList = [condList repmat(condition,1,oo(condition).presentations)];
       oo(condition).spacingsSequence=Shuffle(oo(condition).spacingsSequence);
       oo(condition).q=QuestCreate(oo(condition).tGuess,oo(condition).tGuessSd,oo(condition).pThreshold,oo(condition).beta,delta,gamma,grain,range);
@@ -790,525 +802,557 @@ try
       yT=oo(condition).fix.y; % target
    end
    condList=Shuffle(condList);
-   for presentation=1:length(condList)
-      easyModulus=ceil(1/oo(condList(presentation)).fractionEasyTrials-1);
-      if mod(presentation-1,easyModulus)==0
-         % do this trial twice: hard then easy.
-         easyList=0:1;
+   presentation=0;
+   while presentation<length(condList)
+      presentation=presentation+1;
+      condition=condList(presentation);
+      easyModulus=ceil(1/oo(condition).fractionEasyTrials-1);
+      easyPresentation= easeRequest>0 || mod(presentation-1,easyModulus)==0;
+      if oo(condition).useQuest
+         intensity=QuestQuantile(oo(condition).q);
+         if oo(condition).measureBeta
+            offsetToMeasureBeta=Shuffle(offsetToMeasureBeta);
+            intensity=intensity+offsetToMeasureBeta(1);
+         end
+         if easyPresentation
+            easyCount=easyCount+1;
+            oo(condition).easyCount=oo(condition).easyCount+1;
+            intensity=intensity+oo(condition).easyBoost;
+            if easeRequest>1
+               intensity=intensity+(easeRequest-1)*oo(condition).easyBoost;
+            end
+         end
+         switch oo(condition).thresholdParameter
+            case 'spacing',
+               oo(condition).spacingDeg=10^intensity;
+               if oo(condition).fixedSpacingOverSize
+                  oo(condition).targetDeg=oo(condition).spacingDeg/oo(condition).fixedSpacingOverSize;
+               end
+            case 'size',
+               oo(condition).targetDeg=10^intensity;
+         end
       else
-         % do it once: hard.
-         easyList=0;
+         oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).responseCount/2);
       end
-      for easyPresentation=easyList
-         condition=condList(presentation);
-         if oo(condition).useQuest
-            intensity=QuestQuantile(oo(condition).q);
-            if oo(condition).measureBeta
-               offsetToMeasureBeta=Shuffle(offsetToMeasureBeta);
-               intensity=intensity+offsetToMeasureBeta(1);
-            end
-            if easyPresentation
-               intensity=intensity+1.0;
-%                fprintf('**EASY intensity %.1f\n',intensity);
+      oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
+      oo(condition).targetPix=max(oo(condition).targetPix,oo(condition).minimumTargetPix);
+      if oo(condition).measureThresholdVertically
+         oo(condition).targetPix=max(oo(condition).targetPix,oo(condition).minimumTargetPix*oo(condition).targetHeightOverWidth);
+      end
+      oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
+      if streq(oo(condition).thresholdParameter,'size') && oo(condition).fixedSpacingOverSize
+         oo(condition).spacingDeg=oo(condition).targetDeg*oo(condition).fixedSpacingOverSize;
+      end
+      spacingPix=oo(condition).spacingDeg*pixPerDeg;
+      if oo(condition).fixedSpacingOverSize
+         spacingPix=max(spacingPix,oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
+      end
+      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+      if oo(condition).repeatedTargets
+         if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
+            minSpacesY=4;
+            minSpacesX=2;
+         else
+            minSpacesY=2;
+            minSpacesX=4;
+         end
+         if oo(condition).measureThresholdVertically
+            % vertical threshold
+            if oo(condition).fixedSpacingOverSize
+               spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)));
+               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
+               oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
             else
-%                fprintf('*HARD intensity %.1f\n',intensity);
-            end
-            switch oo(condition).thresholdParameter
-               case 'spacing',
-                  oo(condition).spacingDeg=10^intensity;
-                  if oo(condition).fixedSpacingOverSize
-                     oo(condition).targetDeg=oo(condition).spacingDeg/oo(condition).fixedSpacingOverSize;
-                  end
-               case 'size',
-                  oo(condition).targetDeg=10^intensity;
+               spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
+               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/minSpacesX));
             end
          else
-            oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).responseCount/2);
-         end
-         oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-         oo(condition).targetPix=max(oo(condition).targetPix,oo(condition).minimumTargetPix);
-         if oo(condition).measureThresholdVertically
-            oo(condition).targetPix=max(oo(condition).targetPix,oo(condition).minimumTargetPix*oo(condition).targetHeightOverWidth);
-         end
-         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         if streq(oo(condition).thresholdParameter,'size') && oo(condition).fixedSpacingOverSize
-            oo(condition).spacingDeg=oo(condition).targetDeg*oo(condition).fixedSpacingOverSize;
-         end
-         spacingPix=oo(condition).spacingDeg*pixPerDeg;
-         if oo(condition).fixedSpacingOverSize
-            spacingPix=max(spacingPix,oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
-         end
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-         if oo(condition).repeatedTargets
-            if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
-               minSpacesY=4;
-               minSpacesX=2;
+            % horizontal threshold
+            if oo(condition).fixedSpacingOverSize
+               spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
+               spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)/oo(condition).targetHeightOverWidth));
+               oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
             else
-               minSpacesY=2;
-               minSpacesX=4;
-            end
-            if oo(condition).measureThresholdVertically
-               % vertical threshold
-               if oo(condition).fixedSpacingOverSize
-                  spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)));
-                  spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
-                  oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
-               else
-                  spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
-                  spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/minSpacesX));
-               end
-            else
-               % horizontal threshold
-               if oo(condition).fixedSpacingOverSize
-                  spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
-                  spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)/oo(condition).targetHeightOverWidth));
-                  oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
-               else
-                  spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
-                  spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/4));
-               end
+               spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
+               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/4));
             end
          end
-         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-         spacingPix=round(spacingPix);
-         switch oo(condition).radialOrTangential
-            case 'tangential'
+      end
+      oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
+      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+      spacingPix=round(spacingPix);
+      switch oo(condition).radialOrTangential
+         case 'tangential'
+            % flanker must fit on screen
+            if oo(condition).fixedSpacingOverSize
+               spacingPix=min(spacingPix,RectHeight(stimulusRect)/(2+1/oo(condition).fixedSpacingOverSize));
+            else
+               spacingPix=min(spacingPix,(RectHeight(stimulusRect)-oo(condition).targetPix)/2);
+            end
+            assert(spacingPix>=0);
+            xF=xT;
+            xFF=xT;
+            yF=yT-spacingPix;
+            yFF=yT+spacingPix;
+            % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
+            spacingOuter=0;
+         case 'radial'
+            if oo(condition).eccentricityPix==0
                % flanker must fit on screen
                if oo(condition).fixedSpacingOverSize
-                  spacingPix=min(spacingPix,RectHeight(stimulusRect)/(2+1/oo(condition).fixedSpacingOverSize));
+                  spacingPix=min(spacingPix,RectWidth(stimulusRect)/(2+1/oo(condition).fixedSpacingOverSize));
                else
-                  spacingPix=min(spacingPix,(RectHeight(stimulusRect)-oo(condition).targetPix)/2);
+                  spacingPix=min(spacingPix,(RectWidth(stimulusRect)-oo(condition).targetPix)/2);
                end
                assert(spacingPix>=0);
-               xF=xT;
-               xFF=xT;
-               yF=yT-spacingPix;
-               yFF=yT+spacingPix;
+               yF=yT;
+               yFF=yT;
+               xF=xT-spacingPix;
+               xFF=xT+spacingPix;
                % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
                spacingOuter=0;
-            case 'radial'
-               if oo(condition).eccentricityPix==0
-                  % flanker must fit on screen
-                  if oo(condition).fixedSpacingOverSize
-                     spacingPix=min(spacingPix,RectWidth(stimulusRect)/(2+1/oo(condition).fixedSpacingOverSize));
-                  else
-                     spacingPix=min(spacingPix,(RectWidth(stimulusRect)-oo(condition).targetPix)/2);
-                  end
+               if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+            else % eccentricity not zero
+               spacingPix=min(oo(condition).eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
+               if oo(condition).fixedSpacingOverSize
+                  spacingPix=min(spacingPix,xT/(1+1/oo(condition).fixedSpacingOverSize/2)); % Inner flanker is on screen.
                   assert(spacingPix>=0);
-                  yF=yT;
-                  yFF=yT;
-                  xF=xT-spacingPix;
-                  xFF=xT+spacingPix;
-                  % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
-                  spacingOuter=0;
-                  if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-               else % eccentricity not zero
-                  spacingPix=min(oo(condition).eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
-                  if oo(condition).fixedSpacingOverSize
-                     spacingPix=min(spacingPix,xT/(1+1/oo(condition).fixedSpacingOverSize/2)); % Inner flanker is on screen.
-                     assert(spacingPix>=0);
-                     for i=1:100
-                        spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacingPix)-(oo(condition).eccentricityPix+addonPix);
-                        assert(spacingOuter>=0);
-                        if spacingOuter<=RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2; % Outer flanker is on screen.
-                           break;
-                        else
-                           spacingPix=0.9*spacingPix;
-                        end
-                     end
-                     if i==100
-                        ffprintf(ff,'ERROR: spacingOuter %.1f pix exceeds max %.1f pix.\n',spacingPix,spacingOuter,RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2)
-                        error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
-                     end
-                  else
-                     spacingPix=min(spacingPix,xT-oo(condition).targetPix/2); % inner flanker on screen
+                  for i=1:100
                      spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacingPix)-(oo(condition).eccentricityPix+addonPix);
-                     spacingOuter=min(spacingOuter,RectWidth(stimulusRect)-xT-oo(condition).targetPix/2); % outer flanker on screen
+                     assert(spacingOuter>=0);
+                     if spacingOuter<=RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2; % Outer flanker is on screen.
+                        break;
+                     else
+                        spacingPix=0.9*spacingPix;
+                     end
                   end
-                  assert(spacingOuter>=0);
-                  spacingPix=oo(condition).eccentricityPix+addonPix-(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix+spacingOuter);
-                  assert(spacingPix>=0);
-                  spacingPix=round(spacingPix);
-                  xF=xT-spacingPix; % inner flanker
-                  yF=yT; % inner flanker
-                  xFF=xT+round(spacingOuter); % outer flanker
-                  yFF=yT; % outer flanker
+                  if i==100
+                     ffprintf(ff,'ERROR: spacingOuter %.1f pix exceeds max %.1f pix.\n',spacingPix,spacingOuter,RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2)
+                     error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
+                  end
+               else
+                  spacingPix=min(spacingPix,xT-oo(condition).targetPix/2); % inner flanker on screen
+                  spacingOuter=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacingPix)-(oo(condition).eccentricityPix+addonPix);
+                  spacingOuter=min(spacingOuter,RectWidth(stimulusRect)-xT-oo(condition).targetPix/2); % outer flanker on screen
                end
-         end
-         oo(condition).spacingDeg=spacingPix/pixPerDeg;
-         if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
-            oo(condition).targetDeg=oo(condition).spacingDeg/oo(condition).fixedSpacingOverSize;
-         end
-         oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-         if oo(condition).measureThresholdVertically
-            oo(condition).targetPix=min(oo(condition).targetPix,RectHeight(stimulusRect));
-            oo(condition).targetPix=min(oo(condition).targetPix,RectWidth(stimulusRect)*oo(condition).targetHeightOverWidth);
-         else
-            oo(condition).targetPix=min(oo(condition).targetPix,RectWidth(stimulusRect));
-            oo(condition).targetPix=min(oo(condition).targetPix,RectHeight(stimulusRect)/oo(condition).targetHeightOverWidth);
-         end
-         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-         oo(condition).fix.targetHeightPix=oo(condition).targetPix;
-         oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetPix/2)/oo(condition).eccentricityPix);
-         fixationLines=ComputeFixationLines(oo(condition).fix);
-         if ~oo(condition).repeatedTargets
-            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-         end
-         Screen('Flip',window); % blank display, except perhaps fixation
-         if isfinite(oo(condition).durationSec)
-            WaitSecs(1); % duration of fixation display
-            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-         end
-         stimulus=Shuffle(oo(condition).alphabet);
-         stimulus=stimulus(1:3); % three random letters, all different.
-         if isfinite(oo(condition).targetFontHeightOverNominalPtSize)
-            if oo(condition).measureThresholdVertically
-               sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize);
-               oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize;
-            else
-               sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize*oo(condition).targetHeightOverWidth);
-               oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize/oo(condition).targetHeightOverWidth;
+               assert(spacingOuter>=0);
+               spacingPix=oo(condition).eccentricityPix+addonPix-(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix+spacingOuter);
+               assert(spacingPix>=0);
+               spacingPix=round(spacingPix);
+               xF=xT-spacingPix; % inner flanker
+               yF=yT; % inner flanker
+               xFF=xT+round(spacingOuter); % outer flanker
+               yFF=yT; % outer flanker
             end
+      end
+      oo(condition).spacingDeg=spacingPix/pixPerDeg;
+      if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
+         oo(condition).targetDeg=oo(condition).spacingDeg/oo(condition).fixedSpacingOverSize;
+      end
+      oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
+      if oo(condition).measureThresholdVertically
+         oo(condition).targetPix=min(oo(condition).targetPix,RectHeight(stimulusRect));
+         oo(condition).targetPix=min(oo(condition).targetPix,RectWidth(stimulusRect)*oo(condition).targetHeightOverWidth);
+      else
+         oo(condition).targetPix=min(oo(condition).targetPix,RectWidth(stimulusRect));
+         oo(condition).targetPix=min(oo(condition).targetPix,RectHeight(stimulusRect)/oo(condition).targetHeightOverWidth);
+      end
+      oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
+      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+      oo(condition).fix.targetHeightPix=oo(condition).targetPix;
+      oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetPix/2)/oo(condition).eccentricityPix);
+      fixationLines=ComputeFixationLines(oo(condition).fix);
+      if ~oo(condition).repeatedTargets
+         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+      end
+      Screen('Flip',window); % blank display, except perhaps fixation
+      if isfinite(oo(condition).durationSec)
+         WaitSecs(1); % duration of fixation display
+         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+      end
+      stimulus=Shuffle(oo(condition).alphabet);
+      stimulus=stimulus(1:3); % three random letters, all different.
+      if isfinite(oo(condition).targetFontHeightOverNominalPtSize)
+         if oo(condition).measureThresholdVertically
+            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize);
+            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize;
+         else
+            sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize*oo(condition).targetHeightOverWidth);
+            oo(condition).targetPix=sizePix*oo(condition).targetFontHeightOverNominalPtSize/oo(condition).targetHeightOverWidth;
          end
-         oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-         
-         % Create textures, one per letter
+      end
+      oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
+      
+      % Create textures, one per letter
+      letters=[oo(condition).alphabet oo(condition).borderLetter];
+      if oo(condition).measureThresholdVertically
+         canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
+      else
+         canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix]*oo(condition).targetHeightOverWidth;
+      end
+      black=0;
+      white=255;
+      if oo(condition).readAlphabetFromDisk
          letters=[oo(condition).alphabet oo(condition).borderLetter];
-         if oo(condition).measureThresholdVertically
-            canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
-         else
-            canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix]*oo(condition).targetHeightOverWidth;
-         end
-         black=0;
-         white=255;
-         if oo(condition).readAlphabetFromDisk
-            letters=[oo(condition).alphabet oo(condition).borderLetter];
-            for i=1:length(letters)
-               which=strfind([savedAlphabet.letters],letters(i));
-               if length(which)~=1
-                  error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),oo(condition).targetFont,savedAlphabet.letters);
-               end
-               assert(length(which)==1);
-               r=savedAlphabet.rect;
-               letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
-               letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
-               letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
-               % Screen DrawTexture will scale and stretch, as needed.
+         for i=1:length(letters)
+            which=strfind([savedAlphabet.letters],letters(i));
+            if length(which)~=1
+               error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),oo(condition).targetFont,savedAlphabet.letters);
             end
+            assert(length(which)==1);
+            r=savedAlphabet.rect;
+            letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
+            letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
+            letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
+            % Screen DrawTexture will scale and stretch, as needed.
+         end
+      else
+         % Get bounds of font
+         scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
+         if ~isempty(oo(condition).targetFontNumber)
+            Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
+            [~,number]=Screen('TextFont',scratchWindow);
+            assert(number==oo(condition).targetFontNumber);
          else
-            % Get bounds of font
-            scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
+            Screen('TextFont',scratchWindow,oo(condition).targetFont);
+            font=Screen('TextFont',scratchWindow);
+            assert(streq(font,oo(condition).targetFont));
+         end
+         Screen('TextSize',scratchWindow,sizePix);
+         for i=1:length(letters)
+            lettersInCells{i}=letters(i);
+            letterStruct(i).bounds=TextBounds(scratchWindow,letters(i),1);
+         end
+         bounds=TextBounds(scratchWindow,lettersInCells,1);
+         for i=1:length(letters)
+            desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
+            letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
+            letterStruct(i).width=RectWidth(letterStruct(i).bounds);
+         end
+         oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
+         Screen('Close',scratchWindow);
+         
+         % Create texture for each letter
+         canvasRect=bounds;
+         canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
+         fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f, bounds %.0f %.0f %.0f %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds),bounds);
+         for i=1:length(letters)
+            [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
             if ~isempty(oo(condition).targetFontNumber)
-               Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-               [~,number]=Screen('TextFont',scratchWindow);
+               Screen('TextFont',letterStruct(i).texture,oo(condition).targetFontNumber);
+               [font,number]=Screen('TextFont',letterStruct(i).texture);
                assert(number==oo(condition).targetFontNumber);
             else
-               Screen('TextFont',scratchWindow,oo(condition).targetFont);
-               font=Screen('TextFont',scratchWindow);
+               Screen('TextFont',letterStruct(i).texture,oo(condition).targetFont);
+               font=Screen('TextFont',letterStruct(i).texture);
                assert(streq(font,oo(condition).targetFont));
             end
-            Screen('TextSize',scratchWindow,sizePix);
-            for i=1:length(letters)
-               lettersInCells{i}=letters(i);
-               letterStruct(i).bounds=TextBounds(scratchWindow,letters(i),1);
-            end
-            bounds=TextBounds(scratchWindow,lettersInCells,1);
-            for i=1:length(letters)
-               desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
-               letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
-               letterStruct(i).width=RectWidth(letterStruct(i).bounds);
-            end
-            oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
-            Screen('Close',scratchWindow);
-            
-            % Create texture for each letter
-            canvasRect=bounds;
-            canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
-            fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f, bounds %.0f %.0f %.0f %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds),bounds);
-            for i=1:length(letters)
-               [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
-               if ~isempty(oo(condition).targetFontNumber)
-                  Screen('TextFont',letterStruct(i).texture,oo(condition).targetFontNumber);
-                  [font,number]=Screen('TextFont',letterStruct(i).texture);
-                  assert(number==oo(condition).targetFontNumber);
-               else
-                  Screen('TextFont',letterStruct(i).texture,oo(condition).targetFont);
-                  font=Screen('TextFont',letterStruct(i).texture);
-                  assert(streq(font,oo(condition).targetFont));
-               end
-               Screen('TextSize',letterStruct(i).texture,sizePix);
-               Screen('FillRect',letterStruct(i).texture,white);
-               Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2)-textYOffset,black,white,1);
-            end
+            Screen('TextSize',letterStruct(i).texture,sizePix);
+            Screen('FillRect',letterStruct(i).texture,white);
+            Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2)-textYOffset,black,white,1);
          end
-         if oo(condition).displayAlphabet
-            for i=1:length(letters)
-               r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
-               Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
-               Screen('FrameRect',window,0,OffsetRect(r,i*RectWidth(r),RectHeight(r)));
-            end
-            Screen('Flip',window);
-            Speak('Click to continue');
-            GetClicks;
+      end
+      if oo(condition).displayAlphabet
+         for i=1:length(letters)
+            r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
+            Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
+            Screen('FrameRect',window,0,OffsetRect(r,i*RectWidth(r),RectHeight(r)));
          end
+         Screen('Flip',window);
+         Speak('Click to continue');
+         GetClicks;
+      end
+      
+      % Create texture for each line, for first 3 lines. The rest are the
+      % copies.
+      textureIndex=1;
+      spacingPix=floor(spacingPix);
+      if oo(condition).measureThresholdVertically
+         ySpacing=spacingPix;
+         xSpacing=spacingPix/oo(condition).targetHeightOverWidth;
+         yPix=oo(condition).targetPix;
+         xPix=oo(condition).targetPix/oo(condition).targetHeightOverWidth;
+      else
+         xSpacing=spacingPix;
+         ySpacing=spacingPix*oo(condition).targetHeightOverWidth;
+         xPix=oo(condition).targetPix;
+         yPix=oo(condition).targetPix*oo(condition).targetHeightOverWidth;
+      end
+      if ~oo(condition).repeatedTargets
+         xStimulus=[xF xT xFF];
+         yStimulus=[yF yT yFF];
+         clear textures dstRects
          
-         % Create texture for each line, for first 3 lines. The rest are the
-         % copies.
-         textureIndex=1;
-         spacingPix=floor(spacingPix);
-         if oo(condition).measureThresholdVertically
-            ySpacing=spacingPix;
-            xSpacing=spacingPix/oo(condition).targetHeightOverWidth;
-            yPix=oo(condition).targetPix;
-            xPix=oo(condition).targetPix/oo(condition).targetHeightOverWidth;
-         else
-            xSpacing=spacingPix;
-            ySpacing=spacingPix*oo(condition).targetHeightOverWidth;
-            xPix=oo(condition).targetPix;
-            yPix=oo(condition).targetPix*oo(condition).targetHeightOverWidth;
+         
+         for textureIndex=1:3
+            which=strfind(letters,stimulus(textureIndex));
+            assert(length(which)==1)
+            textures(textureIndex)=letterStruct(which).texture;
+            r=round(letterStruct(which).rect);
+            oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+            if oo(condition).setTargetHeightOverWidth
+               r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
+               oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+               %                      dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
+            end
+            if oo(condition).measureThresholdVertically
+               heightPix=oo(condition).targetPix;
+            else
+               heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
+            end
+            r=round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect);
+            dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
+            if oo(condition).printSizeAndSpacing
+               fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
+            end
          end
-         if ~oo(condition).repeatedTargets
-            xStimulus=[xF xT xFF];
-            yStimulus=[yF yT yFF];
-            clear textures dstRects
-            
-            
-            for textureIndex=1:3
-               which=strfind(letters,stimulus(textureIndex));
+         if ~streq(oo(condition).thresholdParameter,'spacing')
+            % Show only the target, omitting both flankers.
+            textures=textures(2);
+            dstRects=dstRects(1:4,2);
+         end
+      else
+         xMin=xT-xSpacing*floor((xT-0.5*xPix)/xSpacing);
+         xMax=xT+xSpacing*floor((RectWidth(stimulusRect)-xT-0.5*xPix)/xSpacing);
+         yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
+         yMax=yT+ySpacing*floor((RectHeight(stimulusRect)-yT-0.5*yPix)/ySpacing);
+         if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',condition,MFileLineNr,xMin,RectWidth(stimulusRect)-xMax,yMin,RectHeight(stimulusRect)-yMax); end;
+         clear textures dstRects
+         n=length(xMin:xSpacing:xMax);
+         textures=zeros(1,n);
+         dstRects=zeros(4,n);
+         for lineIndex=1:3
+            whichTarget=mod(lineIndex,2);
+            for x=xMin:xSpacing:xMax
+               switch oo(condition).thresholdParameter
+                  case 'spacing',
+                     whichTarget=mod(whichTarget+1,2);
+                  case 'size',
+                     whichTarget=x>mean([xMin xMax]);
+               end
+               if ismember(x,[xMin xMax]) || lineIndex==1
+                  letter=oo(condition).borderLetter;
+               else
+                  letter=stimulus(1+whichTarget);
+               end
+               which=strfind(letters,letter);
                assert(length(which)==1)
                textures(textureIndex)=letterStruct(which).texture;
+               % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
+               xPos=round(x-xPix/2);
+               
+               % Compute o.targetHeightOverWidth, and, if requested,
+               % o.setTargetHeightOverWidth
                r=round(letterStruct(which).rect);
                oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                if oo(condition).setTargetHeightOverWidth
                   r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
                   oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                  %                      dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
-               end
-               if oo(condition).measureThresholdVertically
-                  heightPix=oo(condition).targetPix;
+                  dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
                else
-                  heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
-               end
-               r=round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect);
-               dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
-               if oo(condition).printSizeAndSpacing
-                  fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
-               end
-            end
-            if ~streq(oo(condition).thresholdParameter,'spacing')
-               % Show only the target, omitting both flankers.
-               textures=textures(2);
-               dstRects=dstRects(1:4,2);
-            end
-         else
-            xMin=xT-xSpacing*floor((xT-0.5*xPix)/xSpacing);
-            xMax=xT+xSpacing*floor((RectWidth(stimulusRect)-xT-0.5*xPix)/xSpacing);
-            yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
-            yMax=yT+ySpacing*floor((RectHeight(stimulusRect)-yT-0.5*yPix)/ySpacing);
-            if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
-            if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
-            if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
-            if oo(condition).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',condition,MFileLineNr,xMin,RectWidth(stimulusRect)-xMax,yMin,RectHeight(stimulusRect)-yMax); end;
-            clear textures dstRects
-            n=length(xMin:xSpacing:xMax);
-            textures=zeros(1,n);
-            dstRects=zeros(4,n);
-            for lineIndex=1:3
-               whichTarget=mod(lineIndex,2);
-               for x=xMin:xSpacing:xMax
-                  switch oo(condition).thresholdParameter
-                     case 'spacing',
-                        whichTarget=mod(whichTarget+1,2);
-                     case 'size',
-                        whichTarget=x>mean([xMin xMax]);
-                  end
-                  if ismember(x,[xMin xMax]) || lineIndex==1
-                     letter=oo(condition).borderLetter;
+                  if oo(condition).measureThresholdVertically
+                     heightPix=oo(condition).targetPix;
                   else
-                     letter=stimulus(1+whichTarget);
+                     heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
                   end
-                  which=strfind(letters,letter);
-                  assert(length(which)==1)
-                  textures(textureIndex)=letterStruct(which).texture;
-                  % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
-                  xPos=round(x-xPix/2);
-                  
-                  % Compute o.targetHeightOverWidth, and, if requested,
-                  % o.setTargetHeightOverWidth
-                  r=round(letterStruct(which).rect);
-                  oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                  if oo(condition).setTargetHeightOverWidth
-                     r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
-                     oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                     dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
-                  else
-                     if oo(condition).measureThresholdVertically
-                        heightPix=oo(condition).targetPix;
-                     else
-                        heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
-                     end
-                     dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect),xPos,0);
-                  end
-                  % One dst rect for each letter in the line.
-                  if oo(condition).showLineOfLetters
-                     r=Screen('Rect',textures(textureIndex));
-                     Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
-                     Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
-                     fprintf('x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',x,xPos,textureIndex,dstRects(1:4,textureIndex));
-                  end
-                  textureIndex=textureIndex+1;
+                  dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect),xPos,0);
                end
+               % One dst rect for each letter in the line.
                if oo(condition).showLineOfLetters
-                  Screen('Flip',window);
-                  Speak('Line of letters. Click to continue.');
-                  GetClicks;
+                  r=Screen('Rect',textures(textureIndex));
+                  Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
+                  Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
+                  fprintf('x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',x,xPos,textureIndex,dstRects(1:4,textureIndex));
                end
-               % Create a texture holding one line of letters.
-               [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 RectWidth(stimulusRect) RectHeight(canvasRect)],8,0);
-               Screen('FillRect',lineTexture(lineIndex),white);
-               r=Screen('Rect',textures(1));
-               Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
+               textureIndex=textureIndex+1;
             end
-            clear textures dstRects
-            lineIndex=1;
-            for y=yMin:ySpacing:yMax
-               if ismember(y,[yMin yMax])
-                  which=1;
-               else
-                  which=2+mod(lineIndex,2);
-               end
-               textures(lineIndex)=lineTexture(which);
-               dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
-               %                 fprintf('line %d, which %d, texture %d, dstRect %d %d %d %d\n',lineIndex,which,lineTexture(which),dstRects(1:4,lineIndex));
-               lineIndex=lineIndex+1;
+            if oo(condition).showLineOfLetters
+               Screen('Flip',window);
+               Speak('Line of letters. Click to continue.');
+               GetClicks;
             end
+            % Create a texture holding one line of letters.
+            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 RectWidth(stimulusRect) RectHeight(canvasRect)],8,0);
+            Screen('FillRect',lineTexture(lineIndex),white);
+            r=Screen('Rect',textures(1));
+            Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
          end
-         Screen('DrawTextures',window,textures,[],dstRects);
-         if oo(condition).frameTheTarget
-            letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
-            Screen('FrameRect',window,[255 0 0],letterRect);
-            fprintf('%d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',condition,RectHeight(stimulusRect),RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
-         end
-         Screen('TextFont',window,oo(condition).textFont,0);
-         if oo(condition).showProgressBar
-            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-            r=progressBarRect;
-            r(4)=round(r(4)*(1-presentation/length(condList)));
-            Screen('FillRect',window,[220 220 220],r); % grey background
-         end
-         if oo(condition).usePurring
-            Snd('Play',purr);
-         end
-         Screen('Flip',window); % show target and flankers
-         % Discard all the textures, to free graphics memory.
-         for i=1:length(letterStruct)
-            Screen('Close',letterStruct(i).texture);
-         end
-         if exist('lineTexture','var')
-            for i=1:length(lineTexture)
-               Screen('Close',lineTexture(i));
+         clear textures dstRects
+         lineIndex=1;
+         for y=yMin:ySpacing:yMax
+            if ismember(y,[yMin yMax])
+               which=1;
+            else
+               which=2+mod(lineIndex,2);
             end
+            textures(lineIndex)=lineTexture(which);
+            dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
+            %                 fprintf('line %d, which %d, texture %d, dstRect %d %d %d %d\n',lineIndex,which,lineTexture(which),dstRects(1:4,lineIndex));
+            lineIndex=lineIndex+1;
          end
-         if oo(condition).repeatedTargets
-            targets=stimulus(1:2);
-         else
-            targets=stimulus(2);
+      end
+      Screen('DrawTextures',window,textures,[],dstRects);
+      if oo(condition).frameTheTarget
+         letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
+         Screen('FrameRect',window,[255 0 0],letterRect);
+         fprintf('%d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',condition,RectHeight(stimulusRect),RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
+      end
+      Screen('TextFont',window,oo(condition).textFont,0);
+      if oo(condition).showProgressBar
+         Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+         r=progressBarRect;
+         r(4)=round(r(4)*(1-presentation/length(condList)));
+         Screen('FillRect',window,[220 220 220],r); % grey background
+      end
+      if oo(condition).usePurring
+         Snd('Play',purr);
+      end
+      Screen('Flip',window); % show target and flankers
+      trialTimeSecs=GetSecs;
+      % Discard all the textures, to free graphics memory.
+      for i=1:length(letterStruct)
+         Screen('Close',letterStruct(i).texture);
+      end
+      if exist('lineTexture','var')
+         for i=1:length(lineTexture)
+            Screen('Close',lineTexture(i));
          end
+      end
+      if oo(condition).repeatedTargets
+         targets=stimulus(1:2);
+      else
+         targets=stimulus(2);
+      end
+      if ~oo(condition).repeatedTargets
+         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+      end
+      if isfinite(oo(condition).durationSec)
+         WaitSecs(oo(condition).durationSec); % display of letters
+         Screen('Flip',window); % remove letters
+         WaitSecs(0.2); % pause before response screen
          if ~oo(condition).repeatedTargets
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
          end
-         if isfinite(oo(condition).durationSec)
-            WaitSecs(oo(condition).durationSec); % display of letters
-            Screen('Flip',window); % remove letters
-            WaitSecs(0.2); % pause before response screen
-            if ~oo(condition).repeatedTargets
-               Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-            end
-            Screen('TextFont',window,oo(condition).textFont,0);
-            Screen('TextSize',window,oo(condition).textSize);
-            Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
-            Screen('DrawText',window,sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
-            if ~isempty(oo(condition).targetFontNumber)
-               Screen('TextFont',window,oo(condition).targetFontNumber);
-               [font,number]=Screen('TextFont',window);
-               assert(number==oo(condition).targetFontNumber);
-            else
-               Screen('TextFont',window,oo(condition).targetFont);
-               font=Screen('TextFont',window);
-               assert(streq(font,oo(condition).targetFont));
-            end
-            x=100;
-            y=stimulusRect(4)-50;
-            for a=oo(condition).alphabet
-               [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
-               x=x+oo(condition).textSize/2;
-            end
-            Screen('TextFont',window,oo(condition).textFont,0);
-            Screen('Flip',window); % display response screen
+         Screen('TextFont',window,oo(condition).textFont,0);
+         Screen('TextSize',window,oo(condition).textSize);
+         Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
+         Screen('DrawText',window,sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
+         if ~isempty(oo(condition).targetFontNumber)
+            Screen('TextFont',window,oo(condition).targetFontNumber);
+            [font,number]=Screen('TextFont',window);
+            assert(number==oo(condition).targetFontNumber);
+         else
+            Screen('TextFont',window,oo(condition).targetFont);
+            font=Screen('TextFont',window);
+            assert(streq(font,oo(condition).targetFont));
          end
-         responseString='';
-         for i=1:length(targets)
-            while(1)
-               answer=GetKeypress([escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,oo(condition).simulateGetChar); % no filtering!
-               % If already recorded, then wait for press for the next target!
-               if ~ismember(answer,responseString);break;end
-            end
-            if streq(answer,'ESCAPE')
-               ListenChar(0);
-               ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
-               terminate=1;
+         x=100;
+         y=stimulusRect(4)-50;
+         for a=oo(condition).alphabet
+            [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
+            x=x+oo(condition).textSize/2;
+         end
+         Screen('TextFont',window,oo(condition).textFont,0);
+         Screen('Flip',window); % display response screen
+      end
+      responseString='';
+      skipping=0;
+      for i=1:length(targets)
+         while(1)
+            answer=GetKeypress([spaceKey escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,0);
+            % Ignore any key that has already been pressed.
+            if ~ismember(answer,responseString);
                break;
             end
-            reportedTarget = oo(condition).alphabet(ismember(upper(oo(condition).alphabet),upper(answer)));
-            if oo(condition).speakEachLetter && oo(condition).useSpeech
-               % speak the target 1 observer saw, not the keyCode '1!'
-               Speak(reportedTarget);
-            end
-            if ismember(upper(reportedTarget),upper(targets))
-               if oo(condition).beepPositiveFeedback
-                  Snd('Play',rightBeep);
-               end
-            else
-               if oo(condition).beepNegativeFeedback
-                  Snd('Play',wrongBeep);
-               end
-            end
-            responseString=[responseString reportedTarget];
          end
-         if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate
-            switch randi(3);
-               case 1
-                  Speak('Good!');
-               case 2
-                  Speak('Nice');
-               case 3
-                  Speak('Very good');
-            end
-         end
-         if terminate
+         if streq(answer,'ESCAPE')
+            ListenChar(0);
+            ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
+            terminate=1;
             break;
          end
-         assert(length(targets)==length(responseString))
-         responses=sort(targets)==sort(responseString);
-         oo(condition).spacingDeg=spacingPix/pixPerDeg;
-         for response=responses
-            switch oo(condition).thresholdParameter
-               case 'spacing',
-                  oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg response];
-                  %                     oo(condition).results(oo(condition).responseCount,2)=response;
-                  oo(condition).responseCount=oo(condition).responseCount+1;
-                  intensity=log10(oo(condition).spacingDeg);
-               case 'size'
-                  oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetDeg response];
-                  %                     oo(condition).results(oo(condition).responseCount,2)=response;
-                  oo(condition).responseCount=oo(condition).responseCount+1;
-                  intensity=log10(oo(condition).targetDeg);
+         if streq(upper(answer),'SPACE')
+            responsesNumber=length(responseString);
+            if GetSecs-trialTimeSecs>oo(condition).timeRequiredForGuessOnSkip
+               if oo(condition).speakEachLetter && oo(condition).useSpeech
+                  Speak('space');
+               end
+               guesses=0;
+               while length(responseString)<length(targets)
+                  reportedTarget=randsample(oo(condition).alphabet,1); % Guess.
+                  responseString=[responseString reportedTarget];
+                  guesses=guesses+1;
+               end
+               guessCount=guessCount+guesses;
+               oo(condition).guessCount=oo(condition).guessCount+guesses;
+            else
+               if oo(condition).speakEachLetter && oo(condition).useSpeech
+                  Speak('skip');
+               end
+               guesses=0;
+               presentation=presentation-floor(1-length(responseString)/length(targets));
             end
-            %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetDeg);
-            oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
+            skipping=1;
+            skipCount=skipCount+1;
+            easeRequest=easeRequest+1;
+            ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
+            break;
          end
+         % GetKeypress returns, in answer, both key labels when there
+         % are two, e.g. "3#". We score the response as whichever target
+         % letter is included in the "answer" string.
+         reportedTarget = oo(condition).alphabet(ismember(upper(oo(condition).alphabet),upper(answer)));
+         if oo(condition).speakEachLetter && oo(condition).useSpeech
+            % Speak the target that the observer saw, e.g '1', not the keyCode '1!'
+            Speak(reportedTarget);
+         end
+         if ismember(upper(reportedTarget),upper(targets))
+            if oo(condition).beepPositiveFeedback
+               Snd('Play',rightBeep);
+            end
+         else
+            if oo(condition).beepNegativeFeedback
+               Snd('Play',wrongBeep);
+            end
+         end
+         responseString=[responseString reportedTarget];
+      end
+      if ~skipping
+         easeRequest=0;
+      end
+      if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate && ~skipTrial
+         switch randi(3);
+            case 1
+               Speak('Good!');
+            case 2
+               Speak('Nice');
+            case 3
+               Speak('Very good');
+         end
+      end
+      if terminate
+         break;
+      end
+      responses=ismember(responseString,targets);
+      oo(condition).spacingDeg=spacingPix/pixPerDeg;
+      for response=responses
+         switch oo(condition).thresholdParameter
+            case 'spacing',
+               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg response];
+               %                     oo(condition).results(oo(condition).responseCount,2)=response;
+               oo(condition).responseCount=oo(condition).responseCount+1;
+               intensity=log10(oo(condition).spacingDeg);
+            case 'size'
+               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetDeg response];
+               %                     oo(condition).results(oo(condition).responseCount,2)=response;
+               oo(condition).responseCount=oo(condition).responseCount+1;
+               intensity=log10(oo(condition).targetDeg);
+         end
+         %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetDeg);
+         oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
       end
       if terminate
          break;
@@ -1331,6 +1375,7 @@ try
       trials=trials+oo(condition).responseCount;
    end
    ffprintf(ff,'Took %.0f s for %.0f trials, or %.0f s/trial.\n',oo(1).totalSecs,trials,oo(1).totalSecs/trials);
+   ffprintf(ff,'%d skips, %d easy presentations, %d artificial guesses. \n',skipCount,easyCount,guessCount);
    for condition=1:conditions
       ffprintf(ff,'CONDITION %d **********\n',condition);
       % Ask Quest for the final estimate of threshold.
