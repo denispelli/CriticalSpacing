@@ -68,7 +68,7 @@ o.useFractionOfScreen=0;
 % first run we'll use repeated targets. In the second run we'll use single
 % targets.
 
-o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 
 % FIRST RUN (measures two thresholds, interleaved)
 o.repeatedTargets=1;
