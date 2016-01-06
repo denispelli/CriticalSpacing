@@ -48,12 +48,6 @@ o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Gotham Cond SSm Bold';
 % o.targetFont='Gotham Cond SSm Black';
 % o.targetFont='Arouet';
-o.targetFont='Solid';
-% o.targetFont='Retina Micro';
-% o.targetFont='Calibri';
-o.alphabet='123456789'; 
-o.borderLetter='0';
-o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
 o.displayAlphabet=0; 
@@ -68,27 +62,60 @@ o.useFractionOfScreen=0;
 % first run we'll use repeated targets. In the second run we'll use single
 % targets.
 
-o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-
 % FIRST RUN (measures two thresholds, interleaved)
+o=o(1);
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+o.validKeys={'D','H','K','N','O','R','S','V','Z'};
+o.repeatedTargets=0;
+o.thresholdParameter='size';
+o(2)=o(1); % Copy the condition
+o=CriticalSpacing(o); % dual targets, repeated indefinitely
+
+% SECOND RUN (measures 3 thresholds, interleaved)
+o=o(1);
+o.targetFont='Solid';
+o.alphabet='123456789'; 
+o.borderLetter='0';
+o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
-o(2).thresholdParameter='size';
-% o(1).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-% o(2).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
-% Test two conditions interleaved: 'spacing' and 'size', with repeated
-% letters.
-oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+o(3)=o(1); % Copy the condition
+o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
+o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
-% SECOND RUN (measures two thresholds, interleaved)
-% We retain the observer name obtained during the first run for use in the
-% second run.
-o(1).observer=oRepeated(1).observer;
-o(2).observer=oRepeated(1).observer;
-o(1).repeatedTargets=0;
-o(2).repeatedTargets=0;
-%oSingle=CriticalSpacing(o); % one target
+% THIRD RUN (measures 3 thresholds, interleaved)
+o=o(1);
+o.repeatedTargets=1;
+o.thresholdParameter='size';
+o(2)=o(1); % Copy the condition
+o(3)=o(1); % Copy the condition
+o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
+o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+o=CriticalSpacing(o); % dual targets, repeated indefinitely
+
+% 4TH RUN (measures 3 thresholds, interleaved)
+o=o(1);
+o.repeatedTargets=1;
+o.thresholdParameter='spacing';
+o(2)=o(1); % Copy the condition
+o(3)=o(1); % Copy the condition
+o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
+o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+o=CriticalSpacing(o); % dual targets, repeated indefinitely
+
+% 5TH RUN (measures 1 threshold)
+o=o(1);
+o.repeatedTargets=1;
+o.thresholdParameter='size';
+o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
