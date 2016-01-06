@@ -340,6 +340,67 @@ try
       %          oo(condition).textSize=round((screenWidth-100)/22/oo(condition).textFontHeightOverNormal);
       %       end
    end
+   
+   % Viewing disance
+   while 1
+      if oo(1).useFractionOfScreen
+         pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
+      else
+         pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
+      end
+      for condition=1:conditions
+         oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+         if streq(oo(condition).targetFont,'Solid')
+            oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/3; % For Solid font.
+         end
+         oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+         if oo(condition).eccentricityDeg==0
+            oo(condition).normalCriticalSpacingDeg=0.05;
+         end
+         normalOverMinimumSize=oo(condition).normalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
+         if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
+            normalOverMinimumSize=min(normalOverMinimumSize,oo(condition).normalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/oo(condition).minimumTargetPix);
+         end
+         oo(condition).minimumViewingDistanceCm=10*ceil((2/normalOverMinimumSize)*oo(condition).viewingDistanceCm/10);
+      end
+      minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
+      if oo(1).speakViewingDistance && oo(1).useSpeech
+         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
+      end
+      Screen('FillRect',window,white);
+      string=sprintf('Please move me to be %.0f cm from your eye.',oo(condition).viewingDistanceCm);
+      sizeDeg=max([oo.minimumTargetPix])/pixPerDeg;
+      spacingDeg=0;
+      for condition=1:conditions
+         if oo(condition).fixedSpacingOverSize
+            spacingDeg=max(spacingDeg,oo(condition).fixedSpacingOverSize*oo(condition).minimumTargetPix/pixPerDeg);
+         else
+            spacingDeg=max(spacingDeg,1.4*oo(condition).minimumTargetPix/pixPerDeg);
+         end
+      end
+      string=sprintf('%s At this viewing distance, I can display a letter as small as %.2f deg with spacing down to %.2f deg.',string,sizeDeg,spacingDeg);
+      string=sprintf('%s Those values are %.0f%% and %.0f%% standard. If that''s ok, hit RETURN. For ordinary testing ( < 50%% standard), view from at least %.0f cm.',string,100*sizeDeg/oo(1).normalAcuityDeg,100*spacingDeg/oo(1).normalCriticalSpacingDeg,minimumViewingDistanceCm);
+      string=sprintf('%s To change the viewing distance, slowly type the new distance below, and hit RETURN.',string);
+      Screen('TextSize',window,oo(1).textSize);
+      DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      Screen('TextSize',window,round(oo(1).textSize*0.4));
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('TextSize',window,oo(1).textSize);
+      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      if length(d)>0
+         oo(condition).viewingDistanceCm=str2num(d);
+      else
+         break;
+      end
+   end
+%    if normalOverMinimumSize<2
+%       msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
+%       if oo(condition).useSpeech
+%          Speak('You are too close to the screen.');
+%          Speak(msg);
+%       end
+%       error(msg);
+%    end
    if IsWindows && ~oo(1).readAlphabetFromDisk
       % The high-quality text renderer on Windows clips the Sloan font.
       % So we select the low-quality renderer instead.
@@ -350,12 +411,11 @@ try
    
    % Observer name
    if length(oo(1).observer)==0
+      Screen('FillRect',window);
       Screen('TextSize',window,oo(1).textSize);
       Screen('TextFont',window,oo(1).textFont,0);
       Screen('DrawText',window,'Hi.',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
-      %       Screen('DrawText',window,'[The viewing distance %.0f cm can be changed (to at least ',instructionalMargin,screenRect(4)/2+2*oo(1).textSize,black,white);
-      %       Screen('DrawText',window,'%.0f cm) only by quitting and editing the program.]',instructionalMargin,screenRect(4)/2+3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
@@ -442,17 +502,9 @@ try
       %         end
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
-      oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-      if streq(oo(condition).targetFont,'Solid')
-         oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/3; % For Solid font.
-      end
       oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
-      oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
-      if oo(condition).eccentricityDeg==0
-         oo(condition).normalCriticalSpacingDeg=0.05;
-      end
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
       oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
@@ -585,19 +637,6 @@ try
       end
       
       terminate=0;
-      normalOverMinimumSize=oo(condition).normalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
-      if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
-         normalOverMinimumSize=min(normalOverMinimumSize,oo(condition).normalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/oo(condition).minimumTargetPix);
-      end
-      oo(condition).minimumViewingDistanceCm=10*ceil((2/normalOverMinimumSize)*oo(condition).viewingDistanceCm/10);
-      if normalOverMinimumSize<2
-         msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
-         if oo(condition).useSpeech
-            Speak('You are too close to the screen.');
-            Speak(msg);
-         end
-         error(msg);
-      end
       
       switch oo(condition).thresholdParameter
          case 'spacing',
@@ -613,11 +652,7 @@ try
       grain=0.01;
       range=6;
    end % for condition=1:conditions
-   
-   if oo(1).speakViewingDistance && oo(1).useSpeech
-      Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
-   end
-   
+      
    cal.screen=max(Screen('Screens'));
    if cal.screen>0
       ffprintf(ff,'Using external monitor.\n');
@@ -652,7 +687,7 @@ try
       end
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg);
+      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg/2);
    end
    for condition=1:conditions
       sizesPix=oo(condition).minimumTargetPix*[oo(condition).targetHeightOverWidth 1];
@@ -733,12 +768,12 @@ try
    purr=MakeBeep(140,1.0,44100);
    purr(end)=0;
    Snd('Open');
-   
+  
    % Instructions
    Screen('FillRect',window,white);
    string=[sprintf('Hello %s,\n',oo(condition).observer)];
-   string=[string sprintf('Please move the screen to be %.0f cm from your eye. Turn the computer sound on. ',oo(condition).viewingDistanceCm)];
-   string=[string sprintf('You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. ')];
+   string=[string 'Please turn the computer sound on. '];
+   string=[string 'You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
      for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
          string=[string 'When you see one letter, please report it. '];
