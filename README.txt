@@ -43,16 +43,24 @@ order to run CriticalSpacing on your machine, please do the following:
    test one observer (depending on trials per threshold), measuring four
    thresholds. (Set o.trials to 20 or 40 for a total runtime of 10 or 20
    minutes.)
-1. Threshold width. When you ask CriticalSpacing.m to measure "size", the 
-   program   always measures it vertically, so, in that case, the returned 
-   "size" is height. Thus the reported threshold is height, and you should 
-   compute width:
+1. Threshold size. Use o.measureThresholdVertically=0; to measure (i.e. report) the size 
+   horizontally. Height and width are related by
    width = height / heightOverWidth;
-1. Threshold width continued. When you ask to measure “spacing”, by default 
-   it’s horizontal. The ratio
-   SpacingOverSize always measures both along the same axis, usually 
-   horizontally. So the letter width at threshold spacing is:
-   width = spacing/SpacingOverSize;
+1. When you ask to measure “spacing”, by default it’s horizontal. The ratio 
+   SpacingOverSize always measures both spacing and size along the same axis, usually 
+   horizontally. 
+1. SKIPPING A TRIAL FOR CHILDREN: To make it easier when testing children, 
+   we’ve softened the "forced" in forced choice. If you (the experimenter) think
+   the child is overwhelmed by this trial, you can press the spacebar instead of 
+   a letter and the program will immediately go to the next trial, and make that trial 
+   easier. If you that trial as well, it will be even easier, again and again. However, 
+   as soon as a trial gets a normal response then Quest will kick back in and resume presenting trials
+   near threshold. We hope skipping will make the initial experience easier. Eventually the child must
+   still do trials near threshold, because threshold estimation requires it. Skipping is always available. 
+   If you type one letter and then skip, the letter still counts. And there’s a timer. If you hit space 
+   less than 8 s after the chart appeared, then the program says "Skip", and any responses not yet taken 
+   do not count. If you wait at least 8 s before hitting space, then the program says “space” and, 
+   supposing that the child felt too unsure to answer, the program “helps” by providing a random guess. 
 
 ## Software requirements:
 
