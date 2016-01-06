@@ -349,9 +349,10 @@ try
          pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
       end
       for condition=1:conditions
+         oo(condition).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
          if streq(oo(condition).targetFont,'Solid')
-            oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/3; % For Solid font.
+            oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/5; % For Solid font.
          end
          oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
          if oo(condition).eccentricityDeg==0
@@ -365,10 +366,10 @@ try
       end
       minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
       if oo(1).speakViewingDistance && oo(1).useSpeech
-         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(condition).viewingDistanceCm));
+         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
       end
       Screen('FillRect',window,white);
-      string=sprintf('Please move me to be %.0f cm from your eye.',oo(condition).viewingDistanceCm);
+      string=sprintf('Please move me to be %.0f cm from your eye.',oo(1).viewingDistanceCm);
       sizeDeg=max([oo.minimumTargetPix])/pixPerDeg;
       spacingDeg=0;
       for condition=1:conditions
@@ -378,17 +379,17 @@ try
             spacingDeg=max(spacingDeg,1.4*oo(condition).minimumTargetPix/pixPerDeg);
          end
       end
-      string=sprintf('%s At this viewing distance, I can display a letter as small as %.2f deg with spacing down to %.2f deg.',string,sizeDeg,spacingDeg);
-      string=sprintf('%s Those values are %.0f%% and %.0f%% standard. If that''s ok, hit RETURN. For ordinary testing ( < 50%% standard), view from at least %.0f cm.',string,100*sizeDeg/oo(1).normalAcuityDeg,100*spacingDeg/oo(1).normalCriticalSpacingDeg,minimumViewingDistanceCm);
-      string=sprintf('%s To change the viewing distance, slowly type the new distance below, and hit RETURN.',string);
+      string=sprintf('%s At this viewing distance, I can display letters as small as %.3f deg with spacing down to %.3f deg.',string,sizeDeg,spacingDeg);
+      string=sprintf('%s Those values are %.0f%% and %.0f%% of standard. If that''s ok, hit RETURN. For ordinary testing ( < 50%% of standard), view me from at least %.0f cm.',string,100*sizeDeg/oo(1).normalAcuityDeg,100*spacingDeg/oo(1).normalCriticalSpacingDeg,minimumViewingDistanceCm);
+      string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
       Screen('TextSize',window,oo(1).textSize);
       DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.7*screenRect(4),black,white,1,oo(1).deviceIndex);
       if length(d)>0
-         oo(condition).viewingDistanceCm=str2num(d);
+         oo(1).viewingDistanceCm=str2num(d);
       else
          break;
       end
@@ -414,8 +415,8 @@ try
       Screen('FillRect',window);
       Screen('TextSize',window,oo(1).textSize);
       Screen('TextFont',window,oo(1).textFont,0);
-      Screen('DrawText',window,'Hi.',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
+      Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Hi.  Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
