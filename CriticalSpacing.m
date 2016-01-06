@@ -443,11 +443,12 @@ try
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
       oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+      if streq(oo(condition).targetFont,'Solid')
+         oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/3; % For Solid font.
+      end
       oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
-      oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
       if oo(condition).eccentricityDeg==0
          oo(condition).normalCriticalSpacingDeg=0.05;
@@ -455,8 +456,6 @@ try
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
       oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
-      oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
          oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetDeg/2))); % flanker fits on screen.
          oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
@@ -494,7 +493,7 @@ try
          scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
          if ~isempty(oo(condition).targetFontNumber)
             Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-            [font,number]=Screen('TextFont',scratchWindow);
+            [~,number]=Screen('TextFont',scratchWindow);
             assert(number==oo(condition).targetFontNumber);
          else
             Screen('TextFont',scratchWindow,oo(condition).targetFont);
@@ -573,13 +572,13 @@ try
          end
          oo(condition).targetFontHeightOverNominalPtSize=nan;
          oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet.rect)/RectWidth(savedAlphabet.rect);
-         for cd=1:conditions
-            for i=1:length(oo(cd).validKeys)
-               oo(cd).responseKeys(i)=KbName(oo(cd).validKeys{i}); % this returns keyCode as integer
-            end
-         end
       end
-      
+        for cd=1:conditions
+           for i=1:length(oo(cd).validKeys)
+              oo(cd).responseKeys(i)=KbName(oo(cd).validKeys{i}); % this returns keyCode as integer
+           end
+        end
+     
       % Set o.targetHeightOverWidth
       if oo(condition).setTargetHeightOverWidth
          oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth
@@ -653,7 +652,7 @@ try
       end
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm);
+      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg);
    end
    for condition=1:conditions
       sizesPix=oo(condition).minimumTargetPix*[oo(condition).targetHeightOverWidth 1];
@@ -715,11 +714,10 @@ try
    if cal.ScreenConfigureDisplayBrightnessWorks
       cal.brightnessSetting=1;
       % ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
-      % Psychtoolbox Bug. Screen ConfigureDisplay claims that it will
+      % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
       % silently do nothing if not supported. But when I used it on my
       % video projector, Screen gave a fatal error. That's tolerable, but
       % how do I figure out when it's safe to use?
-      
       if computer.osx || computer.macintosh
          Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
       end
@@ -983,75 +981,11 @@ try
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       
-      % Create textures, one per letter
+      [letterStruct,canvasRect]=MakeLetterTextures(oo(condition),window,savedAlphabet);
       letters=[oo(condition).alphabet oo(condition).borderLetter];
-      if oo(condition).measureThresholdVertically
-         canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix];
-      else
-         canvasRect=[0 0 oo(condition).targetPix oo(condition).targetPix]*oo(condition).targetHeightOverWidth;
-      end
-      black=0;
-      white=255;
-      if oo(condition).readAlphabetFromDisk
-         letters=[oo(condition).alphabet oo(condition).borderLetter];
-         for i=1:length(letters)
-            which=strfind([savedAlphabet.letters],letters(i));
-            if length(which)~=1
-               error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),oo(condition).targetFont,savedAlphabet.letters);
-            end
-            assert(length(which)==1);
-            r=savedAlphabet.rect;
-            letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
-            letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
-            letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
-            % Screen DrawTexture will scale and stretch, as needed.
-         end
-      else
-         % Get bounds of font
-         scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
-         if ~isempty(oo(condition).targetFontNumber)
-            Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-            [~,number]=Screen('TextFont',scratchWindow);
-            assert(number==oo(condition).targetFontNumber);
-         else
-            Screen('TextFont',scratchWindow,oo(condition).targetFont);
-            font=Screen('TextFont',scratchWindow);
-            assert(streq(font,oo(condition).targetFont));
-         end
-         Screen('TextSize',scratchWindow,sizePix);
-         for i=1:length(letters)
-            lettersInCells{i}=letters(i);
-            letterStruct(i).bounds=TextBounds(scratchWindow,letters(i),1);
-         end
-         bounds=TextBounds(scratchWindow,lettersInCells,1);
-         for i=1:length(letters)
-            desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
-            letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
-            letterStruct(i).width=RectWidth(letterStruct(i).bounds);
-         end
-         oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
-         Screen('Close',scratchWindow);
-         
-         % Create texture for each letter
-         canvasRect=bounds;
-         canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
-         fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f, bounds %.0f %.0f %.0f %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds),bounds);
-         for i=1:length(letters)
-            [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
-            if ~isempty(oo(condition).targetFontNumber)
-               Screen('TextFont',letterStruct(i).texture,oo(condition).targetFontNumber);
-               [font,number]=Screen('TextFont',letterStruct(i).texture);
-               assert(number==oo(condition).targetFontNumber);
-            else
-               Screen('TextFont',letterStruct(i).texture,oo(condition).targetFont);
-               font=Screen('TextFont',letterStruct(i).texture);
-               assert(streq(font,oo(condition).targetFont));
-            end
-            Screen('TextSize',letterStruct(i).texture,sizePix);
-            Screen('FillRect',letterStruct(i).texture,white);
-            Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2)-textYOffset,black,white,1);
-         end
-      end
+      %oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
+      % letterStruct.width is undefined.
+      
       if oo(condition).displayAlphabet
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
@@ -1082,8 +1016,6 @@ try
          xStimulus=[xF xT xFF];
          yStimulus=[yF yT yFF];
          clear textures dstRects
-         
-         
          for textureIndex=1:3
             which=strfind(letters,stimulus(textureIndex));
             assert(length(which)==1)
