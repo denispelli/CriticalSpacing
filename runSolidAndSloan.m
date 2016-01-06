@@ -1,5 +1,7 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2016, Denis G. Pelli, denis.pelli@nyu.edu
+% Measures 12 thresholds distributed over 5 runs. This will produce a
+% beautiful graph for the paper.
 clear o
 if 0
    % FOR CHILDREN
@@ -102,7 +104,7 @@ o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % 4TH RUN (measures 3 thresholds, interleaved)
 o=o(1);
-o.repeatedTargets=1;
+o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
 o(3)=o(1); % Copy the condition
@@ -113,7 +115,7 @@ o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % 5TH RUN (measures 1 threshold)
 o=o(1);
-o.repeatedTargets=1;
+o.repeatedTargets=0;
 o.thresholdParameter='size';
 o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
