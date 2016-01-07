@@ -1,9 +1,12 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2016, Denis G. Pelli, denis.pelli@nyu.edu
-% Measures 12 thresholds distributed over 5 runs. This will produce a
-% beautiful graph for the paper.
+% On child, measures 3 thresholds in one run. On adult, measures 12
+% thresholds distributed over 5 runs. This will produce a beautiful graph
+% for the paper.
 clear o
-if 0
+o.isChild=0;
+
+if o(1).isChild
    % FOR CHILDREN
    o.showProgressBar=1;
    o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
@@ -64,19 +67,21 @@ o.useFractionOfScreen=0;
 % first run we'll use repeated targets. In the second run we'll use single
 % targets.
 
-% FIRST RUN (measures two thresholds, interleaved)
-o=o(1);
-o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
-o.targetFont='Sloan';
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
-o.validKeys={'D','H','K','N','O','R','S','V','Z'};
-o.repeatedTargets=0;
-o.thresholdParameter='size';
-o(2)=o(1); % Copy the condition
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
+if ~o(1).isChild
+   % FIRST RUN (measures two thresholds, interleaved) Sloan size
+   o=o(1);
+   o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+   o.targetFont='Sloan';
+   o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+   o.borderLetter='X';
+   o.validKeys={'D','H','K','N','O','R','S','V','Z'};
+   o.repeatedTargets=0;
+   o.thresholdParameter='size';
+   o(2)=o(1); % Copy the condition
+   o=CriticalSpacing(o); % dual targets, repeated indefinitely
+end
 
-% SECOND RUN (measures 3 thresholds, interleaved)
+% SECOND RUN (measures 3 thresholds, interleaved) repeated Solid spacing
 o=o(1);
 o.targetFont='Solid';
 o.alphabet='123456789'; 
@@ -91,33 +96,35 @@ o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
 o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
-% THIRD RUN (measures 3 thresholds, interleaved)
-o=o(1);
-o.repeatedTargets=1;
-o.thresholdParameter='size';
-o(2)=o(1); % Copy the condition
-o(3)=o(1); % Copy the condition
-o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
-o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
-
-% 4TH RUN (measures 3 thresholds, interleaved)
-o=o(1);
-o.repeatedTargets=0;
-o.thresholdParameter='spacing';
-o(2)=o(1); % Copy the condition
-o(3)=o(1); % Copy the condition
-o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
-o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
-
-% 5TH RUN (measures 1 threshold)
-o=o(1);
-o.repeatedTargets=0;
-o.thresholdParameter='size';
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
+if ~o(1).isChild
+   % THIRD RUN (measures 3 thresholds, interleaved) repeated Solid size
+   o=o(1);
+   o.repeatedTargets=1;
+   o.thresholdParameter='size';
+   o(2)=o(1); % Copy the condition
+   o(3)=o(1); % Copy the condition
+   o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
+   o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+   o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+   o=CriticalSpacing(o); % dual targets, repeated indefinitely
+   
+   % 4TH RUN (measures 3 thresholds, interleaved) single Solid spacing
+   o=o(1);
+   o.repeatedTargets=0;
+   o.thresholdParameter='spacing';
+   o(2)=o(1); % Copy the condition
+   o(3)=o(1); % Copy the condition
+   o(1).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
+   o(2).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+   o(3).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+   o=CriticalSpacing(o); % dual targets, repeated indefinitely
+   
+   % 5TH RUN (measures 1 threshold) single Solid size
+   o=o(1);
+   o.repeatedTargets=0;
+   o.thresholdParameter='size';
+   o=CriticalSpacing(o); % dual targets, repeated indefinitely
+end
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
