@@ -1,6 +1,8 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2016, Denis G. Pelli, denis.pelli@nyu.edu
-% On child, measures 3 thresholds in one run. On adult, measures 12
+% runSolidAndSloan.m script to drive CriticalSpacing.m. Use the flag
+% o.isChild to indicate whether you are testing a child. On a child, the
+% script measures 3 thresholds in one run. On a adult, it measures 12
 % thresholds distributed over 5 runs. This will produce a beautiful graph
 % for the paper.
 clear o
