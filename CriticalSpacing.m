@@ -1293,7 +1293,7 @@ try
       if ~skipping
          easeRequest=0;
       end
-      if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate && ~skipTrial
+      if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate && ~skipping
          switch randi(3);
             case 1
                Speak('Good!');
