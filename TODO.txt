@@ -1,4 +1,0 @@
-Error in CriticalSpacing() while opening OffScreenWindow due to incorrect rect size iff the stick width in the saved alphabet mat file is more than 1. Tried stick width 5, 50, 64, 128 etc. Stick width and height could be any integer, and due to image processing (resizing), higher stick width and height when generating and saving to disk gives sticks at higher resolution and thus more prone to image processing artifacts. However, program cannot handle some sizes correctly. Possible error is in SaveStickToDisk.m where it calculates o.Rect.
-
-Did a test after printing out the stick alphabet and made fully correct responses for runCriticalSpacing. However, the first stimulus page seems incorrectly rendered: possibly zero gaps between objects. Also, even though always reported correctly, the sticks were not small enough. Could be a problem for our measurement.
-
