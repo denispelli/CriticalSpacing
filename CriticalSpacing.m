@@ -330,7 +330,7 @@ try
       oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
       Screen('TextSize',window,oo(condition).textSize);
       Screen('TextFont',window,oo(condition).textFont,0);
-      instructionalTextLineSample='Please slowly type your name followed by RETURN. xxxxXX';
+      instructionalTextLineSample='Please slowly type your name followed by RETURN. more..';
       boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
       fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
       oo(condition).textSize=round(oo(condition).textSize/fraction);
@@ -370,17 +370,18 @@ try
       end
       Screen('FillRect',window,white);
       string=sprintf('Please move me to be %.0f cm from your eye.',oo(1).viewingDistanceCm);
-      sizeDeg=max([oo.minimumTargetPix])/pixPerDeg;
-      spacingDeg=0;
       for condition=1:conditions
+         oo(condition).minimumSizeDeg=oo(condition).minimumTargetPix/pixPerDeg;
          if oo(condition).fixedSpacingOverSize
-            spacingDeg=max(spacingDeg,oo(condition).fixedSpacingOverSize*oo(condition).minimumTargetPix/pixPerDeg);
+            oo(condition).minimumSpacingDeg=oo(condition).fixedSpacingOverSize*oo(condition).minimumSizeDeg;
          else
-            spacingDeg=max(spacingDeg,1.4*oo(condition).minimumTargetPix/pixPerDeg);
+            oo(condition).minimumSpacingDeg=1.1*oo(condition).minimumTargetPix/pixPerDeg;
          end
       end
-      string=sprintf('%s At this viewing distance, I can display letters as small as %.3f deg with spacing down to %.3f deg.',string,sizeDeg,spacingDeg);
-      string=sprintf('%s Those values are %.0f%% and %.0f%% of standard. If that''s ok, hit RETURN. For ordinary testing ( < 50%% of standard), view me from at least %.0f cm.',string,100*sizeDeg/oo(1).normalAcuityDeg,100*spacingDeg/oo(1).normalCriticalSpacingDeg,minimumViewingDistanceCm);
+      sizeDeg=max([oo.minimumSizeDeg]);
+      spacingDeg=max([oo.minimumSpacingDeg]);
+      string=sprintf('%s At this viewing distance, I can display letters as small as %.3f deg with spacing as small as %.3f deg.',string,sizeDeg,spacingDeg);
+      string=sprintf('%s If that''s ok, hit RETURN. For ordinary testing, view me from at least %.0f cm.',string,minimumViewingDistanceCm);
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
       Screen('TextSize',window,oo(1).textSize);
       DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
@@ -454,6 +455,7 @@ try
    end
    assert(dataFid>-1);
    ff=[1 dataFid];
+   ffError=[2 dataFid];
    ffprintf(ff,'\n%s %s\n',oo(1).functionNames,datestr(now));
    ffprintf(ff,'Saving results in:\n');
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
@@ -1365,6 +1367,12 @@ try
                end
             end
             ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
+            if 10^t<oo(condition).minimumSpacingDeg
+               ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSpacingDeg);
+               if oo(condition).useSpeech
+                  Speak('WARNING: Please increase viewing distance.');
+               end
+            end
             if oo(condition).responseCount>1
                trials=QuestTrials(oo(condition).q);
                if any(~isreal(trials.intensity))
@@ -1375,6 +1383,12 @@ try
             end
          case 'size',
             ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
+            if 10^t<oo(condition).minimumSizeDeg
+               ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSizeDeg);
+               if oo(condition).useSpeech
+                  Speak('WARNING: Please increase viewing distance.');
+               end
+            end
             if oo(condition).responseCount>1
                trials=QuestTrials(oo(condition).q);
                ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
