@@ -9,11 +9,10 @@ order to run CriticalSpacing on your machine, please do the following:
 1. Download the CriticalSpacing software
    [here](https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip).
 1. Extract the “zip” archive, producing a folder called CriticalSpacing.
-1. OPTIONAL, NOT NEEDED IF YOU SET readAlphabetFromDisk=1. 
+1. OPTIONAL, NOT NEEDED IF YOU SET o.readAlphabetFromDisk=1. 
    Copy the desired font file or folder (e.g. “Sloan.otf” or “GothamCondensed”) 
-   from the  “CriticalSpacing/font” folder to
-   one of your computer OS font folders.  *Restart MATLAB* so that the
-   newly installed font is noticed by MATLAB. 
+   from the  “CriticalSpacing/font” folder to one of your computer OS font 
+   folders. Restart MATLAB so that the newly installed font is noticed by MATLAB. 
 1. Allow remote typing. A normally sighted observer must be 2 m (or more) 
    away from the screen, and thus will be unable to reach a laptop keyboard 
    attached to the screen. The quickest way to overcome this is for the experimenter
@@ -58,11 +57,11 @@ order to run CriticalSpacing on your machine, please do the following:
    CriticalSpacing.m warns you at the end of the run if the estimated 
    threshold is smaller than the minimum size or spacing, and suggests that you 
    increase the viewing distance in subsequent runs.
-1. SKIPPING A TRIAL FOR CHILDREN: To make it easier when testing children, 
+1. SKIPPING A TRIAL FOR CHILDREN: To make it easier for children, 
    we’ve softened the "forced" in forced choice. If you (the experimenter) 
    think the child is overwhelmed by this trial, you can press the spacebar instead of 
    a letter and the program will immediately go to the next trial, and make that trial 
-   easier. If you that trial as well, it will be even easier, again and again. However, 
+   easier. If you skip that trial too, the next will be even easier, and so on. However, 
    as soon as a trial gets a normal response then Quest will kick back in and resume 
    presenting trials near threshold. We hope skipping will make the initial experience 
    easier. Eventually the child must still do trials near threshold, because 
