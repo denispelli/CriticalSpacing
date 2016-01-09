@@ -179,13 +179,6 @@ o.showLineOfLetters=0;
 o.showBounds=0;
 o.speakSizeAndSpacing=0;
 
-if IsWindows
-   o.textFontHeightOverNormal=1.336;
-   textYOffset=0.75;
-else
-   o.textFontHeightOverNormal=1.0;
-   textYOffset=0;
-end
 
 % Replicate o, once per supplied condition.
 conditions=length(oIn);
@@ -350,11 +343,11 @@ try
       end
       for condition=1:conditions
          oo(condition).viewingDistanceCm=oo(1).viewingDistanceCm;
-         oo(condition).normalAcuityDeg=0.029*(oo(condition).eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-         if streq(oo(condition).targetFont,'Solid')
+         oo(condition).normalAcuityDeg=0.029*(abs(oo(condition).eccentricityDeg)+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+         if ismember(oo(condition).targetFont,{'Solid','Pelli'})
             oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/5; % For Solid font.
          end
-         oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+         oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
          if oo(condition).eccentricityDeg==0
             oo(condition).normalCriticalSpacingDeg=0.05;
          end
@@ -506,15 +499,20 @@ try
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
       oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      assert(oo(condition).eccentricityPix>=0);
       oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
+      assert(oo(condition).eccentricityPix>=0);
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
       oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
+         assert(oo(condition).eccentricityPix>=0);
          oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetDeg/2))); % flanker fits on screen.
+         oo(condition).eccentricityPix=max(oo(condition).eccentricityPix,0);
+         assert(oo(condition).eccentricityPix>=0);
          oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
-         oo(condition).normalCriticalSpacingDeg=0.3*(oo(condition).eccentricityDeg+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+         oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
          oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       end
       oo(condition).spacings=oo(condition).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
@@ -574,7 +572,8 @@ try
             GetClicks;
          end
          oo(condition).targetFontHeightOverNominalPtSize=RectHeight(bounds)/sizePix;
-      else % if ~oo(condition).readAlphabetFromDisk
+         savedAlphabet.letters=[];
+       else % if ~oo(condition).readAlphabetFromDisk
          alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'lib','alphabets');
          if ~exist(alphabetsFolder,'dir')
             error('Folder missing: "%s"',alphabetsFolder);
@@ -643,8 +642,10 @@ try
       
       switch oo(condition).thresholdParameter
          case 'spacing',
+            assert(oo(condition).spacingDeg>0);
             oo(condition).tGuess=log10(oo(condition).spacingDeg);
          case 'size',
+            assert(oo(condition).targetDeg>0);
             oo(condition).tGuess=log10(oo(condition).targetDeg);
       end
       oo(condition).tGuessSd=2;
@@ -949,7 +950,10 @@ try
                spacingOuter=0;
                if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
             else % eccentricity not zero
+               assert(spacingPix>=0);
+               assert(oo(condition).eccentricityPix>=0);
                spacingPix=min(oo(condition).eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
+               assert(spacingPix>=0);
                if oo(condition).fixedSpacingOverSize
                   spacingPix=min(spacingPix,xT/(1+1/oo(condition).fixedSpacingOverSize/2)); % Inner flanker is on screen.
                   assert(spacingPix>=0);
@@ -1019,7 +1023,7 @@ try
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       
-      [letterStruct,canvasRect]=MakeLetterTextures(oo(condition),window,savedAlphabet);
+      [letterStruct,canvasRect]=MakeLetterTextures(condition,oo(condition),window,savedAlphabet);
       letters=[oo(condition).alphabet oo(condition).borderLetter];
       %oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
       % letterStruct.width is undefined.
@@ -1208,16 +1212,24 @@ try
          end
          Screen('TextFont',window,oo(condition).textFont,0);
          Screen('TextSize',window,oo(condition).textSize);
-         Screen('DrawText',window,'Type your response, or ESCAPE to quit.',100,100,black,white,1);
-         Screen('DrawText',window,sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs),screenRect(3)-300,100,black,white,1);
-         if ~isempty(oo(condition).targetFontNumber)
+         [newX,newY]=Screen('DrawText',window,'Type your response, or ESCAPE to quit.   ',100,100,black,white,1);
+         % string=sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs);
+         Screen('TextSize',window,round(0.5*oo(condition).textSize));
+         string=sprintf('Presentation %d of %d.',presentation,length(condList));
+         Screen('DrawText',window,string,newX,newY,black,white,1);
+         Screen('TextSize',window,oo(condition).textSize);
+        if ~isempty(oo(condition).targetFontNumber)
             Screen('TextFont',window,oo(condition).targetFontNumber);
             [font,number]=Screen('TextFont',window);
             assert(number==oo(condition).targetFontNumber);
          else
-            Screen('TextFont',window,oo(condition).targetFont);
-            font=Screen('TextFont',window);
-            assert(streq(font,oo(condition).targetFont));
+            if streq(oo(condition).targetFont,'Solid')
+               Screen('TextFont',window,'Verdana');
+            else
+               Screen('TextFont',window,oo(condition).targetFont);
+               font=Screen('TextFont',window);
+               assert(streq(font,oo(condition).targetFont));
+            end
          end
          x=100;
          y=stimulusRect(4)-50;

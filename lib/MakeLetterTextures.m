@@ -1,8 +1,16 @@
-function [letterStruct,canvasRect]=MakeLetterTextures(o,window,savedAlphabet)
+function [letterStruct,canvasRect]=MakeLetterTextures(condition,o,window,savedAlphabet)
 % Create textures, one per letter. Called by CriticalSpacing.m.
 % Should be easy to eliminate return of canvasRect.
 % I'd like to include the file-reading code here, and eliminate the
 % "savedAlphabet" argument.
+% The argument "condition" is used only for a diagnostic printout.
+if IsWindows
+   o.textFontHeightOverNormal=1.336;
+   textYOffset=0.75;
+else
+   o.textFontHeightOverNormal=1.0;
+   textYOffset=0;
+end
 letters=[o.alphabet o.borderLetter];
 if o.measureThresholdVertically
    canvasRect=[0 0 o.targetPix o.targetPix];
@@ -35,6 +43,11 @@ else
       Screen('TextFont',scratchWindow,o.targetFont);
       font=Screen('TextFont',scratchWindow);
       assert(streq(font,o.targetFont));
+   end
+   if o.measureThresholdVertically
+      sizePix=round(o.targetPix/o.targetFontHeightOverNominalPtSize);
+   else
+      sizePix=round(o.targetPix*o.targetHeightOverWidth/o.targetFontHeightOverNominalPtSize);
    end
    Screen('TextSize',scratchWindow,sizePix);
    for i=1:length(letters)
