@@ -336,8 +336,7 @@ try
    end
 
    % Viewing disance
-   validNewViewingDistance = 0;
-   while ~validNewViewingDistance
+   while 1
       if oo(1).useFractionOfScreen
          pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
       else
@@ -384,11 +383,11 @@ try
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.7*screenRect(4),black,white,1,oo(1).deviceIndex);
-      if length(d)>0
-        inputDistanceCm = str2num(d);
-        if isnumeric(inputDistanceCm) & inputDistanceCm > 0
-         oo(1).viewingDistanceCm=inputDistanceCm;
-       end
+      if ~isempty(d)
+         inputDistanceCm=str2num(d);
+         if isnumeric(inputDistanceCm) && inputDistanceCm>0
+            oo(1).viewingDistanceCm=inputDistanceCm;
+         end
       else
          break;
       end
