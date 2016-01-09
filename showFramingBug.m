@@ -31,15 +31,6 @@ o.textFont='Calibri';
 o.fixationLocation='center';
 o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
-% o.targetFont='Sloan';
-% o.targetFont='ClearviewText';
-% o.targetFont='Gotham Cond SSm XLight';
-% o.targetFont='Gotham Cond SSm Light';
-% o.targetFont='Gotham Cond SSm Medium';
-% o.targetFont='Gotham Cond SSm Book';
-% o.targetFont='Gotham Cond SSm Bold';
-% o.targetFont='Gotham Cond SSm Black';
-% o.targetFont='Arouet';
 
 % DEBUGGING AIDS
 o.displayAlphabet=0;
@@ -48,13 +39,8 @@ o.showBounds=0;
 o.frameTheTarget=1;
 o.printSizeAndSpacing=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0.3;
+% o.useFractionOfScreen=0.3;
 
-% Set up for interleaved testing of size and spacing thresholds. In the
-% first run we'll use repeated targets. In the second run we'll use single
-% targets.
-
-o=o(1);
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -62,20 +48,5 @@ o.borderLetter='X';
 o.validKeys={'D','H','K','N','O','R','S','V','Z'};
 o.repeatedTargets=0;
 o.thresholdParameter='size';
-o=CriticalSpacing(o);
-
-if 0
-   o=o(1);
-   o.targetFont='Pelli';
-   o.alphabet='123456789';
-   o.borderLetter='0';
-   o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
-   o.repeatedTargets=1;
-   o.thresholdParameter='spacing';
-   o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-   o.durationSec=0;
-   o.eccentricityDeg=10;
-   % o(2)=o(1); % Copy the condition
-   % o(3)=o(1); % Copy the condition
-   o=CriticalSpacing(o);
-end
+o.eccentricityDeg=10;
+o=CriticalSpacing(o); 
