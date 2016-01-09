@@ -62,7 +62,7 @@ o.borderLetter='X';
 o.validKeys={'D','H','K','N','O','R','S','V','Z'};
 o.repeatedTargets=0;
 o.thresholdParameter='size';
-o=CriticalSpacing(o); 
+o=CriticalSpacing(o);
 
 if 0
    o=o(1);

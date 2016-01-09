@@ -192,6 +192,7 @@ for condition=1:conditions
       oo(condition).(fields{i})=oIn(condition).(fields{i});
    end
 end
+
 for condition=1:conditions
    switch oo(condition).thresholdParameter
       case 'size',
@@ -266,7 +267,7 @@ try
       screenRect=Screen('Rect',oo(1).screen,1)
       resolution=Screen('Resolution',oo(1).screen)
    end
-   
+
    if ~oo(1).readAlphabetFromDisk
       for condition=1:conditions
          % Check availability of fonts.
@@ -308,7 +309,7 @@ try
          end
       end
    end % if ~oo(1).readAlphabetFromDisk
-   
+
    screenRect=Screen('Rect',window);
    screenWidth=RectWidth(screenRect);
    screenHeight=RectHeight(screenRect);
@@ -333,9 +334,10 @@ try
       %          oo(condition).textSize=round((screenWidth-100)/22/oo(condition).textFontHeightOverNormal);
       %       end
    end
-   
+
    % Viewing disance
-   while 1
+   validNewViewingDistance = 0;
+   while ~validNewViewingDistance
       if oo(1).useFractionOfScreen
          pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
       else
@@ -383,7 +385,10 @@ try
       Screen('TextSize',window,oo(1).textSize);
       d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.7*screenRect(4),black,white,1,oo(1).deviceIndex);
       if length(d)>0
-         oo(1).viewingDistanceCm=str2num(d);
+        inputDistanceCm = str2num(d);
+        if isnumeric(inputDistanceCm) & inputDistanceCm > 0
+         oo(1).viewingDistanceCm=inputDistanceCm;
+       end
       else
          break;
       end
@@ -403,7 +408,7 @@ try
    end
    ListenChar(0); % flush
    ListenChar(2); % no echo
-   
+
    % Observer name
    if length(oo(1).observer)==0
       Screen('FillRect',window);
@@ -420,7 +425,7 @@ try
       end
       Screen('FillRect',window);
    end
-   
+
    oo(1).beginSecs=GetSecs;
    oo(1).beginningTime=now;
    timeVector=datevec(oo(1).beginningTime);
@@ -454,7 +459,7 @@ try
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
    resolution=Screen('Resolution',oo(1).screen);
    %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
-   
+
    for condition=1:conditions
       if oo(condition).showProgressBar
          progressBarRect=[round(screenRect(3)*(1-1/screenWidthCm)) 0 screenRect(3) screenRect(4)]; % 1 cm wide.
@@ -496,7 +501,7 @@ try
       %         if ~oo(condition).repeatedTargets
       %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       %         end
-      
+
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
       oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       assert(oo(condition).eccentricityPix>=0);
@@ -535,11 +540,11 @@ try
          ffprintf(ff,'] deg\n');
       end
       oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-      
+
       % prepare to draw fixation cross
       oo(condition).fix.targetHeightPix=oo(condition).targetPix;
       fixationLines=ComputeFixationLines(oo(condition).fix);
-      
+
       if ~oo(condition).readAlphabetFromDisk
          % calibrate font size
          sizePix=100;
@@ -632,14 +637,14 @@ try
               oo(cd).responseKeys(i)=KbName(oo(cd).validKeys{i}); % this returns keyCode as integer
            end
         end
-     
+
       % Set o.targetHeightOverWidth
       if oo(condition).setTargetHeightOverWidth
          oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth
       end
-      
+
       terminate=0;
-      
+
       switch oo(condition).thresholdParameter
          case 'spacing',
             assert(oo(condition).spacingDeg>0);
@@ -656,7 +661,7 @@ try
       grain=0.01;
       range=6;
    end % for condition=1:conditions
-      
+
    cal.screen=max(Screen('Screens'));
    if cal.screen>0
       ffprintf(ff,'Using external monitor.\n');
@@ -715,7 +720,7 @@ try
    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
    ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
    ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
-   
+
    % Identify the computer
    cal.screen=0;
    computer=Screen('Computer');
@@ -764,7 +769,7 @@ try
    for condition=1:conditions
       oo(condition).cal=cal;
    end
-   
+
    rightBeep=0.05*MakeBeep(2000,0.05,44100);
    rightBeep(end)=0;
    wrongBeep=0.05*MakeBeep(500,0.5,44100);
@@ -772,7 +777,7 @@ try
    purr=MakeBeep(140,1.0,44100);
    purr(end)=0;
    Snd('Open');
-  
+
    % Instructions
    Screen('FillRect',window,white);
    string=[sprintf('Hello %s,\n',oo(condition).observer)];
@@ -1022,12 +1027,12 @@ try
          end
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-      
+
       [letterStruct,canvasRect]=MakeLetterTextures(condition,oo(condition),window,savedAlphabet);
       letters=[oo(condition).alphabet oo(condition).borderLetter];
       %oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
       % letterStruct.width is undefined.
-      
+
       if oo(condition).displayAlphabet
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
@@ -1038,7 +1043,7 @@ try
          Speak('Click to continue');
          GetClicks;
       end
-      
+
       % Create texture for each line, for first 3 lines. The rest are the
       % copies.
       textureIndex=1;
@@ -1117,7 +1122,7 @@ try
                textures(textureIndex)=letterStruct(which).texture;
                % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
                xPos=round(x-xPix/2);
-               
+
                % Compute o.targetHeightOverWidth, and, if requested,
                % o.setTargetHeightOverWidth
                r=round(letterStruct(which).rect);
@@ -1340,7 +1345,7 @@ try
          break;
       end
    end % for presentation=1:length(condList)
-   
+
    Screen('FillRect',window);
    %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
    Screen('Flip',window);
