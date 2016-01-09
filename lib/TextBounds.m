@@ -73,10 +73,11 @@ end
 if nargin<3
     yPositionIsBaseline=0;
 end
+black=0;
 white = 1;
 
 % Clear scratch window to background color black:
-Screen('FillRect',w,0);
+Screen('FillRect',w,black);
 
 screenRect=Screen('Rect',w);
 for i=1:length(text);
@@ -90,6 +91,9 @@ n=max(len);
 textSize=Screen('TextSize',w);
 rect=[0 0 n*textSize 1.5*textSize];
 rect=CenterRect(rect,screenRect);
+if ~(IsInRect(rect(1),rect(2),screenRect) && IsInRect(rect(3),rect(4),screenRect))
+   error('The "text" string (%d x %d) is too big for the "w" window (%d x %d).',RectWidth(rect),RectHeight(rect),RectWidth(screenRect),RectHeight(screenRect));
+end
 if yPositionIsBaseline
     % Draw text string baseline at location x,y with a wide margin from lower
     % left corner of screen. The left and lower margins accommodate the many
@@ -105,16 +109,18 @@ end
 if iscell(text)
     for i=1:length(text)
         string=char(text(i));
-        Screen('DrawText',w,string,x0,y0,white,[],yPositionIsBaseline);
+        x1=Screen('DrawText',w,string,x0,y0,white,black,yPositionIsBaseline);
+        assert(x1~=x0)
     end
 else
     for i=1:size(text,1)
         string=char(text(i,:));
-        Screen('DrawText',w,string,x0,y0,white,[],yPositionIsBaseline);
+        x1=Screen('DrawText',w,string,x0,y0,white,black,yPositionIsBaseline);
+        assert(x1~=x0)
     end
 end
 
-% Read back only 1 color channel for efficiency reasons:
+% Read back only 1 color channel to save time:
 image1=Screen('GetImage',w,[],'backBuffer',0,1);
 
 % Find all nonzero, i.e. non background, pixels:
