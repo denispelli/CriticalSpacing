@@ -53,8 +53,13 @@ else
    for i=1:length(letters)
       lettersInCells{i}=letters(i);
       letterStruct(i).bounds=TextBounds(scratchWindow,letters(i),1);
+%       assert(RectHeight(letterStruct(i).bounds)>0);
+%       assert(RectWidth(letterStruct(i).bounds)>0);
    end
    bounds=TextBounds(scratchWindow,lettersInCells,1);
+   %    if RectHeight(bounds)==0
+   fprintf('%d: size %d, first letter %c, width %d.\n',condition,sizePix,letters(1),RectHeight(letterStruct(1).bounds));
+   assert(RectHeight(bounds)>0);
    for i=1:length(letters)
       desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
       letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
@@ -65,7 +70,7 @@ else
    % Create texture for each letter
    canvasRect=bounds;
    canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
-   fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f, bounds %.0f %.0f %.0f %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds),bounds);
+   fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds));
    for i=1:length(letters)
       [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
       if ~isempty(o.targetFontNumber)
