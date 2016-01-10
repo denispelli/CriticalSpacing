@@ -12,6 +12,7 @@ if 1
    if o.hiDPIMultiple~=1
       PsychImaging('AddTask','General','UseRetinaResolution');
    end
+   PsychImaging('AddTask','General','UseVirtualFramebuffer'); % Temporary work around for PTB bug that makes buffers flakey.
    if ~o.useFractionOfScreen
       [window,r]=PsychImaging('OpenWindow',o.screen,white);
    else
