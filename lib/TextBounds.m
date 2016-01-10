@@ -94,6 +94,11 @@ rect=CenterRect(rect,screenRect);
 if ~(IsInRect(rect(1),rect(2),screenRect) && IsInRect(rect(3),rect(4),screenRect))
    error('The "text" string (%d x %d) is too big for the "w" window (%d x %d).',RectWidth(rect),RectHeight(rect),RectWidth(screenRect),RectHeight(screenRect));
 end
+% if iscell(text)
+%    fprintf('TextBounds: "%s" rect %.0f %.0f %.0f %.0f, screenRect %d %d %d %d.\n',text{1},rect,screenRect);
+% else
+%    fprintf('TextBounds: "%s" rect %.0f %.0f %.0f %.0f, screenRect %d %d %d %d.\n',text(1,:),rect,screenRect);
+% end
 if yPositionIsBaseline
     % Draw text string baseline at location x,y with a wide margin from lower
     % left corner of screen. The left and lower margins accommodate the many
@@ -123,11 +128,15 @@ end
 % Read back only 1 color channel to save time:
 image1=Screen('GetImage',w,[],'backBuffer',0,1);
 
+% figure(2);
+% movegui(2,'northeast');
+% imshow(image1*255);
+
 % Find all nonzero, i.e. non background, pixels:
 [y,x]=find(image1(:,:));
 
 % Use coordinates relative to the origin of the DrawText command.
-y=y-y0;
+ y=y-y0;
 x=x-x0;
 
 % Compute their bounding rect and return it:
