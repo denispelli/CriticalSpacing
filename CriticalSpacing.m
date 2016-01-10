@@ -385,7 +385,7 @@ try
       d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.7*screenRect(4),black,white,1,oo(1).deviceIndex);
       if ~isempty(d)
          inputDistanceCm=str2num(d);
-         if isnumeric(inputDistanceCm) && inputDistanceCm>0
+         if ~isempty(inputDistanceCm) && inputDistanceCm>0
             oo(1).viewingDistanceCm=inputDistanceCm;
          end
       else
@@ -560,8 +560,18 @@ try
          Screen('TextSize',scratchWindow,sizePix);
          for i=1:length(oo(condition).alphabet)
             lettersInCells{i}=oo(condition).alphabet(i);
+            bounds=TextBounds(scratchWindow,lettersInCells{i},1);
+            b=Screen('TextBounds',scratchWindow,lettersInCells{i});
+            if RectWidth(bounds)~=RectWidth(b)
+               bounds=floor(b);
+            end
+            if i==1
+               alphabetBounds=bounds;
+            else
+               alphabetBounds=UnionRect(alphabetBounds,bounds);
+            end
          end
-         bounds=TextBounds(scratchWindow,lettersInCells,1);
+         bounds=alphabetBounds;
          Screen('Close',scratchWindow);
          oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
          if oo(conditions).showBounds
