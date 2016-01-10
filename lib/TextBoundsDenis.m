@@ -71,11 +71,11 @@ end
 if nargin<3
    yPositionIsBaseline=0;
 end
-if Screen('TextSize',w)>100
-   bounds=Screen('TextBounds',w,text,[],[],yPositionIsBaseline);
-   bounds=floor(bounds);
-   return;
-end
+% if Screen('TextSize',w)>100
+%    bounds=Screen('TextBounds',w,text,[],[],yPositionIsBaseline);
+%    bounds=floor(bounds);
+%    return;
+% end
 %
 black=0;
 white = 1;
