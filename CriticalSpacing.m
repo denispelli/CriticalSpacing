@@ -252,8 +252,8 @@ try
       resolution=Screen('Resolution',oo(1).screen)
    end
 
-   if ~oo(1).readAlphabetFromDisk
-      for condition=1:conditions
+   for condition=1:conditions
+      if ~oo(condition).readAlphabetFromDisk
          % Check availability of fonts.
          if IsOSX
             fontInfo=FontInfo('Fonts');
@@ -291,8 +291,8 @@ try
          if ~streq(font,oo(condition).textFont)
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
          end
-      end
-   end % if ~oo(1).readAlphabetFromDisk
+      end % if ~oo(1).readAlphabetFromDisk
+   end
 
    screenRect=Screen('Rect',window);
    screenWidth=RectWidth(screenRect);
@@ -308,7 +308,7 @@ try
       oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
       Screen('TextSize',window,oo(condition).textSize);
       Screen('TextFont',window,oo(condition).textFont,0);
-      instructionalTextLineSample='Please slowly type your name followed by RETURN. more..';
+      instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
       boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
       fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
       oo(condition).textSize=round(oo(condition).textSize/fraction);
@@ -362,7 +362,7 @@ try
       string=sprintf('%s If that''s ok, hit RETURN. For ordinary testing, view me from at least %.0f cm.',string,minimumViewingDistanceCm);
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
       string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
-      string=sprintf(['%s WIRELESS KEYBOARD DEAD? If I don''t respond to your remote keyboard, come here and quit this script (RETURN, RETURN, ESCAPE), ' ...
+      string=sprintf(['%s If I don''t respond to your WIRELESS keyboard, come here and quit this script (RETURN, RETURN, ESCAPE), ' ...
          'type "clear all" in the MATLAB command window, make sure MATLAB responds to your remote keyboard, and then try this script again.'],string);
       Screen('TextSize',window,oo(1).textSize);
       DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
@@ -396,7 +396,7 @@ try
 %       end
 %       error(msg);
 %    end
-   if IsWindows && ~oo(1).readAlphabetFromDisk
+   if IsWindows && ~all(oo.readAlphabetFromDisk)
       % The high-quality text renderer on Windows clips the Sloan font.
       % So we select the low-quality renderer instead.
       Screen('Preference','TextRenderer',0);
@@ -634,8 +634,8 @@ try
             savedAlphabet.bounds{i}=ImageBounds(savedAlphabet.images{i},255);
             savedAlphabet.imageBounds{i}=RectOfMatrix(savedAlphabet.images{i});
             if RectWidth(savedAlphabet.bounds{i})>1000
-               fprintf('Uh oh, image(%d) width %d\n',i,RectWidth(savedAlphabet.bounds{i}))
-               fprintf('bound %d %d %d %d, image %d %d %d %d, letter %c\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i},savedAlphabet.letters(i));
+               fprintf('"%c" image(%d) width %d, ',savedAlphabet.letters(i),i,RectWidth(savedAlphabet.bounds{i}))
+               fprintf('bound %d %d %d %d, image %d %d %d %d.\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i});
             end
             if isempty(savedAlphabet.rect)
                savedAlphabet.rect=savedAlphabet.bounds{i};
@@ -723,7 +723,12 @@ try
       end
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: %s font. Alphabet ''%s'' and borderLetter ''%s''. o.targetHeightOverWidth %.2f\n',condition,oo(condition).targetFont,oo(condition).alphabet,oo(condition).borderLetter,oo(condition).targetHeightOverWidth);
+      if oo(condition).readAlphabetFromDisk
+         ffprintf(ff,'%d: %s font, from disk. ');
+      else
+         ffprintf(ff,'%d: %s font, live. ');
+      end
+      ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',condition,oo(condition).targetFont,oo(condition).alphabet,oo(condition).borderLetter);
    end
    for condition=1:conditions
       ffprintf(ff,'%d: %s font. o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetFont,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
@@ -794,7 +799,7 @@ try
 
    % Instructions
    Screen('FillRect',window,white);
-   string=[sprintf('Hello %s,\n',oo(condition).observer)];
+   string=[sprintf('Hello %s,  ',oo(condition).observer)];
    string=[string 'Please turn the computer sound on. '];
    string=[string 'You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
      for condition=1:conditions
@@ -813,6 +818,8 @@ try
       string=[string 'When you see many letters, they are all repetitions of just two letters. Please report both. '];
       string=[string 'The two kinds of letter can be mixed together, or in separate groups on left and right. '];
    end
+   string=[string 'Sometimes the letters will be easy. Sometimes they will be nearly impossible. '];
+   string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, and just get as many as you can. '];
    string=[string '(Type slowly. Quit anytime by pressing ESCAPE.) Look in the middle of the screen, ignoring the edges of the screen. '];
    if any(isfinite([oo.durationSec]))
       string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
