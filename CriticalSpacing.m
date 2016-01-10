@@ -145,6 +145,7 @@ o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
 screenRect=Screen('Rect',0);
 o.fixationLocation='center'; % 'left', 'right'
+o.targetCross=0;
 o.trials=40; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
@@ -502,14 +503,22 @@ try
       %         end
 
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
-      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
+         oo(condition).targetDeg=oo(condition).targetDegGuess;
+      else
+         oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      end
       assert(oo(condition).eccentricityPix>=0);
       oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
       assert(oo(condition).eccentricityPix>=0);
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
-      oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+      if isfield(oo(condition),'spacingDegGuess') && isfinite(oo(condition).spacingDegGuess)
+         oo(condition).spacingDeg=oo(condition).spacingDegGuess;
+      else
+         oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+      end
       if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
          assert(oo(condition).eccentricityPix>=0);
          oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetDeg/2))); % flanker fits on screen.
@@ -542,6 +551,7 @@ try
 
       % prepare to draw fixation cross
       oo(condition).fix.targetHeightPix=oo(condition).targetPix;
+      oo(condition).fix.targetCross=oo(condition).targetCross;
       fixationLines=ComputeFixationLines(oo(condition).fix);
 
       if ~oo(condition).readAlphabetFromDisk
@@ -560,7 +570,7 @@ try
          Screen('TextSize',scratchWindow,sizePix);
          for i=1:length(oo(condition).alphabet)
             lettersInCells{i}=oo(condition).alphabet(i);
-            bounds=TextBounds(scratchWindow,lettersInCells{i},1);
+            bounds=TextBoundsDenis(scratchWindow,lettersInCells{i},1);
             b=Screen('TextBounds',scratchWindow,lettersInCells{i});
             if RectWidth(bounds)~=RectWidth(b)
                bounds=floor(b);
@@ -578,7 +588,7 @@ try
             % Currently useless, because you can't see the letters.
             % They are drawn with color 1, alas. Could change
             % TextBounds to use color 255.
-            bounds=TextBounds(window,lettersInCells,1);
+            bounds=TextBoundsDenis(window,lettersInCells,1);
             %                 Screen('DrawText',window,lettersInCells{1},0,0,0,255,1);
             Screen('FrameRect',window,[255 0 0],bounds+100);
             Screen('Flip',window);
