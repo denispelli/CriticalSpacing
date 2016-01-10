@@ -39,7 +39,7 @@ o.showBounds=0;
 o.frameTheTarget=1;
 o.printSizeAndSpacing=0;
 o.speakSizeAndSpacing=0;
-% o.useFractionOfScreen=0.3;
+o.useFractionOfScreen=0.5;
 
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o.targetFont='Sloan';
