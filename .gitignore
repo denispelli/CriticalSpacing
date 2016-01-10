@@ -34,7 +34,6 @@ octave-workspace
 *.Rhistory
 *.Rproj
 
-*.png
 *.zip
 *.mp4
 *.csv
@@ -45,3 +44,5 @@ octave-workspace
 *.numbers
 *.svg
 .Rproj.user
+
+results/
