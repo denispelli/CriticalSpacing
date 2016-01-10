@@ -587,7 +587,7 @@ try
             %                 Screen('DrawText',window,lettersInCells{1},0,0,0,255,1);
             Screen('FrameRect',window,[255 0 0],bounds+100);
             Screen('Flip',window);
-            Speak('Bounds. Click to continue.');
+            Speak('Bounds. Click.');
             GetClicks;
          end
          oo(condition).targetFontHeightOverNominalPtSize=RectHeight(bounds)/sizePix;
@@ -724,14 +724,14 @@ try
    end
    for condition=1:conditions
       if oo(condition).readAlphabetFromDisk
-         ffprintf(ff,'%d: %s font, from disk. ');
+         ffprintf(ff,'%d: %s font from disk. ',condition,oo(condition).targetFont);
       else
-         ffprintf(ff,'%d: %s font, live. ');
+         ffprintf(ff,'%d: %s font, live. ',condition,oo(condition).targetFont);
       end
-      ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',condition,oo(condition).targetFont,oo(condition).alphabet,oo(condition).borderLetter);
+      ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(condition).alphabet,oo(condition).borderLetter);
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: %s font. o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetFont,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
+      ffprintf(ff,'%d: %s font o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetFont,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
    end
    for condition=1:conditions
       ffprintf(ff,'%d: Duration %.2f s.\n',condition,oo(condition).durationSec);
@@ -1061,7 +1061,7 @@ try
             Screen('FrameRect',window,0,OffsetRect(r,i*RectWidth(r),RectHeight(r)));
          end
          Screen('Flip',window);
-         Speak('Click to continue');
+         Speak('Alphabet. Click.');
          GetClicks;
       end
 
@@ -1165,13 +1165,13 @@ try
                   r=Screen('Rect',textures(textureIndex));
                   Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
                   Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
-                  fprintf('x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',x,xPos,textureIndex,dstRects(1:4,textureIndex));
+                  fprintf('%d: width %d, x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',condition,RectWidth(dstRects(1:4,textureIndex)'),x,xPos,textureIndex,dstRects(1:4,textureIndex));
                end
                textureIndex=textureIndex+1;
             end
             if oo(condition).showLineOfLetters
                Screen('Flip',window);
-               Speak('Line of letters. Click to continue.');
+               Speak('Line of letters. Click.');
                GetClicks;
             end
             % Create a texture holding one line of letters.
