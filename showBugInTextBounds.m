@@ -7,6 +7,7 @@ white=255;
 screen=0;
 PsychImaging('PrepareConfiguration');
 PsychImaging('AddTask','General','UseRetinaResolution');
+PsychImaging('AddTask','General','UseVirtualFramebuffer'); % Temporary work around for PTB bug that makes buffers flakey.
 [window,r]=PsychImaging('OpenWindow',screen,white,[0 0 256 256]);
 [scratchWindow,scratchRect]=Screen('OpenOffscreenWindow',window,[],4*[0 0 textSize textSize],8,0);
 Screen('TextSize',scratchWindow,textSize);
