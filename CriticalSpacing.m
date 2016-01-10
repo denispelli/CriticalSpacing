@@ -245,24 +245,7 @@ try
    oo(1).screen=max(Screen('Screens'));
    screenBufferRect=Screen('Rect',oo(1).screen);
    screenRect=Screen('Rect',oo(1).screen,1);
-   % Detect HiDPI mode, e.g. on a Retina display.
-   oo(1).hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
-   if 1
-      PsychImaging('PrepareConfiguration');
-      if oo(1).flipScreenHorizontally
-         PsychImaging('AddTask','AllViews','FlipHorizontal');
-      end
-      if oo(1).hiDPIMultiple~=1
-         PsychImaging('AddTask','General','UseRetinaResolution');
-      end
-      if ~oo(1).useFractionOfScreen
-         [window,r]=PsychImaging('OpenWindow',oo(1).screen,white);
-      else
-         [window,r]=PsychImaging('OpenWindow',oo(1).screen,white,round(oo(1).useFractionOfScreen*screenBufferRect));
-      end
-   else
-      window=Screen('OpenWindow',0,white,screenBufferRect);
-   end
+   [window,r]=OpenWindow(oo(1));
    if oo(1).printScreenResolution
       screenBufferRect=Screen('Rect',oo(1).screen)
       screenRect=Screen('Rect',oo(1).screen,1)
@@ -378,6 +361,7 @@ try
       string=sprintf('%s At this viewing distance, I can display letters as small as %.3f deg with spacing as small as %.3f deg.',string,sizeDeg,spacingDeg);
       string=sprintf('%s If that''s ok, hit RETURN. For ordinary testing, view me from at least %.0f cm.',string,minimumViewingDistanceCm);
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
+      string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
       Screen('TextSize',window,oo(1).textSize);
       DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
@@ -386,8 +370,17 @@ try
       d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.7*screenRect(4),black,white,1,oo(1).deviceIndex);
       if ~isempty(d)
          inputDistanceCm=str2num(d);
-         if ~isempty(inputDistanceCm) && inputDistanceCm>0
-            oo(1).viewingDistanceCm=inputDistanceCm;
+         if ~isempty(inputDistanceCm) && inputDistanceCm~=0
+            oo(1).viewingDistanceCm=abs(inputDistanceCm);
+            oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
+            oo(1).flipScreenHorizontally=inputDistanceCm<0;
+            if oo(1).flipScreenHorizontally ~= oldFlipScreenHorizontally
+               if oo(1).useSpeech
+                  Speak('Now flipping the display.');
+               end
+               Screen('Close',window);
+               window=OpenWindow(oo(1));
+            end
          end
       else
          break;
