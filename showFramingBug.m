@@ -33,13 +33,13 @@ o.task='identify';
 o.minimumTargetPix=8; % Make sure the letters are well rendered.
 
 % DEBUGGING AIDS
-o.displayAlphabet=0;
-o.showLineOfLetters=0;
+o.displayAlphabet=1;
+o.showLineOfLetters=1;
 o.showBounds=0;
 o.frameTheTarget=1;
-o.printSizeAndSpacing=0;
-o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0.5;
+o.printSizeAndSpacing=1;
+o.speakSizeAndSpacing=1;
+o.useFractionOfScreen=0;
 
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o.targetFont='Sloan';
@@ -48,5 +48,6 @@ o.borderLetter='X';
 o.validKeys={'D','H','K','N','O','R','S','V','Z'};
 o.repeatedTargets=0;
 o.thresholdParameter='size';
-o.eccentricityDeg=10;
+o.eccentricityDeg=0;
+o.targetDegGuess=4;
 o=CriticalSpacing(o); 

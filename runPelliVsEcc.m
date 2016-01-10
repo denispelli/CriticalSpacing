@@ -35,7 +35,7 @@ o.usePurring=0;
 o.measureThresholdVertically=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readAlphabetFromDisk=0; % 1 makes the program more portable.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -64,7 +64,7 @@ o.showBounds=0;
 o.frameTheTarget=1; 
 o.printSizeAndSpacing=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0.3; 
+o.useFractionOfScreen=0; 
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single
@@ -89,11 +89,12 @@ o.targetFont='Pelli';
 o.alphabet='123456789'; 
 o.borderLetter='0';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
-o.repeatedTargets=1;
+o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o.durationSec=0;
 o.eccentricityDeg=10;
+o.targetCross=1;
 % o(2)=o(1); % Copy the condition
 % o(3)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
