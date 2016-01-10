@@ -52,14 +52,10 @@ else
    Screen('TextSize',scratchWindow,sizePix);
    for i=1:length(letters)
       lettersInCells{i}=letters(i);
-      bounds=TextBounds(scratchWindow,letters(i),1);
-      % Override "TextBounds" if it screws up.
-      b=Screen('TextBounds', scratchWindow, letters(i));
+      bounds=TextBoundsDenis(scratchWindow,letters(i),1);
+      b=Screen('TextBounds',scratchWindow, letters(i));
       fprintf('%d: %s "%c" textSize %d, TextBounds [%d %d %d %d] width x height %d x %d, Screen TextBounds %.0f x %.0f\n', ...
          condition,o.targetFont,letters(i),sizePix,bounds,RectWidth(bounds),RectHeight(bounds),RectWidth(b),RectHeight(b));
-      if RectWidth(bounds)~=RectWidth(b)
-         bounds=floor(b);
-      end
       letterStruct(i).bounds=bounds;
       if i==1
          alphabetBounds=bounds;
