@@ -20,9 +20,9 @@ function SaveAlphabetToDisk(o)
 % e.g. in any graphic editing app, like GraphicConverter.
 if nargin<1
    sca
-%    o.targetFont='Sloan';
-%    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-%    o.borderLetter='X';
+   o.targetFont='Sloan';
+   o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+   o.borderLetter='X';
    o.generateResponsePage=1;
 %    o.targetFont='Gotham Cond SSm XLight';
 %    o.targetFont='Gotham Cond SSm Light';
@@ -35,7 +35,7 @@ if nargin<1
    o.targetFont='Pelli';
    o.alphabet='1234567890';
    o.borderLetter='$';
-   o.useMATLABFontRendering=0;
+   o.useMATLABFontRendering=1;
    showProgress=1;
    useWindow=1;
 end
@@ -94,7 +94,7 @@ if IsOSX
    o.targetFontNumber=fontInfo(hits).number;
    if useWindow
       Screen('TextFont',window,o.targetFontNumber);
-      [font,number]=Screen('TextFont',window);
+      [~,number]=Screen('TextFont',window);
       if ~(number==o.targetFontNumber)
          error('The o.targetFont "%s" is not available. Please install it.',o.targetFont);
       end
@@ -112,7 +112,7 @@ end
 if useWindow
    if ~isempty(o.targetFontNumber)
       Screen('TextFont',scratchWindow,o.targetFontNumber);
-      [font,number]=Screen('TextFont',scratchWindow);
+      [~,number]=Screen('TextFont',scratchWindow);
       assert(number==o.targetFontNumber);
    else
       Screen('TextFont',scratchWindow,o.targetFont);
@@ -121,12 +121,17 @@ if useWindow
    end
    Screen('TextSize',scratchWindow,letterPix);
    for i=1:length(letters)
-      lettersInCells{i}=letters(i);
+      bounds=TextBoundsDenis(scratchWindow,letters(i),1);
+      if i==1
+         alphabetBounds=bounds;
+      else
+         alphabetBounds=UnionRect(alphabetBounds,bounds);
+      end
    end
-   bounds=TextBounds(scratchWindow,lettersInCells,1);
+   bounds=alphabetBounds;
    savedAlphabet.rect=OffsetRect(bounds,-bounds(1),-bounds(2));
    for i=1:length(letters)
-      letterBounds=TextBounds(scratchWindow,letters(i),1);
+      letterBounds=TextBoundsDenis(scratchWindow,letters(i),1);
       desiredBounds=CenterRect(letterBounds,bounds);
       savedAlphabet.dx(i)=desiredBounds(1)-letterBounds(1);
       savedAlphabet.width(i)=RectWidth(letterBounds);
@@ -137,7 +142,7 @@ for i=1:length(letters)
    if o.useMATLABFontRendering
       f=figure('Units','pixels','Position',[0 0 1024 1024]);
       h=text(0,256,letters(i),'Units','pixels','FontName',o.targetFont, 'FontUnits','pixels','FontSize',512,'BackgroundColor',[1 1 1]);
-      error('THIS CODE DOES NOT CHECK WHETHER WE GOT THE REQUESTED FONT.');
+      warning('THIS CODE DOES NOT CHECK WHETHER WE GOT THE REQUESTED FONT.');
       set(f,'InvertHardcopy','off'); % Attempts to keep background white when we copy it.
       box off
       axis off
