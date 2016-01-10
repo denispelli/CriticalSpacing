@@ -52,7 +52,7 @@ o.targetFont='Pelli';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
 o.alphabet='123456789'; 
-o.borderLetter='0';
+o.borderLetter='$';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 % DEBUGGING AIDS
