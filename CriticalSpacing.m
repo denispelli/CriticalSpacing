@@ -145,6 +145,7 @@ o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
 screenRect=Screen('Rect',0);
 o.fixationLocation='center'; % 'left', 'right'
+o.targetCross=0;
 o.trials=40; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
@@ -244,24 +245,7 @@ try
    oo(1).screen=max(Screen('Screens'));
    screenBufferRect=Screen('Rect',oo(1).screen);
    screenRect=Screen('Rect',oo(1).screen,1);
-   % Detect HiDPI mode, e.g. on a Retina display.
-   oo(1).hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
-   if 1
-      PsychImaging('PrepareConfiguration');
-      if oo(1).flipScreenHorizontally
-         PsychImaging('AddTask','AllViews','FlipHorizontal');
-      end
-      if oo(1).hiDPIMultiple~=1
-         PsychImaging('AddTask','General','UseRetinaResolution');
-      end
-      if ~oo(1).useFractionOfScreen
-         [window,r]=PsychImaging('OpenWindow',oo(1).screen,white);
-      else
-         [window,r]=PsychImaging('OpenWindow',oo(1).screen,white,round(oo(1).useFractionOfScreen*screenBufferRect));
-      end
-   else
-      window=Screen('OpenWindow',0,white,screenBufferRect);
-   end
+   [window,r]=OpenWindow(oo(1));
    if oo(1).printScreenResolution
       screenBufferRect=Screen('Rect',oo(1).screen)
       screenRect=Screen('Rect',oo(1).screen,1)
@@ -377,6 +361,7 @@ try
       string=sprintf('%s At this viewing distance, I can display letters as small as %.3f deg with spacing as small as %.3f deg.',string,sizeDeg,spacingDeg);
       string=sprintf('%s If that''s ok, hit RETURN. For ordinary testing, view me from at least %.0f cm.',string,minimumViewingDistanceCm);
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
+      string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
       Screen('TextSize',window,oo(1).textSize);
       DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
@@ -385,8 +370,17 @@ try
       d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.7*screenRect(4),black,white,1,oo(1).deviceIndex);
       if ~isempty(d)
          inputDistanceCm=str2num(d);
-         if isnumeric(inputDistanceCm) && inputDistanceCm>0
-            oo(1).viewingDistanceCm=inputDistanceCm;
+         if ~isempty(inputDistanceCm) && inputDistanceCm~=0
+            oo(1).viewingDistanceCm=abs(inputDistanceCm);
+            oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
+            oo(1).flipScreenHorizontally=inputDistanceCm<0;
+            if oo(1).flipScreenHorizontally ~= oldFlipScreenHorizontally
+               if oo(1).useSpeech
+                  Speak('Now flipping the display.');
+               end
+               Screen('Close',window);
+               window=OpenWindow(oo(1));
+            end
          end
       else
          break;
@@ -502,14 +496,22 @@ try
       %         end
 
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
-      oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
+         oo(condition).targetDeg=oo(condition).targetDegGuess;
+      else
+         oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      end
       assert(oo(condition).eccentricityPix>=0);
       oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
       assert(oo(condition).eccentricityPix>=0);
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
-      oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+      if isfield(oo(condition),'spacingDegGuess') && isfinite(oo(condition).spacingDegGuess)
+         oo(condition).spacingDeg=oo(condition).spacingDegGuess;
+      else
+         oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+      end
       if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
          assert(oo(condition).eccentricityPix>=0);
          oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetDeg/2))); % flanker fits on screen.
@@ -542,6 +544,7 @@ try
 
       % prepare to draw fixation cross
       oo(condition).fix.targetHeightPix=oo(condition).targetPix;
+      oo(condition).fix.targetCross=oo(condition).targetCross;
       fixationLines=ComputeFixationLines(oo(condition).fix);
 
       if ~oo(condition).readAlphabetFromDisk
@@ -560,15 +563,25 @@ try
          Screen('TextSize',scratchWindow,sizePix);
          for i=1:length(oo(condition).alphabet)
             lettersInCells{i}=oo(condition).alphabet(i);
+            bounds=TextBoundsDenis(scratchWindow,lettersInCells{i},1);
+            b=Screen('TextBounds',scratchWindow,lettersInCells{i});
+            if RectWidth(bounds)~=RectWidth(b)
+               bounds=floor(b);
+            end
+            if i==1
+               alphabetBounds=bounds;
+            else
+               alphabetBounds=UnionRect(alphabetBounds,bounds);
+            end
          end
-         bounds=TextBounds(scratchWindow,lettersInCells,1);
+         bounds=alphabetBounds;
          Screen('Close',scratchWindow);
          oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
          if oo(conditions).showBounds
             % Currently useless, because you can't see the letters.
             % They are drawn with color 1, alas. Could change
             % TextBounds to use color 255.
-            bounds=TextBounds(window,lettersInCells,1);
+            bounds=TextBoundsDenis(window,lettersInCells,1);
             %                 Screen('DrawText',window,lettersInCells{1},0,0,0,255,1);
             Screen('FrameRect',window,[255 0 0],bounds+100);
             Screen('Flip',window);

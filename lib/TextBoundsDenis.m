@@ -1,6 +1,4 @@
-function bounds=TextBounds(w,text,yPositionIsBaseline)
-% bounds=TextBounds(window,string,yPositionIsBaseline)
-%
+function bounds=TextBoundsDenis(w,text,yPositionIsBaseline)
 % Returns the smallest enclosing rect for the drawn text, relative to the
 % current location. This bound is based on the actual pixels drawn, so it
 % incorporates effects of text smoothing, etc. "text" may be a cell array
@@ -27,7 +25,7 @@ function bounds=TextBounds(w,text,yPositionIsBaseline)
 % bounds=TextBoundsDenis(woff,string,yPositionIsBaseline)
 % fprintf('TextBounds took %.3f seconds.\n',GetSecs-t);
 % Screen('Close',woff);
-% 
+%
 % Show that it's correct by using the bounding box to frame the text.
 % x0=100;
 % y0=100;
@@ -68,11 +66,17 @@ function bounds=TextBounds(w,text,yPositionIsBaseline)
 % 12/22/07 mk  Significant rewrite to adapt to current PTB-3.
 % 12/16/15 dgp Added yPositionIsBaseline argument.
 if nargin<2
-    error('Require at least 2 arguments. bounds=TextBounds(window,string,yPositionIsBaseline)');
+   error('Require at least 2 arguments. bounds=TextBounds(window,string,yPositionIsBaseline)');
 end
 if nargin<3
-    yPositionIsBaseline=0;
+   yPositionIsBaseline=0;
 end
+if Screen('TextSize',w)>100
+   bounds=Screen('TextBounds',w,text,[],[],yPositionIsBaseline);
+   bounds=floor(bounds);
+   return;
+end
+%
 black=0;
 white = 1;
 
@@ -89,39 +93,44 @@ for i=1:length(text);
 end
 n=max(len);
 textSize=Screen('TextSize',w);
+font=Screen('TextFont',w);
 rect=[0 0 n*textSize 1.5*textSize];
 rect=CenterRect(rect,screenRect);
 if ~(IsInRect(rect(1),rect(2),screenRect) && IsInRect(rect(3),rect(4),screenRect))
    error('The "text" string (%d x %d) is too big for the "w" window (%d x %d).',RectWidth(rect),RectHeight(rect),RectWidth(screenRect),RectHeight(screenRect));
 end
 if yPositionIsBaseline
-    % Draw text string baseline at location x,y with a wide margin from lower
-    % left corner of screen. The left and lower margins accommodate the many
-    % fonts with descenders, and the occasional fonts that have fancy capital
-    % letters with flourishes that extend to the left of the starting point.
-    x0=rect(1);
-    y0=rect(4)-0.5*textSize;
+   % Draw text string baseline at location x,y with a wide margin from lower
+   % left corner of screen. The left and lower margins accommodate the many
+   % fonts with descenders, and the occasional fonts that have fancy capital
+   % letters with flourishes that extend to the left of the starting point.
+   x0=rect(1);
+   y0=rect(4)-0.5*textSize;
 else
-    % Draw text string with bounding box origin at upper left corner of screen.
-    x0=rect(1);
-    y0=rect(2);
+   % Draw text string with bounding box origin at upper left corner of screen.
+   x0=rect(1);
+   y0=rect(2);
 end
 if iscell(text)
-    for i=1:length(text)
-        string=char(text(i));
-        x1=Screen('DrawText',w,string,x0,y0,white,black,yPositionIsBaseline);
-        assert(x1~=x0)
-    end
+   for i=1:length(text)
+      string=char(text(i));
+      x1=Screen('DrawText',w,string,x0,y0,white,black,yPositionIsBaseline);
+      assert(x1~=x0)
+   end
 else
-    for i=1:size(text,1)
-        string=char(text(i,:));
-        x1=Screen('DrawText',w,string,x0,y0,white,black,yPositionIsBaseline);
-        assert(x1~=x0)
-    end
+   for i=1:size(text,1)
+      string=char(text(i,:));
+      x1=Screen('DrawText',w,string,x0,y0,white,black,yPositionIsBaseline);
+      assert(x1~=x0)
+   end
 end
 
-% Read back only 1 color channel to save time:
+% To save time, read back only 1 color channel.
 image1=Screen('GetImage',w,[],'backBuffer',0,1);
+
+% figure(2);
+% movegui(2,'northeast');
+% imshow(image1*255);
 
 % Find all nonzero, i.e. non background, pixels:
 [y,x]=find(image1(:,:));
@@ -132,8 +141,13 @@ x=x-x0;
 
 % Compute their bounding rect and return it:
 if isempty(y) || isempty(x)
-    bounds=[0 0 0 0];
+   bounds=[0 0 0 0];
 else
-    bounds=SetRect(min(x)-1,min(y)-1,max(x),max(y));
+   bounds=SetRect(min(x)-1,min(y)-1,max(x),max(y));
 end
+% if iscell(text)
+%    fprintf('%s %d pt, "%s" TextBounds: %d %d %d %d, rect %.0f %.0f %.0f %.0f, screenRect %d %d %d %d.\n',font,textSize,text{1},bounds,rect,screenRect);
+% else
+%    fprintf('%s %d pt, "%s" TextBounds: %d %d %d %d, rect %.0f %.0f %.0f %.0f, screenRect %d %d %d %d.\n',font,textSize,text(1,:),bounds,rect,screenRect);
+% end
 return;
