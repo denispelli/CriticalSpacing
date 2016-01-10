@@ -19,7 +19,7 @@ o.usePurring=0;
 o.measureThresholdVertically=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readAlphabetFromDisk=0; % 1 makes the program more portable.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -35,10 +35,10 @@ o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % DEBUGGING AIDS
 o.displayAlphabet=1;
 o.showLineOfLetters=1;
-o.showBounds=0;
+o.showBounds=1;
 o.frameTheTarget=1;
-o.printSizeAndSpacing=1;
-o.speakSizeAndSpacing=1;
+o.printSizeAndSpacing=0;
+o.speakSizeAndSpacing=0;
 o.useFractionOfScreen=0;
 
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
@@ -53,7 +53,7 @@ o.validKeys={'D','H','K','N','O','R','S','V','Z'};
 % o.borderLetter='$';
 % o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
-o.repeatedTargets=0;
+o.repeatedTargets=1;
 o.thresholdParameter='size';
-o.eccentricityDeg=10;
+o.eccentricityDeg=0;
 o=CriticalSpacing(o);
