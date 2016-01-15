@@ -1,5 +1,5 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2015,2016, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
 if 0
    % FOR CHILDREN
@@ -51,7 +51,7 @@ o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
 o.targetFont='Pelli';
-o.alphabet='123456789abcABC'; 
+o.alphabet='123456789'; 
 o.borderLetter='$';
 o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
@@ -60,37 +60,24 @@ o.displayAlphabet=0;
 o.showLineOfLetters=0;
 o.showBounds=0;
 o.frameTheTarget=0; 
-o.printSizeAndSpacing=1;
+o.printSizeAndSpacing=0;
 o.speakSizeAndSpacing=0;
 o.useFractionOfScreen=0; 
 
-% Set up for interleaved testing of size and spacing thresholds. In the
-% first run we'll use repeated targets. In the second run we'll use single
-% targets.
-
-o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 
 % FIRST RUN (measures two thresholds, interleaved)
-o.repeatedTargets=1;
+o.repeatedTargets=0;
+o.fourFlankers=1;
 o.thresholdParameter='spacing';
-% o(2)=o(1); % Copy the condition
-% o(2).thresholdParameter='size';
-% o(1).fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-% o(2).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
-% Test two conditions interleaved: 'spacing' and 'size', with repeated
-% letters.
-oRepeated=CriticalSpacing(o); % dual targets, repeated indefinitely
+o(2)=o(1); % Copy the condition
+o=CriticalSpacing(o); 
 
-if 0
-   % SECOND RUN (measures two thresholds, interleaved)
-% We retain the observer name obtained during the first run for use in the
-% second run.
-o(1).observer=oRepeated(1).observer;
-o(2).observer=oRepeated(1).observer;
-o(1).repeatedTargets=0;
-o(2).repeatedTargets=0;
-%oSingle=CriticalSpacing(o); % one target
-end
+% SECOND RUN (measures two thresholds, interleaved)
+o=o(1);
+o(1).repeatedTargets=1;
+o(2)=o(1);
+o=CriticalSpacing(o); 
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
