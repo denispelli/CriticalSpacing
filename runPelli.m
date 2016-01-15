@@ -22,12 +22,13 @@ o.useSpeech=1;
 o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;
 o.usePurring=0;
+o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 
 % You don't need to change any of these parameters.
 o.measureThresholdVertically=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readAlphabetFromDisk=0; % 1 makes the program more portable.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -38,7 +39,6 @@ o.measureBeta=0;
 o.textFont='Calibri';
 o.fixationLocation='center';
 o.task='identify';
-o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Sloan';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm XLight';
