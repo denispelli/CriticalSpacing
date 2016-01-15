@@ -113,7 +113,9 @@ o.speakViewingDistance=0;
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
+o.takeSnapshot=0;
 o.repeatedTargets=1;
+o.fourFlankers=0;
 o.useFractionOfScreen=0;
 o.readAlphabetFromDisk=1;
 o.saveLettersToDisk=0;
@@ -184,7 +186,7 @@ o.speakSizeAndSpacing=0;
 % Replicate o, once per supplied condition.
 conditions=length(oIn);
 oo(1:conditions)=o;
-
+clear o; % MATLAB should flag an error if we accidentally try to use o.
 % All fields in the user-supplied "oIn" overwrite corresponding fields in
 % "o". o is a single struct, and oIn may be an array of structs.
 for condition=1:conditions
@@ -432,6 +434,7 @@ try
    end
    oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+   oo(1).snapshotFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
    if ~exist(oo(1).dataFolder,'dir')
       [success,msg]=mkdir(oo(1).dataFolder);
       if ~success
@@ -566,10 +569,6 @@ try
          for i=1:length(oo(condition).alphabet)
             lettersInCells{i}=oo(condition).alphabet(i);
             bounds=TextBoundsDenis(scratchWindow,lettersInCells{i},1);
-            b=Screen('TextBounds',scratchWindow,lettersInCells{i});
-            if RectWidth(bounds)~=RectWidth(b)
-               bounds=floor(b);
-            end
             if i==1
                alphabetBounds=bounds;
             else
@@ -919,29 +918,44 @@ try
             minSpacesY=2;
             minSpacesX=4;
          end
-         if oo(condition).measureThresholdVertically
-            % vertical threshold
-            if oo(condition).fixedSpacingOverSize
-               spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)));
-               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
-               oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
-            else
-               spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
-               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/minSpacesX));
-            end
+      else
+         % Just one target
+         if oo(condition).fourFlankers
+            minSpacesY=2;
+            minSpacesX=2;
          else
-            % horizontal threshold
-            if oo(condition).fixedSpacingOverSize
-               spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
-               spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)/oo(condition).targetHeightOverWidth));
-               oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
+            if oo(condition).measureThresholdVertically
+               minSpacesY=2;
+               minSpacesX=0;
             else
-               spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
-               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/4));
+               minSpacesY=0;
+               minSpacesX=2;
             end
          end
       end
+      if oo(condition).measureThresholdVertically
+         % vertical threshold
+         if oo(condition).fixedSpacingOverSize
+            spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
+            oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
+         else
+            spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
+            spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/minSpacesX));
+         end
+      else
+         % horizontal threshold
+         if oo(condition).fixedSpacingOverSize
+            spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)/oo(condition).targetHeightOverWidth));
+            oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
+         else
+            spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
+            spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/4));
+         end
+      end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
+      oo(condition).spacingDeg=spacingPix/pixPerDeg;
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       spacingPix=round(spacingPix);
       switch oo(condition).radialOrTangential
@@ -1080,11 +1094,20 @@ try
          xPix=oo(condition).targetPix;
          yPix=oo(condition).targetPix*oo(condition).targetHeightOverWidth;
       end
+      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',condition,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
       if ~oo(condition).repeatedTargets
          xStimulus=[xF xT xFF];
          yStimulus=[yF yT yFF];
+         if oo(condition).fourFlankers
+            assert(~oo(condition).measureThresholdVertically); % this code won't yet handle vertical case
+            xStimulus=[xStimulus xT xT];
+            yStimulus=[yStimulus yT-ySpacing yT+ySpacing];
+            newFlankers=Shuffle(oo(condition).alphabet(oo(condition).alphabet~=stimulus(2)));
+            stimulus(end+1)=newFlankers(1);
+            stimulus(end+1)=newFlankers(2);
+         end
          clear textures dstRects
-         for textureIndex=1:3
+         for textureIndex=1:length(xStimulus)
             which=strfind(letters,stimulus(textureIndex));
             assert(length(which)==1)
             textures(textureIndex)=letterStruct(which).texture;
@@ -1103,11 +1126,11 @@ try
             r=round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect);
             dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
             if oo(condition).printSizeAndSpacing
-               fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f\n',xPix,yPix,RectWidth(r),RectHeight(r));
+               fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
             end
          end
          if ~streq(oo(condition).thresholdParameter,'spacing')
-            % Show only the target, omitting both flankers.
+            % Show only the target, omitting all flankers.
             textures=textures(2);
             dstRects=dstRects(1:4,2);
          end
@@ -1266,6 +1289,29 @@ try
          Screen('TextFont',window,oo(condition).textFont,0);
          Screen('Flip',window); % display response screen
       end
+      
+      if oo(condition).takeSnapshot
+         mypath=oo(1).snapshotFolder;
+         filename=oo(1).dataFilename;
+         saveSnapshotFid=fopen(fullfile(mypath,[filename '.png']),'rt');
+         if saveSnapshotFid~=-1
+            for suffix='a':'z'
+               saveSnapshotFid=fopen(fullfile(mypath,[filename suffix '.png']),'rt');
+               if saveSnapshotFid==-1
+                  filename=[filename suffix];
+                  break
+               end
+            end
+            if saveSnapshotFid~=-1
+               error('Can''t save file. Already 26 files with that name plus a-z');
+            end
+         end
+         filename=[filename '.png'];
+         img=Screen('GetImage',window);
+         imwrite(img,fullfile(mypath,filename),'png');
+         ffprintf(ff,'Saving image to file "%s" ',filename);
+      end
+      
       responseString='';
       skipping=0;
       for i=1:length(targets)
