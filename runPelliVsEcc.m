@@ -41,7 +41,6 @@ o.usePurring=0; % Play purring sound while awaiting user response.
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.negativeFeedback=0;
 o.fixationCrossDeg=1;
-o.durationSec=inf; % duration of display of target and flankers
 o.measureBeta=0;
 o.textFont='Calibri';
 o.fixationLocation='center';
@@ -61,10 +60,10 @@ o.minimumTargetPix=8; % Make sure the letters are well rendered.
 o.displayAlphabet=0; 
 o.showLineOfLetters=0;
 o.showBounds=0;
-o.frameTheTarget=1; 
+o.frameTheTarget=0; 
 o.printSizeAndSpacing=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0; 
+o.useFractionOfScreen=0.8; 
 
 % Set up for interleaved testing of size and spacing thresholds. In the
 % first run we'll use repeated targets. In the second run we'll use single
@@ -92,7 +91,7 @@ o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
-o.durationSec=0;
+o.durationSec=0.2;
 o.eccentricityDeg=10;
 o.targetCross=1;
 % o(2)=o(1); % Copy the condition

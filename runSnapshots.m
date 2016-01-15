@@ -71,8 +71,9 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.trials=4; % Number of trials (i.e. responses) for the threshold estimate.
 
 o.viewingDistanceCm=200;
-o.viewingDistanceCm=100;
-o.repeatedTargets=1;
+% o.viewingDistanceCm=100;
+o.repeatedTargets=0;
+o.fourFlankers=1;
 o.thresholdParameter='spacing';
 o=CriticalSpacing(o); % dual targets, repeated indefinitely
 % o.repeatedTargets=0;
