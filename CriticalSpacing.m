@@ -364,10 +364,12 @@ try
       string=sprintf('%s If that''s ok, hit RETURN. For ordinary testing, view me from at least %.0f cm.',string,minimumViewingDistanceCm);
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
       string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
-      string=sprintf(['%s If I don''t respond to your WIRELESS keyboard, come here and quit this script (RETURN, RETURN, ESCAPE), ' ...
-         'type "clear all" in the MATLAB command window, make sure MATLAB responds to your remote keyboard, and then try this script again.'],string);
       Screen('TextSize',window,oo(1).textSize);
-      DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      [x,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      string=sprintf(['DEAD KEYBOARD? If I don''t respond to your WIRELESS keyboard, come here and quit this script (RETURN, RETURN, ESCAPE), ' ...
+         'type "clear all" in the MATLAB command window, make sure MATLAB responds to your remote keyboard, and then try this script again.']);
+      Screen('TextSize',window,round(oo(1).textSize*0.6));
+      DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
