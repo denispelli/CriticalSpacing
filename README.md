@@ -1,11 +1,10 @@
 ## How to use CriticalSpacing to measure an observer's critical spacing and acuity for single and repeated targets.
 
-“CriticalSpacing.m” is a MATLAB program developed in the Pelli lab at NYU. In
-order to run CriticalSpacing on your machine, please do the following:
+“CriticalSpacing.m” is a MATLAB program developed by Denis Pelli at NYU, with some help from Hörmet Yiltiz. In order to run CriticalSpacing on your machine, please do the following:
 
 1. Install MATLAB (or GNU Octave) and Psychtoolbox. If you haven't
    already installed, you can find detailed instructions here:
-   [bit.ly/SetupPsychtoolbox](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt)
+[bit.ly/SetupPsychtoolbox](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt)
 1. Download the CriticalSpacing software
    [here](https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip).
 1. Extract the “zip” archive, producing a folder called CriticalSpacing.
@@ -23,31 +22,32 @@ order to run CriticalSpacing on your machine, please do the following:
    number of keyboard devices registered to MATLAB; so you are hoping for 
    at least 2 numbers). If the MATLAB Command Window responds to the keyboard, 
    but CriticalSpacing.m does not, try quitting and restarting MATLAB. 
-1. Choose a font. We recommend Solid for threshold spacing and Sloan for 
+1. Choose a font. We recommend "Pelli" for threshold spacing and Sloan for 
    threshold size. Print the “Response Page” PDF for your font. Inside 
    the “CriticalSpacing” folder you'll
-   find files “Response page for Sloan.pdf” and “Response page for Gotham.pdf”.
+   find files “Response page for Pelli.pdf” and “Response page for Sloan.pdf”.
    Print the appropriate one and give it to your observer. The response page 
-   shows the possible letters, e.g. “DHKNORSVZ” or “1234567889”. Adults
+   shows the possible letters, e.g. “DHKNORSVZ” or “1234567889”. Observers
    will find it helpful to consult this page while choosing an answer
    when they have little idea what letter the target(s) might be.
-   Children may prefer to point at the target letters, one by one, on
+   And children may prefer to point at the target letters, one by one, on
    the response page.
 1. Make sure the computer is connected to power. Data will be lost if
    the computer hibernates or goes to "sleep" before the program
    finishes.
-1. To test an observer, double click “runCriticalSpacing”. Say "Ok" if
+1. To test an observer, double click “runCriticalSpacing” or your own modified 
+   script; they're easy to write. Say "Ok" if
    MATLAB offers to change the current folder. The program automatically
-   saves the data to the “data” folder. The test takes 10 to 20 min to
-   test one observer (depending on trials per threshold), measuring four
-   thresholds. (Set o.trials to 20 or 40 for a total runtime of 10 or 20
-   minutes.)
-1. Threshold size. Use o.measureThresholdVertically=0; to measure (i.e. report) the size 
+   saves the data to the “CriticalSpacing/data” folder. The test takes 10 min to
+   test one observer (with 10 trials per threshold), measuring four
+   thresholds. (You can increase o.trials from 20 to 40 for a more precise threshold
+   estimate.)
+1. SIZE THRESHOLD. Use o.measureThresholdVertically=0; to measure (i.e. report) the size 
    horizontally. Height and width are related by
    width = height / heightOverWidth;
-1. When you ask to measure “spacing”, by default it’s horizontal. The ratio 
-   SpacingOverSize always measures both spacing and size along the same axis, usually 
-   horizontally. 
+1. SPACING THRESHOLD. When you ask to measure “spacing”, by default it’s horizontal. 
+   The ratio SpacingOverSize always measures both spacing and size along the same 
+   axis, usually horizontally. 
 1. VIEWING DISTANCE. You can provide a default in your script, e.g. 
    o.viewingDistanceCm=400;
    You are invited to modify the viewing distance at the beginning of each 
@@ -76,5 +76,13 @@ order to run CriticalSpacing on your machine, please do the following:
 
 CriticalSpacing, Psychtoolbox, and MATLAB
 
+## Hardware requirements:
 
-> Copyright 2015, Denis Pelli, denis.pelli@nyu.edu
+A laptop running Mac OS X, Windows, or Linux, with the above software installed. 
+(Or a digital screen driven by a computer with such software. We need the digital screen in order for the computer to tell CriticalSpacing.m the screen size and resolution.)
+A remote keyboard: wireless or with a 10-m-long cable.
+A 10 m measuring tape to measure the viewing distance.
+A printed copy of the relevant Response page selected from CriticalSpacing/response pages.
+
+
+> Copyright 2015, 2016, Denis Pelli, denis.pelli@nyu.edu
