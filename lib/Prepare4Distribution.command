@@ -16,7 +16,8 @@ git log | head -n 3 > VERSION
 echo "Zipping latest software version..."
 #git archive -9 -o "${PWD##*/}"-`git rev-parse --abbrev-ref HEAD`-`date "+%Y-%m-%d"`-`git log --pretty=format:"%h" -n 1`.zip HEAD
 
-FNAME="${PWD##*/}"-`git rev-parse --abbrev-ref HEAD`-`date "+%Y-%m-%d"`-`git log --pretty=format:"%h" -n 1`.zip
+#FNAME="${PWD##*/}"-`git rev-parse --abbrev-ref HEAD`-`date "+%Y-%m-%d"`-`git log --pretty=format:"%h" -n 1`.zip #include branch name
+FNAME="${PWD##*/}"-`date "+%Y-%m-%d"`-`git log --pretty=format:"%h" -n 1`.zip
 git archive -9 -o $FNAME HEAD
 
 echo ""
