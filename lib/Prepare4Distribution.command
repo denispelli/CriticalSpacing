@@ -6,6 +6,7 @@
 #
 
 # this script should be put in ./lib/
+cd -- "$(dirname "$BASH_SOURCE")"
 cd ..
 
 
