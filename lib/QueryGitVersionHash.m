@@ -13,7 +13,7 @@ verbose = false;
 [s.GitVersionStatus, cmdout] = system('git version');
 switch s.GitVersionStatus
   case 0
-    assert(~isempty(regexp('git version 1', 'git version .*')), ...
+    assert(~isempty(regexp(cmdout, 'git version .*')), ...
       'Unknown git version. Please re-install git.');
     s.IsGitExist = true;
     s.GitVersion = cmdout;
