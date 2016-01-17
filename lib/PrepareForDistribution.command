@@ -21,7 +21,7 @@ FNAME="${PWD##*/}"-`date "+%Y-%m-%d"`-`git log --pretty=format:"%h" -n 1`.zip
 git archive -9 -o $FNAME HEAD
 
 echo ""
-zip add $FNAME VERSION
+zip $FNAME VERSION
 echo ""
 
 echo "$FNAME generated!"
