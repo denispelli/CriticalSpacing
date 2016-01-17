@@ -46,7 +46,7 @@ octave-workspace
 .Rproj.user
 
 private/
-Private*
+Private/
 private-*/
 *-private/
 Private-*/
