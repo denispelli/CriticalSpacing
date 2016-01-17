@@ -1,9 +1,23 @@
 function oo=CriticalSpacing(oIn)
-% o=CriticalSpacing(o);
+% o=CriticalSpacing(o); 
+%
+% Measures critical spacing and acuity as part the assessment of an
+% observer's vision. It takes over your screen to measure the observer's
+% size or spacing threshold to identify a letter. It takes about 10 minutes
+% to measure four thresholds. It's meant to be called by a short
+% user-written script, and should work well in clinical environments. All
+% results are returned in the "o" struct and also saved to disk with a file
+% name that includes your script name and the date. You can read more about
+% this program and its purpose in this article:
+%
+% D. G. Pelli, S. J. Waugh, M. Martelli, S. J. Crutch, S. Primativo, K. X.
+% Yong, M. Rhodes, K. Yee, X. Wu, H. F. Famira, H. Yiltiz (2016) A clinical
+% test for visual crowding. F1000Research. In press.
+%
 % Pass all your parameters in the "o" struct, which will be returned with
 % all the results as additional fields. CriticalSpacing may adjust some of
-% your parameters to satisfy physical constraints. Constraints include the
-% screen size and the maximum possible contrast.
+% your parameters to satisfy physical constraints including screen size and
+% maximum possible contrast.
 %
 % RESPONSE PAGE. Inside the CriticalSpacing folder you'll find a file
 % "Response page FONT.pdf" (where FONT is the name of the font you're
@@ -16,35 +30,39 @@ function oo=CriticalSpacing(oIn)
 % maintain their undivided attention on the display.
 %
 % MATLAB: To run this program, you need a computer with MATLAB and the
-% Psychtoolbox installed.
+% Psychtoolbox installed. 
 %
 % COMPUTER: Apple Macintosh, Windows, or Linux computer with a digital
 % screen. CriticalSpacing.m runs on any computer with MATLAB and
 % Psychtoolbox. The software automatically reads the screen resolution in
 % pixels and size in cm. That won't work with an analog display, but we
-% could add code to allow you to measure it manually. Let me know.
+% could add code to allow you to measure it manually and specify it in your
+% script. Let me know.
 %
-% WIRELESS OR LONG-CABLE KEYBOARD. A wireless keyboard or long keyboard
-% cable is highly desirable as the viewing distance will be 3 m or more. If
-% you must use the laptop keyboard then have the experimenter type the
-% observer's verbal answers. I like this $86 solar-powered wireless, for
-% which the batteries never run out: Logitech Wireless Solar Keyboard K760
-% for Mac/iPad/iPhone
+% A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable as the viewing
+% distance will be 3 m or more. If you must use the laptop keyboard then
+% have the experimenter type the observer's verbal answers. I like this $86
+% solar-powered wireless, for which the batteries never run out: 
+%
+% Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
 %
 % MIRROR. You might want to use a mirror to achieve a long viewing distance
-% in a small room. In that case, add a line to your running script,
+% in a small room. In that case, add this statement to your running script,
 % o.flipScreenHorizontally=0; so the observer sees all the letters normally
-% oriented.
+% oriented. I just ordered some acrylic front surface mirrors for this.
+% 12x24 inches, $46 each. Front surface mirrors preserve image quality, and
+% acrylic is safer than glass, because it's hard to break.
+% https://www.inventables.com/technologies/first-surface-mirror-coated-acrylic
 %
-% FONTS. If you use o.readAlphabetFromDisk=1 then your computer can be
-% Macintosh, Windows, or Linux and you don't need to install any fonts. If
-% you have a Macintosh, you can render fonts live by setting
-% o.readAlphabetFromDisk=0, and installing the fonts you need from the
-% CriticalSpacing/fonts folder into your computer's font folder. You can
-% just double-click the font file and say "yes" when your computer offers
-% to install it for you. Once you've installed the font, quit and restart
-% MATLAB to get it to notice the newly available font.
+% FONTS. If you set o.readAlphabetFromDisk=1 in your script then your
+% computer can be Macintosh, Windows, or Linux and you don't need to
+% install any fonts. If you have a Macintosh, you can render fonts live by
+% setting o.readAlphabetFromDisk=0, and installing the fonts you need from
+% the CriticalSpacing/fonts folder into your computer's font folder. You
+% can just double-click the font file and say "yes" when your computer
+% offers to install it for you. Once you've installed the font, you must
+% quit and restart MATLAB for it to use the newly available font.
 %
 % RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. I have provided runCriticalSpacing as a example.
@@ -92,11 +110,11 @@ function oo=CriticalSpacing(oIn)
 % solving for distanceCm
 % distanceCm >= (57/0.05)*8/pixPerCm = 9120/pixPerCm
 
-% Copyright 2015, Denis Pelli, denis.pelli@nyu.edu
+% Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 if nargin<1 || ~exist('oIn','var')
    oIn.noInputArgument=1;
 end
-addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % folder in same directory as this file
+addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
 Screen('Preference','VisualDebugLevel',0);
 Screen('Preference', 'Verbosity', 0); % mute Psychtoolbox's INFOs and WARNINGs
 Screen('Preference','SkipSyncTests',1);
@@ -128,6 +146,10 @@ o.timeRequiredForGuessOnSkip=8;
 % o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
 o.observer=''; % Name is requested at beginning of run.
+o.experimenter='';
+o.scriptName='';
+o.scriptFullFileName='';
+o.script='';
 o.quit=0;
 o.viewingDistanceCm=300;
 o.flipScreenHorizontally=0;
@@ -371,7 +393,7 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.6));
       DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,white,1,oo(1).deviceIndex);
       if ~isempty(d)
@@ -408,17 +430,37 @@ try
    ListenChar(0); % flush
    ListenChar(2); % no echo
 
+% Experimenter name
+   if length(oo(1).experimenter)==0
+      Screen('FillRect',window);
+      Screen('TextFont',window,oo(1).textFont,0);
+      Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Hello Experimenter,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
+      Screen('TextSize',window,round(0.7*oo(1).textSize));
+      Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMargin,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+      Screen('TextSize',window,round(oo(1).textSize*0.4));
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('TextSize',window,oo(1).textSize);
+      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      for i=1:conditions
+         oo(i).experimenter=name;
+      end
+      Screen('FillRect',window);
+   end
+   
    % Observer name
    if length(oo(1).observer)==0
       Screen('FillRect',window);
       Screen('TextSize',window,oo(1).textSize);
       Screen('TextFont',window,oo(1).textFont,0);
       Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Hi.  Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Hello Observer,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.4));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      name=GetEchoString(window,'Name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).observer=name;
       end
@@ -429,14 +471,30 @@ try
    oo(1).beginningTime=now;
    timeVector=datevec(oo(1).beginningTime);
    stack=dbstack;
+   assert(~isempty(stack));
    if length(stack)==1;
+      oo(1).scriptName=[];
       oo(1).functionNames=stack.name;
    else
+      oo(1).scriptName=[stack(2).name '.m'];
       oo(1).functionNames=[stack(2).name '-' stack(1).name];
    end
-   oo(1).dataFilename=sprintf('%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).observer,round(timeVector));
-   oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+   if ~isempty(oo(1).scriptName)
+      oo(1).scriptFullFileName=which(oo(1).scriptName);
+      oo(1).script=fileread(oo(1).scriptFullFileName);
+      assert(~isempty(oo(1).script));
+   else
+      oo(1).script=[];
+   end
    oo(1).snapshotFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
+   if ~exist(oo(1).snapshotFolder,'dir')
+      [success,msg]=mkdir(oo(1).snapshotFolder);
+      if ~success
+         error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotFolder);
+      end
+   end
+   oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
+   oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
    if ~exist(oo(1).dataFolder,'dir')
       [success,msg]=mkdir(oo(1).dataFolder);
       if ~success
@@ -830,7 +888,7 @@ try
    end
    Screen('TextFont',window,oo(condition).textFont,0);
    Screen('TextSize',window,round(oo(condition).textSize*0.4));
-   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2015, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
    Screen('TextSize',window,oo(condition).textSize);
    if all(ismember(oo(1).alphabet,'0123456789'))
       string=strrep(string,'letter','number');
@@ -1110,13 +1168,13 @@ try
          end
          clear textures dstRects
          for textureIndex=1:length(xStimulus)
-            which=strfind(letters,stimulus(textureIndex));
-            assert(length(which)==1)
-            textures(textureIndex)=letterStruct(which).texture;
-            r=round(letterStruct(which).rect);
+            whichLetter=strfind(letters,stimulus(textureIndex));
+            assert(length(whichLetter)==1)
+            textures(textureIndex)=letterStruct(whichLetter).texture;
+            r=round(letterStruct(whichLetter).rect);
             oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
             if oo(condition).setTargetHeightOverWidth
-               r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
+               r=round(ScaleRect(letterStruct(whichLetter).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
                oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                %                      dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
             end
@@ -1125,7 +1183,7 @@ try
             else
                heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
             end
-            r=round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect);
+            r=round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect);
             dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
             if oo(condition).printSizeAndSpacing
                fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
@@ -1163,18 +1221,18 @@ try
                else
                   letter=stimulus(1+whichTarget);
                end
-               which=strfind(letters,letter);
-               assert(length(which)==1)
-               textures(textureIndex)=letterStruct(which).texture;
-               % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, which %d, texture %d\n',textureIndex,x,whichTarget,letter,which,textures(textureIndex));
+               whichLetter=strfind(letters,letter);
+               assert(length(whichLetter)==1)
+               textures(textureIndex)=letterStruct(whichLetter).texture;
+               % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
                xPos=round(x-xPix/2);
 
                % Compute o.targetHeightOverWidth, and, if requested,
                % o.setTargetHeightOverWidth
-               r=round(letterStruct(which).rect);
+               r=round(letterStruct(whichLetter).rect);
                oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                if oo(condition).setTargetHeightOverWidth
-                  r=round(ScaleRect(letterStruct(which).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
+                  r=round(ScaleRect(letterStruct(whichLetter).rect,oo(condition).targetHeightOverWidth/oo(condition).setTargetHeightOverWidth,1));
                   oo(condition).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                   dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
                else
@@ -1183,7 +1241,7 @@ try
                   else
                      heightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
                   end
-                  dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(which).rect))*letterStruct(which).rect),xPos,0);
+                  dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect),xPos,0);
                end
                % One dst rect for each letter in the line.
                if oo(condition).showLineOfLetters
@@ -1209,13 +1267,13 @@ try
          lineIndex=1;
          for y=yMin:ySpacing:yMax
             if ismember(y,[yMin yMax])
-               which=1;
+               whichLetter=1;
             else
-               which=2+mod(lineIndex,2);
+               whichLetter=2+mod(lineIndex,2);
             end
-            textures(lineIndex)=lineTexture(which);
+            textures(lineIndex)=lineTexture(whichLetter);
             dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
-            %                 fprintf('line %d, which %d, texture %d, dstRect %d %d %d %d\n',lineIndex,which,lineTexture(which),dstRects(1:4,lineIndex));
+            %                 fprintf('line %d, whichLetter %d, texture %d, dstRect %d %d %d %d\n',lineIndex,whichLetter,lineTexture(whichLetter),dstRects(1:4,lineIndex));
             lineIndex=lineIndex+1;
          end
       end
