@@ -4,3 +4,4 @@ Add checkbox to Viewing distance screen. “Using mirror.”
 
 collect observer age before experiment (this information is useful to save in the data files)
 
+move run* scripts that are no longer necessary into "Old Scripts"
