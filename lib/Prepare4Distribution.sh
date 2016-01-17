@@ -6,7 +6,7 @@
 #
 
 # this script should be put in ./lib/
-#cd ..
+cd ..
 
 
 echo "Updating version file..."
