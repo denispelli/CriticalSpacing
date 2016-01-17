@@ -45,4 +45,11 @@ octave-workspace
 *.svg
 .Rproj.user
 
+private/
+Private*
+private-*/
+*-private/
+Private-*/
+*-Private/
+
 results/
