@@ -15,8 +15,8 @@ else
    o.speakEachLetter=1;
 end
 o.setTargetHeightOverWidth=0;
-o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
-o.viewingDistanceCm=420;
+o.trials=4; % Number of trials (i.e. responses) for the threshold estimate.
+o.viewingDistanceCm=100;
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.useSpeech=1;
 o.beepPositiveFeedback=1;
@@ -37,19 +37,9 @@ o.fixationCrossDeg=5;
 o.durationSec=1; % duration of display of target and flankers
 o.measureBeta=0;
 o.textFont='Calibri';
-o.fixationLocation='center';
+o.fixationLocation='left';
 o.task='identify';
 % o.targetFont='Sloan';
-% o.targetFont='ClearviewText';
-% o.targetFont='Gotham Cond SSm XLight';
-% o.targetFont='Gotham Cond SSm Light';
-% o.targetFont='Gotham Cond SSm Medium';
-% o.targetFont='Gotham Cond SSm Book';
-% o.targetFont='Gotham Cond SSm Bold';
-% o.targetFont='Gotham Cond SSm Black';
-% o.targetFont='Arouet';
-% o.targetFont='Retina Micro';
-% o.targetFont='Calibri';
 o.targetFont='Pelli';
 o.alphabet='123456789'; 
 o.borderLetter='$';
@@ -71,14 +61,5 @@ o.repeatedTargets=0;
 o.eccentricityDeg=10;
 o.fourFlankers=1;
 o.thresholdParameter='spacing';
-o(2)=o(1); % Copy the condition
+% o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
-
-% SECOND RUN (measures two thresholds, interleaved)
-% o=o(1);
-% o(1).repeatedTargets=1;
-% o(2)=o(1);
-% o=CriticalSpacing(o); 
-
-% Results are printed in the command window and saved in the "data" folder
-% within the folder that contains the CriticalSpacing.m program.
