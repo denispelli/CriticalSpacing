@@ -163,7 +163,6 @@ o.setTargetHeightOverWidth=0;
 o.targetHeightOverWidth=nan;
 o.minimumTargetPix=8; % Minimum viewing distance depends soley on this & pixPerCm.
 o.eccentricityDeg=0; % location of target, relative to fixation, in degrees
-% o.eccentricityDeg=16;
 % o.radialOrTangential='tangential'; % values 'radial', 'tangential'
 o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
@@ -173,7 +172,7 @@ o.targetCross=0;
 o.trials=40; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
-o.fixationLineWeightDeg=0.005;
+o.fixationLineWeightDeg=0.02;
 o.measureBeta=0;
 o.task='identify';
 % This produces the standard adult condition:
@@ -358,6 +357,7 @@ try
       else
          pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
       end
+      
       for condition=1:conditions
          oo(condition).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(condition).normalAcuityDeg=0.029*(abs(oo(condition).eccentricityDeg)+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
@@ -574,10 +574,22 @@ try
       else
          oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       end
-      assert(oo(condition).eccentricityPix>=0);
-      oo(condition).eccentricityPix=round(min(oo(condition).eccentricityPix,max(0,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg))); % target fits on screen, with half-target margin.
-      assert(oo(condition).eccentricityPix>=0);
+      if oo(condition).eccentricityPix>=0
+         % target fits on screen, with half-target margin.
+         maxEccPix=round(max(0,stimulusRect(3)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg));
+         minEccPix=0;
+      else
+         % target fits on screen, with half-target margin.
+         minEccPix=round(min(0,stimulusRect(1)-oo(condition).fix.x+pixPerDeg*oo(condition).targetDeg));
+         maxEccPix=0;
+      end
+      oldEccDeg=oo(condition).eccentricityDeg;
+      reducing=oo(condition).eccentricityPix<minEccPix || oo(condition).eccentricityPix>maxEccPix;
+      oo(condition).eccentricityPix=max(minEccPix,min(maxEccPix,oo(condition).eccentricityPix));
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
+      if reducing
+         ffprintf(ff,'%d: Reducing eccentricity from %.1f to %.1f deg, to accomodate %.1f deg target on %.1 deg-wide screen.\n',condition,oldEccDeg,oo(condition).eccentricityDeg,oo(condition).targetDeg,RectWidth(stimulusRect)/pixPerDeg);
+      end
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
       if isfield(oo(condition),'spacingDegGuess') && isfinite(oo(condition).spacingDegGuess)
@@ -614,11 +626,6 @@ try
          ffprintf(ff,'] deg\n');
       end
       oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-
-      % prepare to draw fixation cross
-      oo(condition).fix.targetHeightPix=oo(condition).targetPix;
-      oo(condition).fix.targetCross=oo(condition).targetCross;
-      fixationLines=ComputeFixationLines(oo(condition).fix);
 
       if ~oo(condition).readAlphabetFromDisk
          % calibrate font size
@@ -723,6 +730,14 @@ try
       if oo(condition).setTargetHeightOverWidth
          oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth
       end
+      
+      % prepare to draw fixation cross
+      oo(condition).fix.targetHeightPix=oo(condition).targetPix;
+      oo(condition).fix.targetCross=oo(condition).targetCross;
+      oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
+      fixationLines=ComputeFixationLines(oo(condition).fix);
+      oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
+      fixationLines=ComputeFixationLines(oo(condition).fix);
 
       terminate=0;
 
@@ -801,7 +816,7 @@ try
       ffprintf(ff,'%d: %s font o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetFont,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: Duration %.2f s.\n',condition,oo(condition).durationSec);
+      ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f\n',condition,oo(condition).durationSec,oo(condition).eccentricityDeg);
    end
    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
    ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
@@ -1539,6 +1554,7 @@ try
    ListenChar(0); % flush and reenable keyboard
    Snd('Close');
    Screen('CloseAll');
+   sca;
    ShowCursor;
    trials=0;
    oo(1).totalSecs=GetSecs-oo(1).beginSecs;
