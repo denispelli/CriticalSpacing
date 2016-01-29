@@ -1,7 +1,6 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2015, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
-o.takeSnapshot=1;
 if 0
    % FOR CHILDREN
    o.showProgressBar=1;
@@ -49,6 +48,7 @@ o.minimumTargetPix=8; % Make sure the letters are well rendered.
 % o.targetFont='Arouet';
 % o.targetFont='Retina Micro';
 % o.targetFont='Calibri';
+
 o.targetFont='Pelli';
 o.alphabet='123456789'; 
 o.borderLetter='$';
@@ -70,8 +70,8 @@ o.useFractionOfScreen=0;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.trials=4; % Number of trials (i.e. responses) for the threshold estimate.
 
+o.takeSnapshot=1;
 o.viewingDistanceCm=200;
-% o.viewingDistanceCm=100;
 o.repeatedTargets=0;
 o.fourFlankers=1;
 o.thresholdParameter='spacing';
