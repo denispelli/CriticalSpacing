@@ -28,7 +28,7 @@ o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerC
 o.measureThresholdVertically=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
-o.readAlphabetFromDisk=1; % 1 makes the program more portable.
+o.readAlphabetFromDisk=0; % 1 makes the program more portable.
 o.usePurring=0; % Play purring sound while awaiting user response.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -70,6 +70,7 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.repeatedTargets=0;
 o.fourFlankers=1;
 o.thresholdParameter='spacing';
+o.durationSec=1;
 o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
 
@@ -77,7 +78,7 @@ o=CriticalSpacing(o);
 o=o(1);
 o(1).repeatedTargets=1;
 o(2)=o(1);
-o=CriticalSpacing(o); 
+%o=CriticalSpacing(o); 
 
 % Results are printed in the command window and saved in the "data" folder
 % within the folder that contains the CriticalSpacing.m program.
