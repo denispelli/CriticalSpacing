@@ -3,14 +3,9 @@ function [letterStruct,canvasRect]=MakeLetterTextures(condition,o,window,savedAl
 % Should be easy to eliminate return of canvasRect.
 % I'd like to include the file-reading code here, and eliminate the
 % "savedAlphabet" argument.
-% The argument "condition" is used only for a diagnostic printout.
-if IsWindows
-   o.textFontHeightOverNormal=1.336;
-   textYOffset=0.75;
-else
-   o.textFontHeightOverNormal=1.0;
-   textYOffset=0;
-end
+% The argument "condition" is used only for diagnostic printout.
+o.textFontHeightOverNormal=1.0;
+textYOffset=0;
 letters=[o.alphabet o.borderLetter];
 if o.measureThresholdVertically
    canvasRect=[0 0 o.targetPix o.targetPix];
@@ -52,9 +47,9 @@ else
    Screen('TextSize',scratchWindow,sizePix);
    for i=1:length(letters)
       lettersInCells{i}=letters(i);
-      bounds=TextBoundsDenis(scratchWindow,letters(i),1);
-      b=Screen('TextBounds',scratchWindow, letters(i));
+      bounds=TextBounds(scratchWindow,letters(i),1);
       if o.printSizeAndSpacing
+         b=Screen('TextBounds',scratchWindow, letters(i));
          fprintf('%d: %s "%c" textSize %d, TextBounds [%d %d %d %d] width x height %d x %d, Screen TextBounds %.0f x %.0f\n', ...
             condition,o.targetFont,letters(i),sizePix,bounds,RectWidth(bounds),RectHeight(bounds),RectWidth(b),RectHeight(b));
       end
