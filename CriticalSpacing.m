@@ -1145,7 +1145,13 @@ ListenChar(2); % no echo
       if ~oo(condition).repeatedTargets
          Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       end
-      Screen('Flip',window); % blank display, except perhaps fixation
+         if oo(condition).showProgressBar
+            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+            r=progressBarRect;
+            r(4)=round(r(4)*(1-presentation/length(condList)));
+            Screen('FillRect',window,[220 220 220],r); % grey background
+         end
+      Screen('Flip',window); % Blank display, except perhaps fixation and progress bar.
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
@@ -1185,6 +1191,9 @@ ListenChar(2); % no echo
       % letterStruct.width is undefined.
 
       if oo(condition).displayAlphabet
+         % This is for debugging. We also display the alphabet any time the
+         % shift key is pressed. That's standard behavior to allow the
+         % observer to familiarize herself with the alphabet.
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
             Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
@@ -1351,10 +1360,7 @@ ListenChar(2); % no echo
       end
       Screen('Flip',window); % show target and flankers
       trialTimeSecs=GetSecs;
-      % Discard all the textures, to free graphics memory.
-      for i=1:length(letterStruct)
-         Screen('Close',letterStruct(i).texture);
-      end
+      % Discard the line textures, to free graphics memory.
       if exist('lineTexture','var')
          for i=1:length(lineTexture)
             Screen('Close',lineTexture(i));
@@ -1370,7 +1376,19 @@ ListenChar(2); % no echo
       end
       if isfinite(oo(condition).durationSec)
          WaitSecs(oo(condition).durationSec); % display of letters
+         if oo(condition).showProgressBar
+            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+            r=progressBarRect;
+            r(4)=round(r(4)*(1-presentation/length(condList)));
+            Screen('FillRect',window,[220 220 220],r); % grey background
+         end
          Screen('Flip',window); % remove letters
+         if oo(condition).showProgressBar
+            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+            r=progressBarRect;
+            r(4)=round(r(4)*(1-presentation/length(condList)));
+            Screen('FillRect',window,[220 220 220],r); % grey background
+         end
          WaitSecs(0.2); % pause before response screen
          if ~oo(condition).repeatedTargets
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
@@ -1381,18 +1399,11 @@ ListenChar(2); % no echo
          if oo(condition).repeatedTargets
             string=strrep(string,'response','two responses');
          end
-         [newX,newY]=Screen('DrawText',window,string,100,100,black,white,1);
-         if 0
-            % OBSOLETE. The green progress bar is better than text.
-         % string=sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs);
-         Screen('TextSize',window,round(0.5*oo(condition).textSize));
-         string=sprintf('Presentation %d of %d.',presentation,length(condList));
-         Screen('DrawText',window,string,newX,newY,black,white,1);
-         end
+         Screen('DrawText',window,string,100,100,black,white,1);
          Screen('TextSize',window,oo(condition).textSize);
-        if ~isempty(oo(condition).targetFontNumber)
+         if ~isempty(oo(condition).targetFontNumber)
             Screen('TextFont',window,oo(condition).targetFontNumber);
-            [font,number]=Screen('TextFont',window);
+            [~,number]=Screen('TextFont',window);
             assert(number==oo(condition).targetFontNumber);
          else
             if streq(oo(condition).targetFont,'Solid')
@@ -1447,9 +1458,33 @@ ListenChar(2); % no echo
                if ismember(answer,{'CapsLock'});
                   KbReleaseWait(oo(condition).deviceIndex);
                end
-               % save
-               % display letters
-               Speak('Shift');
+               % Save screen
+               saveScreen=Screen('GetImage',window);
+               
+               % Display alphabet
+               Screen('PutImage',window,saveScreen); % To save progress bar.
+               Screen('FillRect',window,255,stimulusRect);
+               iLetter=1;
+               for jj=1:3
+                  for ii=1:ceil(length(oo(condition).alphabet)/3)
+                     r=[0 0 RectWidth(letterStruct(iLetter).rect) RectHeight(letterStruct(iLetter).rect)];
+                     r=r*RectHeight(stimulusRect)/(0.5+1.5*3)/RectHeight(r);
+                     r=OffsetRect(r,-0.5*RectWidth(r),-0.5*RectHeight(r));
+                     r=OffsetRect(r,(ii-0.5)*RectWidth(stimulusRect)/3,(jj-0.5)*RectHeight(stimulusRect)/3);
+                     Screen('DrawTexture',window,letterStruct(iLetter).texture,[],r);
+                     fprintf('%c %d %d %d %d\n',oo(condition).alphabet(iLetter),r);
+                     if iLetter==length(oo(condition).alphabet)
+                        break;
+                     end
+                     iLetter=iLetter+1;
+                  end
+                  if iLetter==length(oo(condition).alphabet)
+                     break;
+                  end
+               end
+               Screen('Flip',window);
+               
+               % Wait for release of shift
                if ismember(answer,{'CapsLock'});
                   saveEnableKeys=RestrictKeysForKbCheck(KbName('CapsLock'));
                   KbStrokeWait(oo(condition).deviceIndex);
@@ -1457,8 +1492,10 @@ ListenChar(2); % no echo
                else
                   KbReleaseWait(oo(condition).deviceIndex);
                end
-               Speak('Unshift');
-               % restore
+               
+               % Restore screen
+               Screen('PutImage',window,saveScreen);
+               Screen('Flip',window);
             else
                % Ignore any key that has already been pressed.
                if ~ismember(answer,responseString);
@@ -1467,6 +1504,10 @@ ListenChar(2); % no echo
             end
          end
          RestrictKeysForKbCheck(oldEnableKeys);
+         % Discard the letter textures, to free graphics memory.
+         for i=1:length(letterStruct)
+            Screen('Close',letterStruct(i).texture);
+         end
          if streq(answer,'ESCAPE')
             ListenChar(0);
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
@@ -1559,7 +1600,6 @@ ListenChar(2); % no echo
    end % for presentation=1:length(condList)
 
    Screen('FillRect',window);
-   %         Screen('DrawText',window,'Run completed',100,750,black,white,1);
    Screen('Flip',window);
    if oo(1).useSpeech
       Speak('Congratulations.  This run is done.');
