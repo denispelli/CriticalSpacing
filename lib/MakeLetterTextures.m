@@ -54,8 +54,10 @@ else
       lettersInCells{i}=letters(i);
       bounds=TextBoundsDenis(scratchWindow,letters(i),1);
       b=Screen('TextBounds',scratchWindow, letters(i));
-      fprintf('%d: %s "%c" textSize %d, TextBounds [%d %d %d %d] width x height %d x %d, Screen TextBounds %.0f x %.0f\n', ...
-         condition,o.targetFont,letters(i),sizePix,bounds,RectWidth(bounds),RectHeight(bounds),RectWidth(b),RectHeight(b));
+      if o.printSizeAndSpacing
+         fprintf('%d: %s "%c" textSize %d, TextBounds [%d %d %d %d] width x height %d x %d, Screen TextBounds %.0f x %.0f\n', ...
+            condition,o.targetFont,letters(i),sizePix,bounds,RectWidth(bounds),RectHeight(bounds),RectWidth(b),RectHeight(b));
+      end
       letterStruct(i).bounds=bounds;
       if i==1
          alphabetBounds=bounds;
@@ -64,7 +66,9 @@ else
       end
    end
    bounds=alphabetBounds;
-   fprintf('%d: size %d, first letter %c, width %d.\n',condition,sizePix,letters(1),RectHeight(letterStruct(1).bounds));
+   if o.printSizeAndSpacing
+      fprintf('%d: size %d, first letter %c, width %d.\n',condition,sizePix,letters(1),RectHeight(letterStruct(1).bounds));
+   end
    assert(RectHeight(bounds)>0);
    for i=1:length(letters)
       desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
@@ -76,7 +80,9 @@ else
    % Create texture for each letter
    canvasRect=bounds;
    canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
-   fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds));
+   if o.printSizeAndSpacing
+      fprintf('%d: textSize %.0f, "%s" height %.0f, width %.0f\n',condition,sizePix,letters,RectHeight(bounds),RectWidth(bounds));
+   end
    for i=1:length(letters)
       [letterStruct(i).texture,letterStruct(i).rect]=Screen('OpenOffscreenWindow',window,[],canvasRect,8,0);
       if ~isempty(o.targetFontNumber)
