@@ -267,6 +267,10 @@ try
    %     white=WhiteIndex(window);
    %     black=BlackIndex(window);
    oo(1).screen=max(Screen('Screens'));
+   computer=Screen('Computer');
+   if computer.osx || computer.macintosh
+      AutoBrightness(oo(1).screen,0); % Do this BEFORE opening the window, so user can see any alerts.
+   end
    screenBufferRect=Screen('Rect',oo(1).screen);
    screenRect=Screen('Rect',oo(1).screen,1);
    [window,r]=OpenWindow(oo(1));
@@ -295,7 +299,7 @@ try
             end
             oo(condition).targetFontNumber=fontInfo(hits).number;
             Screen('TextFont',window,oo(condition).targetFontNumber);
-            [font,number]=Screen('TextFont',window);
+            [~,number]=Screen('TextFont',window);
             if ~(number==oo(condition).targetFontNumber)
                error('The o.targetFont "%s" is not available. Please install it.',oo(condition).targetFont);
             end
@@ -332,6 +336,10 @@ try
       oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
       Screen('TextSize',window,oo(condition).textSize);
       Screen('TextFont',window,oo(condition).textFont,0);
+      font=Screen('TextFont',window);
+      if ~streq(font,oo(condition).textFont)
+         warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
+      end
       instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
       boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
       fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
@@ -486,11 +494,11 @@ try
    else
       oo(1).script=[];
    end
-   oo(1).snapshotFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
-   if ~exist(oo(1).snapshotFolder,'dir')
-      [success,msg]=mkdir(oo(1).snapshotFolder);
+   oo(1).snapshotsFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
+   if ~exist(oo(1).snapshotsFolder,'dir')
+      [success,msg]=mkdir(oo(1).snapshotsFolder);
       if ~success
-         error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotFolder);
+         error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotsFolder);
       end
    end
    oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
@@ -829,9 +837,6 @@ try
    %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
    %     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
    %
-   if computer.osx || computer.macintosh
-      AutoBrightness(cal.screen,0);
-   end
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
       cal.brightnessSetting=1;
@@ -857,13 +862,28 @@ try
    Snd('Open');
 
    % Instructions
+   usingDigits=0;
+   usingLetters=0;
+   for conditions=1:conditions
+      usingDigits=usingDigits || all(ismember(oo(condition).alphabet,'0123456789'));
+      usingLetters=usingLetters || any(~ismember(oo(condition).alphabet,'0123456789'));
+   end
+   if usingDigits && usingLetters
+      symbolName='character';
+   elseif usingDigits && ~usingLetters
+      symbolName='digit';
+   elseif ~usingDigits && usingLetters 
+      symbolName='letter';
+   elseif  ~usingDigits && ~usingLetters 
+      error('Targets are neither digits nor letters');
+   end
    Screen('FillRect',window,white);
    string=[sprintf('Hello %s,  ',oo(condition).observer)];
    string=[string 'Please turn the computer sound on. '];
    string=[string 'You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
      for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
-         string=[string 'When you see one letter, please report it. '];
+         string=[string 'When you see a letter, please report it. '];
          break;
       end
    end
@@ -874,25 +894,21 @@ try
       end
    end
    if any([oo.repeatedTargets])
-      string=[string 'When you see many letters, they are all repetitions of just two letters. Please report both. '];
-      string=[string 'The two kinds of letter can be mixed together, or in separate groups on left and right. '];
+      string=[string 'When you see many letters, they are all repetitions of just two different letters. Please report both. '];
+      string=[string 'The two kinds of letter can be mixed over the whole display, or segregated onto left and right sides. '];
    end
-   string=[string 'Sometimes the letters will be easy. Sometimes they will be nearly impossible. '];
+   string=[string 'Sometimes the letters will be easy to identify. Sometimes they will be nearly impossible. '];
    string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, and just get as many as you can. '];
-   string=[string '(Type slowly. Quit anytime by pressing ESCAPE.) Look in the middle of the screen, ignoring the edges of the screen. '];
-   if any(isfinite([oo.durationSec]))
-      string=[string 'It is very important that you be fixating the center of the crosshairs when the letters appear. '];
-      string=[string 'To begin, please fixate the crosshairs below, and, while fixating, press the SPACEBAR. '];
-   else
-      string=[string 'Now, to begin, please press the SPACEBAR. '];
+   string=[string '(Type slowly. Quit anytime by pressing ESCAPE.) '];
+   if ~any(isfinite([oo.durationSec]))
+      string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
+      string=[string 'Now, to begin, please press the SPACEBAR. '];
    Screen('TextFont',window,oo(condition).textFont,0);
    Screen('TextSize',window,round(oo(condition).textSize*0.4));
    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
    Screen('TextSize',window,oo(condition).textSize);
-   if all(ismember(oo(1).alphabet,'0123456789'))
-      string=strrep(string,'letter','number');
-   end
+   string=strrep(string,'letter',symbolName);
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window);
    SetMouse(screenRect(3),screenRect(4),window);
@@ -907,6 +923,16 @@ try
       ShowCursor;
       sca;
       return
+   end
+   if any(isfinite([oo.durationSec]))
+      string='Please use the crosshairs on every trial. ';
+      string=[string 'To begin, please fix your gaze at the center of crosshairs below, and, while fixating, press the SPACEBAR. '];
+      string=strrep(string,'letter',symbolName);
+      DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      Screen('Flip',window,[],1); % Don't clear.
+      beginAfterKeypress=1;
+   else
+      beginAfterKeypress=0;
    end
    easeRequest=0; % Positive to request easier trials.
    easyCount=0; % Number of easy presentations
@@ -954,7 +980,7 @@ try
                oo(condition).targetDeg=10^intensity;
          end
       else
-         oo(condition).spacingDeg=oo(condition).spacingsSequence(oo(condition).responseCount/2);
+         oo(condition).spacingDeg=oo(condition).spacingsSequence(ceil(oo(condition).responseCount/2));
       end
       oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
       oo(condition).targetPix=max(oo(condition).targetPix,oo(condition).minimumTargetPix);
@@ -1099,14 +1125,38 @@ try
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+      % prepare to draw fixation cross
       oo(condition).fix.targetHeightPix=oo(condition).targetPix;
       oo(condition).fix.bouma=max(0.5,(spacingOuter+oo(condition).targetPix/2)/oo(condition).eccentricityPix);
+      oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
+      if oo(condition).measureThresholdVertically
+         oo(condition).fix.targetHeightPix=oo(condition).targetPix;
+      else
+         oo(condition).fix.targetHeightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
+      end
+      oo(condition).fix.targetCross=oo(condition).targetCross;
       fixationLines=ComputeFixationLines(oo(condition).fix);
       if ~oo(condition).repeatedTargets
          Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       end
       Screen('Flip',window); % blank display, except perhaps fixation
       if isfinite(oo(condition).durationSec)
+         if beginAfterKeypress
+            SetMouse(screenRect(3),screenRect(4),window);
+            answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
+            if streq(answer,'ESCAPE')
+               if oo(1).speakEachLetter && oo(1).useSpeech
+                  Speak('Escape. This run is done.');
+               end
+               ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
+               oo(1).quit=1;
+               ListenChar(0);
+               ShowCursor;
+               sca;
+               return
+            end
+            beginAfterKeypress=0;
+         end
          WaitSecs(1); % duration of fixation display
          Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       end
@@ -1321,11 +1371,18 @@ try
          end
          Screen('TextFont',window,oo(condition).textFont,0);
          Screen('TextSize',window,oo(condition).textSize);
-         [newX,newY]=Screen('DrawText',window,'Type your response, or ESCAPE to quit.   ',100,100,black,white,1);
+         string='Type your response, or ESCAPE to quit.   ';
+         if oo(condition).repeatedTargets
+            string=strrep(string,'response','two responses');
+         end
+         [newX,newY]=Screen('DrawText',window,string,100,100,black,white,1);
+         if 0
+            % OBSOLETE. The green progress bar is better than text.
          % string=sprintf('Presentation %d of %d. Run %d of %d',presentation,length(condList),run,runs);
          Screen('TextSize',window,round(0.5*oo(condition).textSize));
          string=sprintf('Presentation %d of %d.',presentation,length(condList));
          Screen('DrawText',window,string,newX,newY,black,white,1);
+         end
          Screen('TextSize',window,oo(condition).textSize);
         if ~isempty(oo(condition).targetFontNumber)
             Screen('TextFont',window,oo(condition).targetFontNumber);
@@ -1351,7 +1408,7 @@ try
       end
       
       if oo(condition).takeSnapshot
-         mypath=oo(1).snapshotFolder;
+         mypath=oo(1).snapshotsFolder;
          filename=oo(1).dataFilename;
          saveSnapshotFid=fopen(fullfile(mypath,[filename '.png']),'rt');
          if saveSnapshotFid~=-1
