@@ -42,7 +42,7 @@ function oo=CriticalSpacing(oIn)
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable as the viewing
 % distance will be 3 m or more. If you must use the laptop keyboard then
 % have the experimenter type the observer's verbal answers. I like this $86
-% solar-powered wireless, for which the batteries never run out: 
+% solar-powered wireless, whose batteries never run out: 
 %
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
@@ -204,10 +204,10 @@ o.showBounds=0;
 o.speakSizeAndSpacing=0;
 
 
-% Replicate o, once per supplied condition.
+% Create oo, which replicates o for each condition, and then overwrite with oIn.
 conditions=length(oIn);
 oo(1:conditions)=o;
-clear o; % MATLAB should flag an error if we accidentally try to use o.
+clear o; % Now MATLAB will flag an error if we accidentally try to use o.
 % All fields in the user-supplied "oIn" overwrite corresponding fields in
 % "o". o is a single struct, and oIn may be an array of structs.
 for condition=1:conditions
@@ -236,6 +236,7 @@ RestrictKeysForKbCheck([]);
 Screen('Preference','SkipSyncTests',1);
 escapeKey=KbName('ESCAPE');
 spaceKey=KbName('space');
+shiftKeys=[KbName('LeftShift') KbName('RightShift') KbName('CapsLock')];
 for condition=1:conditions
    for i=1:length(oo(condition).validKeys)
       oo(condition).responseKeys(i)=KbName(oo(condition).validKeys{i}); % this returns keyCode as integer
@@ -343,11 +344,6 @@ try
       boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
       fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
       oo(condition).textSize=round(oo(condition).textSize/fraction);
-      % The TextBounds seem to be wrong on Windows, so we explicitly set
-      % a reasonable textSize.
-      %       if IsWindows
-      %          oo(condition).textSize=round((screenWidth-100)/22/oo(condition).textFontHeightOverNormal);
-      %       end
    end
 
    % Viewing disance
@@ -430,13 +426,8 @@ try
 %       end
 %       error(msg);
 %    end
-   if IsWindows && ~all(oo.readAlphabetFromDisk)
-      % The high-quality text renderer on Windows clips the Sloan font.
-      % So we select the low-quality renderer instead.
-      Screen('Preference','TextRenderer',0);
-   end
-   ListenChar(0); % flush
-   ListenChar(2); % no echo
+ListenChar(0); % flush
+ListenChar(2); % no echo
 
 % Experimenter name
    if length(oo(1).experimenter)==0
@@ -918,7 +909,7 @@ try
    if ~any(isfinite([oo.durationSec]))
       string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
-      string=[string 'Now, to begin, please press the SPACEBAR. '];
+   string=[string 'Now, to begin, please press the SPACEBAR. '];
    Screen('TextFont',window,oo(condition).textFont,0);
    Screen('TextSize',window,round(oo(condition).textSize*0.4));
    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
@@ -1447,13 +1438,35 @@ try
       responseString='';
       skipping=0;
       for i=1:length(targets)
+         oldEnableKeys=RestrictKeysForKbCheck([shiftKeys spaceKey escapeKey oo(condition).responseKeys]);
          while(1)
-            answer=GetKeypress([spaceKey escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,0);
-            % Ignore any key that has already been pressed.
-            if ~ismember(answer,responseString);
-               break;
+            %             answer=GetKeypress([spaceKey escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,0);
+            [~,keyCode] = KbPressWait(oo(condition).deviceIndex);
+            answer = KbName(keyCode);
+            if ismember(answer,{'RightShift','LeftShift','CapsLock'});
+               if ismember(answer,{'CapsLock'});
+                  KbReleaseWait(oo(condition).deviceIndex);
+               end
+               % save
+               % display letters
+               Speak('Shift');
+               if ismember(answer,{'CapsLock'});
+                  saveEnableKeys=RestrictKeysForKbCheck(KbName('CapsLock'));
+                  KbStrokeWait(oo(condition).deviceIndex);
+                  RestrictKeysForKbCheck(saveEnableKeys);
+               else
+                  KbReleaseWait(oo(condition).deviceIndex);
+               end
+               Speak('Unshift');
+               % restore
+            else
+               % Ignore any key that has already been pressed.
+               if ~ismember(answer,responseString);
+                  break;
+               end
             end
          end
+         RestrictKeysForKbCheck(oldEnableKeys);
          if streq(answer,'ESCAPE')
             ListenChar(0);
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
