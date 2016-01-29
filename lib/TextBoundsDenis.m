@@ -1,4 +1,6 @@
 function bounds=TextBoundsDenis(w,text,yPositionIsBaseline)
+% MARIO HAS UPDATED THE Psychtoolbox TextBounds() so this private version
+% is probably no longer needed. - Denis January 2016.
 % Returns the smallest enclosing rect for the drawn text, relative to the
 % current location. This bound is based on the actual pixels drawn, so it
 % incorporates effects of text smoothing, etc. "text" may be a cell array
