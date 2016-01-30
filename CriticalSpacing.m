@@ -118,7 +118,7 @@ function oo=CriticalSpacing(oIn)
 if nargin<1 || ~exist('oIn','var')
    oIn.noInputArgument=1;
 end
-global savedAlphabet; 
+global savedAlphabet; % Won't be needed if the disk-reading code is moved into MakeLetterTextures.
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
 Screen('Preference','VisualDebugLevel',0);
@@ -909,8 +909,9 @@ ListenChar(2); % no echo
    string=[sprintf('Hello %s,  ',oo(condition).observer)];
    string=[string 'Please turn the computer sound on. '];
    string=[string 'Press SHIFT at any time to see all the possible letters. '];
-   string=[string 'You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
-     for condition=1:conditions
+   string=[string 'You might also have them on a piece of paper. '];
+   string=[string 'You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
+   for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
          string=[string 'When you see a letter, please report it. '];
          break;
@@ -942,7 +943,7 @@ ListenChar(2); % no echo
    Screen('Flip',window);
    SetMouse(screenRect(3),screenRect(4),window);
    %    answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
-   answer=GetKeypressOrShift([spaceKey escapeKey],oo(condition),window,stimulusRect)
+   answer=GetKeypressWithHelp([spaceKey escapeKey],oo(condition),window,stimulusRect);
    if streq(answer,'ESCAPE')
       if oo(1).speakEachLetter && oo(1).useSpeech
          Speak('Escape. This run is done.');
@@ -1180,7 +1181,7 @@ ListenChar(2); % no echo
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
             %             answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
-            answer=GetKeypressOrShift([spaceKey escapeKey],oo(condition),window,stimulusRect)
+            answer=GetKeypressWithHelp([spaceKey escapeKey],oo(condition),window,stimulusRect);
             if streq(answer,'ESCAPE')
                if oo(1).speakEachLetter && oo(1).useSpeech
                   Speak('Escape. This run is done.');
@@ -1474,7 +1475,7 @@ ListenChar(2); % no echo
       responseString='';
       skipping=0;
       for i=1:length(targets)
-         answer=GetKeypressOrShift([spaceKey escapeKey oo(condition).responseKeys],oo(condition),window,stimulusRect,letterStruct,responseString);
+         answer=GetKeypressWithHelp([spaceKey escapeKey oo(condition).responseKeys],oo(condition),window,stimulusRect,letterStruct,responseString);
          if streq(answer,'ESCAPE')
             ListenChar(0);
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
