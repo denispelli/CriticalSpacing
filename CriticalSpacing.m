@@ -109,14 +109,20 @@ function oo=CriticalSpacing(oIn)
 % 0.05/57 <= 8/pixPerCm/distanceCm
 % solving for distanceCm
 % distanceCm >= (57/0.05)*8/pixPerCm = 9120/pixPerCm
-
+%
+% HELPFUL TEXT ON KEYBOARD INPUT
+% [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
+% www.jonaskaplan.com/files/psych599/Week6.pptx
+%
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 if nargin<1 || ~exist('oIn','var')
    oIn.noInputArgument=1;
 end
+global savedAlphabet; 
+
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
 Screen('Preference','VisualDebugLevel',0);
-Screen('Preference', 'Verbosity', 0); % mute Psychtoolbox's INFOs and WARNINGs
+Screen('Preference', 'Verbosity', 0); % Mute Psychtoolbox's INFOs and WARNINGs
 Screen('Preference','SkipSyncTests',1);
 Screen('Preference','SuppressAllWarnings',1);
 
@@ -346,7 +352,7 @@ try
       oo(condition).textSize=round(oo(condition).textSize/fraction);
    end
 
-   % Viewing disance
+   % Ask about viewing distance
    while 1
       if oo(1).useFractionOfScreen
          pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
@@ -391,11 +397,22 @@ try
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
       string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
       Screen('TextSize',window,oo(1).textSize);
-      [x,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
-      string=sprintf(['DEAD KEYBOARD? If I don''t respond to your WIRELESS keyboard, come here and quit this script (RETURN, RETURN, ESCAPE), ' ...
-         'type "clear all" in the MATLAB command window, make sure MATLAB responds to your remote keyboard, and then try this script again.']);
-      Screen('TextSize',window,round(oo(1).textSize*0.6));
-      DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
+      [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      
+      % Look for external keyboard.
+      clear PsychHID; % Force new enumeration of devices to detect external keyboard.
+      clear KbCheck; % Clear cache of keyboard devices.
+      [~,~,devices]=GetKeyboardIndices;
+      for i=1:length(devices)
+         oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
+      end
+      if length(GetKeyboardIndices)<2 && oo(1).viewingDistanceCm>100
+         warning('You only have one keyboard. The long viewing distance may demand an external keyboard.');
+         string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
+         Screen('TextSize',window,round(oo(1).textSize*0.6));
+         DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
+      end
+      
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
@@ -429,7 +446,7 @@ try
 ListenChar(0); % flush
 ListenChar(2); % no echo
 
-% Experimenter name
+% Ask experimenter name
    if length(oo(1).experimenter)==0
       Screen('FillRect',window);
       Screen('TextFont',window,oo(1).textFont,0);
@@ -448,7 +465,7 @@ ListenChar(2); % no echo
       Screen('FillRect',window);
    end
    
-   % Observer name
+   % Ask observer name
    if length(oo(1).observer)==0
       Screen('FillRect',window);
       Screen('TextSize',window,oo(1).textSize);
@@ -699,8 +716,8 @@ ListenChar(2); % no echo
             savedAlphabet.bounds{i}=ImageBounds(savedAlphabet.images{i},255);
             savedAlphabet.imageBounds{i}=RectOfMatrix(savedAlphabet.images{i});
             if RectWidth(savedAlphabet.bounds{i})>1000
-               fprintf('"%c" image(%d) width %d, ',savedAlphabet.letters(i),i,RectWidth(savedAlphabet.bounds{i}))
-               fprintf('bound %d %d %d %d, image %d %d %d %d.\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i});
+               ffprintf(ff,'%d: "%c" image(%d) width %d, ',condition,savedAlphabet.letters(i),i,RectWidth(savedAlphabet.bounds{i}));
+               ffprintf(ff,'bounds %d %d %d %d, image %d %d %d %d.\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i});
             end
             if isempty(savedAlphabet.rect)
                savedAlphabet.rect=savedAlphabet.bounds{i};
@@ -785,6 +802,11 @@ ListenChar(2); % no echo
    for condition=1:conditions
       ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg/2);
    end
+   ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
+   for ii=1:length(oo(1).keyboardNameAndTransport)
+      ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{ii});
+   end
+   ffprintf(ff,'\n');
    for condition=1:conditions
       sizesPix=oo(condition).minimumTargetPix*[oo(condition).targetHeightOverWidth 1];
       ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pixels, %.3fx%.3f deg. ',condition,sizesPix,sizesPix/pixPerDeg);
@@ -886,6 +908,7 @@ ListenChar(2); % no echo
    Screen('FillRect',window,white);
    string=[sprintf('Hello %s,  ',oo(condition).observer)];
    string=[string 'Please turn the computer sound on. '];
+   string=[string 'Press SHIFT at any time to see all the possible letters. '];
    string=[string 'You should have a piece of paper showing all the possible letters that can appear on the screen. You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
      for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
@@ -918,7 +941,8 @@ ListenChar(2); % no echo
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window);
    SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
+   %    answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
+   answer=GetKeypressOrShift([spaceKey escapeKey],oo(condition),window,stimulusRect)
    if streq(answer,'ESCAPE')
       if oo(1).speakEachLetter && oo(1).useSpeech
          Speak('Escape. This run is done.');
@@ -1155,7 +1179,8 @@ ListenChar(2); % no echo
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
-            answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
+            %             answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
+            answer=GetKeypressOrShift([spaceKey escapeKey],oo(condition),window,stimulusRect)
             if streq(answer,'ESCAPE')
                if oo(1).speakEachLetter && oo(1).useSpeech
                   Speak('Escape. This run is done.');
@@ -1449,65 +1474,7 @@ ListenChar(2); % no echo
       responseString='';
       skipping=0;
       for i=1:length(targets)
-         oldEnableKeys=RestrictKeysForKbCheck([shiftKeys spaceKey escapeKey oo(condition).responseKeys]);
-         while(1)
-            %             answer=GetKeypress([spaceKey escapeKey oo(condition).responseKeys],oo(condition).deviceIndex,0);
-            [~,keyCode] = KbPressWait(oo(condition).deviceIndex);
-            answer = KbName(keyCode);
-            if ismember(answer,{'RightShift','LeftShift','CapsLock'});
-               if ismember(answer,{'CapsLock'});
-                  KbReleaseWait(oo(condition).deviceIndex);
-               end
-               % Save screen
-               saveScreen=Screen('GetImage',window);
-               
-               % Display alphabet
-               Screen('PutImage',window,saveScreen); % To save progress bar.
-               Screen('FillRect',window,255,stimulusRect);
-               iLetter=1;
-               for jj=1:3
-                  for ii=1:ceil(length(oo(condition).alphabet)/3)
-                     r=[0 0 RectWidth(letterStruct(iLetter).rect) RectHeight(letterStruct(iLetter).rect)];
-                     r=r*RectHeight(stimulusRect)/(0.5+1.5*3)/RectHeight(r);
-                     r=OffsetRect(r,-0.5*RectWidth(r),-0.5*RectHeight(r));
-                     r=OffsetRect(r,(ii-0.5)*RectWidth(stimulusRect)/3,(jj-0.5)*RectHeight(stimulusRect)/3);
-                     Screen('DrawTexture',window,letterStruct(iLetter).texture,[],r);
-                     fprintf('%c %d %d %d %d\n',oo(condition).alphabet(iLetter),r);
-                     if iLetter==length(oo(condition).alphabet)
-                        break;
-                     end
-                     iLetter=iLetter+1;
-                  end
-                  if iLetter==length(oo(condition).alphabet)
-                     break;
-                  end
-               end
-               Screen('Flip',window);
-               
-               % Wait for release of shift
-               if ismember(answer,{'CapsLock'});
-                  saveEnableKeys=RestrictKeysForKbCheck(KbName('CapsLock'));
-                  KbStrokeWait(oo(condition).deviceIndex);
-                  RestrictKeysForKbCheck(saveEnableKeys);
-               else
-                  KbReleaseWait(oo(condition).deviceIndex);
-               end
-               
-               % Restore screen
-               Screen('PutImage',window,saveScreen);
-               Screen('Flip',window);
-            else
-               % Ignore any key that has already been pressed.
-               if ~ismember(answer,responseString);
-                  break;
-               end
-            end
-         end
-         RestrictKeysForKbCheck(oldEnableKeys);
-         % Discard the letter textures, to free graphics memory.
-         for i=1:length(letterStruct)
-            Screen('Close',letterStruct(i).texture);
-         end
+         answer=GetKeypressOrShift([spaceKey escapeKey oo(condition).responseKeys],oo(condition),window,stimulusRect,letterStruct,responseString);
          if streq(answer,'ESCAPE')
             ListenChar(0);
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
@@ -1559,6 +1526,10 @@ ListenChar(2); % no echo
             end
          end
          responseString=[responseString reportedTarget];
+      end
+      % Discard the letter textures, to free graphics memory.
+      for i=1:length(letterStruct)
+         Screen('Close',letterStruct(i).texture);
       end
       if ~skipping
          easeRequest=0;
