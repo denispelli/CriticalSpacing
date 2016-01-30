@@ -1,8 +1,8 @@
-function answer=GetKeypressOrShift(enableKeys,o,window,stimulusRect,letterStruct,responseString)
-%GetKeypressOrShift
+function answer=GetKeypressWithHelp(enableKeys,o,window,stimulusRect,letterStruct,responseString)
+%GetKeypressWIthHelp
 %   Used by CriticalSpacing to get a key stroke. Pressing shift shows
 %   alphabet.
-global savedAlphabet;
+global savedAlphabet; % Won't be needed if the disk-reading code is moved into MakeLetterTextures.
 
 if nargin<6
    responseString='';
