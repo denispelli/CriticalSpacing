@@ -1,6 +1,4 @@
-I’d like to add a new feature. When the shift key is held down, it should display a “response page” showing the whole alphabet, allowing the observer to get acquainted. This page won’t accept responses; it’s just for teaching. This is an alternative for the printed page. This may be better for PCA patients, allowing them to study the alphabet without taking their eyes off the screen.
-
-Add checkbox to Viewing distance screen. “Using mirror.”
+IDEAS
 
 collect observer age before experiment (this information is useful to save in the data files)
 
