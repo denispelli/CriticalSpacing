@@ -1,19 +1,18 @@
-function answer=GetKeypressWithHelp(enableKeys,o,window,stimulusRect,letterStruct,responseString)
+function answer=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString)
 %GetKeypressWIthHelp
 %   Used by CriticalSpacing to get a key stroke. Pressing shift shows
 %   alphabet.
-global savedAlphabet; % Won't be needed if the disk-reading code is moved into MakeLetterTextures.
 
 if nargin<6
    responseString='';
 end
 makeTextures=nargin<5;
 
-shiftKeys=[KbName('LeftShift') KbName('RightShift') KbName('CapsLock')];
+shiftKeyCodes=[KbName('LeftShift') KbName('RightShift') KbName('CapsLock')];
 
-oldEnableKeys=RestrictKeysForKbCheck([shiftKeys enableKeys]);
+oldEnableKeyCodes=RestrictKeysForKbCheck([shiftKeyCodes enableKeyCodes]);
 while(1)
-   %             answer=GetKeypress([spaceKey escapeKey o.responseKeys],o.deviceIndex,0);
+   %             answer=GetKeypress([spaceKey escapeKey o.responseKeyCodes],o.deviceIndex,0);
    [~,keyCode] = KbPressWait(o.deviceIndex);
    answer = KbName(keyCode);
    if ismember(answer,{'RightShift','LeftShift','CapsLock'});
@@ -23,7 +22,7 @@ while(1)
       % Save screen
       saveScreen=Screen('GetImage',window);
       if makeTextures
-         letterStruct=MakeLetterTextures(nan,o,window,savedAlphabet);
+         letterStruct=CreateLetterTextures(nan,o,window);
       end
       % Display alphabet
       Screen('PutImage',window,saveScreen); % To save progress bar.
@@ -49,17 +48,15 @@ while(1)
       
       % Wait for release of shift
       if ismember(answer,{'CapsLock'});
-         saveEnableKeys=RestrictKeysForKbCheck(KbName('CapsLock'));
+         saveEnableKeyCodes=RestrictKeysForKbCheck(KbName('CapsLock'));
          KbStrokeWait(o.deviceIndex);
-         RestrictKeysForKbCheck(saveEnableKeys);
+         RestrictKeysForKbCheck(saveEnableKeyCodes);
       else
          KbReleaseWait(o.deviceIndex);
       end
       if makeTextures
          % Discard the letter textures, to free graphics memory.
-         for i=1:length(letterStruct)
-            Screen('Close',letterStruct(i).texture);
-         end
+         DestroyLetterTextures(letterStruct);
       end
       % Restore screen
       Screen('PutImage',window,saveScreen);
@@ -71,6 +68,6 @@ while(1)
       end
    end
 end
-RestrictKeysForKbCheck(oldEnableKeys);
+RestrictKeysForKbCheck(oldEnableKeyCodes);
 end
 
