@@ -46,12 +46,10 @@ o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
-o.validKeys={'D','H','K','N','O','R','S','V','Z'};
 
 % o.targetFont='Pelli';
 % o.alphabet='123456789abcABC'; 
 % o.borderLetter='$';
-% o.validKeys = {'1!','2@','3#','4$','5%','6^','7&','8*','9('};
 
 o.repeatedTargets=1;
 o.thresholdParameter='size';
