@@ -9,9 +9,9 @@ function oo=CriticalSpacing(oIn)
 % results are returned in the "o" struct and also saved to disk in two
 % files whose file names include your script name the experimenter and
 % observer names and the date. One of those files is plain text .txt and
-% easy for you to read; the other file is MATLAB save file .MAT and easily
-% read by by MATLAB programs. Please keep both. The filenames are unique
-% and easy to sort, so it's fine to let them all accumulate in your
+% easy for you to read; the other is a MATLAB save file .MAT and easily
+% read by MATLAB. Please keep both. The filenames are unique and easy to
+% sort, so it's fine to let all your data files accumulate in your
 % CriticalSpacing/data/ folder.
 %
 % PUBLICATION. You can read more about this program and its purpose in this
@@ -121,13 +121,13 @@ function oo=CriticalSpacing(oIn)
 % EASE. Adults and children seem to find it easy and intuitive, but we've
 % only tested a few children so far. Aenne Brielmann has designed an
 % astronaut metaphar for children, to make it more like a game, which we
-% plan to implement. Try running runCriticalSpacing. It will measure four
+% plan to implement. Try running runCriticalSpacing. It measures four
 % thresholds.
 %
 % ESCAPE KEY. You can always terminate the current run by hitting the
-% escape key on your keyboard (typically in uppper left labeled "esc").
-% CriticalSpacing will then print out results so far and begin the next
-% run.
+% escape key on your keyboard (typically in upper left, labeled "esc").
+% CriticalSpacing will then print out (and save to disk) results so far and
+% begin the next run.
 %
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures threshold spacing in either of two
