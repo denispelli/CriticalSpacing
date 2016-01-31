@@ -35,39 +35,40 @@ function oo=CriticalSpacing(oIn)
 % measuring a threshold for each. I sometimes pass two identical conditions
 % to get two thresholds for the same condition.
 %
-% ALPHABET DISPLAY. Anytime you press the shift key, the progrma will
-% display the alphabet of possible responses in the current font. We
-% encourage you to also provide a paper copy to most observers. Inside the
-% "CriticalSpacing/response pages/" folder you'll find a file "Response
-% page FONT.pdf" (where FONT is the name of the font you're using). Print
-% it on paper and give it to the observer. It shows the nine possible
-% letters or digits. Adults will find it helpful to consult this page while
-% choosing an answer especially when they are guessing. Children may prefer
-% to respond by pointing at the target letters, one by one, on the response
-% page. Patients who have trouble directing their attention may be better
-% off without the paper, to give their undivided attention to the display.
+% DISPLAY ALPHABET ON SCREEN AND ON PAPER. Anytime you press the shift key,
+% the progrma will display the alphabet of possible responses in the
+% current font. We encourage you to also provide a paper copy to most
+% observers. Inside the "CriticalSpacing/response pages/" folder you'll
+% find a file "Response page FONT.pdf" (where FONT is the name of the font
+% you're using). Print it on paper and give it to the observer. It shows
+% the nine possible letters or digits. Adults will find it helpful to
+% consult this page while choosing an answer especially when they are
+% guessing. Children may prefer to respond by pointing at the target
+% letters, one by one, on the response page. Patients who have trouble
+% directing their attention may be better off without the paper, to give
+% their undivided attention to the display.
 %
 % MATLAB AND COMPUTER: To run this program, you need a computer with MATLAB
-% and the Psychtoolbox installed. CriticalSpacing.m runs on any computer
-% with MATLAB and Psychtoolbox. Apple Macintosh, Windows, or Linux
-% computer. The software automatically reads the screen resolution in
-% pixels and size in cm. That won't work with an analog CRT display, but we
-% could add code to allow you to measure it manually and specify it in your
-% script. Let me know if you need that.
+% (or OCTAVE) and the Psychtoolbox installed. The computer OS can be Apple
+% Macintosh, Windows, or Linux. CriticalSpacing automatically reads the
+% screen resolution in pixels and size in cm. That won't work with an
+% analog CRT display, but we could add code to allow you to measure it
+% manually and specify it in your script. Let me know if you need that.
 %
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable as the viewing
-% distance will be 3 m or more. If you must use the laptop keyboard, then
+% distance will be 3 m or more. If you must use the built-in keyboard, then
 % have the experimenter type the observer's verbal answers. I like the
-% Logitech K760 $86 solar-powered wireless, because its batteries never run
-% out. It's no longer made, but lots of people sell it on Amazon and eBay:
+% Logitech K760 $86 solar-powered wireless keyboard, because its batteries
+% never run out. It's no longer made, but still available on Amazon and
+% eBay:
 %
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
 %
 % VIEWING DISTANCE. The viewing distance will typically be several meters,
-% and should be accurate to within five percent. You can measure it with a
-% $10 tape measure marked in centimeters. A fancy $40 alternative is a
-% laser measure, which gives you the answer in two clicks.
+% and its important that you set it accurately, within five percent. You
+% can measure it with a $10 tape measure marked in centimeters. A fancy $40
+% alternative is a laser measure, which gives you the answer in two clicks.
 %
 % http://www.amazon.com/gp/product/B0016A2UHO
 % http://www.amazon.com/gp/product/B00LGANH8K
@@ -76,31 +77,34 @@ function oo=CriticalSpacing(oIn)
 % MIRROR. In a small room, you might need a mirror to achieve a long
 % viewing distance. When CriticalSpacing asks you about viewing distance,
 % you can indicate that you're using a mirror by entering the viewing
-% distance as a negative number. It will flip the display to look right
-% seen in a mirror. (You can also request this by setting
-% o.flipScreenHorizontally=1; in your run script.) I bought two acrylic
-% front surface mirrors for this. 12x24 inches, $46 each. Front surface
-% mirrors preserve image quality, and acrylic is hard to break, making it
-% safer than glass.
+% distance as a negative number. It will flip the display to be seen in a
+% mirror. (You can also request this by setting o.flipScreenHorizontally=1;
+% in your run script.) I bought two acrylic front surface mirrors for this.
+% 12x24 inches, $46 each. Front surface mirrors preserve image quality, and
+% acrylic is hard to break, making it safer than glass.
 % 
 % https://www.inventables.com/technologies/first-surface-mirror-coated-acrylic
 %
-% FONTS. If you set o.readAlphabetFromDisk=1 in your script then you don't
-% need to install any fonts. You can use any of the "fonts" inside the
-% CriticalSpacing/lib/alphabets/ folder. You can easily create and add a
-% new "font" to the alphabets folder. Name the folder after your "font",
+% FONTS. If you set o.readAlphabetFromDisk=1 in your script then you won't
+% need to install any fonts. Instead you can use any of the "fonts" inside
+% the CriticalSpacing/lib/alphabets/ folder. You can easily create and add
+% a new "font" to the alphabets folder. Name the folder after your "font",
 % and put one image file per letter inside the folder, named for the
-% letter. That's it. You can now specify it as the o.targetFont. You can
-% make the drawings yourself, or you can run
-% CriticalSpacing/lib/SaveAlphabetToDisk.m to create a new folder based on
-% a computer font that you already own. You can also ask CriticalSpacing to
-% use any font that's installed in your computer OS by setting
-% o.readAlphabetFromDisk=0. The Pelli and Sloan fonts are provided in the
-% CriticalSpacing/fonts/ folder, and you can install them in your computer
-% OS. On a Mac, you can just double-click the font file and say "yes" when
-% your computer offers to install it for you. Once you've installed the
-% font, you must quit and restart MATLAB for it to use the newly available
-% font.
+% letter. That's it. You can now specify your new "font" as the
+% o.targetFont and CriticalSpacing will use it. You can make the drawings
+% yourself, or you can run CriticalSpacing/lib/SaveAlphabetToDisk.m to
+% create a new folder based on a computer font that you already own. This
+% scheme makes it easy to develop a new font, and also makes it easy to
+% share font images without violating a font's commercial distribution
+% license. (US Copyright law does not cover fonts. Adobe patents the font
+% program, but the images are public domain.) You can also ask
+% CriticalSpacing to use any font that's installed in your computer OS by
+% setting o.readAlphabetFromDisk=0. The Pelli and Sloan fonts are provided
+% in the CriticalSpacing/fonts/ folder, and you can install them in your
+% computer OS. On a Mac, you can just double-click the font file and say
+% "yes" when your computer offers to install it for you. Once you've
+% installed a font, you must quit and restart MATLAB to use the newly
+% available font.
 %
 % RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. I have provided runCriticalSpacing as a example. You
@@ -116,8 +120,9 @@ function oo=CriticalSpacing(oIn)
 %
 % EASE. Adults and children seem to find it easy and intuitive, but we've
 % only tested a few children so far. Aenne Brielmann has designed an
-% astronaut metaphar for children, to make it more like a game. Try running
-% runCriticalSpacing. It will measure four thresholds.
+% astronaut metaphar for children, to make it more like a game, which we
+% plan to implement. Try running runCriticalSpacing. It will measure four
+% thresholds.
 %
 % ESCAPE KEY. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in uppper left labeled "esc").
