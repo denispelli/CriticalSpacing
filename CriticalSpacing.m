@@ -843,7 +843,7 @@ try
       ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f\n',condition,oo(condition).durationSec,oo(condition).eccentricityDeg);
    end
    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
-   ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
+   ffprintf(ff,'Window width %d pix %.1f cm. ',RectWidth(Screen('Rect',window)),screenWidthCm);
    ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
    
    % Identify the computer
@@ -870,7 +870,10 @@ try
    cal.brightnessRMSError=0; % default value
    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
    cal.screenWidthCm=screenWidthMm/10;
-   ffprintf(ff,'%s, %s, %s, screen %d, %dx%d pixels, %.1fx%.1f cm\n',cal.processUserLongName,cal.machineName,cal.macModelName,cal.screen,RectWidth(stimulusRect),RectHeight(screenRect),screenWidthMm/10,screenHeightMm/10);
+   actualScreenRect=Screen('Rect',cal.screen,1);
+   ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
+   ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
+   ffprintf(ff,'%s, %s, %s, screen %d, %dx%d pixels, %.1fx%.1f cm, %.0f pix/cm\n',cal.processUserLongName,cal.machineName,cal.macModelName,cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),screenWidthMm/10,screenHeightMm/10,RectWidth(actualScreenRect)/(screenWidthMm/10));
    assert(cal.screenWidthCm==screenWidthMm/10);
    ffprintf(ff,'(You can use System Preferences or Switch Res X, http://www.madrau.com/, to change resolution.)\n');
    %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
