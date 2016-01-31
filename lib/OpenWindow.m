@@ -1,8 +1,11 @@
 function [window,r]=OpenWindow(o)
-screenBufferRect=Screen('Rect',o.screen);
-screenRect=Screen('Rect',o.screen,1);
+% Moved this into a subroutine so that we can reuse the same code when we
+% close and reopen the window to flip the screen horizontally, when we use
+% a mirror.
 white=255;
 % Detect HiDPI mode, e.g. on a Retina display.
+screenBufferRect=Screen('Rect',o.screen);
+screenRect=Screen('Rect',o.screen,1);
 o.hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
 if 1
    PsychImaging('PrepareConfiguration');
@@ -12,7 +15,9 @@ if 1
    if o.hiDPIMultiple~=1
       PsychImaging('AddTask','General','UseRetinaResolution');
    end
-   PsychImaging('AddTask','General','UseVirtualFramebuffer'); % Temporary work around for PTB bug that makes buffers flakey.
+   % I commented this out because I believe that Psychtoolbox fixed the
+   % flakey buffer problem in December 2015/January 2016.
+%    PsychImaging('AddTask','General','UseVirtualFramebuffer'); % Temporary work around for PTB bug that makes buffers flakey.
    if ~o.useFractionOfScreen
       [window,r]=PsychImaging('OpenWindow',o.screen,white);
    else
