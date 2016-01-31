@@ -4,8 +4,8 @@ ListenChar(2);
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
 Screen('Preference','SkipSyncTests',1);
-escapeKey=KbName('ESCAPE');
-spaceKey=KbName('space');
+escapeKeyCode=KbName('ESCAPE');
+spaceKeyCode=KbName('space');
 
 oo.useSpeech=1;
 oo.speakEachLetter=1;
@@ -23,7 +23,6 @@ Snd('Open');
 condition = 1;
 oo.deviceIndex = -3;
 oo.alphabet='!7ij:()[]/|'; % Sloan alphabet, excluding C
-oo.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
 oo.borderLetter='!';
 
 stimulus=Shuffle(oo(condition).alphabet);
@@ -34,18 +33,19 @@ targets=stimulus(1:2);
 terminate=0;
 responseString='';
 % for i=1:length(oo(condition).alphabet)
-for i=1:length(oo(condition).validKeys)
-  oo(condition).responseKeys(i)=KbName(oo(condition).validKeys{i}); % this returns keyCode as integer
+validKeyNames=KeyNamesOfCharacters(oo(condition).alphabet);
+for i=1:length(validKeyNames)
+  oo(condition).responseKeyCodes(i)=KbName(validKeyNames{i}); % this returns keyCode as integer
 end
 fprintf('Targets are: ==>%s<==\n', targets);
-disp('Checking for the responseKeys list below:');
-disp(oo(condition).responseKeys);
-disp(KbName(oo.responseKeys));
+disp('Checking for the responseKeyCodes list below:');
+disp(oo(condition).responseKeyCodes);
+disp(KbName(oo.responseKeyCodes));
 disp('-----------------------------------------');
 
 for i=1:length(targets)
   while(1)
-    answer=GetKeypress([escapeKey oo(condition).responseKeys],oo.deviceIndex,0); % no filtering!
+    answer=GetKeypress([escapeKey oo(condition).responseKeyCodes],oo.deviceIndex,0); % no filtering!
     % answer=upper(answer); % be loyal to values; we will filter reported
     % target from true response soon
 
