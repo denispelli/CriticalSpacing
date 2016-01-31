@@ -1,5 +1,5 @@
 function oo=CriticalSpacing(oIn)
-% o=CriticalSpacing(o); 
+% o=CriticalSpacing(o);
 %
 % Measures critical spacing and acuity as part the assessment of an
 % observer's vision. It takes over your screen to measure the observer's
@@ -30,7 +30,7 @@ function oo=CriticalSpacing(oIn)
 % maintain their undivided attention on the display.
 %
 % MATLAB: To run this program, you need a computer with MATLAB and the
-% Psychtoolbox installed. 
+% Psychtoolbox installed.
 %
 % COMPUTER: Apple Macintosh, Windows, or Linux computer with a digital
 % screen. CriticalSpacing.m runs on any computer with MATLAB and
@@ -42,7 +42,7 @@ function oo=CriticalSpacing(oIn)
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable as the viewing
 % distance will be 3 m or more. If you must use the laptop keyboard then
 % have the experimenter type the observer's verbal answers. I like this $86
-% solar-powered wireless, whose batteries never run out: 
+% solar-powered wireless, whose batteries never run out:
 %
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
@@ -116,17 +116,19 @@ function oo=CriticalSpacing(oIn)
 %
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 if nargin<1 || ~exist('oIn','var')
-   oIn.noInputArgument=1;
+   oIn.script=[];
 end
-global savedAlphabet; % Won't be needed if the disk-reading code is moved into MakeLetterTextures.
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
 Screen('Preference','VisualDebugLevel',0);
-Screen('Preference', 'Verbosity', 0); % Mute Psychtoolbox's INFOs and WARNINGs
+Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
 Screen('Preference','SkipSyncTests',1);
 Screen('Preference','SuppressAllWarnings',1);
 
-% Sound
+% THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
+% They are overridden by what you provide in the argument struct oIn.
+
+% SOUND & FEEDBACK
 o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;
 o.usePurring=0;
@@ -134,21 +136,14 @@ o.useSpeech=1;
 o.speakEachLetter=1;
 o.speakEncouragement=0;
 o.speakViewingDistance=0;
-
-% THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
-% They are overridden by what you provide in the argument struct oIn.
-o.takeSnapshot=0;
-o.repeatedTargets=1;
-o.fourFlankers=0;
-o.useFractionOfScreen=0;
-o.readAlphabetFromDisk=1;
-o.saveLettersToDisk=0;
 o.showProgressBar=1;
+
+% PROCEDURE
+o.readAlphabetFromDisk=1;
+o.takeSnapshot=0; % To illustrate your talk or paper.
 o.fractionEasyTrials=0.2; % Add extra easy trials.
 o.easyBoost=0.3; % Increase the log threshold parameter of easy trials by this much.
-o.easyCount=0;
-o.guessCount=0; % artificial guesses
-o.timeRequiredForGuessOnSkip=8;
+o.secsBeforeSkipCausesGuess=8;
 % o.observer='junk';
 % o.observer='Shivam'; % specify actual observer name
 o.observer=''; % Name is requested at beginning of run.
@@ -162,63 +157,86 @@ o.flipScreenHorizontally=0;
 o.useQuest=1; % true(1) or false(0)
 o.thresholdParameter='spacing';
 % o.thresholdParameter='size';
+o.deviceIndex=-3; % all keyboard and keypad devices
+o.trials=40; % number of trials for the threshold estimate
+o.measureBeta=0;
+o.task='identify';
+if o.measureBeta
+   o.trials=200;
+   o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
+end
+
+% VISUAL STIMULUS
+o.repeatedTargets=1;
+o.fourFlankers=0;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.measureThresholdVertically=nan; % depends on parameter
 o.setTargetHeightOverWidth=0;
-o.targetHeightOverWidth=nan;
 o.minimumTargetPix=8; % Minimum viewing distance depends soley on this & pixPerCm.
 o.eccentricityDeg=0; % location of target, relative to fixation, in degrees
 % o.radialOrTangential='tangential'; % values 'radial', 'tangential'
 o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
-screenRect=Screen('Rect',0);
+% o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
+% o.borderLetter='N';
+% o.borderLetter='!';
+% o.targetFont='ClearviewText';
+% o.targetFont='Gotham Cond SSm XLight';
+% o.targetFont='Gotham Cond SSm Light';
+% o.targetFont='Gotham Cond SSm Medium';
+% o.targetFont='Gotham Cond SSm Book';
+% o.targetFont='Gotham Cond SSm Bold';
+% o.targetFont='Gotham Cond SSm Black';
+% o.targetFont='Arouet';
+% o.targetFont='Retina Micro';
+% o.targetFont='Calibri';
+% o.targetFont='Sloan';
+% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+% o.borderLetter='X';
+o.targetFont='Pelli';
+o.alphabet='123456789'; 
+o.borderLetter='$';
+
+% FIXATION
 o.fixationLocation='center'; % 'left', 'right'
 o.targetCross=0;
-o.trials=40; % number of trials for the threshold estimate
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
 o.fixationLineWeightDeg=0.02;
-o.measureBeta=0;
-o.task='identify';
-% This produces the standard adult condition:
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.validKeys = {'D','H','K','N','O','R','S','V','Z'}; % valid key codes ('4$') corresponding to alphabet
-o.borderLetter='X';
-% And this produces the HOTVX condition:
-% o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
-% o.borderLetter='N';
-%oo.alphabet='!7ij:()[]/|'; % bar-symbol alphabet
-%oo.validKeys = {'1!','7&','i','j',';:','9(','0)','[{',']}','/?','\|'};
-%oo.borderLetter='!';
-o.targetFont='Sloan';
-o.targetFontNumber=[];
-o.textFont='Trebuchet MS';
-o.textSizeDeg=0.4;
-o.deviceIndex=-3; % all keyboard and keypad devices
-if o.measureBeta
-   o.trials=200;
-   o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
-end
+
 % DEBUGGING AIDS
-o.displayAlphabet=0;
+o.showAlphabet=0;
 o.frameTheTarget=0;
 o.printSizeAndSpacing=0;
 o.printScreenResolution=0;
 o.showLineOfLetters=0;
 o.showBounds=0;
 o.speakSizeAndSpacing=0;
+o.useFractionOfScreen=0;
 
+% STARTING FROM ZERO
+o.targetFontNumber=[];
+o.easyCount=0;
+o.guessCount=0; % artificial guesses
+o.targetHeightOverWidth=nan;
+o.textFont='Trebuchet MS';
+o.textSizeDeg=0.4;
 
+% PROCESS INPUT.
 % Create oo, which replicates o for each condition, and then overwrite with oIn.
 conditions=length(oIn);
 oo(1:conditions)=o;
+knownFields=fieldnames(o);
 clear o; % Now MATLAB will flag an error if we accidentally try to use o.
 % All fields in the user-supplied "oIn" overwrite corresponding fields in
 % "o". o is a single struct, and oIn may be an array of structs.
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
    for i=1:length(fields)
+      if ~ismember(fields{i},knownFields)
+         warning('Unknown field o(%d).%s',condition,fields{i});
+      end
       oo(condition).(fields{i})=oIn(condition).(fields{i});
    end
 end
@@ -240,12 +258,12 @@ ListenChar(2); % no echo
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
 Screen('Preference','SkipSyncTests',1);
-escapeKey=KbName('ESCAPE');
-spaceKey=KbName('space');
-shiftKeys=[KbName('LeftShift') KbName('RightShift') KbName('CapsLock')];
+escapeKeyCode=KbName('ESCAPE');
+spaceKeyCode=KbName('space');
 for condition=1:conditions
-   for i=1:length(oo(condition).validKeys)
-      oo(condition).responseKeys(i)=KbName(oo(condition).validKeys{i}); % this returns keyCode as integer
+   oo(condition).validKeyNames=KeyNamesOfCharacters(oo(condition).alphabet);
+   for i=1:length(oo(condition).validKeyNames)
+      oo(condition).responseKeyCodes(i)=KbName(oo(condition).validKeyNames{i}); % this returns keyCode as integer
    end
 end
 
@@ -285,7 +303,7 @@ try
       screenRect=Screen('Rect',oo(1).screen,1)
       resolution=Screen('Resolution',oo(1).screen)
    end
-
+   
    for condition=1:conditions
       if ~oo(condition).readAlphabetFromDisk
          % Check availability of fonts.
@@ -327,7 +345,7 @@ try
          end
       end % if ~oo(1).readAlphabetFromDisk
    end
-
+   
    screenRect=Screen('Rect',window);
    screenWidth=RectWidth(screenRect);
    screenHeight=RectHeight(screenRect);
@@ -351,7 +369,7 @@ try
       fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
       oo(condition).textSize=round(oo(condition).textSize/fraction);
    end
-
+   
    % Ask about viewing distance
    while 1
       if oo(1).useFractionOfScreen
@@ -435,18 +453,18 @@ try
          break;
       end
    end
-%    if normalOverMinimumSize<2
-%       msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
-%       if oo(condition).useSpeech
-%          Speak('You are too close to the screen.');
-%          Speak(msg);
-%       end
-%       error(msg);
-%    end
-ListenChar(0); % flush
-ListenChar(2); % no echo
-
-% Ask experimenter name
+   %    if normalOverMinimumSize<2
+   %       msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
+   %       if oo(condition).useSpeech
+   %          Speak('You are too close to the screen.');
+   %          Speak(msg);
+   %       end
+   %       error(msg);
+   %    end
+   ListenChar(0); % flush
+   ListenChar(2); % no echo
+   
+   % Ask experimenter name
    if length(oo(1).experimenter)==0
       Screen('FillRect',window);
       Screen('TextFont',window,oo(1).textFont,0);
@@ -482,7 +500,7 @@ ListenChar(2); % no echo
       end
       Screen('FillRect',window);
    end
-
+   
    oo(1).beginSecs=GetSecs;
    oo(1).beginningTime=now;
    timeVector=datevec(oo(1).beginningTime);
@@ -533,7 +551,7 @@ ListenChar(2); % no echo
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
    resolution=Screen('Resolution',oo(1).screen);
    %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
-
+   
    for condition=1:conditions
       if oo(condition).showProgressBar
          progressBarRect=[round(screenRect(3)*(1-1/screenWidthCm)) 0 screenRect(3) screenRect(4)]; % 1 cm wide.
@@ -575,7 +593,7 @@ ListenChar(2); % no echo
       %         if ~oo(condition).repeatedTargets
       %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       %         end
-
+      
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
       if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
          oo(condition).targetDeg=oo(condition).targetDegGuess;
@@ -633,107 +651,55 @@ ListenChar(2); % no echo
          ffprintf(ff,'%.1f ',oo(condition).spacings);
          ffprintf(ff,'] deg\n');
       end
-      oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-
+      
+      % Measure targetHeightOverWidth
+      oo(condition).targetFontHeightOverNominalPtSize=nan;
+      oo(condition).targetPix=200;
+      [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
+      DestroyLetterTextures(letterStruct);
+      oo(condition).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
       if ~oo(condition).readAlphabetFromDisk
-         % calibrate font size
-         sizePix=100;
-         scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
-         if ~isempty(oo(condition).targetFontNumber)
-            Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-            [~,number]=Screen('TextFont',scratchWindow);
-            assert(number==oo(condition).targetFontNumber);
-         else
-            Screen('TextFont',scratchWindow,oo(condition).targetFont);
-            font=Screen('TextFont',scratchWindow);
-            assert(streq(font,oo(condition).targetFont));
-         end
-         Screen('TextSize',scratchWindow,sizePix);
-         for i=1:length(oo(condition).alphabet)
-            lettersInCells{i}=oo(condition).alphabet(i);
-            bounds=TextBoundsDenis(scratchWindow,lettersInCells{i},1);
-            if i==1
-               alphabetBounds=bounds;
-            else
-               alphabetBounds=UnionRect(alphabetBounds,bounds);
-            end
-         end
-         bounds=alphabetBounds;
-         Screen('Close',scratchWindow);
-         oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
-         if oo(conditions).showBounds
-            % Currently useless, because you can't see the letters.
-            % They are drawn with color 1, alas. Could change
-            % TextBounds to use color 255.
-            bounds=TextBoundsDenis(window,lettersInCells,1);
-            %                 Screen('DrawText',window,lettersInCells{1},0,0,0,255,1);
-            Screen('FrameRect',window,[255 0 0],bounds+100);
-            Screen('Flip',window);
-            Speak('Bounds. Click.');
-            GetClicks;
-         end
-         oo(condition).targetFontHeightOverNominalPtSize=RectHeight(bounds)/sizePix;
-         savedAlphabet.letters=[];
-       else % if ~oo(condition).readAlphabetFromDisk
-         alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'lib','alphabets');
-         if ~exist(alphabetsFolder,'dir')
-            error('Folder missing: "%s"',alphabetsFolder);
-         end
-         folder=fullfile(alphabetsFolder,urlencode(oo(condition).targetFont));
-         if ~exist(folder,'dir')
-            error('Folder missing: "%s". Target font "%s" has not been saved.',folder,oo(condition).targetFont);
-         end
-         d=dir(folder);
-         ok=~[d.isdir];
-         for i=1:length(ok)
-            systemFile=streq(d(i).name(1),'.') && length(d(i).name)>1;
-            ok(i)=ok(i) && ~systemFile;
-         end
-         d=d(ok);
-         if length(d)<length(oo(condition).alphabet)
-            error('Sorry. Saved %s alphabet has only %d letters, and you requested %d letters.',oo(condition).targetFont,length(d),length(oo(condition).alphabet));
-         end
-         savedAlphabet.letters=[];
-         savedAlphabet.images={};
-         savedAlphabet.rect=[];
-         for i=1:length(d)
-            filename=fullfile(folder,d(i).name);
-            try
-               savedAlphabet.images{i}=imread(filename);
-            catch
-               sca;
-               error('Cannot read image file "%s".',filename);
-               psychrethrow(psychlasterror);
-            end
-            if isempty(savedAlphabet.images{i})
-               error('Cannot read image file "%s".',filename);
-            end
-            [~,name]=fileparts(urldecode(d(i).name));
-            if length(name)~=1
-               error('Saved "%s" alphabet letter image file "%s" must have a one-character filename after urldecoding.',oo(condition).targetFont,name);
-            end
-            savedAlphabet.letters(i)=name;
-            savedAlphabet.bounds{i}=ImageBounds(savedAlphabet.images{i},255);
-            savedAlphabet.imageBounds{i}=RectOfMatrix(savedAlphabet.images{i});
-            if RectWidth(savedAlphabet.bounds{i})>1000
-               ffprintf(ff,'%d: "%c" image(%d) width %d, ',condition,savedAlphabet.letters(i),i,RectWidth(savedAlphabet.bounds{i}));
-               ffprintf(ff,'bounds %d %d %d %d, image %d %d %d %d.\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i});
-            end
-            if isempty(savedAlphabet.rect)
-               savedAlphabet.rect=savedAlphabet.bounds{i};
-            else
-               savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
-            end
-         end
-         oo(condition).targetFontHeightOverNominalPtSize=nan;
-         oo(condition).targetHeightOverWidth=RectHeight(savedAlphabet.rect)/RectWidth(savedAlphabet.rect);
+         oo(condition).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(condition).targetPix;
       end
-        for cd=1:conditions
-           for i=1:length(oo(cd).validKeys)
-              oo(cd).responseKeys(i)=KbName(oo(cd).validKeys{i}); % this returns keyCode as integer
-           end
-        end
-
+      oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
+      
+      %       if ~oo(condition).readAlphabetFromDisk
+      %          % calibrate font size
+      %          sizePix=100;
+      %          scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
+      %          if ~isempty(oo(condition).targetFontNumber)
+      %             Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
+      %             [~,number]=Screen('TextFont',scratchWindow);
+      %             assert(number==oo(condition).targetFontNumber);
+      %          else
+      %             Screen('TextFont',scratchWindow,oo(condition).targetFont);
+      %             font=Screen('TextFont',scratchWindow);
+      %             assert(streq(font,oo(condition).targetFont));
+      %          end
+      %          Screen('TextSize',scratchWindow,sizePix);
+      %          for i=1:length(oo(condition).alphabet)
+      %             lettersInCells{i}=oo(condition).alphabet(i);
+      %             bounds=TextBounds(scratchWindow,lettersInCells{i},1);
+      %             if i==1
+      %                alphabetBounds=bounds;
+      %             else
+      %                alphabetBounds=UnionRect(alphabetBounds,bounds);
+      %             end
+      %          end
+      %          Screen('Close',scratchWindow);
+      %          bounds=alphabetBounds;
+      %          oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
+      %          oo(condition).targetFontHeightOverNominalPtSize=RectHeight(bounds)/sizePix;
+      %       else % if ~oo(condition).readAlphabetFromDisk
+      %          CreateLetterTextures(condition,oo(condition),window);
+      %       end
+      
+      for cd=1:conditions
+         for i=1:length(oo(cd).validKeyNames)
+            oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
+         end
+      end
+      
       % Set o.targetHeightOverWidth
       if oo(condition).setTargetHeightOverWidth
          oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth
@@ -746,9 +712,9 @@ ListenChar(2); % no echo
       fixationLines=ComputeFixationLines(oo(condition).fix);
       oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
       fixationLines=ComputeFixationLines(oo(condition).fix);
-
+      
       terminate=0;
-
+      
       switch oo(condition).thresholdParameter
          case 'spacing',
             assert(oo(condition).spacingDeg>0);
@@ -765,7 +731,7 @@ ListenChar(2); % no echo
       grain=0.01;
       range=6;
    end % for condition=1:conditions
-
+   
    cal.screen=max(Screen('Screens'));
    if cal.screen>0
       ffprintf(ff,'Using external monitor.\n');
@@ -834,7 +800,7 @@ ListenChar(2); % no echo
    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
    ffprintf(ff,'Screen width %.1f cm. ',screenWidthCm);
    ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
-
+   
    % Identify the computer
    cal.screen=0;
    computer=Screen('Computer');
@@ -880,7 +846,7 @@ ListenChar(2); % no echo
    for condition=1:conditions
       oo(condition).cal=cal;
    end
-
+   
    rightBeep=0.05*MakeBeep(2000,0.05,44100);
    rightBeep(end)=0;
    wrongBeep=0.05*MakeBeep(500,0.5,44100);
@@ -888,7 +854,7 @@ ListenChar(2); % no echo
    purr=MakeBeep(140,1.0,44100);
    purr(end)=0;
    Snd('Open');
-
+   
    % Instructions
    usingDigits=0;
    usingLetters=0;
@@ -900,9 +866,9 @@ ListenChar(2); % no echo
       symbolName='character';
    elseif usingDigits && ~usingLetters
       symbolName='digit';
-   elseif ~usingDigits && usingLetters 
+   elseif ~usingDigits && usingLetters
       symbolName='letter';
-   elseif  ~usingDigits && ~usingLetters 
+   elseif  ~usingDigits && ~usingLetters
       error('Targets are neither digits nor letters');
    end
    Screen('FillRect',window,white);
@@ -942,8 +908,8 @@ ListenChar(2); % no echo
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window);
    SetMouse(screenRect(3),screenRect(4),window);
-   %    answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
-   answer=GetKeypressWithHelp([spaceKey escapeKey],oo(condition),window,stimulusRect);
+   %    answer=GetKeypress([spaceKeyCode escapeKeyCode],oo(condition).deviceIndex,0);
+   answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
    if streq(answer,'ESCAPE')
       if oo(1).speakEachLetter && oo(1).useSpeech
          Speak('Escape. This run is done.');
@@ -977,8 +943,6 @@ ListenChar(2); % no echo
       condList = [condList repmat(condition,1,oo(condition).presentations)];
       oo(condition).spacingsSequence=Shuffle(oo(condition).spacingsSequence);
       oo(condition).q=QuestCreate(oo(condition).tGuess,oo(condition).tGuessSd,oo(condition).pThreshold,oo(condition).beta,delta,gamma,grain,range);
-      xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
-      yT=oo(condition).fix.y; % target
    end
    condList=Shuffle(condList);
    presentation=0;
@@ -1073,7 +1037,9 @@ ListenChar(2); % no echo
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       oo(condition).spacingDeg=spacingPix/pixPerDeg;
-      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
+      xT=oo(condition).fix.x+oo(condition).eccentricityPix; % target
+      yT=oo(condition).fix.y; % target
+      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xT %d, yT %d\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg,xT,yT); end;
       spacingPix=round(spacingPix);
       switch oo(condition).radialOrTangential
          case 'tangential'
@@ -1170,18 +1136,18 @@ ListenChar(2); % no echo
       if ~oo(condition).repeatedTargets
          Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       end
-         if oo(condition).showProgressBar
-            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-            r=progressBarRect;
-            r(4)=round(r(4)*(1-presentation/length(condList)));
-            Screen('FillRect',window,[220 220 220],r); % grey background
-         end
+      if oo(condition).showProgressBar
+         Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+         r=progressBarRect;
+         r(4)=round(r(4)*(1-presentation/length(condList)));
+         Screen('FillRect',window,[220 220 220],r); % grey background
+      end
       Screen('Flip',window); % Blank display, except perhaps fixation and progress bar.
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
-            %             answer=GetKeypress([spaceKey escapeKey],oo(condition).deviceIndex,0);
-            answer=GetKeypressWithHelp([spaceKey escapeKey],oo(condition),window,stimulusRect);
+            %             answer=GetKeypress([spaceKeyCode escapeKeyCode],oo(condition).deviceIndex,0);
+            answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
             if streq(answer,'ESCAPE')
                if oo(1).speakEachLetter && oo(1).useSpeech
                   Speak('Escape. This run is done.');
@@ -1210,28 +1176,29 @@ ListenChar(2); % no echo
          end
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
-
-      [letterStruct,canvasRect]=MakeLetterTextures(condition,oo(condition),window,savedAlphabet);
+      
+      % Create letter textures, using font or from disk.
+      [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
       letters=[oo(condition).alphabet oo(condition).borderLetter];
-      %oo(condition).meanOverMaxTargetWidth=mean([letterStruct.width])/RectWidth(bounds);
-      % letterStruct.width is undefined.
-
-      if oo(condition).displayAlphabet
+      
+      if oo(condition).showAlphabet
          % This is for debugging. We also display the alphabet any time the
          % shift key is pressed. That's standard behavior to allow the
          % observer to familiarize herself with the alphabet.
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
-            Screen('DrawTexture',window,letterStruct(i).texture,[],OffsetRect(r,i*RectWidth(r),RectHeight(r)));
-            Screen('FrameRect',window,0,OffsetRect(r,i*RectWidth(r),RectHeight(r)));
+            s=RectWidth(stimulusRect)/(1.5*length(letters))/RectWidth(r);
+            r=round(s*r);
+            r=OffsetRect(r,(0.5+1.5*(i-1))*RectWidth(r),RectHeight(r));
+            Screen('DrawTexture',window,letterStruct(i).texture,[],r);
+            Screen('FrameRect',window,0,r);
          end
          Screen('Flip',window);
          Speak('Alphabet. Click.');
          GetClicks;
       end
-
-      % Create texture for each line, for first 3 lines. The rest are the
-      % copies.
+      
+      % Create textures for 3 lines. The rest are the copies.
       textureIndex=1;
       spacingPix=floor(spacingPix);
       if oo(condition).measureThresholdVertically
@@ -1291,7 +1258,7 @@ ListenChar(2); % no echo
          yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
          yMax=yT+ySpacing*floor((RectHeight(stimulusRect)-yT-0.5*yPix)/ySpacing);
          if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
-         if oo(condition).printSizeAndSpacing; fprintf('%d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
+         if oo(condition).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',condition,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',condition,MFileLineNr,xMin,RectWidth(stimulusRect)-xMax,yMin,RectHeight(stimulusRect)-yMax); end;
          clear textures dstRects
@@ -1315,9 +1282,11 @@ ListenChar(2); % no echo
                whichLetter=strfind(letters,letter);
                assert(length(whichLetter)==1)
                textures(textureIndex)=letterStruct(whichLetter).texture;
-               % fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
+               if oo(condition).showLineOfLetters
+                  fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
+               end
                xPos=round(x-xPix/2);
-
+               
                % Compute o.targetHeightOverWidth, and, if requested,
                % o.setTargetHeightOverWidth
                r=round(letterStruct(whichLetter).rect);
@@ -1339,17 +1308,17 @@ ListenChar(2); % no echo
                   r=Screen('Rect',textures(textureIndex));
                   Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
                   Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
-                  fprintf('%d: width %d, x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',condition,RectWidth(dstRects(1:4,textureIndex)'),x,xPos,textureIndex,dstRects(1:4,textureIndex));
+                  fprintf('%d: %d: showLineOfLetters width %d, height %d, x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',condition,MFileLineNr,RectWidth(dstRects(1:4,textureIndex)'),RectHeight(dstRects(1:4,textureIndex)'),x,xPos,textureIndex,dstRects(1:4,textureIndex));
                end
                textureIndex=textureIndex+1;
             end
             if oo(condition).showLineOfLetters
                Screen('Flip',window);
-               Speak('Line of letters. Click.');
+               Speak(sprintf('Line %d. Click.',lineIndex));
                GetClicks;
             end
             % Create a texture holding one line of letters.
-            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 RectWidth(stimulusRect) RectHeight(canvasRect)],8,0);
+            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 RectWidth(stimulusRect) heightPix],8,0);
             Screen('FillRect',lineTexture(lineIndex),white);
             r=Screen('Rect',textures(1));
             Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
@@ -1370,9 +1339,22 @@ ListenChar(2); % no echo
       end
       Screen('DrawTextures',window,textures,[],dstRects);
       if oo(condition).frameTheTarget
+         fprintf('%d: %d: line heights',condition,MFileLineNr);
+         for ii=1:size(dstRects,2)
+            y=RectHeight(dstRects(:,ii)');
+            fprintf(' %d',y);
+         end
+         fprintf('\n');
+         fprintf('%d: %d: line dstRects centered at',condition,MFileLineNr);
+         for ii=1:size(dstRects,2)
+            [x,y]=RectCenter(dstRects(:,ii));
+            fprintf(' (%d,%d)',x,y);
+            Screen('FrameRect',window,[255 0 0],dstRects(:,ii),4);
+         end
+         fprintf('. target center (%d,%d)\n',xT,yT);
          letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
          Screen('FrameRect',window,[255 0 0],letterRect);
-         fprintf('%d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',condition,RectHeight(stimulusRect),RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
+         fprintf('%d: %d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',condition,MFileLineNr,RectHeight(stimulusRect),RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
       end
       Screen('TextFont',window,oo(condition).textFont,0);
       if oo(condition).showProgressBar
@@ -1475,7 +1457,7 @@ ListenChar(2); % no echo
       responseString='';
       skipping=0;
       for i=1:length(targets)
-         answer=GetKeypressWithHelp([spaceKey escapeKey oo(condition).responseKeys],oo(condition),window,stimulusRect,letterStruct,responseString);
+         answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes],oo(condition),window,stimulusRect,letterStruct,responseString);
          if streq(answer,'ESCAPE')
             ListenChar(0);
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
@@ -1484,7 +1466,7 @@ ListenChar(2); % no echo
          end
          if streq(upper(answer),'SPACE')
             responsesNumber=length(responseString);
-            if GetSecs-trialTimeSecs>oo(condition).timeRequiredForGuessOnSkip
+            if GetSecs-trialTimeSecs>oo(condition).secsBeforeSkipCausesGuess
                if oo(condition).speakEachLetter && oo(condition).useSpeech
                   Speak('space');
                end
@@ -1528,10 +1510,7 @@ ListenChar(2); % no echo
          end
          responseString=[responseString reportedTarget];
       end
-      % Discard the letter textures, to free graphics memory.
-      for i=1:length(letterStruct)
-         Screen('Close',letterStruct(i).texture);
-      end
+      DestroyLetterTextures(letterStruct);
       if ~skipping
          easeRequest=0;
       end
@@ -1570,7 +1549,7 @@ ListenChar(2); % no echo
          break;
       end
    end % for presentation=1:length(condList)
-
+   
    Screen('FillRect',window);
    Screen('Flip',window);
    if oo(1).useSpeech
