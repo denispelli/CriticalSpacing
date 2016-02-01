@@ -242,6 +242,8 @@ o.durationSec=inf; % duration of display of target and flankers
 o.targetFont='Pelli';
 o.alphabet='123456789'; 
 o.borderLetter='$';
+o.targetDeg=nan;
+o.spacingDeg=nan;
 
 % FIXATION
 o.fixationLocation='center'; % 'left', 'right'
@@ -260,6 +262,13 @@ o.showBounds=0;
 o.speakSizeAndSpacing=0;
 o.useFractionOfScreen=0;
 
+% QUEST
+o.beta=nan;
+o.pThreshold=nan;
+o.tGuess=nan;
+o.tGuess=nan;
+o.tGuessSd=nan;
+
 % STARTING FROM ZERO
 o.targetFontNumber=[];
 o.easyCount=0;
@@ -269,21 +278,45 @@ o.textFont='Trebuchet MS';
 o.textSizeDeg=0.4;
 
 % PROCESS INPUT.
-% Create oo, which replicates o for each condition, and then overwrite with oIn.
+% o is a single struct, and oIn may be an array of structs.
+% Create oo, which replicates o for each condition.
 conditions=length(oIn);
 oo(1:conditions)=o;
-knownFields=fieldnames(o);
-clear o; % Now MATLAB will flag an error if we accidentally try to use o.
-% All fields in the user-supplied "oIn" overwrite corresponding fields in
-% "o". o is a single struct, and oIn may be an array of structs.
+inputFields=fieldnames(o);
+clear o; % Now MATLAB will flag an error if we accidentally try to use "o".
+
+% For each condition, all fields in the user-supplied "oIn" overwrite
+% corresponding fields in "o". We ignore any field in oIn that is not
+% already defined in o. If the ignored field is a known output field, then
+% we ignore it silently. We give a warning of the unknown fields we ignore.
+% These ignored fields may be typos for input fields.
+outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
+   'dataFolder' 'eccentricityPix' 'fix' 'functionNames' ...
+   'keyboardNameAndTransport' 'minimumSizeDeg' 'minimumSpacingDeg' ...
+   'minimumViewingDistanceCm' 'normalAcuityDeg' ...
+   'normalCriticalSpacingDeg' 'presentations' 'q' 'responseCount' ...
+   'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
+   'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
+   'textSize' 'totalSecs' 'unknownFields' 'validKeyNames'};
+unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
+   oo(condition).unknownFields=cell(0);
    for i=1:length(fields)
-      if ~ismember(fields{i},knownFields)
-         warning('Unknown field o(%d).%s',condition,fields{i});
+      if ismember(fields{i},inputFields)
+         oo(condition).(fields{i})=oIn(condition).(fields{i});
+      elseif ~ismember(fields{i},outputFields)
+         unknownFields{end+1}=fields{i};
+         oo(condition).unknownFields{end+1}=fields{i};
       end
-      oo(condition).(fields{i})=oIn(condition).(fields{i});
    end
+   oo(condition).unknownFields=unique(oo(condition).unknownFields);
+end
+unknownFields=unique(unknownFields);
+if ~isempty(unknownFields)
+   warning off backtrace
+   warning(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
+   warning on backtrace
 end
 
 for condition=1:conditions
@@ -596,7 +629,11 @@ try
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
    resolution=Screen('Resolution',oo(1).screen);
    %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
-   
+   for condition=1:conditions
+      if ~isempty(oo(condition).unknownFields)
+         ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(condition).unknownFields{:}) '.\n'],condition);
+      end
+   end
    for condition=1:conditions
       if oo(condition).showProgressBar
          progressBarRect=[round(screenRect(3)*(1-1/screenWidthCm)) 0 screenRect(3) screenRect(4)]; % 1 cm wide.
