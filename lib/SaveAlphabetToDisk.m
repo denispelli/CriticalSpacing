@@ -4,12 +4,12 @@ function SaveAlphabetToDisk(o)
 % rendering once on a Mac with all the fancy fonts, and doing all
 % subsequent work, on every platform, with the saved rendering. Saves a
 % rendered font as image files, one per letter, in a folder with the name
-% of the font inside the SavedAlphabets folder. Both the letter and the
-% font name are url encoded (urlencode).
+% of the font inside the CriticalSpacing/lib/alphabets/ folder. Both the
+% letter and the font name are url encoded (urlencode).
 
-% When you save a new font to the SavedAlphabets folder, SaveAlphabetToDisk
-% first looks for such a folder already there. If it finds it, it replaces
-% it.
+% When you save a new font to the CriticalSpacing/lib/alphabets/ folder,
+% SaveAlphabetToDisk first looks for such a folder already there. If it
+% finds it, it replaces it.
 
 % December 18, 2015. Written by Denis Pelli, with a big assist from Hormet
 % Yiltiz. Hormet wrote the code that gets MATLAB to render a letter,
@@ -23,7 +23,7 @@ if nargin<1
    o.targetFont='Sloan';
    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
    o.borderLetter='X';
-   o.generateResponsePage=1;
+   o.generateAlphabetPage=1;
 %    o.targetFont='Gotham Cond SSm XLight';
 %    o.targetFont='Gotham Cond SSm Light';
 %    o.targetFont='Gotham Cond SSm Book';
@@ -216,14 +216,14 @@ end
 fprintf('Images of "%s" alphabet "%s" have been saved in folder "alphabets%s%s".\n',o.targetFont,letters,filesep,urlencode(o.targetFont));
 fprintf('Done.\n');
 sca
-% show Response Page
-if o.generateResponsePage
+% show Alphabet Page
+if o.generateAlphabetPage
    figure('PaperType','usletter');
    for i=1:length(savedAlphabet.images)-1 % skip border letter, which is last
       subplot(ceil(numel(savedAlphabet.images)/3),3,i);
       imshow(savedAlphabet.images{i});
    end
-   suptitle(sprintf('Response page for %s',o.targetFont));
-   saveas(gcf,fullfile(fileparts(mfilename('fullpath')),['Draft+response+page+for+' urlencode(o.targetFont) '.png']));
+   suptitle(sprintf('%s alphabet',o.targetFont));
+   saveas(gcf,fullfile(fileparts(mfilename('fullpath')),[urlencode(o.targetFont) 'alphabet.png']));
 end
 
