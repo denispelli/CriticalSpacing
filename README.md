@@ -23,15 +23,15 @@
    at least 2 numbers). If the MATLAB Command Window responds to the keyboard, 
    but CriticalSpacing.m does not, try quitting and restarting MATLAB. 
 1. Choose a font. We recommend "Pelli" for threshold spacing and Sloan for 
-   threshold size. Print the “Response Page” PDF for your font. Inside 
-   the “CriticalSpacing” folder you'll
-   find files “Response page for Pelli.pdf” and “Response page for Sloan.pdf”.
-   Print the appropriate one and give it to your observer. The response page 
+   threshold size. Print the alphabet page PDF for your font. Inside 
+   the CriticalSpacing/pdf/ folder you'll
+   find files “Pelli alphabet.pdf” and “Sloan alphabet.pdf”.
+   Print the appropriate one and give it to your observer. The alphabet page 
    shows the possible letters, e.g. “DHKNORSVZ” or “1234567889”. Observers
    will find it helpful to consult this page while choosing an answer
    when they have little idea what letter the target(s) might be.
    And children may prefer to point at the target letters, one by one, on
-   the response page.
+   the alphabet page.
 1. Make sure the computer is connected to power. Data will be lost if
    the computer hibernates or goes to "sleep" before the program
    finishes.
@@ -82,7 +82,7 @@ A laptop running Mac OS X, Windows, or Linux, with the above software installed.
 (Or a digital screen driven by a computer with such software. We need the digital screen in order for the computer to tell CriticalSpacing.m the screen size and resolution.)
 A remote keyboard: wireless or with a 10-m-long cable.
 A 10 m measuring tape to measure the viewing distance.
-A printed copy of the relevant Response page selected from CriticalSpacing/response pages.
+A printed copy of the relevant alphabet page selected from CriticalSpacing/pdf folder.
 
 
 > Copyright 2015, 2016, Denis Pelli, denis.pelli@nyu.edu
