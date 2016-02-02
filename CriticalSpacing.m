@@ -38,13 +38,13 @@ function oo=CriticalSpacing(oIn)
 % DISPLAY ALPHABET ON SCREEN AND ON PAPER. Anytime you press the shift key,
 % the progrma will display the alphabet of possible responses in the
 % current font. We encourage you to also provide a paper copy to most
-% observers. Inside the "CriticalSpacing/response pages/" folder you'll
-% find a file "Response page FONT.pdf" (where FONT is the name of the font
+% observers. Inside the "CriticalSpacing/pdf/" folder you'll
+% find a file "FONT alphabet.pdf" (where FONT is the name of the font
 % you're using). Print it on paper and give it to the observer. It shows
 % the nine possible letters or digits. Adults will find it helpful to
 % consult this page while choosing an answer especially when they are
 % guessing. Children may prefer to respond by pointing at the target
-% letters, one by one, on the response page. Patients who have trouble
+% letters, one by one, on the alphabet page. Patients who have trouble
 % directing their attention may be better off without the paper, to give
 % their undivided attention to the display.
 %
