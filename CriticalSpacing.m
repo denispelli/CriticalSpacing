@@ -87,24 +87,25 @@ function oo=CriticalSpacing(oIn)
 %
 % FONTS. If you set o.readAlphabetFromDisk=1 in your script then you won't
 % need to install any fonts. Instead you can use any of the "fonts" inside
-% the CriticalSpacing/lib/alphabets/ folder. You can easily create and add
-% a new "font" to the alphabets folder. Name the folder after your "font",
-% and put one image file per letter inside the folder, named for the
-% letter. That's it. You can now specify your new "font" as the
-% o.targetFont and CriticalSpacing will use it. You can make the drawings
-% yourself, or you can run CriticalSpacing/lib/SaveAlphabetToDisk.m to
-% create a new folder based on a computer font that you already own. This
-% scheme makes it easy to develop a new font, and also makes it easy to
-% share font images without violating a font's commercial distribution
-% license. (US Copyright law does not cover fonts. Adobe patents the font
-% program, but the images are public domain.) You can also ask
-% CriticalSpacing to use any font that's installed in your computer OS by
-% setting o.readAlphabetFromDisk=0. The Pelli and Sloan fonts are provided
-% in the CriticalSpacing/fonts/ folder, and you can install them in your
-% computer OS. On a Mac, you can just double-click the font file and say
-% "yes" when your computer offers to install it for you. Once you've
-% installed a font, you must quit and restart MATLAB to use the newly
-% available font.
+% the CriticalSpacing/lib/alphabets/ folder, which you can best see by
+% looking at the alphabet files in CriticalSpacing/pdf/. You can easily
+% create and add a new "font" to the alphabets folder. Name the folder
+% after your "font", and put one image file per letter inside the folder,
+% named for the letter. That's it. You can now specify your new "font" as
+% the o.targetFont and CriticalSpacing will use it. You can make the
+% drawings yourself, or you can run
+% CriticalSpacing/lib/SaveAlphabetToDisk.m to create a new folder based on
+% a computer font that you already own. This scheme makes it easy to
+% develop a new font, and also makes it easy to share font images without
+% violating a font's commercial distribution license. (US Copyright law
+% does not cover fonts. Adobe patents the font program, but the images are
+% public domain.) You can also ask CriticalSpacing to use any font that's
+% installed in your computer OS by setting o.readAlphabetFromDisk=0. The
+% Pelli and Sloan fonts are provided in the CriticalSpacing/fonts/ folder,
+% and you can install them in your computer OS. On a Mac, you can just
+% double-click the font file and say "yes" when your computer offers to
+% install it for you. Once you've installed a font, you must quit and
+% restart MATLAB to use the newly available font.
 %
 % RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. I have provided runCriticalSpacing as a example. You
