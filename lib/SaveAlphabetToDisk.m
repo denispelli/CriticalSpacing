@@ -39,12 +39,20 @@ if nargin<1
    showProgress=1;
    useWindow=1;
 end
+Screen('Preference','VisualDebugLevel',0);
+Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
+Screen('Preference','SkipSyncTests',1);
+Screen('Preference','SuppressAllWarnings',1);
 if ~IsOSX
    useWindow=1;
 end
-alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'alphabets');
+alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'alphabets'); % CriticalSpacing/lib/alphabets/
 if ~exist(alphabetsFolder,'dir')
    mkdir(alphabetsFolder);
+end
+pdfFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'pdf');% CriticalSpacing/pdf/
+if ~exist(pdfFolder,'dir')
+   mkdir(pdfFolder);
 end
 folder=fullfile(alphabetsFolder,urlencode(o.targetFont));
 if exist(folder,'dir')
@@ -213,8 +221,7 @@ for i=1:length(savedAlphabet.images)
    filename=[filename '.png'];
    imwrite(savedAlphabet.images{i},filename,'png');
 end
-fprintf('Images of "%s" alphabet "%s" have been saved in folder "alphabets%s%s".\n',o.targetFont,letters,filesep,urlencode(o.targetFont));
-fprintf('Done.\n');
+fprintf('Images of the "%s" alphabet "%s" have been saved in the CriticalSpacing%slib%salphabets%s%s%s folder.\n',o.targetFont,letters,filesep,filesep,filesep,urlencode(o.targetFont),filesep);
 sca
 % show Alphabet Page
 if o.generateAlphabetPage
@@ -224,6 +231,8 @@ if o.generateAlphabetPage
       imshow(savedAlphabet.images{i});
    end
    suptitle(sprintf('%s alphabet',o.targetFont));
-   saveas(gcf,fullfile(fileparts(mfilename('fullpath')),[urlencode(o.targetFont) 'alphabet.png']));
+   saveas(gcf,fullfile(pdfFolder,['screenshot of ' urlencode(o.targetFont) ' alphabet.png']));
+   fprintf('A screenshot of the whole "%s" alphabet has been saved in the CriticalSpacing%spdf%s folder.\n',o.targetFont,filesep,filesep);
 end
+fprintf('Done.\n');
 
