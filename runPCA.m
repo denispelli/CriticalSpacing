@@ -1,5 +1,5 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2015,2016, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2015, 2016, Denis G. Pelli, denis.pelli@nyu.edu
 clear o
 
 % PROCEDURE
@@ -56,7 +56,7 @@ if 0
    o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
 else
    % FOR ADULTS
-   o.fractionEasyTrials=0; % Add 20% extra easy trials. 0 for none.
+   o.fractionEasyTrials=0; % 0.2 adds 20% easy trials. 0 adds none.
    o.speakEncouragement=0; % 1 to say "good," "very good," or "nice" after every trial.
 end
 
