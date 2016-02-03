@@ -23,6 +23,9 @@ if ~isfinite(o.targetHeightOverWidth)
    o.targetHeightOverWidth=1;
 end
 letters=[o.alphabet o.borderLetter];
+for i=1:length(letters)
+   letterStruct(i).letter=letters(i);
+end
 if o.measureThresholdVertically
    canvasRect=[0 0 o.targetPix o.targetPix];
 else
