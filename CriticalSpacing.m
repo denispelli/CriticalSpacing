@@ -1,22 +1,22 @@
 function oo=CriticalSpacing(oIn)
 % o=CriticalSpacing(o);
 %
-% Measures critical spacing and acuity to help characterize an observer's
-% vision. This program takes over your screen to measure the observer's
-% size or spacing threshold for letter identification. It takes about 10
-% minutes to measure four thresholds. It's meant to be called by a short
-% user-written script, and should work well in clinical environments. All
-% results are returned in the "o" struct and also saved to disk in two
-% files whose file names include your script name the experimenter and
-% observer names and the date. One of those files is plain text .txt and
-% easy for you to read; the other is a MATLAB save file .MAT and easily
-% read by MATLAB. Please keep both. The filenames are unique and easy to
-% sort, so it's fine to let all your data files accumulate in your
-% CriticalSpacing/data/ folder.
+% CriticalSpacing measures an observer's critical spacing and acuity (i.e.
+% threshold spacing and size) to help characterize the observer's vision.
+% This program takes over your screen to measure the observer's size or
+% spacing threshold for letter identification. It takes about 10 minutes to
+% measure four thresholds. It's meant to be called by a short user-written
+% script, and should work well in clinical environments. All results are
+% returned in the "o" struct and also saved to disk in two files whose file
+% names include your script name the experimenter and observer names and
+% the date. One of those files is plain text .txt and easy for you to read;
+% the other is a MATLAB save file .MAT and easily read by MATLAB. Please
+% keep both. The filenames are unique and easy to sort, so it's fine to let
+% all your data files accumulate in your CriticalSpacing/data/ folder.
 %
 % PUBLICATION. You can read more about this program and its purpose in this
 % 2016 article:
-%
+% 
 % Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S.,
 % Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H.
 % (2016) A clinical test for visual crowding [version 1; referees: 1
@@ -136,9 +136,9 @@ function oo=CriticalSpacing(oIn)
 % vertically, and 0 for horizontally. Target size can be made proportional
 % to spacing, allowing measurement of critical spacing without knowing the
 % acuity, because we use the largest possible letter for each spacing.
-%
+% 
 % ECCENTRICITY 0. Current testing is focussed on eccentricity 0.
-%
+% 
 % ECCENTRICITY > 0. When the flankers are radial, the specified spacing
 % refers to the inner flanker, between target and fixation. We define
 % scaling eccentricity as eccentricity plus 0.45 deg. The critical spacing
@@ -275,7 +275,7 @@ o.targetFontNumber=[];
 o.easyCount=0;
 o.guessCount=0; % artificial guesses
 o.targetHeightOverWidth=nan;
-o.textFont='Trebuchet MS';
+o.textFont='Arial';
 o.textSizeDeg=0.4;
 
 % PROCESS INPUT.
@@ -504,8 +504,10 @@ try
          oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
       end
       if length(GetKeyboardIndices)<2 && oo(1).viewingDistanceCm>100
+         warning backtrace off
          warning('You only have one keyboard. The long viewing distance may demand an external keyboard.');
-         string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
+         warning backtrace on
+         string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. To help you connect a keyboard, I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
          Screen('TextSize',window,round(oo(1).textSize*0.6));
          DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
       end
