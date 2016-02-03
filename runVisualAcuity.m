@@ -83,8 +83,12 @@ o.thresholdParameter='size';
 % o(2).fixedSpacingOverSize=1.2; % Requests size proportional to spacing.
 % Test two conditions interleaved: 'spacing' and 'size', with repeated
 % letters.
-% o.eccentricityDeg=10;
-% o.durationSec=0.2;
+if 1
+   o.eccentricityDeg=10;
+   o.durationSec=1;
+   o.useFractionOfScreen=0.3; 
+
+end
 o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 if 0
