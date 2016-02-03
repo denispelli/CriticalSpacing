@@ -35,10 +35,10 @@ function oo=CriticalSpacing(oIn)
 % measuring a threshold for each. I sometimes pass two identical conditions
 % to get two thresholds for the same condition.
 %
-% DISPLAY ALPHABET ON SCREEN AND ON PAPER. Anytime you press the shift key,
-% the progrma will display the alphabet of possible responses in the
-% current font. We encourage you to also provide a paper copy to most
-% observers. Inside the "CriticalSpacing/pdf/" folder you'll
+% DISPLAY ALPHABET ON SCREEN AND ON PAPER. Anytime you press the "caps
+% lock" key, CriticalSpacing will display the alphabet of possible
+% responses in the current font. We encourage you to also provide a paper
+% copy to most observers. Inside the "CriticalSpacing/pdf/" folder you'll
 % find a file "FONT alphabet.pdf" (where FONT is the name of the font
 % you're using). Print it on paper and give it to the observer. It shows
 % the nine possible letters or digits. Adults will find it helpful to
@@ -962,8 +962,8 @@ try
    Screen('FillRect',window,white);
    string=[sprintf('Hello %s,  ',oo(condition).observer)];
    string=[string 'Please turn the computer sound on. '];
-   string=[string 'Press SHIFT at any time to see all the possible letters. '];
-   string=[string 'You might also have them on a piece of paper. '];
+   string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
+   string=[string 'You might also have the alphabet on a piece of paper. '];
    string=[string 'You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
    for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
@@ -1271,7 +1271,7 @@ try
       
       if oo(condition).showAlphabet
          % This is for debugging. We also display the alphabet any time the
-         % shift key is pressed. That's standard behavior to allow the
+         % caps lock key is pressed. That's standard behavior to allow the
          % observer to familiarize herself with the alphabet.
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
@@ -1497,24 +1497,32 @@ try
          end
          Screen('DrawText',window,string,100,100,black,white,1);
          Screen('TextSize',window,oo(condition).textSize);
-         if ~isempty(oo(condition).targetFontNumber)
-            Screen('TextFont',window,oo(condition).targetFontNumber);
-            [~,number]=Screen('TextFont',window);
-            assert(number==oo(condition).targetFontNumber);
-         else
-            if streq(oo(condition).targetFont,'Solid')
-               Screen('TextFont',window,'Verdana');
-            else
-               Screen('TextFont',window,oo(condition).targetFont);
-               font=Screen('TextFont',window);
-               assert(streq(font,oo(condition).targetFont));
-            end
-         end
+         %          if ~isempty(oo(condition).targetFontNumber)
+         %             Screen('TextFont',window,oo(condition).targetFontNumber);
+         %             [~,number]=Screen('TextFont',window);
+         %             assert(number==oo(condition).targetFontNumber);
+         %          else
+         %             if streq(oo(condition).targetFont,'Solid')
+         %                Screen('TextFont',window,'Verdana');
+         %             else
+         %                Screen('TextFont',window,oo(condition).targetFont);
+         %                font=Screen('TextFont',window);
+         %                assert(streq(font,oo(condition).targetFont));
+         %             end
+         %          end
+         [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
          x=100;
          y=stimulusRect(4)-50;
-         for a=oo(condition).alphabet
-            [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
-            x=x+oo(condition).textSize/2;
+         for i=1:length(oo(condition).alphabet)
+            %             [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
+            dstRect=round(alphabetBounds*oo(condition).textSize/RectHeight(alphabetBounds));
+            dstRect=OffsetRect(dstRect,x,y);
+            for j=1:length(letterStruct)
+               if oo(condition).alphabet(i)==letterStruct(j).letter
+                  Screen('DrawTexture',window,letterStruct(i).texture,alphabetBounds,dstRect);
+               end
+            end
+            x=x+1.5*RectWidth(dstRect);
          end
          Screen('TextFont',window,oo(condition).textFont,0);
          Screen('Flip',window); % display response screen
