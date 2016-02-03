@@ -34,17 +34,22 @@ o.usePurring=0; % Play purring sound while awaiting user response.
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.negativeFeedback=0;
 o.fixationCrossDeg=5;
-o.durationSec=1; % duration of display of target and flankers
 o.measureBeta=0;
 o.textFont='Arial';
 o.fixationLocation='left';
 o.task='identify';
+
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
+
 % o.targetFont='Pelli';
 % o.alphabet='123456789'; 
 % o.borderLetter='$';
+% 
+% o.targetFont='Sticks';
+% o.alphabet='123456789'; 
+% o.borderLetter='0';
 
 % DEBUGGING AIDS
 o.displayAlphabet=0; 
@@ -59,8 +64,10 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 
 % FIRST RUN (measures two thresholds, interleaved)
 o.repeatedTargets=0;
-o.eccentricityDeg=0;
+o.durationSec=0.3; % duration of display of target and flankers
 o.fourFlankers=1;
 o.thresholdParameter='size';
-% o(2)=o(1); % Copy the condition
+o.eccentricityDeg=0;
+o(2)=o(1); % Copy the condition
+o(2).eccentricityDeg=10;
 o=CriticalSpacing(o); 
