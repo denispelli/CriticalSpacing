@@ -1,5 +1,11 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2015, 2016, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2015,2016, Denis G. Pelli, denis.pelli@nyu.edu
+
+% We recommend leaving the boilerplate header alone, and customizing by
+% copying lines from the boilerplate to your customized section at the
+% bottom and modifying it there. This facilitates comparison of scripts.
+
+%% BOILERPLATE HEADER
 clear o
 
 % PROCEDURE
@@ -71,6 +77,8 @@ o.useFractionOfScreen=0;
 % FOR CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
 % o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
+
+%% CUSTOM CODE
 
 % RUN: Sloan size
 o.targetFont='Sloan';
