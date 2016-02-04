@@ -1,6 +1,5 @@
 function oo=CriticalSpacing(oIn)
 % o=CriticalSpacing(o);
-%
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
 % threshold spacing and size) to help characterize the observer's vision.
 % This program takes over your screen to measure the observer's size or
@@ -13,17 +12,16 @@ function oo=CriticalSpacing(oIn)
 % the other is a MATLAB save file .MAT and easily read by MATLAB. Please
 % keep both. The filenames are unique and easy to sort, so it's fine to let
 % all your data files accumulate in your CriticalSpacing/data/ folder.
-%
-% PUBLICATION. You can read more about this program and its purpose in this
+% 
+% PUBLICATION. You can read more about this program and its purpose in our
 % 2016 article:
 % 
 % Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S.,
 % Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H.
 % (2016) A clinical test for visual crowding [version 1; referees: 1
-% approved with reservations]. F1000Research 5:81 
-% (doi: 10.12688/f1000research.7835.1)
-% http://f1000research.com/articles/5-81/v1
-%
+% approved with reservations]. F1000Research 5:81 (doi:
+% 10.12688/f1000research.7835.1) http://f1000research.com/articles/5-81/v1
+% 
 % THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
 % "o" struct and setting its fields to specify your testing condition. Call
 % CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
@@ -34,56 +32,82 @@ function oo=CriticalSpacing(oIn)
 % array, then CriticalSpacing runs all the conditions interleaved,
 % measuring a threshold for each. I sometimes pass two identical conditions
 % to get two thresholds for the same condition.
-%
+% 
 % DISPLAY ALPHABET ON SCREEN AND ON PAPER. Anytime you press the "caps
 % lock" key, CriticalSpacing will display the alphabet of possible
 % responses in the current font. We encourage you to also provide a paper
 % copy to most observers. Inside the "CriticalSpacing/pdf/" folder you'll
 % find a file "FONT alphabet.pdf" (where FONT is the name of the font
 % you're using). Print it on paper and give it to the observer. It shows
-% the nine possible letters or digits. Adults will find it helpful to
-% consult this page while choosing an answer especially when they are
-% guessing. Children may prefer to respond by pointing at the target
-% letters, one by one, on the alphabet page. Patients who have trouble
-% directing their attention may be better off without the paper, to give
-% their undivided attention to the display.
-%
-% MATLAB AND COMPUTER: To run this program, you need a computer with MATLAB
-% (or OCTAVE) and the Psychtoolbox installed. The computer OS can be Apple
-% Macintosh, Windows, or Linux. CriticalSpacing automatically reads the
-% screen resolution in pixels and size in cm. That won't work with an
-% analog CRT display, but we could add code to allow you to measure it
-% manually and specify it in your script. Let me know if you need that.
-%
+% the nine possible letters or digits. Observers will find it helpful to
+% consult this page while choosing an answer, especially when they are
+% guessing. Children may prefer to respond by pointing at the printed
+% target letters on the alphabet page. Patients who have trouble directing
+% their attention may be better off without the paper, to give their
+% undivided attention to the display.
+% 
+% NEED MATLAB RUNNING ON A COMPUTER WITH A DIGITAL SCREEN. To run this
+% program, you need a computer with MATLAB (or Octave) and the Psychtoolbox
+% installed. The computer OS can be OS X, Windows, or Linux.
+% CriticalSpacing automatically reads the screen resolution in pixels and
+% size in cm. That won't work with an analog CRT display, but we could add
+% code to allow you to measure it manually and specify it in your script.
+% Let me know if you need that.
+% 
+% ALLOW MATLAB TO CONTROL YOUR COMPUTER. Only for Macintosh (OS X). Open
+% the System Preferences: Security and Privacy: Privacy tab. Select
+% Accessibility. Click to open the lock in lower left, providing your
+% computer password. Click to select MATLAB, allowing it to control your
+% computer. Click the lock again to close it.
+% 
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable as the viewing
 % distance will be 3 m or more. If you must use the built-in keyboard, then
 % have the experimenter type the observer's verbal answers. I like the
 % Logitech K760 $86 solar-powered wireless keyboard, because its batteries
 % never run out. It's no longer made, but still available on Amazon and
 % eBay:
-%
+% 
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
-%
-% VIEWING DISTANCE. The viewing distance will typically be several meters,
-% and its important that you set it accurately, within five percent. You
-% can measure it with a $10 tape measure marked in centimeters. A fancy $40
-% alternative is a laser measure, which gives you the answer in two clicks.
-%
+% 
+% MEASURE VIEWING DISTANCE. The viewing distance will typically be several
+% meters, and it's important that you set it accurately, within five
+% percent. You can measure it with a $10 tape measure marked in
+% centimeters. A fancy $40 alternative is a Bosch laser measure, which
+% gives you the answer in two clicks. The laser will work even with a
+% mirror.
+% 
 % http://www.amazon.com/gp/product/B0016A2UHO
 % http://www.amazon.com/gp/product/B00LGANH8K
 % https://www.boschtools.com/us/en/boschtools-ocs/laser-measuring-glm-15-0601072810--120449-p/
-%
+% 
+% This Stanley ultrasonic estimator is cheaper, just $23, so I ordered one.
+% However, I don't yet know whether a typical laptop screen will be a
+% sufficiently large target to allow accurate ultrasonic estimation of
+% distance. Ultrasound may not work with a mirror, so you might have to
+% make two measurements.
+% 
+% http://www.amazon.com/Stanley-77-018-IntelliMeasure-Distance-Estimator/dp/B000E8VM8W/ref=cm_rdp_product
+% 
 % MIRROR. In a small room, you might need a mirror to achieve a long
 % viewing distance. When CriticalSpacing asks you about viewing distance,
 % you can indicate that you're using a mirror by entering the viewing
 % distance as a negative number. It will flip the display to be seen in a
-% mirror. (You can also request this by setting o.flipScreenHorizontally=1;
-% in your run script.) I bought two acrylic front surface mirrors for this.
-% 12x24 inches, $46 each. Front surface mirrors preserve image quality, and
-% acrylic is hard to break, making it safer than glass.
+% mirror. (You can also request this, in advance, by setting
+% o.flipScreenHorizontally=1; in your run script.) I bought two acrylic
+% front surface mirrors for this. 12x24 inches, $46 each from inventables.
+% Front surface mirrors preserve image quality, and acrylic is hard to
+% break, making it safer than glass. I'm not yet sure how big a mirror one
+% needs to accomodate observer's of various heights, so I listed several of
+% Amazon's offerings, ranging up to 24" by 48". The five-pack is a good
+% deal, five 12"x24" mirrors for $67.
 % 
+% http://www.amazon.com/Acrylic-Wall-Mirror-Size-24/dp/B001CWAOJW/ref=sr_1_19
+% http://www.amazon.com/Childrens-Factory-Look-At-Mirror/dp/B003BL7TMC/ref=sr_1_14
 % https://www.inventables.com/technologies/first-surface-mirror-coated-acrylic
+% http://www.amazon.com/12-24-Mirror-Acrylic-Plexiglass/dp/B00IVWQPUI/ref=sr_1_39
+% http://www.amazon.com/12-Acrylic-Mirror-Sheet-Pack/dp/B00JPJK3T0/ref=sr_1_13
+% http://www.amazon.com/Double-Infant-Mirror-surface-Approved/dp/B0041TABOG/ref=pd_sim_sbs_468_9
 %
 % FONTS. If you set o.readAlphabetFromDisk=1 in your script then you won't
 % need to install any fonts. Instead you can use any of the "fonts" inside
@@ -106,7 +130,7 @@ function oo=CriticalSpacing(oIn)
 % double-click the font file and say "yes" when your computer offers to
 % install it for you. Once you've installed a font, you must quit and
 % restart MATLAB to use the newly available font.
-%
+% 
 % RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. I have provided runCriticalSpacing as a example. You
 % control the behavior of CriticalSpacing by setting parameters in the
@@ -118,18 +142,53 @@ function oo=CriticalSpacing(oIn)
 % presents a page of instructions. The rest is just one eye chart after
 % another, each showing one or two targets (with or without repetitions).
 % Presentation can be brief or static (o.durationSec=inf).
-%
+% 
 % EASE. Adults and children seem to find it easy and intuitive, but we've
 % only tested a few children so far. Aenne Brielmann has designed an
 % astronaut metaphar for children, to make it more like a game, which we
 % plan to implement. Try running runCriticalSpacing. It measures four
 % thresholds.
-%
+% 
 % ESCAPE KEY. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
 % CriticalSpacing will then print out (and save to disk) results so far and
 % begin the next run.
-%
+% 
+% CAPS LOCK KEY: DISPLAY THE ALPHABET. Anytime that CriticalSpacing is
+% running trials, pressing the caps lock key will display the font's
+% alphabet at a large size, filling the screen. (The shift key works too,
+% but it's dangerous on Windows. On Windows, pressing the shit key five
+% times provokes a "sticky keys" dialog that you won't see because it's
+% hidden behind the CriticalSpacing window, so you'll be stuck. The caps
+% lock key is always safe.)
+% 
+% ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
+% escape key on your keyboard (typically in upper left, labeled "esc").
+% CriticalSpacing will then print out (and save to disk) results so far and
+% begin the next run.
+% 
+% SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
+% softened the "forced" in forced choice. If you (the experimenter) think
+% the observer is overwhelmed by this trial, you can press the spacebar
+% instead of a letter and the program will immediately go to the next
+% trial, which will be easier. If you skip that trial too, the next will be
+% even easier, and so on. However, as soon as a trial gets a normal
+% response then Quest will resume presenting trials near threshold. We hope
+% skipping will make the initial experience easier. Eventually the child
+% must still do trials near threshold, because threshold estimation
+% requires it. Skipping is always available. If you type one letter and
+% then skip, the typed letter still counts. There's an invisible timer.
+% If you hit space (to skip) less than 8 s after the chart appeared, then
+% the program says "Skip", and any responses not yet taken do not count. If
+% you wait at least 8 s before hitting space, then the program says
+% "Space" and, supposing that the child felt too unsure to choose
+% knowledgeably, the program helps out by providing a random guess. By
+% chance, that guess will occasionally be right. Please do not tell the
+% observer about this option to skip. Use this only rarely, when you need
+% it to avoid a crisis. In general it's important to set up the right
+% expectation at the outset. Warn the observer that this is a game and
+% nobody gets them all right. You just try to get as many as you can.
+% 
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures threshold spacing in either of two
 % directions, selected by the variable o.measureThresholdVertically, 1 for
@@ -137,16 +196,18 @@ function oo=CriticalSpacing(oIn)
 % to spacing, allowing measurement of critical spacing without knowing the
 % acuity, because we use the largest possible letter for each spacing.
 % 
-% ECCENTRICITY 0. Current testing is focussed on eccentricity 0.
+% ECCENTRICITY. Set o.eccentricityDeg in your script. Current testing is
+% focussed on eccentricity 0 using infinite duration. For peripheral
+% testing, it's usually best to set o.durationSec=0.2 to prevent seeing the
+% target after a foveating saccade triggers by the brief target
+% presentation. When the flankers are radial, the specified spacing refers
+% to the inner flanker, between target and fixation. We define scaling
+% eccentricity as eccentricity plus 0.45 deg. The critical spacing of
+% crowding is proportional to the scaling eccentricity. The outer flanker
+% is at the scaling eccentricity that has the same ratio to the target
+% scaling eccentricity, as the target scaling eccentricity does to the
+% inner-flanker scaling eccentricity.
 % 
-% ECCENTRICITY > 0. When the flankers are radial, the specified spacing
-% refers to the inner flanker, between target and fixation. We define
-% scaling eccentricity as eccentricity plus 0.45 deg. The critical spacing
-% of crowding is proportional to the scaling eccentricity. The outer
-% flanker is at the scaling eccentricity that has the same ratio to the
-% target scaling eccentricity, as the target scaling eccentricity does to
-% the inner-flanker scaling eccentricity.
-%
 % VIEWING DISTANCE. The minimum viewing distance depends the smallest
 % letter size you want to show with 8 pixels and the resolution (pixels per
 % centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
@@ -747,38 +808,7 @@ try
          oo(condition).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(condition).targetPix;
       end
       oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-      
-      %       if ~oo(condition).readAlphabetFromDisk
-      %          % calibrate font size
-      %          sizePix=100;
-      %          scratchWindow=Screen('OpenOffscreenWindow',window,[],[0 0 4*sizePix 4*sizePix],8,0);
-      %          if ~isempty(oo(condition).targetFontNumber)
-      %             Screen('TextFont',scratchWindow,oo(condition).targetFontNumber);
-      %             [~,number]=Screen('TextFont',scratchWindow);
-      %             assert(number==oo(condition).targetFontNumber);
-      %          else
-      %             Screen('TextFont',scratchWindow,oo(condition).targetFont);
-      %             font=Screen('TextFont',scratchWindow);
-      %             assert(streq(font,oo(condition).targetFont));
-      %          end
-      %          Screen('TextSize',scratchWindow,sizePix);
-      %          for i=1:length(oo(condition).alphabet)
-      %             lettersInCells{i}=oo(condition).alphabet(i);
-      %             bounds=TextBounds(scratchWindow,lettersInCells{i},1);
-      %             if i==1
-      %                alphabetBounds=bounds;
-      %             else
-      %                alphabetBounds=UnionRect(alphabetBounds,bounds);
-      %             end
-      %          end
-      %          Screen('Close',scratchWindow);
-      %          bounds=alphabetBounds;
-      %          oo(condition).targetHeightOverWidth=RectHeight(bounds)/RectWidth(bounds);
-      %          oo(condition).targetFontHeightOverNominalPtSize=RectHeight(bounds)/sizePix;
-      %       else % if ~oo(condition).readAlphabetFromDisk
-      %          CreateLetterTextures(condition,oo(condition),window);
-      %       end
-      
+   
       for cd=1:conditions
          for i=1:length(oo(cd).validKeyNames)
             oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
@@ -1266,7 +1296,7 @@ try
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       
       % Create letter textures, using font or from disk.
-      [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
+      letterStruct=CreateLetterTextures(condition,oo(condition),window);
       letters=[oo(condition).alphabet oo(condition).borderLetter];
       
       if oo(condition).showAlphabet
@@ -1495,7 +1525,7 @@ try
          if oo(condition).repeatedTargets
             string=strrep(string,'response','two responses');
          end
-         Screen('DrawText',window,string,100,100,black,white,1);
+         Screen('DrawText',window,string,50,100,black,white,1);
          Screen('TextSize',window,oo(condition).textSize);
          %          if ~isempty(oo(condition).targetFontNumber)
          %             Screen('TextFont',window,oo(condition).targetFontNumber);
@@ -1511,12 +1541,11 @@ try
          %             end
          %          end
          [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
-         x=100;
+         x=50;
          y=stimulusRect(4)-50;
          for i=1:length(oo(condition).alphabet)
-            %             [x,y]=Screen('DrawText',window,a,x,y,black,white,1);
             dstRect=round(alphabetBounds*oo(condition).textSize/RectHeight(alphabetBounds));
-            dstRect=OffsetRect(dstRect,x,y);
+            dstRect=OffsetRect(dstRect,x,y-RectHeight(dstRect));
             for j=1:length(letterStruct)
                if oo(condition).alphabet(i)==letterStruct(j).letter
                   Screen('DrawTexture',window,letterStruct(i).texture,alphabetBounds,dstRect);
