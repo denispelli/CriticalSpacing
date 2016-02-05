@@ -632,7 +632,7 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,white,1,oo(1).deviceIndex);
+      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,[],1,oo(1).deviceIndex);
       if ~isempty(d)
          inputDistanceCm=str2num(d);
          if ~isempty(inputDistanceCm) && inputDistanceCm~=0
