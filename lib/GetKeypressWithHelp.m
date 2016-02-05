@@ -4,7 +4,7 @@ function answer=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterS
 %   the alphabet.
 
 capsLockIsSticky=IsWindows;
-useCopyWindow=1; % Works with 0 or 1 on Mac. Hoping 1 helps on Windows.
+useCopyWindow=0; % Works with 0 or 1 on Mac. Hoping 1 helps on Windows.
 if nargin<6
    responseString='';
 end
@@ -20,8 +20,7 @@ while(1)
       end
       % Save screen
       if useCopyWindow
-         % Alas, CopyWindow copies the backbuffer, which was cleared by the
-         % last flip. Useless.
+         % CopyWindow copies the backbuffer.
          [width,height]=RectSize(Screen('Rect',window));
          m=zeros([height,width]);
          savedTexture=Screen('MakeTexture',window,m);
