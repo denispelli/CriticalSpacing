@@ -481,7 +481,9 @@ try
          Screen('TextFont',window,oo(condition).textFont,0);
          font=Screen('TextFont',window);
          if ~streq(font,oo(condition).textFont)
+            warning off backtrace
             warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
+            warning on backtrace
          end
       end % if ~oo(1).readAlphabetFromDisk
    end
@@ -502,7 +504,9 @@ try
       Screen('TextFont',window,oo(condition).textFont,0);
       font=Screen('TextFont',window);
       if ~streq(font,oo(condition).textFont)
+         warning off backtrace
          warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
+         warning on backtrace
       end
       instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
       boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
@@ -566,7 +570,7 @@ try
       end
       if length(GetKeyboardIndices)<2 && oo(1).viewingDistanceCm>100
          warning backtrace off
-         warning('You only have one keyboard. The long viewing distance may demand an external keyboard.');
+         warning('You have only one keyboard. The long viewing distance may demand an external keyboard.');
          warning backtrace on
          string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. To help you connect a keyboard, I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
          Screen('TextSize',window,round(oo(1).textSize*0.6));
@@ -1705,7 +1709,7 @@ try
             if 10^t<oo(condition).minimumSpacingDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSpacingDeg);
                if oo(condition).useSpeech
-                  Speak('WARNING: Please increase viewing distance.');
+%                   Speak('WARNING: Please increase viewing distance.');
                end
             end
             if oo(condition).responseCount>1
