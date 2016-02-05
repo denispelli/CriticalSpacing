@@ -15,9 +15,9 @@ if 1
    if o.hiDPIMultiple~=1
       PsychImaging('AddTask','General','UseRetinaResolution');
    end
-   % I commented this out because I believe that Psychtoolbox fixed the
-   % flakey buffer problem in December 2015/January 2016.
-%    PsychImaging('AddTask','General','UseVirtualFramebuffer'); % Temporary work around for PTB bug that makes buffers flakey.
+   % Mario says the Virtual Frame Buffer makes the back buffer more
+   % reliable, for better performance.
+   PsychImaging('AddTask','General','UseVirtualFramebuffer'); 
    if ~o.useFractionOfScreen
       [window,r]=PsychImaging('OpenWindow',o.screen,white);
    else
