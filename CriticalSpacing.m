@@ -227,10 +227,11 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
+clear Screen
+Screen('Preference','SuppressAllWarnings',1);
 Screen('Preference','VisualDebugLevel',0);
 Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
 Screen('Preference','SkipSyncTests',1);
-Screen('Preference','SuppressAllWarnings',1);
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
@@ -274,6 +275,7 @@ if o.measureBeta
 end
 
 % VISUAL STIMULUS
+o.permissionToChangeResolution=1;
 o.repeatedTargets=1;
 o.fourFlankers=0;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
@@ -397,7 +399,6 @@ end
 ListenChar(2); % no echo
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
-Screen('Preference','SkipSyncTests',1);
 escapeKeyCode=KbName('ESCAPE');
 spaceKeyCode=KbName('space');
 for condition=1:conditions
@@ -408,9 +409,10 @@ for condition=1:conditions
 end
 
 % Set up for Screen
-[screenWidthMm,screenHeightMm]=Screen('DisplaySize',0);
+oo(1).screen=max(Screen('Screens'));
+[screenWidthMm,screenHeightMm]=Screen('DisplaySize',oo(1).screen);
 screenWidthCm=screenWidthMm/10;
-screenRect=Screen('Rect',0);
+screenRect=Screen('Rect',oo(1).screen);
 if oo(1).useFractionOfScreen
    screenRect=round(oo(condition).useFractionOfScreen*screenRect);
    screenWidthCm=oo(condition).useFractionOfScreen*screenWidthCm;
@@ -425,6 +427,56 @@ for condition=1:conditions
    assert(oo(condition).useFractionOfScreen==oo(1).useFractionOfScreen);
 end
 
+% Are we using the screen at its maximum native resolution?
+ff=1;
+res = Screen('Resolutions',oo(1).screen);
+oo(1).nativeWidth=0;
+oo(1).nativeHeight=0;
+for i=1:length(res)
+   if res(i).width>oo(1).nativeWidth
+      oo(1).nativeWidth=res(i).width;
+      oo(1).nativeHeight=res(i).height;
+   end
+end
+actualScreenRect=Screen('Rect',oo(1).screen,1);
+if oo(1).nativeWidth==RectWidth(actualScreenRect)
+   ffprintf(ff,'Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
+else
+   warning backtrace off
+   if oo(1).permissionToChangeResolution
+      warning('Trying to change your screen resolution to be optimal for this test. ...');
+      oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+%       clear Screen
+%       Screen('Preference','VisualDebugLevel',0);
+%       Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
+%       Screen('Preference','SkipSyncTests',1);
+%       Screen('Preference','SuppressAllWarnings',1);
+      res=Screen('Resolution',oo(1).screen);
+      if res.width==oo(1).nativeWidth
+         fprintf('SUCCESS!\n');
+      else
+         warning('FAILED.');
+         res
+      end
+      actualScreenRect=Screen('Rect',oo(1).screen,1);
+   end
+   if oo(1).nativeWidth==RectWidth(actualScreenRect)
+      ffprintf(ff,'Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
+   else
+      if RectWidth(actualScreenRect)<oo(1).nativeWidth
+         ffprintf(ff,'WARNING: Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+         warning('Your screen resolution %d x %d is less that its native maximum %d x %d. This will increase your minimum viewing distance %.1f-fold.',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight,oo(1).nativeWidth/RectWidth(actualScreenRect));
+      else
+         ffprintf(ff,'WARNING: Your screen resolution %d x %d exceeds its maximum native resolution %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+         warning('Your screen resolution %d x %d exceeds its maximum native resolution %d x %d. This may be a problem.',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+      end
+      ffprintf(ff,'(You can use System Preferences:Displays to change resolution.)\n');
+      ffprintf(ff,'(Set your screen to maximum native resolution, or, if you have a Retina/HiDPI screen, then set it to half maximum native.)\n');
+      warning backtrace on
+   end
+end
+oo(1).resolution=Screen('Resolution',oo(1).screen);
+   
 try
    black=0;
    white=255;
@@ -695,8 +747,6 @@ try
    ffprintf(ff,'\n%s %s\n',oo(1).functionNames,datestr(now));
    ffprintf(ff,'Saving results in:\n');
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
-   resolution=Screen('Resolution',oo(1).screen);
-   %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
    for condition=1:conditions
       if ~isempty(oo(condition).unknownFields)
          ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(condition).unknownFields{:}) '.\n'],condition);
@@ -948,9 +998,16 @@ try
    actualScreenRect=Screen('Rect',cal.screen,1);
    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
-   ffprintf(ff,'%s, %s, %s, screen %d, %dx%d pixels, %.1fx%.1f cm, %.0f pix/cm\n',cal.processUserLongName,cal.machineName,cal.macModelName,cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),screenWidthMm/10,screenHeightMm/10,RectWidth(actualScreenRect)/(screenWidthMm/10));
+   ffprintf(ff,'%s, %s, %s, screen %d, %dx%d pixels, %.1fx%.1f cm, %.1fx%.1f deg, %.0f pix/cm, %/0f pixPerDeg.\n',...
+      cal.processUserLongName,cal.machineName,cal.macModelName,cal.screen,...
+      RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+      screenWidthMm/10,screenHeightMm/10,...
+      RectWidth(actualScreenRect)/pixPerDeg,RectHeight(actualScreenRect)/pixPerDeg,...
+      RectWidth(actualScreenRect)/(screenWidthMm/10),pixPerDeg);
    assert(cal.screenWidthCm==screenWidthMm/10);
-   ffprintf(ff,'(You can use System Preferences or Switch Res X, http://www.madrau.com/, to change resolution.)\n');
+   
+   %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
+   
    %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
    %     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
    %
