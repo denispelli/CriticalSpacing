@@ -56,7 +56,7 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossDeg=0;
+o.fixationCrossDeg=5;
 o.fixationLocation='center';
 
 % QUEST threshold estimation
