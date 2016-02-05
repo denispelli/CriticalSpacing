@@ -275,7 +275,7 @@ if o.measureBeta
 end
 
 % VISUAL STIMULUS
-o.permissionToChangeResolution=1;
+o.permissionToChangeResolution=0;
 o.repeatedTargets=1;
 o.fourFlankers=0;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
@@ -674,7 +674,7 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,[],1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).experimenter=name;
       end
@@ -692,7 +692,7 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,[],1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).observer=name;
       end
