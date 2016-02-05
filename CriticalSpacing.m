@@ -801,6 +801,7 @@ try
       % Measure targetHeightOverWidth
       oo(condition).targetFontHeightOverNominalPtSize=nan;
       oo(condition).targetPix=200;
+      % Get bounds.
       [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
       DestroyLetterTextures(letterStruct);
       oo(condition).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
@@ -1024,10 +1025,11 @@ try
    Screen('TextSize',window,oo(condition).textSize);
    string=strrep(string,'letter',symbolName);
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
-   Screen('Flip',window);
+   Screen('Flip',window,[],1);
    SetMouse(screenRect(3),screenRect(4),window);
    %    answer=GetKeypress([spaceKeyCode escapeKeyCode],oo(condition).deviceIndex,0);
    answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
+   Screen('FillRect',window); % xxx
    if streq(answer,'ESCAPE')
       if oo(1).speakEachLetter && oo(1).useSpeech
          Speak('Escape. This run is done.');
@@ -1260,7 +1262,7 @@ try
          r(4)=round(r(4)*(1-presentation/length(condList)));
          Screen('FillRect',window,[220 220 220],r); % grey background
       end
-      Screen('Flip',window); % Blank display, except perhaps fixation and progress bar.
+      Screen('Flip',window,[],1); % Blank display, except perhaps fixation and progress bar.
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
@@ -1280,7 +1282,10 @@ try
             beginAfterKeypress=0;
          end
          WaitSecs(1); % duration of fixation display
+         Screen('FillRect',window,[],stimulusRect); % Clear screen; keep progress bar.
          Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+      else
+         Screen('FillRect',window); % Clear screen.
       end
       stimulus=Shuffle(oo(condition).alphabet);
       stimulus=stimulus(1:3); % three random letters, all different.
@@ -1484,13 +1489,14 @@ try
       if oo(condition).usePurring
          Snd('Play',purr);
       end
-      Screen('Flip',window); % show target and flankers
+      Screen('Flip',window,[],1); % show target and flankers
       trialTimeSecs=GetSecs;
       % Discard the line textures, to free graphics memory.
       if exist('lineTexture','var')
          for i=1:length(lineTexture)
             Screen('Close',lineTexture(i));
          end
+         clear lineTexture
       end
       if oo(condition).repeatedTargets
          targets=stimulus(1:2);
@@ -1498,27 +1504,23 @@ try
          targets=stimulus(2);
       end
       if ~oo(condition).repeatedTargets
+         Screen('FillRect',window,white,stimulusRect); % Clear letters.
          Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
       end
       if isfinite(oo(condition).durationSec)
          WaitSecs(oo(condition).durationSec); % display of letters
-         if oo(condition).showProgressBar
-            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-            r=progressBarRect;
-            r(4)=round(r(4)*(1-presentation/length(condList)));
-            Screen('FillRect',window,[220 220 220],r); % grey background
-         end
-         Screen('Flip',window); % remove letters
-         if oo(condition).showProgressBar
-            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-            r=progressBarRect;
-            r(4)=round(r(4)*(1-presentation/length(condList)));
-            Screen('FillRect',window,[220 220 220],r); % grey background
-         end
-         WaitSecs(0.2); % pause before response screen
+         Screen('FillRect',window,white,stimulusRect); % Clear letters.
+%          if oo(condition).showProgressBar
+%             Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+%             r=progressBarRect;
+%             r(4)=round(r(4)*(1-presentation/length(condList)));
+%             Screen('FillRect',window,[220 220 220],r); % grey background
+%          end
          if ~oo(condition).repeatedTargets
             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
          end
+         Screen('Flip',window,[],1); % remove letters, keep progress bar.
+         WaitSecs(0.2); % pause before response screen
          Screen('TextFont',window,oo(condition).textFont,0);
          Screen('TextSize',window,oo(condition).textSize);
          string='Type your response, or ESCAPE to quit.   ';
@@ -1527,19 +1529,6 @@ try
          end
          Screen('DrawText',window,string,50,100,black,white,1);
          Screen('TextSize',window,oo(condition).textSize);
-         %          if ~isempty(oo(condition).targetFontNumber)
-         %             Screen('TextFont',window,oo(condition).targetFontNumber);
-         %             [~,number]=Screen('TextFont',window);
-         %             assert(number==oo(condition).targetFontNumber);
-         %          else
-         %             if streq(oo(condition).targetFont,'Solid')
-         %                Screen('TextFont',window,'Verdana');
-         %             else
-         %                Screen('TextFont',window,oo(condition).targetFont);
-         %                font=Screen('TextFont',window);
-         %                assert(streq(font,oo(condition).targetFont));
-         %             end
-         %          end
          [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
          x=50;
          y=stimulusRect(4)-50;
@@ -1554,7 +1543,7 @@ try
             x=x+1.5*RectWidth(dstRect);
          end
          Screen('TextFont',window,oo(condition).textFont,0);
-         Screen('Flip',window); % display response screen
+         Screen('Flip',window,[],1); % display response screen
       end
       
       if oo(condition).takeSnapshot
