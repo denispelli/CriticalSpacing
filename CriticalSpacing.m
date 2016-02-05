@@ -446,11 +446,6 @@ else
    if oo(1).permissionToChangeResolution
       warning('Trying to change your screen resolution to be optimal for this test. ...');
       oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
-%       clear Screen
-%       Screen('Preference','VisualDebugLevel',0);
-%       Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
-%       Screen('Preference','SkipSyncTests',1);
-%       Screen('Preference','SuppressAllWarnings',1);
       res=Screen('Resolution',oo(1).screen);
       if res.width==oo(1).nativeWidth
          fprintf('SUCCESS!\n');
@@ -1088,8 +1083,8 @@ try
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window,[],1);
    SetMouse(screenRect(3),screenRect(4),window);
-   %    answer=GetKeypress([spaceKeyCode escapeKeyCode],oo(condition).deviceIndex,0);
    answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
+
    Screen('FillRect',window); % xxx
    if streq(answer,'ESCAPE')
       if oo(1).speakEachLetter && oo(1).useSpeech
@@ -1327,7 +1322,6 @@ try
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
-            %             answer=GetKeypress([spaceKeyCode escapeKeyCode],oo(condition).deviceIndex,0);
             answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
             if streq(answer,'ESCAPE')
                if oo(1).speakEachLetter && oo(1).useSpeech
@@ -1564,10 +1558,6 @@ try
       else
          targets=stimulus(2);
       end
-      if ~oo(condition).repeatedTargets
-         Screen('FillRect',window,white,stimulusRect); % Clear letters.
-         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-      end
       if isfinite(oo(condition).durationSec)
          WaitSecs(oo(condition).durationSec); % display of letters
          Screen('FillRect',window,white,stimulusRect); % Clear letters.
@@ -1638,6 +1628,10 @@ try
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
             terminate=1;
             break;
+         end
+         if ~oo(condition).repeatedTargets && ~isfinite(oo(condition).durationSec)
+            Screen('FillRect',window,white,stimulusRect); % Clear letters.
+            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
          end
          if streq(upper(answer),'SPACE')
             responsesNumber=length(responseString);
