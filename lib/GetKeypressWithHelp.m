@@ -3,7 +3,7 @@ function answer=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterS
 %   Used by CriticalSpacing to get a key stroke. Pressing shift shows
 %   the alphabet.
 
-useCopyWindow=0; % Works with 0 or 1 on Mac. Hoping 1 helps on Windows.
+useCopyWindow=1; % Works with 0 or 1 on Mac. Hoping 1 helps on Windows.
 if nargin<6
    responseString='';
 end
@@ -24,9 +24,9 @@ while(1)
          [width,height]=RectSize(Screen('Rect',window));
          m=zeros([height,width]);
          savedTexture=Screen('MakeTexture',window,m);
-         Screen('Flip',window,2);
+         Screen('Flip',window,[],2);
          Screen('CopyWindow',window,savedTexture);
-         Screen('Flip',window,2);
+         Screen('Flip',window,[],2);
          Screen('DrawTexture',window,savedTexture);
       else
          saveScreen=Screen('GetImage',window);
