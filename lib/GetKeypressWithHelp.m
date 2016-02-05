@@ -3,6 +3,7 @@ function answer=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterS
 %   Used by CriticalSpacing to get a key stroke. Pressing shift shows
 %   the alphabet.
 
+capsLockIsSticky=IsWindows;
 useCopyWindow=1; % Works with 0 or 1 on Mac. Hoping 1 helps on Windows.
 if nargin<6
    responseString='';
@@ -14,7 +15,7 @@ while(1)
    [~,keyCode] = KbPressWait(o.deviceIndex);
    answer = KbName(keyCode);
    if ismember(answer,{'RightShift','LeftShift','CapsLock'});
-      if ismember(answer,{'CapsLock'});
+      if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky;
          KbReleaseWait(o.deviceIndex);
       end
       % Save screen
@@ -37,7 +38,7 @@ while(1)
       end
       ShowAlphabet(o,window,stimulusRect,letterStruct);
       % Wait for release of shift
-      if ismember(answer,{'CapsLock'});
+      if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky;
          saveEnableKeyCodes=RestrictKeysForKbCheck(KbName('CapsLock'));
          KbStrokeWait(o.deviceIndex);
          RestrictKeysForKbCheck(saveEnableKeyCodes);
