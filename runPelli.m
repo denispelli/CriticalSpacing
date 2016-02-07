@@ -77,6 +77,8 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 
+%o.useFractionOfScreen=0.3; 
+
 % RUN (measure two thresholds, interleaved)
 o.fourFlankers=1;
 o.thresholdParameter='spacing';
