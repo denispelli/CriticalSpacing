@@ -1,5 +1,5 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2015,2016, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2016 Denis G. Pelli, denis.pelli@nyu.edu
 
 % We recommend leaving the boilerplate header alone, and customizing by
 % copying lines from the boilerplate to your customized section at the
@@ -81,21 +81,25 @@ o.useFractionOfScreen=0;
 % first run we'll use repeated targets. In the second run we'll use single
 % targets.
 
+% o.useFractionOfScreen=0.3; 
+o.viewingDistanceCm=200; % Default for runtime question.
+o.fixationCrossDeg=inf;
+
 % RUN measure thresholds for size
 o.durationSec=0.2; % duration of display of target and flankers
 o.repeatedTargets=0;
 o.fourFlankers=1;
 o.thresholdParameter='size';
-o.fixationCrossDeg=3;
+% o.fixationCrossDeg=3;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.eccentricityDeg=0;
 o.fixationLocation='center';
 o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % RUN measure thresholds for size
-o.eccentricityDeg=10;
+o.eccentricityDeg=4;
 o.fixationLocation='left';
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
+%o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
