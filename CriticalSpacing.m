@@ -275,7 +275,7 @@ if o.measureBeta
 end
 
 % VISUAL STIMULUS
-o.permissionToChangeResolution=0;
+o.permissionToChangeResolution=1;
 o.repeatedTargets=1;
 o.fourFlankers=0;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
@@ -785,9 +785,6 @@ try
       oo(condition).fix.clipRect=stimulusRect;
       oo(condition).fix.fixationCrossPix=fixationCrossPix;
       oo(condition).fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
-      %         if ~oo(condition).repeatedTargets
-      %             Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-      %         end
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each displayed screen.
       if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
@@ -809,7 +806,8 @@ try
       oo(condition).eccentricityPix=max(minEccPix,min(maxEccPix,oo(condition).eccentricityPix));
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
       if reducing
-         ffprintf(ff,'%d: Reducing eccentricity from %.1f to %.1f deg, to accomodate %.1f deg target on %.1 deg-wide screen.\n',condition,oldEccDeg,oo(condition).eccentricityDeg,oo(condition).targetDeg,RectWidth(stimulusRect)/pixPerDeg);
+         ffprintf(ff,'%d: Reducing eccentricity from %.1f to %.1f deg, to accomodate %.1f deg target on %.1 deg-wide screen.\n',...
+            condition,oldEccDeg,oo(condition).eccentricityDeg,oo(condition).targetDeg,RectWidth(stimulusRect)/pixPerDeg);
       end
       addonDeg=0.45;
       addonPix=pixPerDeg*addonDeg;
@@ -873,8 +871,6 @@ try
       % prepare to draw fixation cross
       oo(condition).fix.targetHeightPix=oo(condition).targetPix;
       oo(condition).fix.targetCross=oo(condition).targetCross;
-      oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
-      fixationLines=ComputeFixationLines(oo(condition).fix);
       oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
       fixationLines=ComputeFixationLines(oo(condition).fix);
       
@@ -963,8 +959,8 @@ try
       ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f\n',condition,oo(condition).durationSec,oo(condition).eccentricityDeg);
    end
    ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
-   ffprintf(ff,'Window width %d pix %.1f cm. ',RectWidth(Screen('Rect',window)),screenWidthCm);
-   ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
+%    ffprintf(ff,'Window width %d pix %.1f cm. ',RectWidth(Screen('Rect',window)),screenWidthCm);
+%    ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
    
    % Identify the computer
    cal.screen=0;
@@ -991,21 +987,15 @@ try
    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
    cal.screenWidthCm=screenWidthMm/10;
    actualScreenRect=Screen('Rect',cal.screen,1);
-   ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
-   ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
-   ffprintf(ff,'%s, %s, %s, screen %d, %dx%d pixels, %.1fx%.1f cm, %.1fx%.1f deg, %.0f pix/cm, %/0f pixPerDeg.\n',...
-      cal.processUserLongName,cal.machineName,cal.macModelName,cal.screen,...
-      RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+%    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
+%    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
+   ffprintf(ff,'%s, %s, %s\n',cal.processUserLongName,cal.machineName,cal.macModelName);
+   ffprintf(ff,'screen %d, %dx%d pixels, %.1fx%.1f cm, %.1fx%.1f deg, %.0f pix/cm, %.0f pixPerDeg.\n',...
+      cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       screenWidthMm/10,screenHeightMm/10,...
       RectWidth(actualScreenRect)/pixPerDeg,RectHeight(actualScreenRect)/pixPerDeg,...
       RectWidth(actualScreenRect)/(screenWidthMm/10),pixPerDeg);
    assert(cal.screenWidthCm==screenWidthMm/10);
-   
-   %     ffprintf(ff,'Screen resolution %d x %d pixels.\n',resolution.width,resolution.height);
-   
-   %     ffprintf(ff,'%s %s\n',cal.machineName,cal.macModelName);
-   %     ffprintf(ff,'cal.ScreenConfigureDisplayBrightnessWorks=%.0f;\n',cal.ScreenConfigureDisplayBrightnessWorks);
-   %
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
       cal.brightnessSetting=1;
@@ -1097,11 +1087,16 @@ try
       sca;
       return
    end
+   fixationClipRect=stimulusRect;
    if any(isfinite([oo.durationSec]))
       string='Please use the crosshairs on every trial. ';
       string=[string 'To begin, please fix your gaze at the center of crosshairs below, and, while fixating, press the SPACEBAR. '];
       string=strrep(string,'letter',symbolName);
-      DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      fixationClipRect(2)=5*oo(condition).textSize;
+      x=50;
+      y=0.3*oo(1).textSize;
+      Screen('TextSize',window,oo(condition).textSize);
+      DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
       Screen('Flip',window,[],1); % Don't clear.
       beginAfterKeypress=1;
    else
@@ -1309,8 +1304,11 @@ try
       end
       oo(condition).fix.targetCross=oo(condition).targetCross;
       fixationLines=ComputeFixationLines(oo(condition).fix);
-      if ~oo(condition).repeatedTargets
-         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+      % Set up fixation.
+      if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
+         % Draw fixation.
+         fl=ClipLines(fixationLines,fixationClipRect);
+         Screen('DrawLines',window,fl,fixationLineWeightPix,black);
       end
       if oo(condition).showProgressBar
          Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
@@ -1318,7 +1316,7 @@ try
          r(4)=round(r(4)*(1-presentation/length(condList)));
          Screen('FillRect',window,[220 220 220],r); % grey background
       end
-      Screen('Flip',window,[],1); % Blank display, except perhaps fixation and progress bar.
+      Screen('Flip',window,[],1); % Display instructions and fixation. 
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
@@ -1336,9 +1334,23 @@ try
             end
             beginAfterKeypress=0;
          end
-         WaitSecs(1); % duration of fixation display
+         Screen('FillRect',window,white,stimulusRect);
+         % Define fixation bounds midway through first trial, for rest of
+         % trials.
+         fixationClipRect=InsetRect(stimulusRect,0,1.6*oo(condition).textSize);
+         if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
+            % Draw fixation.
+            fl=ClipLines(fixationLines,fixationClipRect);
+            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+         end
+         Screen('Flip',window,[],1); % Display fixation.
+         WaitSecs(1); % Duration of fixation display, before stimulus appears.
          Screen('FillRect',window,[],stimulusRect); % Clear screen; keep progress bar.
-         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+         if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
+            % Draw fixation.
+            fl=ClipLines(fixationLines,fixationClipRect);
+            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+         end
       else
          Screen('FillRect',window); % Clear screen.
       end
@@ -1391,7 +1403,7 @@ try
          yPix=oo(condition).targetPix*oo(condition).targetHeightOverWidth;
       end
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',condition,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
-      if ~oo(condition).repeatedTargets
+      if ~oo(condition).repeatedTargets 
          xStimulus=[xF xT xFF];
          yStimulus=[yF yT yFF];
          if oo(condition).fourFlankers
@@ -1532,7 +1544,8 @@ try
          fprintf('. target center (%d,%d)\n',xT,yT);
          letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
          Screen('FrameRect',window,[255 0 0],letterRect);
-         fprintf('%d: %d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',condition,MFileLineNr,RectHeight(stimulusRect),RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
+         fprintf('%d: %d: screenHeight %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',...
+            condition,MFileLineNr,RectHeight(stimulusRect),RectHeight(letterRect),oo(condition).targetPix,Screen('TextSize',window),xPix,yPix);
       end
       Screen('TextFont',window,oo(condition).textFont,0);
       if oo(condition).showProgressBar
@@ -1544,7 +1557,7 @@ try
       if oo(condition).usePurring
          Snd('Play',purr);
       end
-      Screen('Flip',window,[],1); % show target and flankers
+      Screen('Flip',window,[],1); % Display stimulus & fixation.
       trialTimeSecs=GetSecs;
       % Discard the line textures, to free graphics memory.
       if exist('lineTexture','var')
@@ -1561,16 +1574,12 @@ try
       if isfinite(oo(condition).durationSec)
          WaitSecs(oo(condition).durationSec); % display of letters
          Screen('FillRect',window,white,stimulusRect); % Clear letters.
-%          if oo(condition).showProgressBar
-%             Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-%             r=progressBarRect;
-%             r(4)=round(r(4)*(1-presentation/length(condList)));
-%             Screen('FillRect',window,[220 220 220],r); % grey background
-%          end
-         if ~oo(condition).repeatedTargets
-            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+         if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
+            fl=ClipLines(fixationLines,fixationClipRect);
+            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
-         Screen('Flip',window,[],1); % remove letters, keep progress bar.
+         Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
+         Screen('FillRect',window,white,stimulusRect);
          WaitSecs(0.2); % pause before response screen
          Screen('TextFont',window,oo(condition).textFont,0);
          Screen('TextSize',window,oo(condition).textSize);
@@ -1578,23 +1587,40 @@ try
          if oo(condition).repeatedTargets
             string=strrep(string,'response','two responses');
          end
-         Screen('DrawText',window,string,50,100,black,white,1);
+         % Clear space for text.
+         texture=Screen('OpenOffscreenWindow',window);
+         Screen('TextFont',texture,oo(condition).textFont,0);
+         Screen('TextSize',texture,oo(condition).textSize);
+         bounds=TextBounds(texture,string,1);
+         Screen('Close',texture);
+         x=50;
+         y=-bounds(2)+0.3*oo(condition).textSize;
+%          fixationClipRect=stimulusRect;
+%          fixationClipRect(2)=y+bounds(4)+0.3*oo(condition).textSize;
+         % Draw text.
+         Screen('DrawText',window,string,x,y,black,white,1);
          Screen('TextSize',window,oo(condition).textSize);
          [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
+         alphabetBounds=round(alphabetBounds*oo(condition).textSize/RectHeight(alphabetBounds));
          x=50;
-         y=stimulusRect(4)-50;
+         y=stimulusRect(4)-0.3*RectHeight(alphabetBounds);
+%          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
          for i=1:length(oo(condition).alphabet)
-            dstRect=round(alphabetBounds*oo(condition).textSize/RectHeight(alphabetBounds));
-            dstRect=OffsetRect(dstRect,x,y-RectHeight(dstRect));
+            dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
             for j=1:length(letterStruct)
                if oo(condition).alphabet(i)==letterStruct(j).letter
-                  Screen('DrawTexture',window,letterStruct(i).texture,alphabetBounds,dstRect);
+                  Screen('DrawTexture',window,letterStruct(i).texture,[],dstRect);
                end
             end
             x=x+1.5*RectWidth(dstRect);
          end
          Screen('TextFont',window,oo(condition).textFont,0);
-         Screen('Flip',window,[],1); % display response screen
+         if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
+            fl=ClipLines(fixationLines,fixationClipRect);
+            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+         end
+         Screen('Flip',window,[],1); % Display fixation & response instructions.
+         Screen('FillRect',window,white,stimulusRect);
       end
       
       if oo(condition).takeSnapshot
@@ -1628,10 +1654,6 @@ try
             ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
             terminate=1;
             break;
-         end
-         if ~oo(condition).repeatedTargets && ~isfinite(oo(condition).durationSec)
-            Screen('FillRect',window,white,stimulusRect); % Clear letters.
-            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
          end
          if streq(upper(answer),'SPACE')
             responsesNumber=length(responseString);
@@ -1724,11 +1746,6 @@ try
    if oo(1).useSpeech
       Speak('Congratulations.  This run is done.');
    end
-   ListenChar(0); % flush and reenable keyboard
-   Snd('Close');
-   Screen('CloseAll');
-   sca;
-   ShowCursor;
    trials=0;
    oo(1).totalSecs=GetSecs-oo(1).beginSecs;
    for condition=1:conditions
@@ -1814,7 +1831,12 @@ try
             ffprintf(ff,'o.measureBeta done **********************************\n');
          end
       end
-   end
+      ListenChar(0); % flush and reenable keyboard
+      Snd('Close');
+      ShowCursor;
+      Screen('CloseAll');
+      sca;
+  end
    for condition=1:conditions
       if exist('results','var') && oo(condition).responseCount>1
          ffprintf(ff,'%d:',condition);
@@ -1835,7 +1857,6 @@ try
    end
    fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch
-   sca; % screen close all. This cleans up without canceling the error message.
    ListenChar(0);
    % Some of these functions spoil psychlasterror, so i don't use them.
    %     Snd('Close');
@@ -1844,6 +1865,7 @@ catch
       fclose(dataFid);
       dataFid=-1;
    end
+   sca; % screen close all. This cleans up without canceling the error message.
    psychrethrow(psychlasterror);
 end
 end
