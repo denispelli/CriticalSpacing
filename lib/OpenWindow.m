@@ -17,12 +17,12 @@ if 1
    end
    % Mario says the Virtual Frame Buffer makes the back buffer more
    % reliable, for better performance.
-   PsychImaging('AddTask','General','UseVirtualFramebuffer'); 
+   PsychImaging('AddTask','General','UseVirtualFramebuffer');
    if ~o.useFractionOfScreen
       [window,r]=PsychImaging('OpenWindow',o.screen,white);
    else
       [window,r]=PsychImaging('OpenWindow',o.screen,white,round(o.useFractionOfScreen*screenBufferRect));
    end
 else
-   [window,r]=Screen('OpenWindow',0,white,screenBufferRect);
+   [window,r]=Screen('OpenWindow',o.screen,white,screenBufferRect);
 end
