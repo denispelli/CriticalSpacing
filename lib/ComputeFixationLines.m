@@ -156,4 +156,5 @@ end
 % Shift everything to desired location of fixation.
 fixationLines(1,:)=fixationLines(1,:)+fix.x;
 fixationLines(2,:)=fixationLines(2,:)+fix.y;
+fixationLines=round(fixationLines);
 end
