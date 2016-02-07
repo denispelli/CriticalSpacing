@@ -275,7 +275,8 @@ if o.measureBeta
 end
 
 % VISUAL STIMULUS
-o.permissionToChangeResolution=1;
+
+o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox box.
 o.repeatedTargets=1;
 o.fourFlankers=0;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
