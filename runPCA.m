@@ -79,6 +79,7 @@ o.useFractionOfScreen=0;
 % o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
 
 %% CUSTOM CODE
+o.viewingDistanceCm=400; % Default for runtime question.
 
 % RUN: Sloan size
 o.targetFont='Sloan';
@@ -89,16 +90,7 @@ o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
 o.repeatedTargets=1;
 o=CriticalSpacing(o); 
 
-% RUN: Pelli size
-o.targetFont='Pelli';
-o.alphabet='123456789'; 
-o.borderLetter='$';
-o.thresholdParameter='size';
-o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
-o.repeatedTargets=1;
-o=CriticalSpacing(o); 
-
-% RUN: Pelli spacing, twice
+% RUN: Sloan spacing, two interleaved
 o.thresholdParameter='spacing';
 o.repeatedTargets=1;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
@@ -106,6 +98,22 @@ o(2)=o(1); % Copy the condition
 o(2).fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
 o=CriticalSpacing(o); 
 o=o(1);
+
+% RUN: Sloan spacing, not repeated target
+o.repeatedTargets=0;
+o.thresholdParameter='spacing';
+o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+o=CriticalSpacing(o); 
+o=o(1);
+
+% RUN: Pelli size
+o.repeatedTargets=0;
+o.targetFont='Pelli';
+o.alphabet='123456789'; 
+o.borderLetter='$';
+o.thresholdParameter='size';
+o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
+o=CriticalSpacing(o); 
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
