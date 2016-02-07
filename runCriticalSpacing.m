@@ -29,6 +29,7 @@ o.beepNegativeFeedback=0;
 o.usePurring=0; % Play purring sound while awaiting user response.
 
 % VISUAL STIMULUS
+o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
 o.durationSec=inf; % duration of display of target and flankers
 o.repeatedTargets=1;
 o.fourFlankers=1;
