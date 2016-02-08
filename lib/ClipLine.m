@@ -64,7 +64,8 @@ if length(xHit)==2
       xx,yy
       r
    end
-   assert(abs(xHit(1)-xHit(2))+abs(yHit(1)-yHit(2))<1);
+%   xxx
+%   assert(abs(xHit(1)-xHit(2))+abs(yHit(1)-yHit(2))<1);
    xHit=xHit(1);
    yHit=yHit(1);
 end
