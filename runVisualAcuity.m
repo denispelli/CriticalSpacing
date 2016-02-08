@@ -99,7 +99,7 @@ o=CriticalSpacing(o); % dual targets, repeated indefinitely
 % RUN measure thresholds for size
 o.eccentricityDeg=4;
 o.fixationLocation='left';
-%o=CriticalSpacing(o); % dual targets, repeated indefinitely
+o=CriticalSpacing(o); % dual targets, repeated indefinitely
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
