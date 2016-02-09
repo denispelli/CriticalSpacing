@@ -630,7 +630,8 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,[],1,oo(1).deviceIndex);
+      white=WhiteIndex(window);
+      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,white,1,oo(1).deviceIndex);
       if ~isempty(d)
          inputDistanceCm=str2num(d);
          if ~isempty(inputDistanceCm) && inputDistanceCm~=0
@@ -672,7 +673,8 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,[],1,oo(1).deviceIndex);
+      white=WhiteIndex(window);
+      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).experimenter=name;
       end
@@ -690,7 +692,8 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,[],1,oo(1).deviceIndex);
+      white=WhiteIndex(window);
+      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).observer=name;
       end
@@ -908,7 +911,7 @@ try
       else
          numberTargets='one target';
       end
-      ffprintf(ff,'Exp. %s, Observer %s, %s %s, alternatives %d,  beta %.1f,\n',oo(condition).experimenter,oo(condition).observer,oo(condition).task,numberTargets,length(oo(condition).alphabet),oo(condition).beta);
+      ffprintf(ff,'%s: %s, %s %s, alternatives %d,  beta %.1f,\n',oo(condition).experimenter,oo(condition).observer,oo(condition).task,numberTargets,length(oo(condition).alphabet),oo(condition).beta);
    end
    for condition=1:conditions
       if streq(oo(condition).thresholdParameter,'spacing')
