@@ -745,6 +745,7 @@ try
    ffprintf(ff,'\n%s %s\n',oo(1).functionNames,datestr(now));
    ffprintf(ff,'Saving results in:\n');
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
+   ffprintf(ff,'Keep both. The .txt file is human-readable. The .mat file is machine-readable.\n');
    for condition=1:conditions
       if ~isempty(oo(condition).unknownFields)
          ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(condition).unknownFields{:}) '.\n'],condition);
@@ -907,7 +908,7 @@ try
       else
          numberTargets='one target';
       end
-      ffprintf(ff,'Observer %s, %s %s, alternatives %d,  beta %.1f,\n',oo(condition).observer,oo(condition).task,numberTargets,length(oo(condition).alphabet),oo(condition).beta);
+      ffprintf(ff,'Exp. %s, Observer %s, %s %s, alternatives %d,  beta %.1f,\n',oo(condition).experimenter,oo(condition).observer,oo(condition).task,numberTargets,length(oo(condition).alphabet),oo(condition).beta);
    end
    for condition=1:conditions
       if streq(oo(condition).thresholdParameter,'spacing')
@@ -939,19 +940,19 @@ try
    ffprintf(ff,'\n');
    for condition=1:conditions
       sizesPix=oo(condition).minimumTargetPix*[oo(condition).targetHeightOverWidth 1];
-      ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pixels, %.3fx%.3f deg. ',condition,sizesPix,sizesPix/pixPerDeg);
+      ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pix, %.3fx%.3f deg. ',condition,sizesPix,sizesPix/pixPerDeg);
       if oo(condition).fixedSpacingOverSize
          spacingPix=round(oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
-         ffprintf(ff,'Minimum spacing %.0f pixels, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
+         ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
       else
          ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(condition).spacingPix,oo(condition).spacingDeg);
       end
    end
    for condition=1:conditions
       if oo(condition).readAlphabetFromDisk
-         ffprintf(ff,'%d: %s font from disk. ',condition,oo(condition).targetFont);
+         ffprintf(ff,'%d: "%s" font from disk. ',condition,oo(condition).targetFont);
       else
-         ffprintf(ff,'%d: %s font, live. ',condition,oo(condition).targetFont);
+         ffprintf(ff,'%d: "%s" font, live. ',condition,oo(condition).targetFont);
       end
       ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(condition).alphabet,oo(condition).borderLetter);
    end
@@ -1083,7 +1084,7 @@ try
       if oo(1).speakEachLetter && oo(1).useSpeech
          Speak('Escape. This run is done.');
       end
-      ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
+      ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
       oo(1).quit=1;
       ListenChar(0);
       ShowCursor;
@@ -1334,7 +1335,7 @@ try
                if oo(1).speakEachLetter && oo(1).useSpeech
                   Speak('Escape. This run is done.');
                end
-               ffprintf(ff,'*** Observer typed escape. Run terminated.\n');
+               ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
                oo(1).quit=1;
                ListenChar(0);
                ShowCursor;
@@ -1660,7 +1661,7 @@ try
          answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes],oo(condition),window,stimulusRect,letterStruct,responseString);
          if streq(answer,'ESCAPE')
             ListenChar(0);
-            ffprintf(ff,'*** Observer typed <escape>. Run terminated.\n');
+            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
             terminate=1;
             break;
          end
