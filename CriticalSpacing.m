@@ -236,61 +236,57 @@ Screen('Preference','SkipSyncTests',1);
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
 
+% PROCEDURE
+o.easyBoost=0.3; % Increase the log threshold parameter of easy trials by this much.
+o.experimenter=''; % Put name here to skip the runtime question.
+o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
+o.fractionEasyTrials=0;
+o.observer=''; % Put name here to skip the runtime question.
+o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
+o.secsBeforeSkipCausesGuess=8;
+o.takeSnapshot=0; % To illustrate your talk or paper.
+o.task='identify';
+o.textFont='Arial';
+o.textSizeDeg=0.4;
+o.thresholdParameter='spacing'; % 'spacing' or 'size'
+o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
+o.viewingDistanceCm=400; % Default for runtime question.
+
 % SOUND & FEEDBACK
-o.beepPositiveFeedback=1;
 o.beepNegativeFeedback=0;
-o.usePurring=0;
-o.useSpeech=1;
+o.beepPositiveFeedback=1;
+o.showProgressBar=1;
 o.speakEachLetter=1;
 o.speakEncouragement=0;
 o.speakViewingDistance=0;
-o.showProgressBar=1;
-
-% PROCEDURE
-o.readAlphabetFromDisk=1;
-o.takeSnapshot=0; % To illustrate your talk or paper.
-o.fractionEasyTrials=0.2; % Add extra easy trials.
-o.easyBoost=0.3; % Increase the log threshold parameter of easy trials by this much.
-o.secsBeforeSkipCausesGuess=8;
-% o.observer='junk';
-% o.observer='Shivam'; % specify actual observer name
-o.observer=''; % Name is requested at beginning of run.
-o.experimenter='';
-o.scriptName='';
-o.scriptFullFileName='';
-o.script='';
-o.quit=0;
-o.viewingDistanceCm=300;
-o.flipScreenHorizontally=0;
-o.useQuest=1; % true(1) or false(0)
-o.thresholdParameter='spacing';
-% o.thresholdParameter='size';
-o.deviceIndex=-3; % all keyboard and keypad devices
-o.trials=40; % number of trials for the threshold estimate
-o.measureBeta=0;
-o.task='identify';
-if o.measureBeta
-   o.trials=200;
-   o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
-end
+o.usePurring=0;
+o.useSpeech=1;
 
 % VISUAL STIMULUS
-
-o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox box.
-o.repeatedTargets=1;
-o.fourFlankers=0;
-o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
-% o.fixedSpacingOverSize=0; % Disconnect size & spacing.
-o.measureThresholdVertically=nan; % depends on parameter
-o.setTargetHeightOverWidth=0;
-o.minimumTargetPix=8; % Minimum viewing distance depends soley on this & pixPerCm.
-o.eccentricityDeg=0; % location of target, relative to fixation, in degrees
-% o.radialOrTangential='tangential'; % values 'radial', 'tangential'
-o.radialOrTangential='radial'; % values 'radial', 'tangential'
 o.durationSec=inf; % duration of display of target and flankers
+o.eccentricityDeg=0; % location of target, relative to fixation, in degrees. Positive for right, negative for left.
+% o.fixedSpacingOverSize=0; % Disconnect size & spacing.
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
+o.fourFlankers=1;
+o.measureThresholdVertically=nan; % depends on parameter
+o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
+% o.radialOrTangential='tangential'; % vertically arranged flankers for single target
+o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+o.repeatedTargets=1;
+o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
+o.spacingDeg=nan;
+o.targetDeg=nan;
+
+% TARGET FONT
+% o.targetFont='Sloan';
+% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+% o.borderLetter='X';
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
-% o.borderLetter='N';
-% o.borderLetter='!';
+% o.borderLetter='$';
+o.targetFont='Pelli';
+o.alphabet='123456789'; 
+o.borderLetter='$';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm XLight';
 % o.targetFont='Gotham Cond SSm Light';
@@ -299,48 +295,53 @@ o.durationSec=inf; % duration of display of target and flankers
 % o.targetFont='Gotham Cond SSm Bold';
 % o.targetFont='Gotham Cond SSm Black';
 % o.targetFont='Arouet';
+% o.targetFont='Pelli';
 % o.targetFont='Retina Micro';
-% o.targetFont='Calibri';
-% o.targetFont='Sloan';
-% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-% o.borderLetter='X';
-o.targetFont='Pelli';
-o.alphabet='123456789'; 
-o.borderLetter='$';
-o.targetDeg=nan;
-o.spacingDeg=nan;
 
 % FIXATION
-o.fixationLocation='center'; % 'left', 'right'
-o.targetCross=0;
 o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf;
+o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
+o.fixationLocation='center'; % 'center', 'left', 'right'
+o.targetCross=0; % 1 to mark target location
 
-% DEBUGGING AIDS
-o.showAlphabet=0;
-o.frameTheTarget=0;
-o.printSizeAndSpacing=0;
-o.printScreenResolution=0;
-o.showLineOfLetters=0;
-o.showBounds=0;
-o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0;
-
-% QUEST
+% QUEST threshold estimation
 o.beta=nan;
+o.measureBeta=0;
 o.pThreshold=nan;
 o.tGuess=nan;
-o.tGuess=nan;
 o.tGuessSd=nan;
+o.useQuest=1; % true(1) or false(0)
 
-% STARTING FROM ZERO
-o.targetFontNumber=[];
+% DEBUGGING AIDS
+o.frameTheTarget=0; 
+o.printScreenResolution=0;
+o.printSizeAndSpacing=0;
+o.showAlphabet=0; 
+o.showBounds=0;
+o.showLineOfLetters=0;
+o.speakSizeAndSpacing=0;
+o.useFractionOfScreen=0; 
+
+% TO MEASURE BETA
+% o.measureBeta=0;
+% o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
+% o.trials=200;
+
+% TO HELP CHILDREN
+% o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
+% o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
+
+% NOT SET BY USER
+o.deviceIndex=-3; % all keyboard and keypad devices
 o.easyCount=0;
 o.guessCount=0; % artificial guesses
+o.quit=0;
+o.script='';
+o.scriptFullFileName='';
+o.scriptName='';
+o.targetFontNumber=[];
 o.targetHeightOverWidth=nan;
-o.textFont='Arial';
-o.textSizeDeg=0.4;
 
 % PROCESS INPUT.
 % o is a single struct, and oIn may be an array of structs.
@@ -362,7 +363,8 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'normalCriticalSpacingDeg' 'presentations' 'q' 'responseCount' ...
    'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
-   'textSize' 'totalSecs' 'unknownFields' 'validKeyNames'};
+   'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
+   'nativeHeight' 'nativeWidth' 'resolution'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -807,7 +809,7 @@ try
       oo(condition).eccentricityPix=max(minEccPix,min(maxEccPix,oo(condition).eccentricityPix));
       oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
       if reducing
-         ffprintf(ff,'%d: Reducing eccentricity from %.1f to %.1f deg, to accomodate %.1f deg target on %.1 deg-wide screen.\n',...
+         ffprintf(ff,'%d: WARNING: Reducing eccentricity from %.1f to %.1f deg, to accomodate %.1f deg target on %.1f deg-wide screen.\n',...
             condition,oldEccDeg,oo(condition).eccentricityDeg,oo(condition).targetDeg,RectWidth(stimulusRect)/pixPerDeg);
       end
       addonDeg=0.45;
@@ -954,7 +956,7 @@ try
       ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(condition).alphabet,oo(condition).borderLetter);
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: %s font o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetFont,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
+      ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
    end
    for condition=1:conditions
       ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f\n',condition,oo(condition).durationSec,oo(condition).eccentricityDeg);
@@ -1173,18 +1175,24 @@ try
          end
       else
          % Just one target
-         if oo(condition).fourFlankers
-            minSpacesY=2;
-            minSpacesX=2;
-         else
-            if oo(condition).measureThresholdVertically
-               minSpacesY=2;
-               minSpacesX=0;
-            else
+         switch oo(condition).thresholdParameter
+            case 'spacing',
+               if oo(condition).fourFlankers
+                  minSpacesY=2;
+                  minSpacesX=2;
+               else
+                  if oo(condition).measureThresholdVertically
+                     minSpacesY=2;
+                     minSpacesX=0;
+                  else
+                     minSpacesY=0;
+                     minSpacesX=2;
+                  end
+               end
+            case 'size',
                minSpacesY=0;
-               minSpacesX=2;
-            end
-         end
+               minSpacesX=0;
+       end
       end
       if oo(condition).measureThresholdVertically
          % vertical threshold
@@ -1407,7 +1415,7 @@ try
       if ~oo(condition).repeatedTargets 
          xStimulus=[xF xT xFF];
          yStimulus=[yF yT yFF];
-         if oo(condition).fourFlankers
+         if oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing')
             assert(~oo(condition).measureThresholdVertically); % this code won't yet handle vertical case
             xStimulus=[xStimulus xT xT];
             yStimulus=[yStimulus yT-ySpacing yT+ySpacing];
