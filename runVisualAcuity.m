@@ -90,7 +90,6 @@ o.durationSec=0.2; % duration of display of target and flankers
 o.repeatedTargets=0;
 o.fourFlankers=1;
 o.thresholdParameter='size';
-% o.fixationCrossDeg=3;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 o.eccentricityDeg=0;
 o.fixationLocation='center';
