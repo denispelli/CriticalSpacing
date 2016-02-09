@@ -1,3 +1,6 @@
+% My program crashed on a student Mac when textFont was not available on
+% her Mac OS. This is my attempt to replicate the problem, but this
+% programs runs ok.
 window=Screen('OpenWindow',0,255,[0 0 400 100]);
 bounds=TextBounds(window,'Hello')
 targetFont='xyz';
