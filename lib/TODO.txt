@@ -1,7 +1,11 @@
 IDEAS
 
-when user ESCAPES, there should be an easy way to ESCAPE from all the rest of the runs.
+when user ESCAPES, the user should be invited to ESCAPE the rest of the runs.
 
-collect observer age before experiment (this information is useful to save in the data files)
+move obsolete run* scripts into "Old Scripts"
 
-move run* scripts that are no longer necessary into "Old Scripts"
+bug: runVisualAcuity: when useFractionOfScreen the eccentricity is forced to zero, and there is no blanking of fixation at target location.
+
+bug: runVisualAcuity: use useFractionOfScreen the reported screen subtense should be full, but is partial.
+
+NO: collect observer age before experiment (this information is useful to save in the data files)
