@@ -9,41 +9,56 @@
 clear o
 
 % PROCEDURE
-o.viewingDistanceCm=400; % Default for runtime question.
+o.easyBoost=0.3; % Increase the log threshold parameter of easy trials by this much.
 o.experimenter=''; % Put name here to skip the runtime question.
-o.observer=''; % Put name here to skip the runtime question.
-o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
-o.readAlphabetFromDisk=1; % 1 makes the program more portable.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
-o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-o.measureThresholdVertically=0;
-o.textFont='Arial';
-o.showProgressBar=1;
+o.fractionEasyTrials=0;
+o.observer=''; % Put name here to skip the runtime question.
+o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
+o.readAlphabetFromDisk=1; % 1 makes the program more portable.
+o.secsBeforeSkipCausesGuess=8;
+o.takeSnapshot=0; % To illustrate your talk or paper.
 o.task='identify';
+o.textFont='Arial';
+o.textSizeDeg=0.4;
+o.thresholdParameter='spacing'; % 'spacing' or 'size'
+o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
+o.viewingDistanceCm=400; % Default for runtime question.
 
-% SOUND
-o.speakEachLetter=1;
-o.useSpeech=1;
-o.beepPositiveFeedback=1;
+% SOUND & FEEDBACK
 o.beepNegativeFeedback=0;
-o.usePurring=0; % Play purring sound while awaiting user response.
+o.beepPositiveFeedback=1;
+o.showProgressBar=1;
+o.speakEachLetter=1;
+o.speakEncouragement=0;
+o.speakViewingDistance=0;
+o.usePurring=0;
+o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.repeatedTargets=1;
+o.eccentricityDeg=0; % location of target, relative to fixation, in degrees. Positive for right, negative for left.
+% o.fixedSpacingOverSize=0; % Disconnect size & spacing.
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=1;
-o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
-o.setTargetHeightOverWidth=0;
+o.measureThresholdVertically=nan; % depends on parameter
+o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+o.repeatedTargets=1;
+o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
+o.spacingDeg=nan;
+o.targetDeg=nan;
 
 % TARGET FONT
-o.targetFont='Sloan';
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
-% o.targetFont='Pelli';
-% o.alphabet='123456789'; 
+% o.targetFont='Sloan';
+% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+% o.borderLetter='X';
+% o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='$';
+o.targetFont='Pelli';
+o.alphabet='123456789'; 
+o.borderLetter='$';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm XLight';
 % o.targetFont='Gotham Cond SSm Light';
@@ -56,49 +71,64 @@ o.borderLetter='X';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossDeg=0;
-o.fixationLocation='center';
+o.fixationCrossBlankedNearTarget=1;
+o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationLineWeightDeg=0.02;
+o.fixationLocation='center'; % 'center', 'left', 'right'
+o.targetCross=0; % 1 to mark target location
 
 % QUEST threshold estimation
+o.beta=nan;
 o.measureBeta=0;
+o.pThreshold=nan;
+o.tGuess=nan;
+o.tGuessSd=nan;
+o.useQuest=1; % true(1) or false(0)
 
 % DEBUGGING AIDS
-o.showAlphabet=0; 
-o.showLineOfLetters=0;
-o.showBounds=0;
 o.frameTheTarget=0; 
+o.printScreenResolution=0;
 o.printSizeAndSpacing=0;
+o.showAlphabet=0; 
+o.showBounds=0;
+o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
 o.useFractionOfScreen=0; 
 
-% FOR CHILDREN
+% TO MEASURE BETA
+% o.measureBeta=0;
+% o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
+% o.trials=200;
+
+% TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
 % o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
 
 %% CUSTOM CODE
 
-% Set up for interleaved testing of size and spacing thresholds. In the
-% first run we'll use repeated targets. In the second run we'll use single
-% targets.
+o.useFractionOfScreen=0; 
+o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
 
-% o.useFractionOfScreen=0.3; 
+o.durationSec=0.2; % duration of display of target and flankers
 o.viewingDistanceCm=200; % Default for runtime question.
 o.fixationCrossDeg=inf;
-
-% RUN measure thresholds for size
-o.durationSec=0.2; % duration of display of target and flankers
 o.repeatedTargets=0;
-o.fourFlankers=1;
 o.thresholdParameter='size';
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
+
+% RUN measure threshold for size
+o.measureThresholdVertically=nan; % depends on parameter
 o.eccentricityDeg=0;
 o.fixationLocation='center';
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
+o=CriticalSpacing(o);
 
-% RUN measure thresholds for size
+% RUN measure threshold for size
+o.measureThresholdVertically=nan; % depends on parameter
 o.eccentricityDeg=4;
 o.fixationLocation='left';
-o=CriticalSpacing(o); % dual targets, repeated indefinitely
+o=CriticalSpacing(o);
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
