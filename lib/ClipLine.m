@@ -35,47 +35,34 @@ if length(xHit)>1
       end
    end
 end
-if ~IsInRect(x,y,r) && ~IsInRect(xx,yy,r)
-   if isempty(xHit)
+assert(length(xHit)<3);
+switch length(xHit)
+   case 0;
       xClipped=nan;
       yClipped=nan;
       xxClipped=nan;
       yyClipped=nan;
       return
-   end
-   % Clip both ends. Retain direction.
-   assert(length(xHit)<3);
-   if sign(x-xx)~=sign(xHit(1)-xHit(2)) || sign(y-yy)~=sign(yHit(1)-yHit(2))
-      xHit=xHit([2 1]);
-      yHit=yHit([2 1]);
-   end
-   xClipped=xHit(1);
-   yClipped=yHit(1);
-   xxClipped=xHit(2);
-   yyClipped=yHit(2);
+   case 1;
+      if ~IsInRect(x,y,r)
+         xClipped=xHit;
+         yClipped=yHit;
+      end
+      if ~IsInRect(xx,yy,r)
+         xxClipped=xHit;
+         yyClipped=yHit;
+      end
+      return
+   case 2;
+      % Retain direction.
+      if sign(x-xx)~=sign(xHit(1)-xHit(2)) || sign(y-yy)~=sign(yHit(1)-yHit(2))
+         xHit=xHit([2 1]);
+         yHit=yHit([2 1]);
+      end
+      % Clip both ends.
+      xClipped=xHit(1);
+      yClipped=yHit(1);
+      xxClipped=xHit(2);
+      yyClipped=yHit(2);
+      return
 end
-if length(xHit)==2
-   if abs(xHit(1)-xHit(2))+abs(yHit(1)-yHit(2))>1
-      xHit
-      yHit
-      IsInRect(x,y,r)
-      IsInRect(xx,yy,r)
-      x,y
-      xx,yy
-      r
-   end
-%   xxx
-%   assert(abs(xHit(1)-xHit(2))+abs(yHit(1)-yHit(2))<1);
-   xHit=xHit(1);
-   yHit=yHit(1);
-end
-assert(length(xHit)==1);
-if ~IsInRect(x,y,r)
-   xClipped=xHit;
-   yClipped=yHit;
-end
-if ~IsInRect(xx,yy,r)
-   xxClipped=xHit;
-   yyClipped=yHit;
-end
-
