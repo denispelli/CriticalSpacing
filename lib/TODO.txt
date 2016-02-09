@@ -2,6 +2,8 @@ IDEAS
 
 when user ESCAPES, the user should be invited to ESCAPE the rest of the runs.
 
+the viewing distance screen and text should explain both the minimum viewing distance to measure threshold size and the maximum viewing distance for specified eccentricity.
+
 move obsolete run* scripts into "Old Scripts"
 
 bug: runVisualAcuity: when useFractionOfScreen the eccentricity is forced to zero, and there is no blanking of fixation at target location.
