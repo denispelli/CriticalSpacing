@@ -2,12 +2,8 @@ IDEAS
 
 when user ESCAPES, the user should be invited to ESCAPE the rest of the runs.
 
-the viewing distance screen and text should explain both the minimum viewing distance to measure threshold size and the maximum viewing distance for specified eccentricity.
-
 move obsolete run* scripts into "Old Scripts"
 
-bug: runVisualAcuity: when useFractionOfScreen the eccentricity is forced to zero, and there is no blanking of fixation at target location.
+cosmetic bug: runVisualAcuity: when useFractionOfScreen the eccentricity is forced to zero, and there is no blanking of fixation at target location. and the reported screen subtense should be full, but is partial.
 
-bug: runVisualAcuity: use useFractionOfScreen the reported screen subtense should be full, but is partial.
-
-NO: collect observer age before experiment (this information is useful to save in the data files)
+NO (there will generally be lots of patient data, and it’s not reasonable to type it in for each run. we need to link the two data sets by the observer name.): collect observer age before experiment (this information is useful to save in the data files)
