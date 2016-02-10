@@ -221,6 +221,43 @@ function oo=CriticalSpacing(oIn)
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
 %
+% EXPLANATION FROM MARIO KLEINER (2/9/16) OF RESTORING RESOLUTION
+% The current behavior is something like this:
+% 
+% * On OSX it tries to restore the video mode that was present at the time
+% when the user changed video mode the first time in a session via
+% Screen('Resolution'), whenever a window gets closed by code or due to
+% error. The OS may restore video mode to whatever it thinks makes sense
+% also if Matlab/Octave exits or crashes.
+% 
+% * On Windows some kind of approximation of the above, at the discretion
+% of the OS. I don't know if different recent Windows versions could behave
+% differently. We tell the OS that the mode we set is dynamic/temporary and
+% the OS restores to something meaningful (to it) at error/window close
+% time, or probably also at Matlab exit/crash time.
+% 
+% * Linux X11 approximation of OSX, except in certain multi-display
+% configurations where it doesn't auto-restore anything. And a crash/exit
+% of Matlab doesn't auto-restore either. Linux with a future Wayland
+% display system will likely have a different behavior again, due to
+% ongoing design decisions wrt. desktop security.
+% 
+% It's one of these areas where true cross-platform portability is not
+% really possible.
+% 
+% In my git repo i have a Screen mex file which no longer triggers errors
+% during error handling, but just prints an error message if OSX screws up
+% in doing its job as an OS:
+% 
+% https://github.com/kleinerm/Psychtoolbox-3/raw/master/Psychtoolbox/PsychBasic/Screen.mexmaci64
+% 
+% Running latest PsychToolbox on MATLAB 2015b on latest El Capitan on
+% MacBook Air with attached Dell display.
+%
+% -mario
+
+
+
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 if nargin<1 || ~exist('oIn','var')
    oIn.script=[];
@@ -575,23 +612,42 @@ try
       for condition=1:conditions
          oo(condition).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(condition).normalAcuityDeg=0.029*(abs(oo(condition).eccentricityDeg)+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-         if ismember(oo(condition).targetFont,{'Solid','Pelli'})
-            oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/5; % For Solid font.
+         if ismember(oo(condition).targetFont,{'Pelli'})
+            oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/5; % For Pelli font.
          end
          oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
-         if oo(condition).eccentricityDeg==0
-            oo(condition).normalCriticalSpacingDeg=0.05;
+         % Adjusted to our finding that critical spacing is 0.05 deg at zero
+         % eccentricity.
+         oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.15); % Adjusted.
+         oo(condition).typicalThesholdSizeDeg=oo(condition).normalAcuityDeg;
+         if oo(condition).fixedSpacingOverSize && streq(oo(condition).thresholdParameter,'spacing')
+            oo(condition).typicalThesholdSizeDeg=max(oo(condition).typicalThesholdSizeDeg,oo(condition).normalCriticalSpacingDeg/oo(condition).fixedSpacingOverSize);
          end
-         normalOverMinimumSize=oo(condition).normalAcuityDeg*pixPerDeg/oo(condition).minimumTargetPix;
-         if streq(oo(condition).thresholdParameter,'spacing') && oo(condition).fixedSpacingOverSize
-            normalOverMinimumSize=min(normalOverMinimumSize,oo(condition).normalCriticalSpacingDeg*pixPerDeg/oo(condition).fixedSpacingOverSize/oo(condition).minimumTargetPix);
-         end
-         oo(condition).minimumViewingDistanceCm=10*ceil((2/normalOverMinimumSize)*oo(condition).viewingDistanceCm/10);
+         minimumSizeDeg=oo(condition).minimumTargetPix/pixPerDeg;
+         % Distance so minimum size is half the typical threshold (size or
+         % spacing, whichever is higher).
+         oo(condition).minimumViewingDistanceCm=10*ceil(0.1*oo(condition).viewingDistanceCm*2*minimumSizeDeg/oo(condition).typicalThesholdSizeDeg);
       end
       minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
       if oo(1).speakViewingDistance && oo(1).useSpeech
          Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
       end
+      minimumScreenWidthDeg=nan;
+      for i=1:conditions
+         switch oo(i).fixationLocation
+            case 'left',
+               width=max(0,oo(i).eccentricityDeg);
+            case 'right',
+               width=max(0,-oo(i).eccentricityDeg);
+            case 'center',
+               width=2*abs(oo(i).eccentricityDeg);
+         end
+         oo(i).minimumScreenWidthDeg=width;
+         minimumScreenWidthDeg=max(minimumScreenWidthDeg,width);
+         oo(i).maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/oo(i).minimumScreenWidthDeg);
+      end
+      maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/minimumScreenWidthDeg);
+
       Screen('FillRect',window,white);
       string=sprintf('Please move me to be %.0f cm from your eye.',oo(1).viewingDistanceCm);
       for condition=1:conditions
@@ -604,8 +660,15 @@ try
       end
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
-      string=sprintf('%s At this viewing distance, I can display letters as small as %.3f deg with spacing as small as %.3f deg.',string,sizeDeg,spacingDeg);
-      string=sprintf('%s If that''s ok, hit RETURN. For ordinary testing, view me from at least %.0f cm.',string,minimumViewingDistanceCm);
+      if minimumScreenWidthDeg>0
+         string=sprintf('%s To display your peripheral targets (requiring a screen width of at least %.1f deg), view me from at most %.0f cm.',...
+            string,minimumScreenWidthDeg,maximumViewingDistanceCm);
+      end
+      smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
+      string=sprintf('%s To display your smallest target at %.3f deg, half of typical threshold size, view me from at least %.0f cm.',string,smallestDeg,minimumViewingDistanceCm);
+      string=sprintf(['%s At the current %.0f cm viewing distance, the screen is %.1f deg wide, and I can display characters'...
+         ' as small as %.3f deg with spacing as small as %.3f deg.'],string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,sizeDeg,spacingDeg);
+      string=sprintf('%s If that''s ok, hit RETURN.',string);
       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
       string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
       Screen('TextSize',window,oo(1).textSize);
@@ -630,8 +693,12 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      white=WhiteIndex(window);
-      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,white,1,oo(1).deviceIndex);
+      if IsWindows
+         background=[];
+      else
+         background=WhiteIndex(window);
+      end
+      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ~isempty(d)
          inputDistanceCm=str2num(d);
          if ~isempty(inputDistanceCm) && inputDistanceCm~=0
@@ -673,8 +740,12 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      white=WhiteIndex(window);
-      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      if IsWindows
+         background=[];
+      else
+         background=WhiteIndex(window);
+      end
+      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).experimenter=name;
       end
@@ -692,8 +763,12 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.4));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
-      white=WhiteIndex(window);
-      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,white,1,oo(1).deviceIndex);
+      if IsWindows
+         background=[];
+      else
+         background=WhiteIndex(window);
+      end
+      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
       for i=1:conditions
          oo(i).observer=name;
       end
@@ -758,17 +833,17 @@ try
       if oo(condition).showProgressBar
          progressBarRect=[round(screenRect(3)*(1-1/screenWidthCm)) 0 screenRect(3) screenRect(4)]; % 1 cm wide.
       end
+      stimulusRect=screenRect;
+      if oo(condition).showProgressBar
+         stimulusRect(3)=progressBarRect(1);
+      end
       if oo(condition).repeatedTargets
          oo(condition).presentations=ceil(oo(condition).trials/2);
          oo(condition).trials=2*oo(condition).presentations;
       else
          oo(condition).presentations=oo(condition).trials;
       end
-      stimulusRect=screenRect;
-      if oo(condition).showProgressBar
-         stimulusRect(3)=progressBarRect(1);
-      end
-      % prepare to draw fixation cross
+        % prepare to draw fixation cross
       fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
       fixationCrossPix=min(fixationCrossPix,2*RectWidth(stimulusRect)); % full width and height, can extend off screen
       fixationLineWeightPix=round(oo(condition).fixationLineWeightDeg*pixPerDeg);
