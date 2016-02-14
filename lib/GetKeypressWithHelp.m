@@ -4,7 +4,7 @@ function answer=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterS
 %   the alphabet.
 
 capsLockIsSticky=IsWindows;
-useCopyWindow=0; % Works with 0 or 1 on Mac. Hoping 1 helps on Windows.
+useCopyWindow=0; % Works with 0 or 1 on Mac. Hoping 0 helps on Windows.
 if nargin<6
    responseString='';
 end

@@ -1,4 +1,5 @@
 function response = GetKeypress(enableKeys,deviceIndex,simulateGetChar)
+% response = GetKeypress(enableKeys,deviceIndex,simulateGetChar);
 % Wait for keypress, and return the lowercase character, e.g. 'a' or '4',
 % or key name, e.g. 'left_shift'. If simulateGetChar is false, then full
 % key codes are returned, e.g. 'a' or '4$'. If simulateGetChar is true then
