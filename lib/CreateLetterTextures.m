@@ -36,7 +36,7 @@ white=255;
 if o.readAlphabetFromDisk
 
    % Read from disk into "savedAlphabet".
-   alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'alphabets');
+   alphabetsFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'alphabets'); % CriticalSpacing/alphabets/
    if ~exist(alphabetsFolder,'dir')
       error('Folder missing: "%s"',alphabetsFolder);
    end

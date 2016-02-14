@@ -46,7 +46,7 @@ Screen('Preference','SuppressAllWarnings',1);
 if ~IsOSX
    useWindow=1;
 end
-alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'alphabets'); % CriticalSpacing/lib/alphabets/
+alphabetsFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'alphabets'); % CriticalSpacing/alphabets/
 if ~exist(alphabetsFolder,'dir')
    mkdir(alphabetsFolder);
 end

@@ -17,7 +17,7 @@ if nargin<1
    o.stickUnitWidth = 1;
    o.generateResponsePage = 1;
 end
-alphabetsFolder=fullfile(fileparts(mfilename('fullpath')),'alphabets');
+alphabetsFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'alphabets'); % CriticalSpacing/alphabets/
 if ~exist(alphabetsFolder,'dir')
    mkdir(alphabetsFolder);
 end
