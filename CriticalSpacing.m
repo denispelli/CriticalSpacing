@@ -152,11 +152,11 @@ function oo=CriticalSpacing(oIn)
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
 % CriticalSpacing will then print out (and save to disk) results so far,
-% and asks whether you're quitting the whole session or ready to begin the
+% and asks whether you're quitting the whole session or proceeding to the
 % next run. Quitting this run sets the flag o.quitRun. Quitting the whole
 % session sets the flag o.quitSession. If o.quitSession is already set when
-% you call it, CriticalSpacing returns immediately after processing
-% arguments.
+% you call CriticalSpacing, it returns immediately after processing
+% arguments. (CriticalSpacing ignores o.quitRun on input.)
 % 
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
@@ -253,11 +253,6 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
-clear Screen
-Screen('Preference','SuppressAllWarnings',1);
-Screen('Preference','VisualDebugLevel',0);
-Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
-Screen('Preference','SkipSyncTests',1);
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
@@ -381,8 +376,8 @@ clear o; % Now MATLAB will flag an error if we accidentally try to use "o".
 % For each condition, all fields in the user-supplied "oIn" overwrite
 % corresponding fields in "o". We ignore any field in oIn that is not
 % already defined in o. If the ignored field is a known output field, then
-% we ignore it silently. We give a warning of the unknown fields we ignore.
-% These ignored fields may be typos for input fields.
+% we ignore it silently. We give a warning of the unknown fields we ignore
+% because they might be typos for input fields.
 outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'dataFolder' 'eccentricityPix' 'fix' 'functionNames' ...
    'keyboardNameAndTransport' 'minimumSizeDeg' 'minimumSpacingDeg' ...
@@ -391,7 +386,8 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
-   'nativeHeight' 'nativeWidth' 'resolution'};
+   'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
+   'minimumScreenWidthDeg' 'typicalThesholdSizeDeg'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -415,7 +411,13 @@ end
 if oo(1).quitSession
    return
 end
+% clear Screen % might help get appropriate restore after using Screen('Resolution');
+Screen('Preference','SuppressAllWarnings',1);
+Screen('Preference','VisualDebugLevel',0);
+Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
+Screen('Preference','SkipSyncTests',1);
 
+% Set up defaults. Clumsy.
 for condition=1:conditions
    switch oo(condition).thresholdParameter
       case 'size',
