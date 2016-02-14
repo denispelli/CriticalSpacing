@@ -21,7 +21,7 @@ answer=GetKeypress([returnKeyCode spaceKeyCode escapeKeyCode],oo(1).deviceIndex)
 quitSession=streq(answer,'ESCAPE');
 if oo(1).useSpeech
    if quitSession
-      Speak('Escape. You''re done.');
+      Speak('Escape. Done.');
    else
       Speak('Proceeding to next run.');
    end
