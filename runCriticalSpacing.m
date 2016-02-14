@@ -106,6 +106,7 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
+
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
