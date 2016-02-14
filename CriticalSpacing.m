@@ -7,7 +7,7 @@ function oo=CriticalSpacing(oIn)
 % measure four thresholds. It's meant to be called by a short user-written
 % script, and should work well in clinical environments. All results are
 % returned in the "o" struct and also saved to disk in two files whose file
-% names include your script name the experimenter and observer names and
+% names include your script name, the experimenter and observer names, and
 % the date. One of those files is plain text .txt and easy for you to read;
 % the other is a MATLAB save file .MAT and easily read by MATLAB. Please
 % keep both. The filenames are unique and easy to sort, so it's fine to let
@@ -81,14 +81,6 @@ function oo=CriticalSpacing(oIn)
 % http://www.amazon.com/gp/product/B00LGANH8K
 % https://www.boschtools.com/us/en/boschtools-ocs/laser-measuring-glm-15-0601072810--120449-p/
 % 
-% This Stanley ultrasonic estimator is cheaper, just $23, so I ordered one.
-% However, I don't yet know whether a typical laptop screen will be a
-% sufficiently large target to allow accurate ultrasonic estimation of
-% distance. Ultrasound may not work with a mirror, so you might have to
-% make two measurements.
-% 
-% http://www.amazon.com/Stanley-77-018-IntelliMeasure-Distance-Estimator/dp/B000E8VM8W/ref=cm_rdp_product
-% 
 % MIRROR. In a small room, you might need a mirror to achieve a long
 % viewing distance. When CriticalSpacing asks you about viewing distance,
 % you can indicate that you're using a mirror by entering the viewing
@@ -149,11 +141,6 @@ function oo=CriticalSpacing(oIn)
 % plan to implement. Try running runCriticalSpacing. It measures four
 % thresholds.
 % 
-% ESCAPE KEY. You can always terminate the current run by hitting the
-% escape key on your keyboard (typically in upper left, labeled "esc").
-% CriticalSpacing will then print out (and save to disk) results so far and
-% begin the next run.
-% 
 % CAPS LOCK KEY: DISPLAY THE ALPHABET. Anytime that CriticalSpacing is
 % running trials, pressing the caps lock key will display the font's
 % alphabet at a large size, filling the screen. (The shift key works too,
@@ -164,8 +151,12 @@ function oo=CriticalSpacing(oIn)
 % 
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
-% CriticalSpacing will then print out (and save to disk) results so far and
-% begin the next run.
+% CriticalSpacing will then print out (and save to disk) results so far,
+% and asks whether you're quitting the whole session or ready to begin the
+% next run. Quitting this run sets the flag o.quitRun. Quitting the whole
+% session sets the flag o.quitSession. If o.quitSession is already set when
+% you call it, CriticalSpacing returns immediately after processing
+% arguments.
 % 
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
@@ -217,48 +208,46 @@ function oo=CriticalSpacing(oIn)
 % 
 % where letterDeg=0.02, minimumTargetPix=8.
 %
-% PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
+% Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
+%
+% HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
 %
-% EXPLANATION FROM MARIO KLEINER (2/9/16) OF RESTORING RESOLUTION
-% The current behavior is something like this:
+% EXPLANATION FROM MARIO KLEINER (2/9/16) ON RESTORING RESOLUTION
+% "The current behavior is something like this:
 % 
-% * On OSX it tries to restore the video mode that was present at the time
+% "* On OSX it tries to restore the video mode that was present at the time
 % when the user changed video mode the first time in a session via
 % Screen('Resolution'), whenever a window gets closed by code or due to
 % error. The OS may restore video mode to whatever it thinks makes sense
 % also if Matlab/Octave exits or crashes.
 % 
-% * On Windows some kind of approximation of the above, at the discretion
+% "* On Windows some kind of approximation of the above, at the discretion
 % of the OS. I don't know if different recent Windows versions could behave
 % differently. We tell the OS that the mode we set is dynamic/temporary and
 % the OS restores to something meaningful (to it) at error/window close
 % time, or probably also at Matlab exit/crash time.
 % 
-% * Linux X11 approximation of OSX, except in certain multi-display
+% "* Linux X11 approximation of OSX, except in certain multi-display
 % configurations where it doesn't auto-restore anything. And a crash/exit
 % of Matlab doesn't auto-restore either. Linux with a future Wayland
 % display system will likely have a different behavior again, due to
 % ongoing design decisions wrt. desktop security.
 % 
-% It's one of these areas where true cross-platform portability is not
+% "It's one of these areas where true cross-platform portability is not
 % really possible.
 % 
-% In my git repo i have a Screen mex file which no longer triggers errors
+% "In my git repo i have a Screen mex file which no longer triggers errors
 % during error handling, but just prints an error message if OSX screws up
 % in doing its job as an OS:
 % 
 % https://github.com/kleinerm/Psychtoolbox-3/raw/master/Psychtoolbox/PsychBasic/Screen.mexmaci64
 % 
-% Running latest PsychToolbox on MATLAB 2015b on latest El Capitan on
-% MacBook Air with attached Dell display.
+% "Running latest PsychToolbox on MATLAB 2015b on latest El Capitan on
+% MacBook Air with attached Dell display."
 %
 % -mario
-
-
-
-% Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 if nargin<1 || ~exist('oIn','var')
    oIn.script=[];
 end
@@ -373,7 +362,8 @@ o.useFractionOfScreen=0;
 o.deviceIndex=-3; % all keyboard and keypad devices
 o.easyCount=0;
 o.guessCount=0; % artificial guesses
-o.quit=0;
+o.quitRun=0;
+o.quitSession=0;
 o.script='';
 o.scriptFullFileName='';
 o.scriptName='';
@@ -421,6 +411,9 @@ if ~isempty(unknownFields)
    warning off backtrace
    warning(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
    warning on backtrace
+end
+if oo(1).quitSession
+   return
 end
 
 for condition=1:conditions
@@ -524,7 +517,7 @@ try
    end
    screenBufferRect=Screen('Rect',oo(1).screen);
    screenRect=Screen('Rect',oo(1).screen,1);
-   [window,r]=OpenWindow(oo(1));
+   window=OpenWindow(oo(1));
    if oo(1).printScreenResolution
       screenBufferRect=Screen('Rect',oo(1).screen)
       screenRect=Screen('Rect',oo(1).screen,1)
@@ -729,7 +722,7 @@ try
    ListenChar(2); % no echo
    
    % Ask experimenter name
-   if length(oo(1).experimenter)==0
+   if isempty(oo(1).experimenter)
       Screen('FillRect',window);
       Screen('TextFont',window,oo(1).textFont,0);
       Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
@@ -753,7 +746,7 @@ try
    end
    
    % Ask observer name
-   if length(oo(1).observer)==0
+   if isempty(oo(1).observer)
       Screen('FillRect',window);
       Screen('TextSize',window,oo(1).textSize);
       Screen('TextFont',window,oo(1).textFont,0);
@@ -947,7 +940,7 @@ try
       
       % Set o.targetHeightOverWidth
       if oo(condition).setTargetHeightOverWidth
-         oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth
+         oo(condition).targetHeightOverWidth=oo(condition).setTargetHeightOverWidth;
       end
       
       % prepare to draw fixation cross
@@ -956,7 +949,7 @@ try
       oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
       fixationLines=ComputeFixationLines(oo(condition).fix);
       
-      terminate=0;
+      oo(1).quitRun=0;
       
       switch oo(condition).thresholdParameter
          case 'spacing',
@@ -1159,11 +1152,13 @@ try
 
    Screen('FillRect',window); % xxx
    if streq(answer,'ESCAPE')
-      if oo(1).speakEachLetter && oo(1).useSpeech
-         Speak('Escape. This run is done.');
+      oo(1).quitRun=1;
+      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+      if oo(1).quitSession
+         ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+      else
+         ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
       end
-      ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-      oo(1).quit=1;
       ListenChar(0);
       ShowCursor;
       sca;
@@ -1410,11 +1405,13 @@ try
             SetMouse(screenRect(3),screenRect(4),window);
             answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
             if streq(answer,'ESCAPE')
-               if oo(1).speakEachLetter && oo(1).useSpeech
-                  Speak('Escape. This run is done.');
+               oo(1).quitRun=1;
+               oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+               if oo(1).quitSession
+                  ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+               else
+                  ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
                end
-               ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-               oo(1).quit=1;
                ListenChar(0);
                ShowCursor;
                sca;
@@ -1740,7 +1737,7 @@ try
          if streq(answer,'ESCAPE')
             ListenChar(0);
             ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-            terminate=1;
+            oo(1).quitRun=1;
             break;
          end
          if streq(upper(answer),'SPACE')
@@ -1793,7 +1790,7 @@ try
       if ~skipping
          easeRequest=0;
       end
-      if oo(condition).speakEncouragement && oo(condition).useSpeech && ~terminate && ~skipping
+      if oo(condition).speakEncouragement && oo(condition).useSpeech && ~oo(1).quitRun && ~skipping
          switch randi(3);
             case 1
                Speak('Good!');
@@ -1803,7 +1800,7 @@ try
                Speak('Very good');
          end
       end
-      if terminate
+      if oo(1).quitRun
          break;
       end
       responses=ismember(responseString,targets);
@@ -1824,15 +1821,25 @@ try
          %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetDeg);
          oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
       end
-      if terminate
+      if oo(1).quitRun
          break;
       end
    end % for presentation=1:length(condList)
-   
+   % Quitting just this run or whole session?
+   if oo(1).quitRun
+      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+   end
    Screen('FillRect',window);
    Screen('Flip',window);
    if oo(1).useSpeech
-      Speak('Congratulations.  This run is done.');
+      if ~oo(1).quitRun
+         Speak('Congratulations.  This run is done.');
+      end
+   end
+   if oo(1).quitSession
+      ffprintf(ff,'Quitting rest of session.\n');
+   elseif oo(1).quitRun
+      ffprintf(ff,'Quitting this run.\n');
    end
    trials=0;
    oo(1).totalSecs=GetSecs-oo(1).beginSecs;
@@ -1924,7 +1931,7 @@ try
       ShowCursor;
       Screen('CloseAll');
       sca;
-  end
+   end
    for condition=1:conditions
       if exist('results','var') && oo(condition).responseCount>1
          ffprintf(ff,'%d:',condition);
