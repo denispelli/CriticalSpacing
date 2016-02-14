@@ -103,7 +103,7 @@ function oo=CriticalSpacing(oIn)
 %
 % FONTS. If you set o.readAlphabetFromDisk=1 in your script then you won't
 % need to install any fonts. Instead you can use any of the "fonts" inside
-% the CriticalSpacing/lib/alphabets/ folder, which you can best see by
+% the CriticalSpacing/alphabets/ folder, which you can best see by
 % looking at the alphabet files in CriticalSpacing/pdf/. You can easily
 % create and add a new "font" to the alphabets folder. Name the folder
 % after your "font", and put one image file per letter inside the folder,
