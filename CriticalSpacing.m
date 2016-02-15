@@ -685,7 +685,7 @@ try
          DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
       end
       
-      Screen('TextSize',window,round(oo(1).textSize*0.4));
+      Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
@@ -745,7 +745,7 @@ try
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(0.7*oo(1).textSize));
       Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMargin,screenRect(4)/2-1.5*oo(1).textSize,black,white);
-      Screen('TextSize',window,round(oo(1).textSize*0.4));
+      Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
@@ -781,7 +781,7 @@ try
       Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Hello Observer,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
-      Screen('TextSize',window,round(oo(1).textSize*0.4));
+      Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
@@ -1157,7 +1157,7 @@ try
    string=[string 'Please turn the computer sound on. '];
    string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
    string=[string 'You might also have the alphabet on a piece of paper. '];
-   string=[string 'You can respond by typing, speaking, or pointing to a letter on your piece of paper. '];
+   string=[string 'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
    for condition=1:conditions
       if ~oo(condition).repeatedTargets && streq(oo(condition).thresholdParameter,'size')
          string=[string 'When you see a letter, please report it. '];
@@ -1172,17 +1172,17 @@ try
    end
    if any([oo.repeatedTargets])
       string=[string 'When you see many letters, they are all repetitions of just two different letters. Please report both. '];
-      string=[string 'The two kinds of letter can be mixed over the whole display, or segregated onto left and right sides. '];
+      string=[string 'The two kinds of letter can be mixed together all over the display, or separated into left and right sides. '];
    end
    string=[string 'Sometimes the letters will be easy to identify. Sometimes they will be nearly impossible. '];
    string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, and just get as many as you can. '];
-   string=[string '(Type slowly. Quit anytime by pressing ESCAPE.) '];
+   string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.) '];
    if ~any(isfinite([oo.durationSec]))
       string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
-   string=[string 'Now, to begin, please press the SPACEBAR. '];
+   string=[string 'Now, to begin, please press the SPACE BAR. '];
    Screen('TextFont',window,oo(condition).textFont,0);
-   Screen('TextSize',window,round(oo(condition).textSize*0.4));
+   Screen('TextSize',window,round(oo(condition).textSize*0.35));
    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
    Screen('TextSize',window,oo(condition).textSize);
    string=strrep(string,'letter',symbolName);
