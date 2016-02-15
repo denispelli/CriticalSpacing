@@ -152,11 +152,11 @@ function oo=CriticalSpacing(oIn)
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
 % CriticalSpacing will then print out (and save to disk) results so far,
-% and asks whether you're quitting the whole session or proceeding to the
-% next run. Quitting this run sets the flag o.quitRun. Quitting the whole
-% session sets the flag o.quitSession. If o.quitSession is already set when
-% you call CriticalSpacing, it returns immediately after processing
-% arguments. (CriticalSpacing ignores o.quitRun on input.)
+% and ask whether you're quitting the whole session or proceeding to the
+% next run. Quitting this run sets the flag o.quitRun, and quitting the
+% whole session sets the flag o.quitSession. If o.quitSession is already
+% set when you call CriticalSpacing, it returns immediately after
+% processing arguments. (CriticalSpacing ignores o.quitRun on input.)
 % 
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
