@@ -693,7 +693,20 @@ try
       else
          background=WhiteIndex(window);
       end
-      d=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      [d,terminatorChar]=GetEchoStringNYU(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      if terminatorChar==27
+         oo(1).quitRun=1;
+         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+         if oo(1).quitSession
+            ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+         else
+            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+         end
+         ListenChar(0);
+         ShowCursor;
+         sca;
+         return
+      end
       if ~isempty(d)
          inputDistanceCm=str2num(d);
          if ~isempty(inputDistanceCm) && inputDistanceCm~=0
@@ -740,7 +753,20 @@ try
       else
          background=WhiteIndex(window);
       end
-      name=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoStringNYU(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      if terminatorChar==27
+         oo(1).quitRun=1;
+         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+         if oo(1).quitSession
+            ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+         else
+            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+         end
+         ListenChar(0);
+         ShowCursor;
+         sca;
+         return
+      end
       for i=1:conditions
          oo(i).experimenter=name;
       end
@@ -763,7 +789,20 @@ try
       else
          background=WhiteIndex(window);
       end
-      name=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoStringNYU(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      if terminatorChar==27
+         oo(1).quitRun=1;
+         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+         if oo(1).quitSession
+            ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+         else
+            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+         end
+         ListenChar(0);
+         ShowCursor;
+         sca;
+         return
+      end
       for i=1:conditions
          oo(i).observer=name;
       end
