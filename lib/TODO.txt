@@ -1,1 +1,3 @@
 cosmetic bugs: (runVisualAcuity:) when useFractionOfScreen the eccentricity is forced to zero, and there is no blanking of fixation at target location. and the reported screen subtense should be full, but is partial.
+
+collect observer date of birth before experiment to save in the data file. For young children, date of birth is a useful increment in precision. And date of birth is a good way of identifying an observer if there is a typo or ambiguity in the name. So yes, let’s collect DOB.
