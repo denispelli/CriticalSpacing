@@ -1,7 +1,5 @@
 IDEAS
 
-I wish that ESC always worked. We would need to make a custom version of GetEchoString that returns the ESC immediately.
-
 move obsolete run* scripts into "Old Scripts"
 
 cosmetic bugs: (runVisualAcuity:) when useFractionOfScreen the eccentricity is forced to zero, and there is no blanking of fixation at target location. and the reported screen subtense should be full, but is partial.
