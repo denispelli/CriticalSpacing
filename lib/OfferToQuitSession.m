@@ -8,7 +8,7 @@ spaceKeyCode=KbName('space');
 returnKeyCode=KbName('return');
 Screen('FillRect',window);
 Screen('TextFont',window,oo(1).textFont,0);
-string='Now quitting run. Hit ESCAPE again to quit the whole session. Or SPACE or RETURN to proceed with the next run.';
+string='Now quitting run. Hit ESCAPE again to quit the whole session. To proceed with the next run, hit SPACE or RETURN.';
 black=0;
 white=255;
 DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,65,[],[],1.1);
