@@ -1776,8 +1776,6 @@ try
       for i=1:length(targets)
          answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes],oo(condition),window,stimulusRect,letterStruct,responseString);
          if streq(answer,'ESCAPE')
-            ListenChar(0);
-            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
             oo(1).quitRun=1;
             break;
          end
@@ -1869,6 +1867,11 @@ try
    % Quitting just this run or whole session?
    if oo(1).quitRun
       oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+      if oo(1).quitSession
+         ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+      else
+         ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+      end
    end
    Screen('FillRect',window);
    Screen('Flip',window);
@@ -1876,11 +1879,6 @@ try
       if ~oo(1).quitRun
          Speak('Congratulations.  This run is done.');
       end
-   end
-   if oo(1).quitSession
-      ffprintf(ff,'Quitting rest of session.\n');
-   elseif oo(1).quitRun
-      ffprintf(ff,'Quitting this run.\n');
    end
    trials=0;
    oo(1).totalSecs=GetSecs-oo(1).beginSecs;
