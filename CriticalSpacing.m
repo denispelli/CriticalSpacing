@@ -208,6 +208,24 @@ function oo=CriticalSpacing(oIn)
 % 
 % where letterDeg=0.02, minimumTargetPix=8.
 %
+% SAVING LETTER-CONFUSION DATA
+% Keep track of which letters the observer has trouble with (time and
+% accuracy). This might lead us to adjust or drop troublesome letters. Save
+% letter confusion and reaction time results of every presentation. The
+% index "i" counts presentations. There may be 1 or 2 targets per
+% presentation. If there are two targets, then there are two targetScores,
+% responses, responseScores, and reactionTimes. targetScores and
+% responseScores are 1 or 0 for each item. The responses are in the order
+% typed, at times (since Flip) in reactionTimes.
+% oo(condition).trialData(i).targetDeg
+% oo(condition).trialData(i).spacingDeg oo(condition).trialData(i).targets
+% oo(condition).trialData(i).targetScores
+% oo(condition).trialData(i).responses
+% oo(condition).trialData(i).responseScores
+% oo(condition).trialData(i).reactionTimes The other relevant parameters of
+% the condition do not change from trial to trial: age, font,
+% thresholdParameter, repeatedTarget.
+%
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 %
 % HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
@@ -1094,6 +1112,9 @@ try
    elseif computer.osx || computer.macintosh
       cal.processUserLongName=computer.processUserLongName;
       cal.machineName=strrep(computer.machineName,'éˆ??',''''); % work around bug in Screen('Computer')
+      if streq(cal.machineName,'UNKNOWN! QUERY FAILED DUE TO EMPTY OR PROBLEMATIC NAME.')
+         cal.machineName='';
+      end
       cal.macModelName=MacModelName;
    end
    cal.screenOutput=[]; % only for Linux
@@ -1232,6 +1253,7 @@ try
       condList = [condList repmat(condition,1,oo(condition).presentations)];
       oo(condition).spacingsSequence=Shuffle(oo(condition).spacingsSequence);
       oo(condition).q=QuestCreate(oo(condition).tGuess,oo(condition).tGuessSd,oo(condition).pThreshold,oo(condition).beta,delta,gamma,grain,range);
+      oo(condition).trialData=struct([]);
    end
    condList=Shuffle(condList);
    presentation=0;
@@ -1773,8 +1795,11 @@ try
       
       responseString='';
       skipping=0;
+      flipSecs=GetSecs;
       for i=1:length(targets)
-         answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes],oo(condition),window,stimulusRect,letterStruct,responseString);
+         [answer,secs]=GetKeypressWithHelp([spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes],oo(condition),window,stimulusRect,letterStruct,responseString);
+         trialData.reactionTimes(i)=secs-flipSecs;
+         
          if streq(answer,'ESCAPE')
             oo(1).quitRun=1;
             break;
@@ -1842,23 +1867,37 @@ try
       if oo(1).quitRun
          break;
       end
-      responses=ismember(responseString,targets);
+      responseScores=ismember(responseString,targets);
       oo(condition).spacingDeg=spacingPix/pixPerDeg;
-      for response=responses
+      
+      trialData.targetDeg=oo(condition).targetDeg;
+      trialData.spacingDeg=oo(condition).spacingDeg;
+      trialData.targets=targets;
+      trialData.targetScores=ismember(targets,responseString);
+      trialData.responses=responseString;
+      trialData.responseScores=responseScores;
+      % trialData.reactionTimes is computed above.
+      if isempty(oo(condition).trialData)
+         oo(condition).trialData=trialData;
+      else
+         oo(condition).trialData(end+1)=trialData;
+      end
+      
+      for responseScore=responseScores
          switch oo(condition).thresholdParameter
             case 'spacing',
-               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg response];
-               %                     oo(condition).results(oo(condition).responseCount,2)=response;
+               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg responseScore];
+               %                     oo(condition).results(oo(condition).responseCount,2)=responseScore;
                oo(condition).responseCount=oo(condition).responseCount+1;
                intensity=log10(oo(condition).spacingDeg);
             case 'size'
-               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetDeg response];
-               %                     oo(condition).results(oo(condition).responseCount,2)=response;
+               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetDeg responseScore];
+               %                     oo(condition).results(oo(condition).responseCount,2)=responseScore;
                oo(condition).responseCount=oo(condition).responseCount+1;
                intensity=log10(oo(condition).targetDeg);
          end
          %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetDeg);
-         oo(condition).q=QuestUpdate(oo(condition).q,intensity,response);
+         oo(condition).q=QuestUpdate(oo(condition).q,intensity,responseScore);
       end
       if oo(1).quitRun
          break;
