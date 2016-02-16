@@ -209,22 +209,26 @@ function oo=CriticalSpacing(oIn)
 % where letterDeg=0.02, minimumTargetPix=8.
 %
 % SAVING LETTER-CONFUSION DATA
-% Keep track of which letters the observer has trouble with (time and
-% accuracy). This might lead us to adjust or drop troublesome letters. Save
-% letter confusion and reaction time results of every presentation. The
-% index "i" counts presentations. There may be 1 or 2 targets per
-% presentation. If there are two targets, then there are two targetScores,
-% responses, responseScores, and reactionTimes. targetScores and
-% responseScores are 1 or 0 for each item. The responses are in the order
-% typed, at times (since Flip) in reactionTimes.
+% For each condition we keep track of which letters the observer has
+% trouble with (time and accuracy). This might lead us to adjust or drop
+% troublesome letters. We save the letter-confusion and reaction-time
+% results of every presentation in a trialData array struct that is a field
+% of each condition. The index "i" counts presentations. There may be 1 or
+% 2 targets per presentation. If there are two targets (characters), then
+% there are two targetScores, responses (characters), responseScores, and
+% reactionTimes. targetScores and responseScores are 1 or 0 for each item.
+% The responses are in the order typed, at times (since Flip) in
+% reactionTimes. reactionTime is nan after the observer views the alphabet
+% screen.
 % oo(condition).trialData(i).targetDeg
-% oo(condition).trialData(i).spacingDeg oo(condition).trialData(i).targets
+% oo(condition).trialData(i).spacingDeg
+% oo(condition).trialData(i).targets
 % oo(condition).trialData(i).targetScores
 % oo(condition).trialData(i).responses
 % oo(condition).trialData(i).responseScores
-% oo(condition).trialData(i).reactionTimes The other relevant parameters of
-% the condition do not change from trial to trial: age, font,
-% thresholdParameter, repeatedTarget.
+% oo(condition).trialData(i).reactionTimes 
+% The other relevant parameters of the condition do not change from trial
+% to trial: age, font, thresholdParameter, repeatedTarget.
 %
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 %
