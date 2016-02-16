@@ -3,7 +3,7 @@
 “CriticalSpacing.m” is a MATLAB program developed by Denis Pelli at NYU, with help from Hörmet Yiltiz. You can read more about this program and its purpose in our
 2016 article:
 
-Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H. (2016) A clinical test for visual crowding [version 1; referees: 1 approved with reservations]. F1000Research 5:81 (doi: 10.12688/f1000research.7835.1) [http://f1000research.com/articles/5-81/v1](http://f1000research.com/articles/5-81/v1)
+Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H. (2016) A clinical test for visual crowding [version 1; referees: 2 approved with reservations]. F1000Research 5:81 (doi: 10.12688/f1000research.7835.1) [http://f1000research.com/articles/5-81/v1](http://f1000research.com/articles/5-81/v1)
 
 To install and run CriticalSpacing on your machine, please do the following:
 
