@@ -1,5 +1,5 @@
-function answer=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString)
-%GetKeypressWIthHelp
+function [answer,secs]=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString)
+%[answer,secs]=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString);
 %   Used by CriticalSpacing to get a key stroke. Pressing shift shows
 %   the alphabet.
 
@@ -11,10 +11,12 @@ end
 makeTextures=nargin<5;
 shiftKeyCodes=[KbName('LeftShift') KbName('RightShift') KbName('CapsLock')];
 oldEnableKeyCodes=RestrictKeysForKbCheck([shiftKeyCodes enableKeyCodes]);
+reactionTimeIsValid=1;
 while(1)
-   [~,keyCode] = KbPressWait(o.deviceIndex);
+   [secs,keyCode] = KbPressWait(o.deviceIndex);
    answer = KbName(keyCode);
    if ismember(answer,{'RightShift','LeftShift','CapsLock'});
+      reactionTimeIsValid=0;
       if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky;
          KbReleaseWait(o.deviceIndex);
       end
@@ -64,6 +66,9 @@ while(1)
    end
 end
 RestrictKeysForKbCheck(oldEnableKeyCodes);
+if ~reactionTimeIsValid
+   secs=nan;
+end
 end
 
 function ShowAlphabet(o,window,stimulusRect,letterStruct)
