@@ -699,9 +699,9 @@ try
       for i=1:length(devices)
          oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
       end
-      if length(GetKeyboardIndices)<2 && oo(1).viewingDistanceCm>100
+      if length(GetKeyboardIndices)<2 && oo(1).viewingDistanceCm>100 && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless'))
          warning backtrace off
-         warning('You have only one keyboard. The long viewing distance may demand an external keyboard.');
+         warning('You have only one keyboard, and it''s not called "wireless". The long viewing distance may demand an external keyboard.');
          warning backtrace on
          string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. To help you connect a keyboard, I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
          Screen('TextSize',window,round(oo(1).textSize*0.6));
@@ -1128,11 +1128,11 @@ try
    actualScreenRect=Screen('Rect',cal.screen,1);
    %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
    %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
-   ffprintf(ff,'viewing distance %.0f cm,o.',oo(1).viewingDistanceCm);
+   ffprintf(ff,'viewing distance %.0f cm,',oo(1).viewingDistanceCm);
    ffprintf(ff,' %.1fx%.1f deg, %.0f pixPerDeg.\n', ...
       RectWidth(actualScreenRect)/pixPerDeg,RectHeight(actualScreenRect)/pixPerDeg,...
       pixPerDeg);
-   ffprintf(ff,'screen %d, %dx%d pixels, (%dx%d native,) %.1fx%.1f cm, %.0f pix/cm.\n',...
+   ffprintf(ff,'o.screen %d, %dx%d pixels, (%dx%d native,) %.1fx%.1f cm, %.0f pix/cm.\n',...
       cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       oo(1).nativeWidth,oo(1).nativeHeight,...
       screenWidthMm/10,screenHeightMm/10,...
