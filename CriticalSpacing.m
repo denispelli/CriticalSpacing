@@ -536,6 +536,7 @@ try
    %     black=BlackIndex(window);
    oo(1).screen=max(Screen('Screens'));
    computer=Screen('Computer');
+   oo(1).computer=computer;
    if computer.osx || computer.macintosh
       AutoBrightness(oo(1).screen,0); % Do this BEFORE opening the window, so user can see any alerts.
    end
@@ -1096,9 +1097,6 @@ try
    for condition=1:conditions
       ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f\n',condition,oo(condition).durationSec,oo(condition).eccentricityDeg);
    end
-   ffprintf(ff,'Viewing distance %.0f cm. ',oo(1).viewingDistanceCm);
-%    ffprintf(ff,'Window width %d pix %.1f cm. ',RectWidth(Screen('Rect',window)),screenWidthCm);
-%    ffprintf(ff,'pixPerDeg %.2f\n',pixPerDeg);
    
    % Identify the computer
    cal.screen=0;
@@ -1128,14 +1126,18 @@ try
    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
    cal.screenWidthCm=screenWidthMm/10;
    actualScreenRect=Screen('Rect',cal.screen,1);
-%    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
-%    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
-   ffprintf(ff,'%s, %s, %s\n',cal.processUserLongName,cal.machineName,cal.macModelName);
-   ffprintf(ff,'screen %d, %dx%d pixels, %.1fx%.1f cm, %.1fx%.1f deg, %.0f pix/cm, %.0f pixPerDeg.\n',...
-      cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
-      screenWidthMm/10,screenHeightMm/10,...
+   %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
+   %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
+   ffprintf(ff,'viewing distance %.0f cm,o.',oo(1).viewingDistanceCm);
+   ffprintf(ff,' %.1fx%.1f deg, %.0f pixPerDeg.\n', ...
       RectWidth(actualScreenRect)/pixPerDeg,RectHeight(actualScreenRect)/pixPerDeg,...
-      RectWidth(actualScreenRect)/(screenWidthMm/10),pixPerDeg);
+      pixPerDeg);
+   ffprintf(ff,'screen %d, %dx%d pixels, (%dx%d native,) %.1fx%.1f cm, %.0f pix/cm.\n',...
+      cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+      oo(1).nativeWidth,oo(1).nativeHeight,...
+      screenWidthMm/10,screenHeightMm/10,...
+      RectWidth(actualScreenRect)/(screenWidthMm/10));
+   ffprintf(ff,'%s, %s, %s, %s\n',computer.system,cal.processUserLongName,cal.machineName,cal.macModelName);
    assert(cal.screenWidthCm==screenWidthMm/10);
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
