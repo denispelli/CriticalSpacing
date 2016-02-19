@@ -1129,15 +1129,19 @@ try
    %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
    %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
    ffprintf(ff,'viewing distance %.0f cm,',oo(1).viewingDistanceCm);
-   ffprintf(ff,' %.1fx%.1f deg, %.0f pixPerDeg.\n', ...
-      RectWidth(actualScreenRect)/pixPerDeg,RectHeight(actualScreenRect)/pixPerDeg,...
-      pixPerDeg);
+   ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
+      pixPerDeg,RectWidth(actualScreenRect)/pixPerDeg,...
+      RectHeight(actualScreenRect)/pixPerDeg);
    ffprintf(ff,'o.screen %d, %dx%d pixels, (%dx%d native,) %.1fx%.1f cm, %.0f pix/cm.\n',...
       cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       oo(1).nativeWidth,oo(1).nativeHeight,...
       screenWidthMm/10,screenHeightMm/10,...
       RectWidth(actualScreenRect)/(screenWidthMm/10));
    ffprintf(ff,'%s, %s, %s, %s\n',computer.system,cal.processUserLongName,cal.machineName,cal.macModelName);
+   oo(1).MATLAB=version;
+   [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
+   v=oo(1).psychtoolbox;
+   ffprintf(ff,'MATLAB %s, Psychtoolbox %d.%d.%d\n',oo(1).MATLAB,v.major,v.minor,v.point);
    assert(cal.screenWidthCm==screenWidthMm/10);
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
@@ -1888,21 +1892,14 @@ try
       else
          oo(condition).trialData(end+1)=trialData;
       end
-      
       for responseScore=responseScores
          switch oo(condition).thresholdParameter
             case 'spacing',
-               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).spacingDeg responseScore];
-               %                     oo(condition).results(oo(condition).responseCount,2)=responseScore;
-               oo(condition).responseCount=oo(condition).responseCount+1;
                intensity=log10(oo(condition).spacingDeg);
             case 'size'
-               oo(condition).results(oo(condition).responseCount,1:2)=[oo(condition).targetDeg responseScore];
-               %                     oo(condition).results(oo(condition).responseCount,2)=responseScore;
-               oo(condition).responseCount=oo(condition).responseCount+1;
                intensity=log10(oo(condition).targetDeg);
          end
-         %             ffprintf(ff,'QuestUpdate %.3f deg\n',oo(condition).targetDeg);
+         oo(condition).responseCount=oo(condition).responseCount+1;
          oo(condition).q=QuestUpdate(oo(condition).q,intensity,responseScore);
       end
       if oo(1).quitRun
