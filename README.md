@@ -24,4 +24,4 @@ CriticalSpacing, Psychtoolbox, and MATLAB
 * A 10 m measuring tape (or laser) to measure the viewing distance.
 * A printed copy of the relevant alphabet page that you select from the CriticalSpacing/pdf/ folder.
 
-> Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
+&copy; Copyright 2016 Denis Pelli, denis.pelli@nyu.edu
