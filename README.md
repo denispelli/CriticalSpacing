@@ -7,7 +7,7 @@ Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K.
 
 To install and run CriticalSpacing on your machine, please do the following:
 
-1. DOWNLOAD the CriticalSpacing software:
+1. CLICK the "Download ZIP" button above (on right side) or this link to download the CriticalSpacing software:
 [https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip](https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip)
 1. UNPACK the “zip” archive, producing a folder called CriticalSpacing.
 1. READ INSTRUCTIONS. Inside the CriticalSpacing folder, open the Word document, "Install CriticalSpacing.docx" for detailed instructions for installation of MATLAB and CriticalSpacing.
