@@ -5,7 +5,7 @@
 
 Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H. (2016) **A clinical test for visual crowding** [version 1; referees: 2 approved with reservations]. _F1000Research_ 5:81 (doi: 10.12688/f1000research.7835.1) [http://f1000research.com/articles/5-81/v1](http://f1000research.com/articles/5-81/v1)
 
-To install and run CriticalSpacing on your machine, please do the following:
+To install and run CriticalSpacing on your computer:
 
 1. CLICK the "Download ZIP" button above (on right side) or this link to download the CriticalSpacing software:
 [https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip](https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip)
