@@ -3,7 +3,7 @@
 "CriticalSpacing.m" is a MATLAB program developed by Denis Pelli at NYU, with help from Hörmet Yiltiz. You can read more about this program and its purpose in our
 2016 article:
 
-Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H. (2016) A clinical test for visual crowding [version 1; referees: 2 approved with reservations]. F1000Research 5:81 (doi: 10.12688/f1000research.7835.1) [http://f1000research.com/articles/5-81/v1](http://f1000research.com/articles/5-81/v1)
+Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H. (2016) **A clinical test for visual crowding** [version 1; referees: 2 approved with reservations]. _F1000Research_ 5:81 (doi: 10.12688/f1000research.7835.1) [http://f1000research.com/articles/5-81/v1](http://f1000research.com/articles/5-81/v1)
 
 To install and run CriticalSpacing on your machine, please do the following:
 
@@ -11,8 +11,8 @@ To install and run CriticalSpacing on your machine, please do the following:
 [https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip](https://github.com/denispelli/CriticalSpacing/archive/v0.3.zip)
 1. UNPACK the “zip” archive, producing a folder called CriticalSpacing.
 1. READ INSTRUCTIONS. Inside the CriticalSpacing folder, open the Word document, "Install CriticalSpacing.docx" for detailed instructions for installation of MATLAB and CriticalSpacing.
-1. OBSOLETE: INSTALL MATLAB (or GNU Octave) and Psychtoolbox. If you haven't already installed MATLAB, you can find detailed instructions here:
-[https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt)
+1. OBSOLETE: ~~INSTALL MATLAB (or GNU Octave) and Psychtoolbox. If you haven't already installed MATLAB, you can find detailed instructions here:~~
+[~~https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt~~](https://github.com/hyiltiz/ObjectRecognition/blob/master/README.txt)
 1. TYPE "help CriticalSpacing" in the MATLAB Command Window. THE REST OF THIS ADVICE, BELOW, IS MORE OR LESS THE SAME AS THAT HELP TEXT.
 1. GET WIRELESS KEYBOARD. A normally sighted observer viewing foveally has excellent vision and must be many meters away from the screen, and thus will be unable to reach a built-in keyboard attached to the screen. The quickest way to overcome this is for the experimenter to type what the observer says. A more convenient solution is to get a wireless or long-cable keyboard. 
 1. PRINT THE ALPHABET. Choose a font from those available in the CriticalSpacing/pdf/ folder. They are all available if you set o.readAlphabetFromDisk=1. We recommend "Pelli" for threshold spacing and Sloan for threshold size. Print the PDF for your font, e.g. “Pelli alphabet.pdf” or “Sloan alphabet.pdf”. Give the printed alphabet page to your observer. It shows the possible letters, e.g. “DHKNORSVZ” or “1234567889”. Most observers will find it helpful to consult this page while choosing an answer, especially when they are guessing. And children may prefer to respond by pointing at the target letters, one by one, on the alphabet page.
