@@ -19,9 +19,9 @@ CriticalSpacing, Psychtoolbox, and MATLAB
 
 ## Hardware requirements:
 
-A computer running Mac OS X, Windows, or Linux, with the above software installed. 
-A remote keyboard: wireless or with a 10-m-long cable.
-A 10 m measuring tape (or laser) to measure the viewing distance.
-A printed copy of the relevant alphabet page that you select from the CriticalSpacing/pdf/ folder.
+* A computer running Mac OS X, Windows, or Linux, with the above software installed. 
+* A remote keyboard: wireless or with a 10-m-long cable.
+* A 10 m measuring tape (or laser) to measure the viewing distance.
+* A printed copy of the relevant alphabet page that you select from the CriticalSpacing/pdf/ folder.
 
 > Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
