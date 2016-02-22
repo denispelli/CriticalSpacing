@@ -401,6 +401,10 @@ function oo=CriticalSpacing(oIn)
 % CriticalSpacing/fonts/ folder. Restart MATLAB after installing a new
 % font.
 
+[~,versionStructure]=PsychtoolboxVersion;
+if versionStructure.revision<7486
+   error('CriticalSpacing: Your Psychtoolbox is too old. Please run "UpdatePsychtoolbox".');
+end
 if nargin<1 || ~exist('oIn','var')
    oIn.script=[];
 end
@@ -540,7 +544,8 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
-   'minimumScreenWidthDeg' 'typicalThesholdSizeDeg'};
+   'minimumScreenWidthDeg' 'typicalThesholdSizeDeg' ...
+   'computer' 'MATLAB' 'psychtoolbox' 'trialData'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -847,7 +852,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [d,terminatorChar]=GetEchoStringNYU(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      [d,terminatorChar]=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
@@ -879,14 +884,6 @@ try
          break;
       end
    end
-   %    if normalOverMinimumSize<2
-   %       msg=sprintf('Please increase your viewing distance to at least %.0f cm. This is called "o.viewingDistanceCm" in your script.',oo(condition).minimumViewingDistanceCm);
-   %       if oo(condition).useSpeech
-   %          Speak('You are too close to the screen.');
-   %          Speak(msg);
-   %       end
-   %       error(msg);
-   %    end
    ListenChar(0); % flush
    ListenChar(2); % no echo
    
@@ -907,7 +904,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [name,terminatorChar]=GetEchoStringNYU(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
@@ -943,7 +940,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [name,terminatorChar]=GetEchoStringNYU(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
@@ -2100,7 +2097,7 @@ try
             if 10^t<oo(condition).minimumSizeDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSizeDeg);
                if oo(condition).useSpeech
-                  Speak('WARNING: Please increase viewing distance.');
+%                   Speak('WARNING: Please increase viewing distance.');
                end
             end
             if oo(condition).responseCount>1
