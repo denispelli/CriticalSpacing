@@ -35,7 +35,7 @@ if nargin<1
    o.targetFont='Pelli';
    o.alphabet='1234567890';
    o.borderLetter='$';
-   o.useMATLABFontRendering=1;
+   o.useMATLABFontRendering=0;
    showProgress=1;
    useWindow=1;
 end
@@ -129,7 +129,7 @@ if useWindow
    end
    Screen('TextSize',scratchWindow,letterPix);
    for i=1:length(letters)
-      bounds=TextBoundsDenis(scratchWindow,letters(i),1);
+      bounds=TextBounds(scratchWindow,letters(i),1);
       if i==1
          alphabetBounds=bounds;
       else
@@ -139,7 +139,7 @@ if useWindow
    bounds=alphabetBounds;
    savedAlphabet.rect=OffsetRect(bounds,-bounds(1),-bounds(2));
    for i=1:length(letters)
-      letterBounds=TextBoundsDenis(scratchWindow,letters(i),1);
+      letterBounds=TextBounds(scratchWindow,letters(i),1);
       desiredBounds=CenterRect(letterBounds,bounds);
       savedAlphabet.dx(i)=desiredBounds(1)-letterBounds(1);
       savedAlphabet.width(i)=RectWidth(letterBounds);
