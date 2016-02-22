@@ -1,3 +1,7 @@
+% Test reliability of Screen GetImage.
+% Until December 2016 this was unreliable. Then Mario tracked down the bug
+% I reported, and seems to have fixed it. So this program no longer
+% reveals any problem.
 sca
 clear all
 addpath(fullfile(fileparts(mfilename('fullpath')),'..','lib'));

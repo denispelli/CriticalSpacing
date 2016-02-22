@@ -1,4 +1,4 @@
-% trying to replicate problem on michelle fogarty's mac.
+% trying to replicate problem that appeared on michelle fogarty's mac.
 % no success.
 Screen('Preference', 'SkipSyncTests', 1);
 textFont='Trebuchet MS';
