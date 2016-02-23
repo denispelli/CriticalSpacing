@@ -21,6 +21,15 @@ function oo=CriticalSpacing(oIn)
 % (2016) A clinical test for visual crowding [version 1; referees: 2
 % approved with reservations]. F1000Research 5:81 (doi:
 % 10.12688/f1000research.7835.1) http://f1000research.com/articles/5-81/v1
+%
+% INSTALL. To install and run CriticalSpacing on your computer:
+% Download the CriticalSpacing software from
+% https://github.com/denispelli/CriticalSpacing/archive/master.zip 
+% Unpack the ?zip? archive, producing a folder called CriticalSpacing.
+% Inside the CriticalSpacing folder, open the Word document "Install
+% CriticalSpacing.docx" for detailed instructions for installation of
+% MATLAB, Psychtoolbox, and CriticalSpacing software. Install. Type "help
+% CriticalSpacing" in the MATLAB Command Window.
 % 
 % THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
 % "o" struct and setting its fields to specify your testing condition. Call
@@ -33,36 +42,43 @@ function oo=CriticalSpacing(oIn)
 % measuring a threshold for each. I sometimes pass two identical conditions
 % to get two thresholds for the same condition.
 % 
-% DISPLAY ALPHABET ON SCREEN AND ON PAPER. Anytime you press the "caps
-% lock" key, CriticalSpacing will display the alphabet of possible
-% responses in the current font. We encourage you to also provide a paper
-% copy to most observers. Inside the "CriticalSpacing/pdf/" folder you'll
-% find a file "FONT alphabet.pdf" (where FONT is the name of the font
-% you're using). Print it on paper and give it to the observer. It shows
-% the nine possible letters or digits. Observers will find it helpful to
-% consult this page while choosing an answer, especially when they are
-% guessing. Children may prefer to respond by pointing at the printed
-% target letters on the alphabet page. Patients who have trouble directing
+% PRINT THE ALPHABET. Choose a font from those available in the
+% CriticalSpacing/pdf/ folder. They are all available when you set
+% o.readAlphabetFromDisk=1. We recommend "Pelli" for threshold spacing and
+% Sloan for threshold size. Print the PDF for your font, e.g. "Pelli
+% alphabet.pdf" or "Sloan alphabet.pdf". Give the printed alphabet page to
+% your observer. It shows the possible letters, e.g. "DHKNORSVZ" or
+% "1234567889". Most observers will find it helpful to consult this page
+% while choosing an answer, especially when they are guessing. And children
+% may prefer to respond by pointing at the printed target letters on
+% the alphabet page. However, patients who have trouble directing
 % their attention may be better off without the paper, to give their
 % undivided attention to the display.
+%
+% DISPLAY ALPHABET ON SCREEN. Anytime you press the "caps lock" key,
+% CriticalSpacing will display the alphabet of possible responses in the
+% current font. Like the printed version, it shows the nine possible
+% letters or digits. This may help observers choose an answer, especially
+% when they are guessing.
 % 
-% NEED MATLAB RUNNING ON A COMPUTER WITH A DIGITAL SCREEN. To run this
-% program, you need a computer with MATLAB (or Octave) and the Psychtoolbox
-% installed. The computer OS can be OS X, Windows, or Linux.
-% CriticalSpacing automatically reads the screen resolution in pixels and
-% size in cm. That won't work with an analog CRT display, but we could add
-% code to allow you to measure it manually and specify it in your script.
-% Let me know if you need that.
+% MATLAB & Psychtoolbox. To run this program, you need a computer with
+% MATLAB (or Octave) and the Psychtoolbox installed. The computer OS can be
+% OS X, Windows, or Linux. CriticalSpacing automatically reads the screen
+% resolution in pixels and size in cm. That won't work with an analog CRT
+% display, but we could add code to allow you to measure it manually and
+% specify it in your script. Let me know if you need that.
 % 
-% ALLOW MATLAB TO CONTROL YOUR COMPUTER. Only for Macintosh (OS X). Open
+% PERMIT MATLAB TO CONTROL YOUR COMPUTER. Only for Macintosh (OS X). Open
 % the System Preferences: Security and Privacy: Privacy tab. Select
 % Accessibility. Click to open the lock in lower left, providing your
 % computer password. Click to select MATLAB, allowing it to control your
 % computer. Click the lock again to close it.
 % 
-% A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable as the viewing
-% distance will be 3 m or more. If you must use the built-in keyboard, then
-% have the experimenter type the observer's verbal answers. I like the
+% A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable because a normally
+% sighted observer viewing foveally has excellent vision and must be many
+% meters away from the screen, and thus will be unable to reach a built-in
+% keyboard attached to the screen. If you must use the built-in keyboard,
+% then have the experimenter type the observer's verbal answers. I like the
 % Logitech K760 $86 solar-powered wireless keyboard, because its batteries
 % never run out. It's no longer made, but still available on Amazon and
 % eBay:
@@ -70,12 +86,12 @@ function oo=CriticalSpacing(oIn)
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
 % 
-% MEASURE VIEWING DISTANCE. The viewing distance will typically be several
-% meters, and it's important that you set it accurately, within five
-% percent. You can measure it with a $10 tape measure marked in
-% centimeters. A fancy $40 alternative is a Bosch laser measure, which
-% gives you the answer in two clicks. The laser will work even with a
-% mirror.
+% TAPE OR LASER MEASURE FOR VIEWING DISTANCE. The viewing distance will
+% typically be several meters, and it's important that you set it
+% accurately, within five percent. You can measure it with a $10 tape
+% measure marked in centimeters. A fancy $40 alternative is a Bosch laser
+% measure, which gives you the answer in two clicks. The laser will work
+% even with a mirror.
 % 
 % http://www.amazon.com/gp/product/B0016A2UHO
 % http://www.amazon.com/gp/product/B00LGANH8K
@@ -123,7 +139,24 @@ function oo=CriticalSpacing(oIn)
 % install it for you. Once you've installed a font, you must quit and
 % restart MATLAB to use the newly available font.
 % 
-% RUN SCRIPT. CriticalSpacing.m is meant to be driven by a brief
+% OPTIONAL: ADDING A NEW FONT. Running the program SaveAlphabetToDisk in
+% the CriticalSpacing/lib/ folder, after you edit it to specify the font,
+% alphabet, and borderCharacter you want, will add a snapshot of your
+% font's alphabet to the pdf folder and add a new folder, named for your
+% font, to the CriticalSpacing/alphabets/ folder.
+% 
+% OPTIONAL: USING YOUR COMPUTER'S FONTS, LIVE. Set
+% o.readAlphabetFromDisk=0. You may wish to install Pelli or Sloan from the
+% CriticalSpacing/fonts/ folder into your computer's OS. Restart MATLAB
+% after installing a new font.
+% 
+% CHILDREN. Adults and children seem to find it easy and intuitive, but we've
+% only tested a few children so far. Aenne Brielmann has designed an
+% astronaut metaphar for children, to make it more like a game, which we
+% plan to implement. Try running runCriticalSpacing. It measures four
+% thresholds.
+% 
+% USER-WRITTEN SCRIPTS. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. I have provided runCriticalSpacing as a example. You
 % control the behavior of CriticalSpacing by setting parameters in the
 % fields of a struct called "o". "o" defines a condition for which a
@@ -135,12 +168,55 @@ function oo=CriticalSpacing(oIn)
 % another, each showing one or two targets (with or without repetitions).
 % Presentation can be brief or static (o.durationSec=inf).
 % 
-% EASE. Adults and children seem to find it easy and intuitive, but we've
-% only tested a few children so far. Aenne Brielmann has designed an
-% astronaut metaphar for children, to make it more like a game, which we
-% plan to implement. Try running runCriticalSpacing. It measures four
-% thresholds.
+% THE "o" ARGUMENT, INPUT AND OUTPUT. Your run script is trivial. It
+% just assigns values to the fields of an "o" struct and then calls
+% CriticalSpacing to do the work. You define a condition by creating an "o"
+% struct and setting its fields to specify your testing condition. Call
+% CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
+% threshold for your condition and return the "o" struct with all the
+% results as additional fields. CriticalSpacing may adjust some of your
+% parameters to satisfy physical constraints including screen size and
+% maximum possible contrast. If you provide several conditions, as an o
+% array, then CriticalSpacing runs all the conditions interleaved,
+% measuring a threshold for each. I sometimes pass two identical conditions
+% to get two thresholds for the same condition.
+%
+% RUN A SCRIPT. To test an observer, double click "runCriticalSpacing.m" or
+% your own modified script. They're easy to write. Say "Ok" if MATLAB
+% offers to change the current folder. CriticalSpacing automatically saves
+% your results to the "CriticalSpacing/data" folder. The filenames are
+% unique and intuitive, so it's ok to let lots of data accumulate in the
+% data folder. runCriticalSpacing takes 5 min to test one observer (with 20
+% trials per threshold), measuring two thresholds, interleaved.
+%
+% CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
+% o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
+% viewing distance (or declare that you're using a mirror) at the beginning
+% of each run. You need long distance to display tiny letters, and you need
+% short viewing distance to display peripheral letters, if fixation is
+% on-screen. (We plan to add support for off-screen fixation.) When viewing
+% foveally, please err on the side of making the viewing distance longer
+% than necessary. If you use too short a viewing distance then the minimum
+% size and spacing may be bigger than the threshold you want to measure. At
+% the end of the run, CriticalSpacing.m warns you if the estimated
+% threshold is smaller than the minimum possible size or spacing at the
+% current distance, and suggests that you increase the viewing distance in
+% subsequent runs. The minimum viewing distance depends on the smallest
+% letter size you want to show with 8 pixels and the resolution (pixels per
+% centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
+% paper cited at the beginning,
 % 
+% minViewingDistanceCm=57*(minimumTargetPix/letterDeg)/(screenWidthPix/screenWidthCm);
+% 
+% where minimumTargetPix=8 and letterDeg=0.02 for the healthy adult fovea.
+%
+% NAME THE EXPERIMENTER & OBSERVER. If it doesn't already know,
+% CriticalSpacing asks for the name of the experimenter and observer. These
+% names are included in the data files, and incorporated into the data file
+% names. If your know the experimenter or observer name in advance you can
+% specify it in your script, e.g. o.experimenter='Denis' or
+% o.observer='JohnK', and CriticalSpacing will skip that question.
+%
 % CAPS LOCK KEY: DISPLAY THE ALPHABET. Anytime that CriticalSpacing is
 % running trials, pressing the caps lock key will display the font's
 % alphabet at a large size, filling the screen. (The shift key works too,
@@ -185,29 +261,22 @@ function oo=CriticalSpacing(oIn)
 % directions, selected by the variable o.measureThresholdVertically, 1 for
 % vertically, and 0 for horizontally. Target size can be made proportional
 % to spacing, allowing measurement of critical spacing without knowing the
-% acuity, because we use the largest possible letter for each spacing.
-% 
-% ECCENTRICITY. Set o.eccentricityDeg in your script. Current testing is
-% focussed on eccentricity 0 using infinite duration. For peripheral
-% testing, it's usually best to set o.durationSec=0.2 to prevent seeing the
-% target after a foveating saccade triggers by the brief target
-% presentation. When the flankers are radial, the specified spacing refers
-% to the inner flanker, between target and fixation. We define scaling
-% eccentricity as eccentricity plus 0.45 deg. The critical spacing of
-% crowding is proportional to the scaling eccentricity. The outer flanker
-% is at the scaling eccentricity that has the same ratio to the target
-% scaling eccentricity, as the target scaling eccentricity does to the
-% inner-flanker scaling eccentricity.
-% 
-% VIEWING DISTANCE. The minimum viewing distance depends the smallest
-% letter size you want to show with 8 pixels and the resolution (pixels per
-% centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
-% paper mentioned above.
-% 
-% minViewingDistanceCm=57*(minimumTargetPix/letterDeg)/(screenWidthPix/screenWidthCm);
-% 
-% where letterDeg=0.02, minimumTargetPix=8.
+% acuity, because we use the largest possible letter for each spacing. The
+% ratio SpacingOverSize is computed for spacing and size along the same
+% axis, specified by o.measureThresholdVertically. The final report by
+% CriticalSpacing includes the aspect ratio of your font: o.heightOverWidth.
 %
+% ECCENTRICITY. Set o.eccentricityDeg in your script. Current testing is
+% focussed on o.eccentricityDeg=0 and o.durationSec=inf, i.e. infinity. For
+% peripheral testing, it's usually best to set o.durationSec=0.2 to exclude
+% eye movements during the brief target presentation. When the flankers are
+% radial, the specified spacing refers to the inner flanker, between target
+% and fixation. We define scaling eccentricity as eccentricity plus 0.05
+% deg. The critical spacing of crowding is proportional to the scaling
+% eccentricity. The outer flanker is at the scaling eccentricity that has
+% the same ratio to the target scaling eccentricity, as the target scaling
+% eccentricity does to the inner-flanker scaling eccentricity.
+% 
 % SAVING LETTER-CONFUSION DATA
 % For each condition we keep track of which letters the observer has
 % trouble with (time and accuracy). This might lead us to adjust or drop
@@ -231,11 +300,11 @@ function oo=CriticalSpacing(oIn)
 % to trial: age, font, thresholdParameter, repeatedTarget.
 %
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
-%
+
 % HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
-%
+
 % EXPLANATION FROM MARIO KLEINER (2/9/16) ON RESTORING RESOLUTION
 % "The current behavior is something like this:
 % 
@@ -270,136 +339,6 @@ function oo=CriticalSpacing(oIn)
 % MacBook Air with attached Dell display."
 %
 % -mario
-
-% THE ADVICE, BELOW, IS MORE OR LESS THE SAME AS THE HELP TEXT ABOVE. THEY
-% SHOULD BE MERGED.
-
-% 1. GET WIRELESS KEYBOARD. A normally sighted observer viewing foveally
-% has excellent vision and must be many meters away from the screen, and
-% thus will be unable to reach a built-in keyboard attached to the screen.
-% The quickest way to overcome this is for the experimenter to type what
-% the observer says. A more convenient solution is to get a wireless or
-% long-cable keyboard.
-
-% 1. PRINT THE ALPHABET. Choose a font from those available in the
-% CriticalSpacing/pdf/ folder. They are all available if you set
-% o.readAlphabetFromDisk=1. We recommend "Pelli" for threshold spacing and
-% Sloan for threshold size. Print the PDF for your font, e.g. ?Pelli
-% alphabet.pdf? or ?Sloan alphabet.pdf?. Give the printed alphabet page to
-% your observer. It shows the possible letters, e.g. ?DHKNORSVZ? or
-% ?1234567889?. Most observers will find it helpful to consult this page
-% while choosing an answer, especially when they are guessing. And children
-% may prefer to respond by pointing at the target letters, one by one, on
-% the alphabet page.
-
-% 1. RUN A SCRIPT. To test an observer, double click ?runCriticalSpacing.m?
-% or your own modified script. They're easy to write. Say "Ok" if MATLAB
-% offers to change the current folder. CriticalSpacing automatically saves
-% your results to the ?CriticalSpacing/data? folder. The filenames are
-% unique and intuitive, so it's ok to let lots of data accumulate in the
-% data folder. runCriticalSpacing takes 5 min to test one observer (with 20
-% trials per threshold), measuring two thresholds, interleaved.
-
-% 1. CHOOSE A VIEWING DISTANCE. You can provide a default in your script,
-% e.g. o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
-% viewing distance (or declare that you're using a mirror) at the beginning
-% of each run. You need long distance to display tiny letters, and you need
-% short viewing distance to display peripheral letters. When viewing
-% foveally, please err on the side of making the viewing distance longer
-% than necessary. If you use too short a viewing distance then the minimum
-% size and spacing may be bigger than the threshold you want to measure.
-% CriticalSpacing.m warns you at the end of the run if the estimated
-% threshold is smaller than the minimum possible size or spacing at the
-% current distance, and suggests that you increase the viewing distance in
-% subsequent runs.
-
-% 1. NAME THE EXPERIMENTER & OBSERVER. If it doesn't already know,
-% CriticalSpacing asks for the name of the experimenter and observer. These
-% names are included in the data files, and incorporated into the data file
-% names. If your know the experimenter or observer name in advance you can
-% specify it in your script, e.g. o.experimenter='Denis' or
-% o.observer='JohnK', and CriticalSpacing will skip that question.
-
-% 1. CAPS LOCK KEY: DISPLAY THE ALPHABET. Anytime that CriticalSpacing is
-% running trials, pressing the caps lock key will display the font's
-% alphabet at a large size, filling the screen. (The shift key works too,
-% but it's dangerous on Windows. On Windows, pressing the shit key five
-% times provokes a "sticky keys" dialog that you can't see because it's
-% hidden behind the CriticalSpacing window, so you're stuck. The caps lock
-% key is safe.)
-
-% 1. ESCAPE KEY: QUIT. You can always terminate the current run by hitting
-% the escape key on your keyboard (typically in upper left, labeled "esc").
-% CriticalSpacing will end the run, print out and save to disk the results
-% so far, and ask whether you're quitting the whole session or prefer to
-% proceed to the next run.
-
-% 1. SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we?ve
-% softened the "forced" in forced choice. If you (the experimenter) think
-% the observer is overwhelmed by this trial, you can press the spacebar
-% instead of a letter and the program will immediately go to the next
-% trial, which will be easier. If you skip that trial too, the next will be
-% even easier, and so on. However, as soon as a trial gets a normal
-% response then Quest will resume presenting trials near threshold. We hope
-% skipping will make the initial experience easier. Eventually the child
-% must still do trials near threshold, because threshold estimation
-% requires it. Skipping is always available. If you type one letter and
-% then skip, the typed letter still counts. There?s an invisible timer. If
-% you hit space (to skip) less than 8 s after the chart appeared, then the
-% program says "Skip", and any responses not yet taken do not count. If you
-% wait at least 8 s before hitting space, then the program says ?Space?
-% and, supposing that the child felt too unsure to answer, the program
-% ?helps? by providing a random guess. By chance, that guess will
-% occasionally be right. Please do not tell the observer about the option
-% to skip. Use this only rarely, when you need it to avoid a crisis. It's
-% good to warn the observer at the beginning that this is a game and nobody
-% gets them all right. You just try to get as many as you can.
-
-% 1. THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
-% crowding or acuity). It measures threshold in either of two directions,
-% selected by the variable o.measureThresholdVertically, 1 for vertically,
-% and 0 for horizontally. Target size can be made proportional to spacing,
-% allowing measurement of critical spacing without knowing the acuity,
-% because we use the largest possible letter for each spacing.
-
-% 1. THE "o" ARGUMENT, INPUT AND OUTPUT. Your run script is trivial. It
-% just assigns values to the fields of an "o" struct and then calls
-% CriticalSpacing to do the work. You define a condition by creating an "o"
-% struct and setting its fields to specify your testing condition. Call
-% CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
-% threshold for your condition and return the "o" struct with all the
-% results as additional fields. CriticalSpacing may adjust some of your
-% parameters to satisfy physical constraints including screen size and
-% maximum possible contrast. If you provide several conditions, as an o
-% array, then CriticalSpacing runs all the conditions interleaved,
-% measuring a threshold for each. I sometimes pass two identical conditions
-% to get two thresholds for the same condition.
-
-% 1. ECCENTRICITY. Current testing is focussed on eccentricity 0, but you
-% can test any eccentricy, just set o.eccentricityDeg. When the flankers
-% are radial, the specified spacing refers to the inner flanker, between
-% target and fixation. We define scaling eccentricity as eccentricity plus
-% 0.45 deg. The critical spacing of crowding is proportional to the scaling
-% eccentricity. The outer flanker is at the scaling eccentricity that has
-% the same ratio to the target scaling eccentricity, as the target scaling
-% eccentricity does to the inner-flanker scaling eccentricity.
-
-% 1. THRESHOLD ORIENTATION. Use o.measureThresholdVertically=1; (or =0) to
-% report threshold (size or spacing) vertically or horizontally. The ratio
-% SpacingOverSize always measures both spacing and size along the same
-% axis. The final report by CriticalSpacing includes the aspect ratio of
-% your font: heightOverWidth.
-
-% 1. OPTIONAL: ADDING A NEW FONT. Running the program SaveAlphabetToDisk in
-% the CriticalSpacing/lib/ folder, after you edit it to specify the font,
-% alphabet, and borderCharacter you want, will add a snapshot of your
-% font's alphabet to the pdf folder and add a new folder, named for your
-% font, to the CriticalSpacing/alphabets/ folder.
-
-% 1. OPTIONAL: USING YOUR COMPUTER'S FONTS, LIVE. Set
-% o.readAlphabetFromDisk=0. You may wish to install Pelli or Sloan from the
-% CriticalSpacing/fonts/ folder. Restart MATLAB after installing a new
-% font.
 
 [~,versionStructure]=PsychtoolboxVersion;
 if versionStructure.revision<7486
