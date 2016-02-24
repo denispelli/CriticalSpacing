@@ -10,7 +10,7 @@ To install and run CriticalSpacing on your computer:
 1. CLICK the "**Download ZIP**" button above (on right side) or this link to download the CriticalSpacing software:
 [https://github.com/denispelli/CriticalSpacing/archive/master.zip](https://github.com/denispelli/CriticalSpacing/archive/master.zip)
 1. UNPACK the “zip” archive, producing a folder called CriticalSpacing.
-1. INSTALL software. Inside the CriticalSpacing folder, open the Word document, "**Install CriticalSpacing.docx**" for detailed instructions for installation of MATLAB, Psychtoolbox, and CriticalSpacing software. Install.
+1. INSTALL software. Inside the CriticalSpacing folder, open the Word document "**Install CriticalSpacing.docx**" and follow the detailed instructions to install MATLAB, Psychtoolbox, and CriticalSpacing software.
 1. TYPE "**help CriticalSpacing**" in the MATLAB Command Window. 
 
 ## Software required:
