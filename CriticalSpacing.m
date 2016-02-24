@@ -340,8 +340,8 @@ function oo=CriticalSpacing(oIn)
 %
 % -mario
 
-[~,versionStructure]=PsychtoolboxVersion;
-if versionStructure.revision<7486
+[~,v]=PsychtoolboxVersion;
+if v.major*10000 + v.minor*100 + v.point < 30012
    error('CriticalSpacing: Your Psychtoolbox is too old. Please run "UpdatePsychtoolbox".');
 end
 if nargin<1 || ~exist('oIn','var')
