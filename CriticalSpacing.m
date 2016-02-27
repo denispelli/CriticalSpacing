@@ -742,7 +742,7 @@ try
       maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/minimumScreenWidthDeg);
 
       Screen('FillRect',window,white);
-      string=sprintf('Please move me to be %.0f cm from your eye.',oo(1).viewingDistanceCm);
+      string=sprintf('If you want a viewing distance of %.0f cm, please move me to be that distance from your eye. Otherwise, please enter the desired distance below.',oo(1).viewingDistanceCm);
       for condition=1:conditions
          oo(condition).minimumSizeDeg=oo(condition).minimumTargetPix/pixPerDeg;
          if oo(condition).fixedSpacingOverSize
