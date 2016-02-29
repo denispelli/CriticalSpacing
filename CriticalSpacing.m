@@ -13,6 +13,40 @@ function oo=CriticalSpacing(oIn)
 % keep both. The filenames are unique and easy to sort, so it's fine to let
 % all your data files accumulate in your CriticalSpacing/data/ folder.
 % 
+% THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
+% "o" struct and setting its fields to specify your testing condition. Call
+% CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
+% threshold for your condition and return the "o" struct with all the
+% results as additional fields. CriticalSpacing may adjust some of your
+% parameters to satisfy physical constraints including screen size and
+% maximum possible contrast. If you provide several conditions, as an o
+% array, then CriticalSpacing runs all the conditions interleaved,
+% measuring a threshold for each. I sometimes pass two identical conditions
+% to get two thresholds for the same condition.
+% 
+% USER-WRITTEN SCRIPTS. CriticalSpacing.m is meant to be driven by a brief
+% user-written script. Your run script is short and very easy to write. It
+% just assigns values to the fields of an "o" struct and then calls
+% CriticalSpacing to measure a threshold. I have provided
+% runCriticalSpacing as a example. You control the behavior of
+% CriticalSpacing by setting parameters in the fields of a struct called
+% "o". "o" defines a condition for which a threshold will be measured. If
+% you provide several conditions, as an o array, then CriticalSpacing runs
+% all the conditions interleaved, measuring a threshold for each.
+% CriticalSpacing initially confirms the viewing distance, asks for the
+% experimenter's and observer's names, and presents a page of instructions.
+% The rest is just one eye chart after another, each showing one or two
+% targets (with or without repetitions). Presentation can be brief or
+% static (o.durationSec=inf).
+% 
+% RUN A SCRIPT. To test an observer, double click "runCriticalSpacing.m" or
+% your own modified script. They're easy to write. Say "Ok" if MATLAB
+% offers to change the current folder. CriticalSpacing automatically saves
+% your results to the "CriticalSpacing/data" folder. The filenames are
+% unique and intuitive, so it's ok to let lots of data accumulate in the
+% data folder. runCriticalSpacing takes 5 min to test one observer (with 20
+% trials per threshold), measuring two thresholds, interleaved.
+%
 % PUBLICATION. You can read more about this program and its purpose in our
 % 2016 article:
 % 
@@ -25,22 +59,11 @@ function oo=CriticalSpacing(oIn)
 % INSTALL. To install and run CriticalSpacing on your computer:
 % Download the CriticalSpacing software from
 % https://github.com/denispelli/CriticalSpacing/archive/master.zip 
-% Unpack the ?zip? archive, producing a folder called CriticalSpacing.
-% Inside the CriticalSpacing folder, open the Word document "Install
+% Unpack the zip archive, producing a folder called CriticalSpacing. Inside
+% the CriticalSpacing folder, open the Word document "Install
 % CriticalSpacing.docx" for detailed instructions for installation of
 % MATLAB, Psychtoolbox, and CriticalSpacing software. Install. Type "help
 % CriticalSpacing" in the MATLAB Command Window.
-% 
-% THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
-% "o" struct and setting its fields to specify your testing condition. Call
-% CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
-% threshold for your condition and return the "o" struct with all the
-% results as additional fields. CriticalSpacing may adjust some of your
-% parameters to satisfy physical constraints including screen size and
-% maximum possible contrast. If you provide several conditions, as an o
-% array, then CriticalSpacing runs all the conditions interleaved,
-% measuring a threshold for each. I sometimes pass two identical conditions
-% to get two thresholds for the same condition.
 % 
 % PRINT THE ALPHABET. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
@@ -150,45 +173,12 @@ function oo=CriticalSpacing(oIn)
 % CriticalSpacing/fonts/ folder into your computer's OS. Restart MATLAB
 % after installing a new font.
 % 
-% CHILDREN. Adults and children seem to find it easy and intuitive, but we've
-% only tested a few children so far. Aenne Brielmann has designed an
+% CHILDREN. Adults and children seem to find it easy and intuitive, but
+% we've only tested a few children so far. Aenne Brielmann has designed an
 % astronaut metaphar for children, to make it more like a game, which we
 % plan to implement. Try running runCriticalSpacing. It measures four
 % thresholds.
 % 
-% USER-WRITTEN SCRIPTS. CriticalSpacing.m is meant to be driven by a brief
-% user-written script. I have provided runCriticalSpacing as a example. You
-% control the behavior of CriticalSpacing by setting parameters in the
-% fields of a struct called "o". "o" defines a condition for which a
-% threshold will be measured. If you provide several conditions, as an o
-% array, then CriticalSpacing runs all the conditions interleaved,
-% measuring a threshold for each. CriticalSpacing initially confirms the
-% viewing distance, asks for the experimenter's and observer's names, and
-% presents a page of instructions. The rest is just one eye chart after
-% another, each showing one or two targets (with or without repetitions).
-% Presentation can be brief or static (o.durationSec=inf).
-% 
-% THE "o" ARGUMENT, INPUT AND OUTPUT. Your run script is trivial. It
-% just assigns values to the fields of an "o" struct and then calls
-% CriticalSpacing to do the work. You define a condition by creating an "o"
-% struct and setting its fields to specify your testing condition. Call
-% CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
-% threshold for your condition and return the "o" struct with all the
-% results as additional fields. CriticalSpacing may adjust some of your
-% parameters to satisfy physical constraints including screen size and
-% maximum possible contrast. If you provide several conditions, as an o
-% array, then CriticalSpacing runs all the conditions interleaved,
-% measuring a threshold for each. I sometimes pass two identical conditions
-% to get two thresholds for the same condition.
-%
-% RUN A SCRIPT. To test an observer, double click "runCriticalSpacing.m" or
-% your own modified script. They're easy to write. Say "Ok" if MATLAB
-% offers to change the current folder. CriticalSpacing automatically saves
-% your results to the "CriticalSpacing/data" folder. The filenames are
-% unique and intuitive, so it's ok to let lots of data accumulate in the
-% data folder. runCriticalSpacing takes 5 min to test one observer (with 20
-% trials per threshold), measuring two thresholds, interleaved.
-%
 % CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
 % o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
 % viewing distance (or declare that you're using a mirror) at the beginning
