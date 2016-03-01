@@ -474,7 +474,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
    'minimumScreenWidthDeg' 'typicalThesholdSizeDeg' ...
-   'computer' 'MATLAB' 'psychtoolbox' 'trialData'};
+   'computer' 'MATLAB' 'psychtoolbox' 'trialData' 'needWirelessKeyboard'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -764,9 +764,13 @@ try
       for i=1:length(devices)
          oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
       end
-      if length(GetKeyboardIndices)<2 && oo(1).viewingDistanceCm>100 && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless'))
+      oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
+         && length(GetKeyboardIndices)<2 ...
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth'));
+      if oo(1).needWirelessKeyboard
          warning backtrace off
-         warning('You have only one keyboard, and it''s not called "wireless". The long viewing distance may demand an external keyboard.');
+         warning('You have only one keyboard, and it''s not "wireless" or "bluetooth". The long viewing distance may demand an external keyboard.');
          warning backtrace on
          string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. To help you connect a keyboard, I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
          Screen('TextSize',window,round(oo(1).textSize*0.6));
@@ -1161,10 +1165,11 @@ try
    [cal.screenWidthMm,cal.screenHeightMm]=Screen('DisplaySize',cal.screen);
    if computer.windows
       cal.processUserLongName=getenv('USERNAME');
-      cal.machineName=getenv('USERDOMAIN');
+      cal.localHostName=getenv('USERDOMAIN');
       cal.macModelName=[];
    elseif computer.linux
       cal.processUserLongName=getenv('USER');
+      cal.localHostName=computer.localHostName;
       cal.machineName=computer.machineName;
       cal.osversion=computer.kern.version;
       cal.macModelName=[];
@@ -1174,6 +1179,7 @@ try
       if streq(cal.machineName,'UNKNOWN! QUERY FAILED DUE TO EMPTY OR PROBLEMATIC NAME.')
          cal.machineName='';
       end
+      cal.localHostName=computer.localHostName;
       cal.macModelName=MacModelName;
    end
    cal.screenOutput=[]; % only for Linux
@@ -1194,7 +1200,7 @@ try
       oo(1).nativeWidth,oo(1).nativeHeight,...
       screenWidthMm/10,screenHeightMm/10,...
       RectWidth(actualScreenRect)/(screenWidthMm/10));
-   ffprintf(ff,'%s, %s, %s, %s\n',computer.system,cal.processUserLongName,cal.machineName,cal.macModelName);
+   ffprintf(ff,'%s, %s, %s, %s\n',computer.system,cal.processUserLongName,cal.localHostName,cal.macModelName);
    oo(1).MATLAB=version;
    [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
    v=oo(1).psychtoolbox;
