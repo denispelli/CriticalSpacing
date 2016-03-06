@@ -1,13 +1,13 @@
-## How to use CriticalSpacing to measure an observer's critical spacing and acuity for single and repeated targets.
+## You can use the MATLAB program CriticalSpacing.m on your computer to measure an observer's critical spacing and acuity for single and repeated targets.
 
 "CriticalSpacing.m" is a MATLAB program developed by Denis Pelli at NYU, with help from Hörmet Yiltiz. You can read more about this visual test in our
 2016 article:
 
 Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S., Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H. (2016) **A clinical test for visual crowding** [version 1; referees: 2 approved with reservations]. _F1000Research_ 5:81 (doi: 10.12688/f1000research.7835.1) [http://f1000research.com/articles/5-81/v1](http://f1000research.com/articles/5-81/v1)
 
-To install and run CriticalSpacing on your computer:
+## To install and run CriticalSpacing on your computer:
 
-1. CLICK the "**Download ZIP**" button above (on right side) or this link to download the CriticalSpacing software:
+1. CLICK the "**Download ZIP**" button (above on right side) or this link to download the CriticalSpacing software:
 [https://github.com/denispelli/CriticalSpacing/archive/master.zip](https://github.com/denispelli/CriticalSpacing/archive/master.zip)
 1. UNPACK the “zip” archive, producing a folder called CriticalSpacing.
 1. INSTALL software. Inside the CriticalSpacing folder, open the Word document "**Install CriticalSpacing.docx**" and follow the detailed instructions to install MATLAB, Psychtoolbox, and CriticalSpacing software.
