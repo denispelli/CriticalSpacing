@@ -731,8 +731,27 @@ try
       end
       maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/minimumScreenWidthDeg);
 
+      % Look for wireless keyboard.
+      clear PsychHID; % Force new enumeration of devices to detect external keyboard.
+      clear KbCheck; % Clear cache of keyboard devices.
+      [~,~,devices]=GetKeyboardIndices;
+      for i=1:length(devices)
+         oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
+      end
+      oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
+         && length(GetKeyboardIndices)<2 ...
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth'));
+      if oo(1).needWirelessKeyboard
+         warning backtrace off
+         warning('You have only one keyboard, and it''s not "wireless" or "bluetooth". The long viewing distance may demand an external keyboard.');
+         warning backtrace on
+      end
+
+      % Say hello, and get viewing distance.
       Screen('FillRect',window,white);
-      string=sprintf(['If you want a viewing distance of %.0f cm, ' ...
+      string=sprintf(['Welcome to CriticalSpacing. \n\n' ...
+         'If you want a viewing distance of %.0f cm, ' ...
          'please move me to be that distance from your eye, and hit RETURN. ' ...
          'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
          oo(1).viewingDistanceCm);
@@ -750,39 +769,29 @@ try
       end
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
+      string=sprintf(['%sAt the current %.0f cm viewing distance, '...
+         'the screen is %.1f deg wide, and I can display characters'...
+         ' as small as %.3f deg with spacing as small as %.3f deg. '],...
+         string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,...
+         sizeDeg,spacingDeg);
       if minimumScreenWidthDeg>0
-         string=sprintf('%sTo display your peripheral targets (requiring a screen width of at least %.1f deg), view me from at most %.0f cm. ',...
+         string=sprintf(['%sTo display your peripheral targets ' ...
+            '(requiring a screen width of at least %.1f deg), ' ...
+            'view me from at most %.0f cm. '],...
             string,minimumScreenWidthDeg,maximumViewingDistanceCm);
       end
       smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
-      string=sprintf('%sTo display your smallest target at %.3f deg, half of typical threshold size, view me from at least %.0f cm. ',string,smallestDeg,minimumViewingDistanceCm);
-      string=sprintf(['%sAt the current %.0f cm viewing distance, the screen is %.1f deg wide, and I can display characters'...
-         ' as small as %.3f deg with spacing as small as %.3f deg. '],string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,sizeDeg,spacingDeg);
-      %       string=sprintf('%s If that''s ok, hit RETURN.',string);
-      %       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
-      %       Screen('TextSize',window,oo(1).textSize);
+      string=sprintf(['%sTo allow display of your target as small as %.3f deg, ' ...
+         'half of typical threshold size, view me from at least %.0f cm. \n\n'],...
+         string,smallestDeg,minimumViewingDistanceCm);
+      if oo(1).needWirelessKeyboard
+         string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
+            'but I can''t detect any. To help you connect a keyboard, ' ...
+            'I''ll recreate the keyboard list if you type the viewing distance below, ' ...
+            'followed by RETURN.'],string);
+      end
       Screen('TextSize',window,round(oo(1).textSize*0.6));
       [~,y]=DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
-      
-      % Look for external keyboard.
-      clear PsychHID; % Force new enumeration of devices to detect external keyboard.
-      clear KbCheck; % Clear cache of keyboard devices.
-      [~,~,devices]=GetKeyboardIndices;
-      for i=1:length(devices)
-         oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
-      end
-      oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
-         && length(GetKeyboardIndices)<2 ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth'));
-      if oo(1).needWirelessKeyboard
-         warning backtrace off
-         warning('You have only one keyboard, and it''s not "wireless" or "bluetooth". The long viewing distance may demand an external keyboard.');
-         warning backtrace on
-         string=sprintf('WARNING: At this distance you may need an external keyboard, but I can''t detect any. To help you connect a keyboard, I''ll recreate the keyboard list if you type the viewing distance below, followed by RETURN.');
-         Screen('TextSize',window,round(oo(1).textSize*0.6));
-         DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,length(instructionalTextLineSample)/0.6,[],[],1.1);
-      end
       
       Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
@@ -834,7 +843,7 @@ try
       Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Hello Experimenter,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
-      Screen('TextSize',window,round(0.7*oo(1).textSize));
+      Screen('TextSize',window,round(0.6*oo(1).textSize));
       Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMargin,screenRect(4)/2-1.5*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
@@ -844,7 +853,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
@@ -880,7 +889,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMargin,screenRect(4)/2,black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
