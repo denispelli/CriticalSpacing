@@ -732,7 +732,14 @@ try
       maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/minimumScreenWidthDeg);
 
       Screen('FillRect',window,white);
-      string=sprintf('If you want a viewing distance of %.0f cm, please move me to be that distance from your eye. Otherwise, please enter the desired distance below.',oo(1).viewingDistanceCm);
+      string=sprintf(['If you want a viewing distance of %.0f cm, ' ...
+         'please move me to be that distance from your eye, and hit RETURN. ' ...
+         'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
+         oo(1).viewingDistanceCm);
+      string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
+      Screen('TextSize',window,oo(1).textSize);
+      [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      string='';
       for condition=1:conditions
          oo(condition).minimumSizeDeg=oo(condition).minimumTargetPix/pixPerDeg;
          if oo(condition).fixedSpacingOverSize
@@ -744,18 +751,18 @@ try
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
       if minimumScreenWidthDeg>0
-         string=sprintf('%s To display your peripheral targets (requiring a screen width of at least %.1f deg), view me from at most %.0f cm.',...
+         string=sprintf('%sTo display your peripheral targets (requiring a screen width of at least %.1f deg), view me from at most %.0f cm. ',...
             string,minimumScreenWidthDeg,maximumViewingDistanceCm);
       end
       smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
-      string=sprintf('%s To display your smallest target at %.3f deg, half of typical threshold size, view me from at least %.0f cm.',string,smallestDeg,minimumViewingDistanceCm);
-      string=sprintf(['%s At the current %.0f cm viewing distance, the screen is %.1f deg wide, and I can display characters'...
-         ' as small as %.3f deg with spacing as small as %.3f deg.'],string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,sizeDeg,spacingDeg);
-      string=sprintf('%s If that''s ok, hit RETURN.',string);
-      string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
-      string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
-      Screen('TextSize',window,oo(1).textSize);
-      [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      string=sprintf('%sTo display your smallest target at %.3f deg, half of typical threshold size, view me from at least %.0f cm. ',string,smallestDeg,minimumViewingDistanceCm);
+      string=sprintf(['%sAt the current %.0f cm viewing distance, the screen is %.1f deg wide, and I can display characters'...
+         ' as small as %.3f deg with spacing as small as %.3f deg. '],string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,sizeDeg,spacingDeg);
+      %       string=sprintf('%s If that''s ok, hit RETURN.',string);
+      %       string=sprintf('%s To change your viewing distance, slowly type the new distance below, and hit RETURN.',string);
+      %       Screen('TextSize',window,oo(1).textSize);
+      Screen('TextSize',window,round(oo(1).textSize*0.6));
+      [~,y]=DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
       
       % Look for external keyboard.
       clear PsychHID; % Force new enumeration of devices to detect external keyboard.
