@@ -107,18 +107,18 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 
 o.useFractionOfScreen=0; 
-o.targetFont='Sloan';
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
 
 o.durationSec=0.2; % duration of display of target and flankers
 o.viewingDistanceCm=200; % Default for runtime question.
 o.fixationCrossDeg=inf;
 o.repeatedTargets=0;
-o.thresholdParameter='size';
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
 
 % RUN measure threshold for size
+o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+o.thresholdParameter='size';
 o.measureThresholdVertically=nan; % depends on parameter
 o.eccentricityDeg=0;
 o.fixationLocation='center';
@@ -132,7 +132,25 @@ o.borderLetter='$';
 o.measureThresholdVertically=nan; % depends on parameter
 o.eccentricityDeg=0;
 o.fixationLocation='left';
+o.fixationLocation='center';
 o=CriticalSpacing(o);
 
-% Results are printed in MATLAB's Command Window and saved in the
-% CriticalSpacing/data/ folder.
+% RUN measure threshold for size
+o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+o.thresholdParameter='size';
+o.measureThresholdVertically=nan; % depends on parameter
+o.eccentricityDeg=10;
+o.fixationLocation='left';
+o=CriticalSpacing(o);
+
+% RUN measure threshold for spacing
+o.thresholdParameter='spacing';
+o.targetFont='Pelli';
+o.alphabet='123456789'; % Sloan alphabet, excluding C
+o.borderLetter='$';
+o.measureThresholdVertically=nan; % depends on parameter
+o.eccentricityDeg=10;
+o.fixationLocation='left';
+o=CriticalSpacing(o);
