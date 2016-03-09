@@ -292,9 +292,8 @@ function oo=CriticalSpacing(oIn)
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 
 % PLANS
-% I'd like the viewing-distance page to respond to more commands. "m" to
-% turn mirroring on or off. "r" to optimize screen resolution. "o" to set
-% up offscreen fixation. "k" to resynch keyboards.
+% I'd like the viewing-distance page to respond to new command: "o" to set
+% up offscreen fixation.
 
 % HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
@@ -796,10 +795,17 @@ try
          string,smallestDeg,minimumViewingDistanceCm);
       
       % MIRROR
-      string=sprintf(['%sMIRROR: To work with a mirror, ' ...
-         'set o.flipScreenHorizontally=1 in your script, ' ...
-         'or type "m" below, followed by RETURN.\n\n'],...
-         string);
+      if oo(1).flipScreenHorizontally
+         string=sprintf(['%sMIRROR: To turn off mirroring, ' ...
+            'set o.flipScreenHorizontally=0 in your script, ' ...
+            'or type "m" below, followed by RETURN.\n\n'],...
+            string);
+      else
+         string=sprintf(['%sMIRROR: To work with a mirror, ' ...
+            'set o.flipScreenHorizontally=1 in your script, ' ...
+            'or type "m" below, followed by RETURN.\n\n'],...
+            string);
+      end
       
       % RESOLUTION
       if oo(1).nativeWidth==RectWidth(actualScreenRect)
@@ -826,6 +832,9 @@ try
             'but I can''t detect any. If you connect a keyboard, ' ...
             'type "k" below, followed by RETURN, and I''ll recreate the keyboard list.'],string);
       end
+      
+      % OFFSCREEN FIXATION
+      % Type "o", followed by RETURN, to set up offscreen fixation.
       
       % Draw all the small text on screen.
       Screen('TextSize',window,round(oo(1).textSize*0.6));
