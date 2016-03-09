@@ -291,6 +291,11 @@ function oo=CriticalSpacing(oIn)
 %
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 
+% PLANS
+% I'd like the viewing-distance page to respond to more commands. "m" to
+% turn mirroring on or off. "r" to optimize screen resolution. "o" to set
+% up offscreen fixation. "k" to resynch keyboards.
+
 % HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
@@ -752,16 +757,19 @@ try
          warning backtrace on
       end
 
+      % BIG TEXT
       % Say hello, and get viewing distance.
       Screen('FillRect',window,white);
       string=sprintf(['Welcome to CriticalSpacing. \n\n' ...
          'If you want a viewing distance of %.0f cm, ' ...
-         'please move me to be that distance from your eye, and hit RETURN. ' ...
+         'please move me to that distance from your eye, and hit RETURN. ' ...
          'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
          oo(1).viewingDistanceCm);
-      string=sprintf('%s Enter a minus sign before the distance if you''re using a mirror.',string);
       Screen('TextSize',window,oo(1).textSize);
       [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+ 
+      % SMALL TEXT
+      % Screen and text info.
       string='';
       for condition=1:conditions
          oo(condition).minimumSizeDeg=oo(condition).minimumTargetPix/pixPerDeg;
@@ -773,7 +781,7 @@ try
       end
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
-      string=sprintf(['%sAt the current %.0f cm viewing distance, '...
+      string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
          'the screen is %.1f deg wide, and I can display characters'...
          ' as small as %.3f deg with spacing as small as %.3f deg. '],...
          string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,...
@@ -789,6 +797,13 @@ try
          'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
          string,smallestDeg,minimumViewingDistanceCm);
       
+      % MIRROR
+      string=sprintf(['%sMIRROR: To work with a mirror, ' ...
+         'set o.flipScreenHorizontally=1 in your script, ' ...
+         'or enter the full viewing distance below, preceded by a minus sign.\n\n'],...
+         string);
+      
+      % RESOLUTION
       if oo(1).nativeWidth==RectWidth(actualScreenRect)
          string=sprintf('%sRESOLUTION: Your screen resolution is optimal.\n\n',string);
       else
@@ -806,18 +821,23 @@ try
             'select "Default" resolution.\n\n'],string);
       end
 
-   
+      % KEYBOARD
       if oo(1).needWirelessKeyboard
          string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
             'but I can''t detect any. To help you connect a keyboard, ' ...
             'I''ll recreate the keyboard list if you type the viewing distance below, ' ...
             'followed by RETURN.'],string);
       end
+      
+      % Draw all the small text on screen.
       Screen('TextSize',window,round(oo(1).textSize*0.6));
       [~,y]=DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
       
+      % COPYRIGHT
       Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+
+      % GET TYPED RESPONSE
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
          background=[];
