@@ -800,7 +800,7 @@ try
       % MIRROR
       string=sprintf(['%sMIRROR: To work with a mirror, ' ...
          'set o.flipScreenHorizontally=1 in your script, ' ...
-         'or enter the full viewing distance below, preceded by a minus sign.\n\n'],...
+         'or type "m" below, followed by RETURN.\n\n'],...
          string);
       
       % RESOLUTION
@@ -824,9 +824,8 @@ try
       % KEYBOARD
       if oo(1).needWirelessKeyboard
          string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
-            'but I can''t detect any. To help you connect a keyboard, ' ...
-            'I''ll recreate the keyboard list if you type the viewing distance below, ' ...
-            'followed by RETURN.'],string);
+            'but I can''t detect any. If you connect a keyboard, ' ...
+            'type "k" below, followed by RETURN, and I''ll recreate the keyboard list.'],string);
       end
       
       % Draw all the small text on screen.
@@ -860,16 +859,45 @@ try
       end
       if ~isempty(d)
          inputDistanceCm=str2num(d);
-         if ~isempty(inputDistanceCm) && inputDistanceCm~=0
-            oo(1).viewingDistanceCm=abs(inputDistanceCm);
-            oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
-            oo(1).flipScreenHorizontally=inputDistanceCm<0;
-            if oo(1).flipScreenHorizontally ~= oldFlipScreenHorizontally
-               if oo(1).useSpeech
-                  Speak('Now flipping the display.');
-               end
-               Screen('Close',window);
-               window=OpenWindow(oo(1));
+         if ~isempty(inputDistanceCm) && inputDistanceCm>0
+            oo(1).viewingDistanceCm=inputDistanceCm;
+         else
+            switch d
+               case 'm',
+                  oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
+                  oo(1).flipScreenHorizontally=~oo(1).flipScreenHorizontally;
+                  if oo(1).useSpeech
+                     Speak('Now flipping the display.');
+                  end
+                  Screen('Close',window);
+                  window=OpenWindow(oo(1));
+               case 'r',
+                  if oo(1).permissionToChangeResolution
+                     Speak('Resolution is already optimal.');
+                  else
+                     if oo(1).useSpeech
+                        Speak('Optimizing resolution.');
+                     end
+                     Screen('Close',window);
+                     warning('Trying to change your screen resolution to be optimal for this test. ...');
+                     oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+                     res=Screen('Resolution',oo(1).screen);
+                     if res.width==oo(1).nativeWidth
+                        oo(1).permissionToChangeResolution=1;
+                        fprintf('SUCCESS!\n');
+                     else
+                        warning('FAILED.');
+                        res
+                     end
+                     actualScreenRect=Screen('Rect',oo(1).screen,1);
+                     window=OpenWindow(oo(1));
+                  end
+               case 'k',
+                  if oo(1).useSpeech
+                     Speak('Recreating list of keyboards.');
+                  end
+               otherwise,
+                  Speak(sprintf('Illegal entry "%s". Try again.',d));
             end
          end
       else
