@@ -829,8 +829,8 @@ try
       % KEYBOARD
       if oo(1).needWirelessKeyboard
          string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
-            'but I can''t detect any. If you connect a keyboard, ' ...
-            'type "k" below, followed by RETURN, and I''ll recreate the keyboard list.'],string);
+            'but I can''t detect any. If you connect a new keyboard, ' ...
+            'use the old keyboard to type "k" below, followed by RETURN, and I''ll recreate the keyboard list.'],string);
       end
       
       % OFFSCREEN FIXATION
