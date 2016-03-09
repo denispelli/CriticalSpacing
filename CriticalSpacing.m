@@ -794,19 +794,6 @@ try
          'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
          string,smallestDeg,minimumViewingDistanceCm);
       
-      % MIRROR
-      if oo(1).flipScreenHorizontally
-         string=sprintf(['%sMIRROR: To turn off mirroring, ' ...
-            'set o.flipScreenHorizontally=0 in your script, ' ...
-            'or type "m" below, followed by RETURN.\n\n'],...
-            string);
-      else
-         string=sprintf(['%sMIRROR: To work with a mirror, ' ...
-            'set o.flipScreenHorizontally=1 in your script, ' ...
-            'or type "m" below, followed by RETURN.\n\n'],...
-            string);
-      end
-      
       % RESOLUTION
       if oo(1).nativeWidth==RectWidth(actualScreenRect)
          string=sprintf('%sRESOLUTION: Your screen resolution is optimal.\n\n',string);
@@ -826,11 +813,25 @@ try
             'followed by RETURN.\n\n'],string);
       end
 
+      % MIRROR
+      if oo(1).flipScreenHorizontally
+         string=sprintf(['%sMIRROR: To turn off mirroring, ' ...
+            'set o.flipScreenHorizontally=0 in your script, ' ...
+            'or type "m" below, followed by RETURN.\n\n'],...
+            string);
+      else
+         string=sprintf(['%sMIRROR: To work with a mirror, ' ...
+            'set o.flipScreenHorizontally=1 in your script, ' ...
+            'or type "m" below, followed by RETURN.\n\n'],...
+            string);
+      end
+      
       % KEYBOARD
       if oo(1).needWirelessKeyboard
          string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
-            'but I can''t detect any. If you connect a new keyboard, ' ...
-            'then use your old keyboard to type "k" below, followed by RETURN, and I''ll recreate the keyboard list.'],string);
+            'but I can''t detect any. After connecting a new keyboard, ' ...
+            'use your old keyboard to type "k" below, followed by RETURN, ' ...
+            'and I''ll recreate the keyboard list.'],string);
       end
       
       % OFFSCREEN FIXATION
@@ -851,7 +852,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [d,terminatorChar]=GetEchoString(window,'Viewing distance (cm):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      [d,terminatorChar]=GetEchoString(window,'Viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
