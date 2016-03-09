@@ -664,40 +664,38 @@ try
       end % if ~oo(1).readAlphabetFromDisk
    end
    
-   screenRect=Screen('Rect',window);
-   screenWidth=RectWidth(screenRect);
-   screenHeight=RectHeight(screenRect);
-   if oo(1).useFractionOfScreen
-      pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
-   else
-      pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
-   end
-   for condition=1:conditions
-      % Adjust textSize so our string fits on screen.
-      instructionalMargin=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
-      oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
-      Screen('TextSize',window,oo(condition).textSize);
-      Screen('TextFont',window,oo(condition).textFont,0);
-      font=Screen('TextFont',window);
-      if ~streq(font,oo(condition).textFont)
-         warning off backtrace
-         warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
-         warning on backtrace
-      end
-      instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
-      boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
-      fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
-      oo(condition).textSize=round(oo(condition).textSize/fraction);
-   end
-   
    % Ask about viewing distance
    while 1
+      screenRect=Screen('Rect',window);
+      screenWidth=RectWidth(screenRect);
+      screenHeight=RectHeight(screenRect);
       if oo(1).useFractionOfScreen
          pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
       else
          pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
       end
-      
+      for condition=1:conditions
+         % Adjust textSize so our string fits on screen.
+         instructionalMargin=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
+         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
+         Screen('TextSize',window,oo(condition).textSize);
+         Screen('TextFont',window,oo(condition).textFont,0);
+         font=Screen('TextFont',window);
+         if ~streq(font,oo(condition).textFont)
+            warning off backtrace
+            warning('The o.textFont "%s" is not available. Using %s instead.',oo(condition).textFont,font);
+            warning on backtrace
+         end
+         instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
+         boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
+         fraction=RectWidth(boundsRect)/(screenWidth-2*instructionalMargin);
+         oo(condition).textSize=round(oo(condition).textSize/fraction);
+      end
+      if oo(1).useFractionOfScreen
+         pixPerDeg=screenWidth/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
+      else
+         pixPerDeg=screenWidth/(screenWidthCm*57/oo(1).viewingDistanceCm);
+      end
       for condition=1:conditions
          oo(condition).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(condition).normalAcuityDeg=0.029*(abs(oo(condition).eccentricityDeg)+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
@@ -818,7 +816,8 @@ try
          string=sprintf(['%sFor native resolution, ' ...
             'set o.permissionToChangeResolution=1 in your script, ' ...
             'or use System Preferences:Displays to ' ...
-            'select "Default" resolution.\n\n'],string);
+            'select "Default" resolution, or type "r" below, ' ...
+            'followed by RETURN.\n\n'],string);
       end
 
       % KEYBOARD
@@ -891,6 +890,9 @@ try
                      end
                      actualScreenRect=Screen('Rect',oo(1).screen,1);
                      window=OpenWindow(oo(1));
+                     oo(1).resolution=Screen('Resolution',oo(1).screen);
+                     screenBufferRect=Screen('Rect',oo(1).screen);
+                     screenRect=Screen('Rect',oo(1).screen,1);
                   end
                case 'k',
                   if oo(1).useSpeech
