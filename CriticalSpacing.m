@@ -765,8 +765,7 @@ try
       Screen('TextSize',window,oo(1).textSize);
       [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
  
-      % SMALL TEXT
-      % Screen and text info.
+      % SIZE LIMITS
       string='';
       for condition=1:conditions
          oo(condition).minimumSizeDeg=oo(condition).minimumTargetPix/pixPerDeg;
@@ -845,7 +844,7 @@ try
       Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
 
-      % GET TYPED RESPONSE
+      % Get typed response
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
          background=[];
