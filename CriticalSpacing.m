@@ -582,13 +582,14 @@ else
    else
       if RectWidth(actualScreenRect)<oo(1).nativeWidth
          ffprintf(ff,'WARNING: Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
-         warning('Your screen resolution %d x %d is less that its native maximum %d x %d. This will increase your minimum viewing distance %.1f-fold.',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight,oo(1).nativeWidth/RectWidth(actualScreenRect));
+         warning(['You could reduce the minimum viewing distance ' ...
+            '%.1f-fold by increasing the screen resolution to native maximum ("Default"). '],...
+            oo(1).nativeWidth/RectWidth(actualScreenRect));
       else
          ffprintf(ff,'WARNING: Your screen resolution %d x %d exceeds its maximum native resolution %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
          warning('Your screen resolution %d x %d exceeds its maximum native resolution %d x %d. This may be a problem.',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
       end
-      ffprintf(ff,'(You can use System Preferences:Displays to change resolution.)\n');
-      ffprintf(ff,'(Set your screen to maximum native resolution, or, if you have a Retina/HiDPI screen, then set it to half maximum native.)\n');
+      ffprintf(ff,'(To use native resolution, set o.permissionToChangeResolution=1 in your script, \nor use System Preferences:Displays to select "Default" resolution.)\n');
       warning backtrace on
    end
 end
@@ -741,10 +742,13 @@ try
       oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
          && length(GetKeyboardIndices)<2 ...
          && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth'));
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Wireless')) ...
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth')) ...
+         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Bluetooth'));
       if oo(1).needWirelessKeyboard
          warning backtrace off
-         warning('You have only one keyboard, and it''s not "wireless" or "bluetooth". The long viewing distance may demand an external keyboard.');
+         warning('You have only one keyboard, and it''s not "wireless" or "bluetooth":');
+         warning('The long viewing distance may demand an external keyboard.');
          warning backtrace on
       end
 
@@ -782,8 +786,27 @@ try
       end
       smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
       string=sprintf(['%sTo allow display of your target as small as %.3f deg, ' ...
-         'half of typical threshold size, view me from at least %.0f cm. \n\n'],...
+         'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
          string,smallestDeg,minimumViewingDistanceCm);
+      
+      if oo(1).nativeWidth==RectWidth(actualScreenRect)
+         string=sprintf('%sRESOLUTION: Your screen resolution is optimal.\n\n',string);
+      else
+         if RectWidth(actualScreenRect)<oo(1).nativeWidth
+            string=sprintf(['%sRESOLUTION: You could reduce the minimum viewing distance ' ...
+               '%.1f-fold by increasing the screen resolution to native resolution. '],...
+               string,oo(1).nativeWidth/RectWidth(actualScreenRect));
+         else
+            string=sprintf(['%sRESOLUTION: Your screen resolution exceeds its maximum native resolution, ' ...
+               'and may fail to render small characters. '],string);
+         end
+         string=sprintf(['%sFor native resolution, ' ...
+            'set o.permissionToChangeResolution=1 in your script, ' ...
+            'or use System Preferences:Displays to ' ...
+            'select "Default" resolution.\n\n'],string);
+      end
+
+   
       if oo(1).needWirelessKeyboard
          string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
             'but I can''t detect any. To help you connect a keyboard, ' ...
@@ -1207,7 +1230,10 @@ try
    actualScreenRect=Screen('Rect',cal.screen,1);
    %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
    %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
-   ffprintf(ff,'viewing distance %.0f cm,',oo(1).viewingDistanceCm);
+   if oo(1).flipScreenHorizontally
+       ffprintf(ff,'Using mirror. ');
+   end
+   ffprintf(ff,'Viewing distance %.0f cm,',oo(1).viewingDistanceCm);
    ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
       pixPerDeg,RectWidth(actualScreenRect)/pixPerDeg,...
       RectHeight(actualScreenRect)/pixPerDeg);
