@@ -851,7 +851,7 @@ try
       else
          background=WhiteIndex(window);
       end
-      [d,terminatorChar]=GetEchoString(window,'Viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      [d,terminatorChar]=GetEchoString(window,'Enter viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
