@@ -617,6 +617,7 @@ try
    end
    screenBufferRect=Screen('Rect',oo(1).screen);
    screenRect=Screen('Rect',oo(1).screen,1);
+   Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
    window=OpenWindow(oo(1));
    if oo(1).printScreenResolution
       screenBufferRect=Screen('Rect',oo(1).screen)
@@ -624,15 +625,20 @@ try
       resolution=Screen('Resolution',oo(1).screen)
    end
    % Are we using the FGTL DrawText plugin?
-   Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
    Screen('TextFont',window,oo(1).textFont);
-   Screen('DrawText',window,'Hello',0,0,255,255); % Exercise DrawText.
-   oo(1).standardDrawTextPlugin = Screen('Preference','TextRenderer') == 1;   
+   % Allow warning: "PTB-WARNING: DrawText: Failed to load external drawtext
+   % plugin"
+   Screen('Preference','SuppressAllWarnings',0);
+   Screen('Preference','Verbosity',2); % Print WARNINGs
+   Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
+   Screen('Preference','SuppressAllWarnings',1);
+   Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
+   oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);   
    for condition=1:conditions
       if ~oo(condition).readAlphabetFromDisk
          if ~oo(1).standardDrawTextPlugin
             error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
-               'Hopefully there''s an explanatory warning above. ' ...
+               'Hopefully there''s an explanatory PTB-WARNING above. ' ...
                'Unless you fix that, you must set o.readAlphabetFromDisk=1 in your script.']);
          end
          % Check availability of fonts.
@@ -681,7 +687,7 @@ try
       warning('The FGTL DrawText plugin failed to load. ');
       warning on backtrace
       ffprintf(ff,['WARNING: The FGTL DrawText plugin failed to load.\n' ...
-         'Hopefully there''s an explanatory warning above, hinting how to fix it.\n' ...
+         'Hopefully there''s an explanatory PTB-WARNING above, hinting how to fix it.\n' ...
          'This won''t affect the experimental stimuli, but small print in the instructions may be ugly.\n']);
    end
    
