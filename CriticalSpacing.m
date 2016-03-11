@@ -630,10 +630,22 @@ try
    % plugin"
    Screen('Preference','SuppressAllWarnings',0);
    Screen('Preference','Verbosity',2); % Print WARNINGs
+   oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+   drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
+   delete(drawTextWarningFileName);
+   diary(drawTextWarningFileName);
    Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
+   diary off
    Screen('Preference','SuppressAllWarnings',1);
    Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
    oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);   
+   if oo(1).standardDrawTextPlugin
+      oo(1).drawTextPluginWarning='';
+   else
+      fileId=fopen(drawTextWarningFileName);
+      oo(1).drawTextPluginWarning= char(fread(fileId)');
+      fclose(fileId);
+   end
    for condition=1:conditions
       if ~oo(condition).readAlphabetFromDisk
          if ~oo(1).standardDrawTextPlugin
