@@ -299,6 +299,10 @@ function oo=CriticalSpacing(oIn)
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
 
+% UNICODE
+% str = unicode2native('?','utf-8');
+% Screen('Preference', 'TextEncodingLocale', 'en_US.UTF-8');
+
 % EXPLANATION FROM MARIO KLEINER (2/9/16) ON RESTORING RESOLUTION
 % "The current behavior is something like this:
 % 
@@ -478,7 +482,8 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
    'minimumScreenWidthDeg' 'typicalThesholdSizeDeg' ...
-   'computer' 'MATLAB' 'psychtoolbox' 'trialData' 'needWirelessKeyboard'};
+   'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
+   'standardDrawTextPlugin'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -618,9 +623,18 @@ try
       screenRect=Screen('Rect',oo(1).screen,1)
       resolution=Screen('Resolution',oo(1).screen)
    end
-   
+   % Are we using the FGTL DrawText plugin?
+   Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
+   Screen('TextFont',window,oo(1).textFont);
+   Screen('DrawText',window,'Hello',0,0,255,255); % Exercise DrawText.
+   oo(1).standardDrawTextPlugin = Screen('Preference','TextRenderer') == 1;   
    for condition=1:conditions
       if ~oo(condition).readAlphabetFromDisk
+         if ~oo(1).standardDrawTextPlugin
+            error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
+               'Hopefully there''s an explanatory warning above. ' ...
+               'Unless you fix that, you must set o.readAlphabetFromDisk=1 in your script.']);
+         end
          % Check availability of fonts.
          if IsOSX
             fontInfo=FontInfo('Fonts');
@@ -661,6 +675,14 @@ try
             warning on backtrace
          end
       end % if ~oo(1).readAlphabetFromDisk
+   end
+   if ~oo(1).standardDrawTextPlugin
+      warning off backtrace
+      warning('The FGTL DrawText plugin failed to load. ');
+      warning on backtrace
+      ffprintf(ff,['WARNING: The FGTL DrawText plugin failed to load.\n' ...
+         'Hopefully there''s an explanatory warning above, hinting how to fix it.\n' ...
+         'This won''t affect the experimental stimuli, but small print in the instructions may be ugly.\n']);
    end
    
    % Ask about viewing distance
@@ -887,7 +909,9 @@ try
                         Speak('Optimizing resolution.');
                      end
                      Screen('Close',window);
-                     warning('Trying to change your screen resolution to be optimal for this test. ...');
+                     warning backtrace off
+                     warning('Trying to change your screen resolution to be optimal for this test.');
+                     warning backtrace on
                      oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
                      res=Screen('Resolution',oo(1).screen);
                      if res.width==oo(1).nativeWidth
@@ -1302,10 +1326,10 @@ try
       screenWidthMm/10,screenHeightMm/10,...
       RectWidth(actualScreenRect)/(screenWidthMm/10));
    ffprintf(ff,'%s, %s, %s, %s\n',computer.system,cal.processUserLongName,cal.localHostName,cal.macModelName);
-   oo(1).MATLAB=version;
+   oo(1).matlab=version;
    [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
    v=oo(1).psychtoolbox;
-   ffprintf(ff,'MATLAB %s, Psychtoolbox %d.%d.%d\n',oo(1).MATLAB,v.major,v.minor,v.point);
+   ffprintf(ff,'MATLAB %s, Psychtoolbox %d.%d.%d\n',oo(1).matlab,v.major,v.minor,v.point);
    assert(cal.screenWidthCm==screenWidthMm/10);
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
