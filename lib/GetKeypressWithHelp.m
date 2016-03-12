@@ -2,9 +2,13 @@ function [answer,secs]=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,
 %[answer,secs]=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString);
 %   Used by CriticalSpacing to get a key stroke. Pressing shift shows
 %   the alphabet.
+%   We assume that, on entry, the back buffer is a copy of the front
+%   buffer.
+%   denis.pelli@nyu.edu 2016
 
 capsLockIsSticky=IsWindows;
-useCopyWindow=0; % Works with 0 or 1 on Mac. Hoping 0 helps on Windows.
+savingMethod='CopyWindow'; % Works on Mac, Windows, and Linux.
+% savingMethod='GetImage'; % Works on Mac. Windows? Linux?
 if nargin<6
    responseString='';
 end
@@ -12,27 +16,27 @@ makeTextures=nargin<5;
 shiftKeyCodes=[KbName('LeftShift') KbName('RightShift') KbName('CapsLock')];
 oldEnableKeyCodes=RestrictKeysForKbCheck([shiftKeyCodes enableKeyCodes]);
 reactionTimeIsValid=1;
-while(1)
-   [secs,keyCode] = KbPressWait(o.deviceIndex);
-   answer = KbName(keyCode);
+while 1
+   [secs,keyCode]=KbPressWait(o.deviceIndex);
+   answer=KbName(keyCode);
    if ismember(answer,{'RightShift','LeftShift','CapsLock'});
       reactionTimeIsValid=0;
       if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky;
          KbReleaseWait(o.deviceIndex);
       end
       % Save screen
-      if useCopyWindow
-         % CopyWindow copies the backbuffer.
-         [width,height]=RectSize(Screen('Rect',window));
-         m=zeros([height,width]);
-         savedTexture=Screen('MakeTexture',window,m);
-         Screen('Flip',window,[],2);
-         Screen('CopyWindow',window,savedTexture);
-         Screen('Flip',window,[],2);
-         Screen('DrawTexture',window,savedTexture);
-      else
-         saveScreen=Screen('GetImage',window);
-         Screen('PutImage',window,saveScreen); % To keep progress bar.
+      switch savingMethod
+         case 'CopyWindow',
+            % CopyWindow copies the backbuffer.
+            [width,height]=RectSize(Screen('Rect',window));
+            m=zeros([height,width]);
+            savedTexture=Screen('MakeTexture',window,m); % Black texture
+            Screen('CopyWindow',window,savedTexture);
+         case 'GetImage',
+            saveScreen=Screen('GetImage',window);
+            if o.flipScreenHorizontally
+               saveScreen=fliplr(saveScreen);
+            end
       end
       if makeTextures
          letterStruct=CreateLetterTextures(nan,o,window);
@@ -51,13 +55,14 @@ while(1)
          DestroyLetterTextures(letterStruct);
       end
       % Restore screen
-      if useCopyWindow
-         Screen('DrawTexture',window,savedTexture);
-         Screen('Close',savedTexture);
-      else
-         Screen('PutImage',window,saveScreen);
+      switch savingMethod
+         case 'CopyWindow',
+            Screen('DrawTexture',window,savedTexture);
+            Screen('Close',savedTexture);
+         case 'GetImage',
+            Screen('PutImage',window,saveScreen);
       end
-      Screen('Flip',window,[],1);
+      Screen('Flip',window,[],1); % Restore from back buffer.
    else
       % Ignore any key that has already been pressed.
       if ~ismember(answer,responseString);
@@ -91,5 +96,5 @@ for jj=1:3
       break;
    end
 end
-Screen('Flip',window);
+Screen('Flip',window,[],2); % Swap front and back buffers.
 end
