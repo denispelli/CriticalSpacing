@@ -637,7 +637,7 @@ try
    Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
    diary off
    Screen('Preference','SuppressAllWarnings',1);
-   Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
+   Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
    oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);   
    if oo(1).standardDrawTextPlugin
       oo(1).drawTextPluginWarning='';
