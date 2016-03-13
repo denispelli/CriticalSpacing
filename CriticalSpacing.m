@@ -1265,6 +1265,7 @@ try
          case 'spacing',
             ori=oo(condition).radialOrTangential;
       end
+      ffprintf(ff,' : %s: %s\n',oo(condition).experimenter,oo(condition).observer);
       if oo(condition).useQuest
           ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',condition,oo(condition).trials,ori,oo(condition).thresholdParameter);
       else
@@ -1332,17 +1333,19 @@ try
       else
          numberTargets='one target';
       end
-      ffprintf(ff,'%s: %s, %s %s, alternatives %d,  beta %.1f,\n',oo(condition).experimenter,oo(condition).observer,oo(condition).task,numberTargets,length(oo(condition).alphabet),oo(condition).beta);
+      string=sprintf('%s %s, alternatives %d,  beta %.1f\n',oo(condition).task,numberTargets,length(oo(condition).alphabet),oo(condition).beta);
+      string(1)=upper(string(1));
+      ffprintf(ff,'%s',string);
    end
-   for condition=1:conditions
-      if streq(oo(condition).thresholdParameter,'spacing')
-         if ~oo(condition).repeatedTargets
-            if oo(condition).eccentricity.deg~=0
-               ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
-            end
-         end
-      end
-   end
+%    for condition=1:conditions
+%       if streq(oo(condition).thresholdParameter,'spacing')
+%          if ~oo(condition).repeatedTargets
+%             if oo(condition).eccentricity.deg~=0
+%                ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
+%             end
+%          end
+%       end
+%    end
    for condition=1:conditions
       if oo(condition).fixedSpacingOverSize
          ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',condition,oo(condition).fixedSpacingOverSize);
