@@ -1,18 +1,26 @@
 function [xClipped,yClipped]=ClipLineSegment(x,y,r)
 %[x,y]=ClipLineSegment(x,y,r);
-% Clips a line segment by a rect, and returns the new line segment, or
-% point, or nothing. The line segment is (x(1),y(1)) to (x(2),y(2)). The
-% point is (x(1),y(1)). Unused elements of x and y are set to NAN.
+% Clips a line segment by a rect, and returns the new line segment
+% (possibly zero length) or nothing (empty rects). The line segment is
+% (x(1),y(1)) to (x(2),y(2)). Direction (from point 1 to point 2) is
+% preserved. Returns NANs if you provide an ambiguous line segment.
 % 2016 denis.pelli@nyu.edu
+
+% Make sure the two points define a line.
+if (any(~isfinite(x)) && y(1)~=y(2)) || (any(~isfinite(y)) && x(1)~=x(2))
+   xClipped=[nan nan];
+   yClipped=[nan nan];
+   return
+end
 xClipped=x;
 yClipped=y;
 if IsInRect(x(1),y(1),r) && IsInRect(x(2),y(2),r)
    % Both endpoints in rect. No clipping required.
    return;
 end
-% The line has two endpoints. At least one is outside rect. Replace each
-% point outside rect with the point of intersection of the line with the
-% nearest side of the rect. Return nans if there is no intersection.
+% The line has two endpoints. At least one is outside the rect. Replace
+% each outside point with the point of intersection of the line with
+% the nearest side of the rect. 
 line=[x;y];
 rectLines(:,:,1)=[r(1) r(1);r(2) r(4)];
 rectLines(:,:,2)=[r(1) r(3);r(2) r(2)];
@@ -38,11 +46,11 @@ assert(length(xHit)<3);
 switch length(xHit)
    case 0;
       % Nothing in clip rect.
-      xClipped=[nan nan];
-      yClipped=[nan nan];
+      xClipped=[];
+      yClipped=[];
       return
    case 1;
-      % Clip rect cuts off one end of line segment.
+      % Clip rect cut off one end of line segment.
       if ~IsInRect(x(1),y(1),r)
          xClipped(1)=xHit;
          yClipped(1)=yHit;
@@ -53,7 +61,7 @@ switch length(xHit)
       end
       return
    case 2;
-      % Clip rect cuts off both ends of line segment.
+      % Clip rect cut off both ends of line segment.
       % Retain direction.
       if sign(x(1)-x(2))~=sign(xHit(1)-xHit(2)) || sign(y(1)-y(2))~=sign(yHit(1)-yHit(2))
          xHit=xHit([2 1]);
