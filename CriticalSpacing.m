@@ -653,6 +653,12 @@ try
    Screen('Preference','Verbosity',2); % Print WARNINGs
    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
    drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
+   if ~exist(oo(1).dataFolder,'dir')
+      [success,msg]=mkdir(oo(1).dataFolder);
+      if ~success
+         error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
+      end
+   end
    delete(drawTextWarningFileName);
    diary(drawTextWarningFileName);
    Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
