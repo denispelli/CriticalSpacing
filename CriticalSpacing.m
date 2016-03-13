@@ -1384,7 +1384,9 @@ try
       ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f\n',condition,oo(condition).durationSec,oo(condition).eccentricity.deg);
+      ffprintf(ff,'%d: durationSec %.2f, eccentricity.deg %.1f, eccentricity.clockwiseAngleDeg %.1f\n',...
+         condition,oo(condition).durationSec,oo(condition).eccentricity.deg,...
+         oo(condition).eccentricity.clockwiseAngleDeg);
    end
    
    % Identify the computer
