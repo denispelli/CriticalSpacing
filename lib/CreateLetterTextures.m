@@ -8,7 +8,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % If o.readAlphabetFromDisk==0 then the font is rendered by Screen DrawText
 % to create a texture for each desired letter. The font's TextSize is
 % computed to yield the desired o.targetPix size in the direction specified
-% by o.measureThresholdVertically. However, if
+% by o.targetSizeIsHeight. However, if
 % o.targetFontHeightOverNominalPtSize==nan then the TextSize is set equal
 % to o.targetPix.
 %
@@ -26,11 +26,11 @@ letters=[o.alphabet o.borderLetter];
 for i=1:length(letters)
    letterStruct(i).letter=letters(i);
 end
-if o.measureThresholdVertically
-   canvasRect=[0 0 o.targetPix o.targetPix];
-else
+% if o.targetSizeIsHeight
+%    canvasRect=[0 0 o.targetPix o.targetPix];
+% else
    canvasRect=[0 0 o.targetPix o.targetPix]*o.targetHeightOverWidth;
-end
+% end
 black=0;
 white=255;
 if o.readAlphabetFromDisk
@@ -114,7 +114,7 @@ else % if o.readAlphabetFromDisk
       font=Screen('TextFont',scratchWindow);
       assert(streq(font,o.targetFont));
    end
-   if o.measureThresholdVertically
+   if o.targetSizeIsHeight
       sizePix=round(o.targetPix/o.targetFontHeightOverNominalPtSize);
    else
       sizePix=round(o.targetPix*o.targetHeightOverWidth/o.targetFontHeightOverNominalPtSize);

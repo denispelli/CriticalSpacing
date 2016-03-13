@@ -22,7 +22,7 @@ o.beepNegativeFeedback=0;
 o.usePurring=0;
 
 % You don't need to change any of these parameters.
-o.measureThresholdVertically=0;
+o.targetSizeIsHeight=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
 o.readAlphabetFromDisk=1; % 1 makes the program more portable.

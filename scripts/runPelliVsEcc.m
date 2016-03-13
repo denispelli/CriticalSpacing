@@ -32,7 +32,7 @@ o.beepNegativeFeedback=0;
 o.usePurring=0;
 
 % You don't need to change any of these parameters.
-o.measureThresholdVertically=0;
+o.targetSizeIsHeight=0;
 o.observer=''; % Ask for name at beginning of run, or
 % o.observer='Shivam'; % enter observer name here.
 o.readAlphabetFromDisk=1; % 1 makes the program more portable.
@@ -92,7 +92,8 @@ o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.fixedSpacingOverSize=1.5; % Requests size proportional to spacing.
 o.durationSec=0.2;
-o.eccentricityDeg=10;
+o.eccentricity.deg=0; % Distance of target from fixation. 
+o.eccentricity.clockwiseAngleDeg=90; % Direction of target from fixation.
 o.targetCross=1;
 % o(2)=o(1); % Copy the condition
 % o(3)=o(1); % Copy the condition

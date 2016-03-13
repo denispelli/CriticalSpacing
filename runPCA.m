@@ -37,11 +37,12 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricityDeg=0; % location of target, relative to fixation, in degrees. Positive for right, negative for left.
+o.eccentricity.deg=0; % Distance of target from fixation. 
+o.eccentricity.clockwiseAngleDeg=90; % Direction of target from fixation.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=1;
-o.measureThresholdVertically=nan; % depends on parameter
+o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -126,7 +127,7 @@ o=CriticalSpacing(o);
 o=o(1);
 
 % RUN: Sloan spacing, not repeated target
-o.measureThresholdVertically=nan; % depends on parameter
+o.targetSizeIsHeight=nan; % depends on parameter
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing.
@@ -134,7 +135,7 @@ o=CriticalSpacing(o);
 o=o(1);
 
 % RUN: Pelli size
-o.measureThresholdVertically=nan; % depends on parameter
+o.targetSizeIsHeight=nan; % depends on parameter
 o.repeatedTargets=0;
 o.targetFont='Pelli';
 o.alphabet='123456789'; 

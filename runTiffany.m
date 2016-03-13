@@ -37,11 +37,12 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricityDeg=0; % location of target, relative to fixation, in degrees. Positive for right, negative for left.
+o.eccentricity.deg=0; % Distance of target from fixation. 
+o.eccentricity.clockwiseAngleDeg=90; % Direction of target from fixation.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=1;
-o.measureThresholdVertically=nan; % depends on parameter
+o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
@@ -106,20 +107,25 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
-o.viewingDistanceCm=60; % Default for runtime question.
-o.fixationLocation='left'; % 'center', 'left', 'right'
+o.useFractionOfScreen=0; 
+o.viewingDistanceCm=40; % Default for runtime question.
+o.fixationLocation='lowerLeft'; % 'center', 'left', 'right'
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
-o.eccentricityDeg=10;
+o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
+o.eccentricity.deg=15;
 o.durationSec=0.2;
 o.fourFlankers=0;
 
-% o(2)=o(1); % Copy the condition
-o=CriticalSpacing(o); 
+for i=1:2
+   for ori=0:30:90
+      o.eccentricity.clockwiseAngleDeg=ori; % Direction of target from fixation.
+      o=CriticalSpacing(o);
+   end
+end
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
