@@ -495,7 +495,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
    'minimumScreenWidthDeg' 'typicalThesholdSizeDeg' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
-   'standardDrawTextPlugin','drawTextPluginWarning'};
+   'standardDrawTextPlugin' 'drawTextPluginWarning'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -771,10 +771,10 @@ try
       if oo(1).speakViewingDistance && oo(1).useSpeech
          Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
       end
-      oo(condition).eccentricity.xDeg=oo(condition).eccentricity.deg*sind(oo(condition).eccentricity.clockwiseAngleDeg);
-      oo(condition).eccentricity.yDeg=-oo(condition).eccentricity.deg*cosd(oo(condition).eccentricity.clockwiseAngleDeg);
       minimumScreenWidthDeg=nan;
       for i=1:conditions
+         oo(i).eccentricity.xDeg=oo(i).eccentricity.deg*sind(oo(i).eccentricity.clockwiseAngleDeg);
+         oo(i).eccentricity.yDeg=-oo(i).eccentricity.deg*cosd(oo(i).eccentricity.clockwiseAngleDeg);
          switch oo(i).fixationLocation
             case 'left',
                width=max(0,oo(i).eccentricity.xDeg);
@@ -1666,7 +1666,8 @@ try
       spacingPix=round(spacingPix);
       xF=[];
       yF=[];
-      if streq(oo(condition).radialOrTangential,'tangential') || oo(condition).fourFlankers
+      if streq(oo(condition).radialOrTangential,'tangential') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
+
          % Flankers must fit on screen.
          % Compute where tangent line interesects stimulusRect. The
          % tangent line goes through target (xT,yT) and is orthogonal to
@@ -1691,7 +1692,7 @@ try
          % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
          outerSpacingPix=0;
       end
-      if streq(oo(condition).radialOrTangential,'radial') || oo(condition).fourFlankers
+      if streq(oo(condition).radialOrTangential,'radial') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
          orientation=oo(condition).eccentricity.clockwiseAngleDeg;
          scalar=[-1 1];
          if oo(condition).eccentricity.pix==0
@@ -1877,7 +1878,7 @@ try
          end
          clear textures dstRects
          for textureIndex=1:length(xStimulus)
-            whichLetter=strfind(letters,stimulus(textureIndex));
+            whichLetter=strfind(letters,stimulus(textureIndex)); % finds stimulus letter in "letters".
             assert(length(whichLetter)==1)
             textures(textureIndex)=letterStruct(whichLetter).texture;
             r=round(letterStruct(whichLetter).rect);
