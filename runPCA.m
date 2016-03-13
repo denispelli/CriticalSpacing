@@ -107,6 +107,7 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 o.viewingDistanceCm=400; % Default for runtime question.
+o.useFractionOfScreen=0; 
 
 % RUN: Sloan size
 o.targetFont='Sloan';
