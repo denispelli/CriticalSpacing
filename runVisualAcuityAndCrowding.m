@@ -126,6 +126,7 @@ o.fixationLocation='center';
 o=CriticalSpacing(o);
 
 % RUN measure threshold for spacing
+o.fourFlankers=0;
 o.thresholdParameter='spacing';
 o.targetFont='Pelli';
 o.alphabet='123456789'; % Sloan alphabet, excluding C
@@ -137,6 +138,8 @@ o.fixationLocation='center';
 o=CriticalSpacing(o);
 
 % RUN measure threshold for size
+Speak('Reduce viewing distance to 100 cm.');
+o.viewingDistanceCm=100;
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
