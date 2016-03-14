@@ -108,20 +108,27 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
 o.useFractionOfScreen=0; 
-o.viewingDistanceCm=40; % Default for runtime question.
-o.fixationLocation='lowerLeft'; % 'center', 'left', 'right'
+o.viewingDistanceCm=30; % Default for runtime question.
+o.fixationLocation='normalizedXY';
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
-o.eccentricity.deg=15;
+o.eccentricity.deg=30;
 o.durationSec=0.2;
 o.fourFlankers=0;
 
 for i=1:2
    for ori=0:30:90
+      if ori==0
+         o.fix.normalizedXY=[0.5 0.9];
+      elseif ori==90
+         o.fix.normalizedXY=[0.1 0.5];
+      else
+         o.fix.normalizedXY=[0.1 0.9];
+      end
       o.eccentricity.clockwiseAngleDeg=ori; % Direction of target from fixation.
       o=CriticalSpacing(o);
    end
