@@ -439,8 +439,9 @@ o.borderLetter='$';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.fixationLocation='center'; % 'center', 'left', 'right', 'lowerLeft'
+o.fixationLocation='center'; % 'center', 'left', 'right', 'lowerLeft', 'normalizedXY'
 o.targetCross=0; % 1 to mark target location
+o.fix.normalizedXY=[0.5 0.5];
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -503,9 +504,9 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
-   'minimumScreenWidthDeg' 'typicalThesholdSizeDeg' ...
+   'minimumScreenSizeDeg' 'typicalThesholdSizeDeg' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
-   'standardDrawTextPlugin' 'drawTextPluginWarning'};
+   'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -596,7 +597,7 @@ if oo(1).nativeWidth==RectWidth(actualScreenRect)
 else
    warning backtrace off
    if oo(1).permissionToChangeResolution
-      warning('Trying to change your screen resolution to be optimal for this test. ...');
+      fprintf('WARNING: Trying to change your screen resolution to be optimal for this test. ...');
       oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
       res=Screen('Resolution',oo(1).screen);
       if res.width==oo(1).nativeWidth
@@ -787,25 +788,36 @@ try
       if oo(1).speakViewingDistance && oo(1).useSpeech
          Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
       end
-      minimumScreenWidthDeg=nan;
+      minimumScreenSizeDeg=[0 0];
       for i=1:conditions
          oo(i).eccentricity.xDeg=oo(i).eccentricity.deg*sind(oo(i).eccentricity.clockwiseAngleDeg);
          oo(i).eccentricity.yDeg=-oo(i).eccentricity.deg*cosd(oo(i).eccentricity.clockwiseAngleDeg);
          switch oo(i).fixationLocation
             case 'left',
                width=max(0,oo(i).eccentricity.xDeg);
+               height=2*abs(oo(i).eccentricity.yDeg);
             case 'right',
                width=max(0,-oo(i).eccentricity.xDeg);
+               height=2*abs(oo(i).eccentricity.yDeg);
             case 'center',
                width=2*abs(oo(i).eccentricity.xDeg);
+               height=2*abs(oo(i).eccentricity.yDeg);
             case 'lowerLeft',
                width=max(0,oo(i).eccentricity.xDeg);
+               height=max(0,-oo(i).eccentricity.yDeg);
+            case 'normalizedXY',
+               oo(i).fix.x=oo(i).fix.normalizedXY(1)*RectWidth(screenRect);
+               oo(i).fix.y=oo(i).fix.normalizedXY(2)*RectHeight(screenRect);
+               width=abs(oo(i).eccentricity.xDeg);
+               height=abs(oo(i).eccentricity.yDeg);
          end
-         oo(i).minimumScreenWidthDeg=width;
-         minimumScreenWidthDeg=max(minimumScreenWidthDeg,width);
-         oo(i).maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/oo(i).minimumScreenWidthDeg);
+         oo(i).minimumScreenSizeDeg=[width,height];
+         minimumScreenSizeDeg=max(minimumScreenSizeDeg,[width,height]);
+         ratio=min([RectWidth(screenRect) RectHeight(screenRect)]./oo(i).minimumScreenSizeDeg)/pixPerDeg;
+         oo(i).maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*ratio);
       end
-      maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*RectWidth(screenRect)/pixPerDeg/minimumScreenWidthDeg);
+      ratio=min([RectWidth(screenRect) RectHeight(screenRect)]./minimumScreenSizeDeg)/pixPerDeg;
+      maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*ratio);
 
       % Look for wireless keyboard.
       clear PsychHID; % Force new enumeration of devices to detect external keyboard.
@@ -851,18 +863,18 @@ try
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
       string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
-         'the screen is %.1f deg wide, and I can display characters'...
-         ' as small as %.3f deg with spacing as small as %.3f deg. '],...
-         string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,...
+         'the screen is %.0fx%.0f deg, and I can display characters'...
+         ' as small as %.2f deg with spacing as small as %.2f deg. '],...
+         string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,RectHeight(screenRect)/pixPerDeg,...
          sizeDeg,spacingDeg);
-      if minimumScreenWidthDeg>0
+      if any(minimumScreenSizeDeg>0)
          string=sprintf(['%sTo display your peripheral targets ' ...
-            '(requiring a screen width of at least %.1f deg), ' ...
+            '(requiring a screen size of at least %.0fx%.0f deg), ' ...
             'view me from at most %.0f cm. '],...
-            string,minimumScreenWidthDeg,maximumViewingDistanceCm);
+            string,minimumScreenSizeDeg,maximumViewingDistanceCm);
       end
       smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
-      string=sprintf(['%sTo allow display of your target as small as %.3f deg, ' ...
+      string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
          'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
          string,smallestDeg,minimumViewingDistanceCm);
       
@@ -1218,7 +1230,10 @@ try
             oo(condition).fix.x=(stimulusRect(1)+stimulusRect(3))/2; % location of fixation
          case 'right',
             oo(condition).fix.x=stimulusRect(3)-100;
-         otherwise
+         case 'normalizedXY',
+            oo(i).fix.x=oo(i).fix.normalizedXY(1)*RectWidth(stimulusRect);
+            oo(i).fix.y=oo(i).fix.normalizedXY(2)*RectHeight(stimulusRect);
+         otherwise,
             error('Unknown o.fixationLocation %s',oo(condition).fixationLocation);
       end
       oo(condition).fix.x=round(oo(condition).fix.x);
@@ -1281,7 +1296,7 @@ try
          case 'spacing',
             ori=oo(condition).radialOrTangential;
       end
-      ffprintf(ff,' : %s: %s\n',oo(condition).experimenter,oo(condition).observer);
+      ffprintf(ff,'   %s: %s\n',oo(condition).experimenter,oo(condition).observer);
       if oo(condition).useQuest
           ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',condition,oo(condition).trials,ori,oo(condition).thresholdParameter);
       else
@@ -1374,8 +1389,13 @@ try
       end
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg/2);
+      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
+         condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg/2);
    end
+   ffprintf(ff,['Needing screen size of at least %.0fx%.0f deg, ' ...
+      'you should view from at most %.0f cm.\n'],...
+      minimumScreenSizeDeg,maximumViewingDistanceCm);
+
    ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
    for ii=1:length(oo(1).keyboardNameAndTransport)
       ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{ii});
@@ -1683,39 +1703,51 @@ try
       oo(condition).spacingDeg=spacingPix/pixPerDeg;
       xT=oo(condition).fix.x+oo(condition).eccentricity.xPix; % target
       yT=oo(condition).fix.y+oo(condition).eccentricity.yPix; % target
-      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xT %d, yT %d\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg,xT,yT); end;
+      if oo(condition).printSizeAndSpacing;
+         fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xT %d, yT %d\n',...
+            condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg,xT,yT);
+      end
       spacingPix=round(spacingPix);
       xF=[];
       yF=[];
       if streq(oo(condition).radialOrTangential,'tangential') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
-
          % Flankers must fit on screen.
          % Compute where tangent line interesects stimulusRect. The
          % tangent line goes through target (xT,yT) and is orthogonal to
          % the line from fixation.
          orientation=oo(condition).eccentricity.clockwiseAngleDeg+90;
-         scalar=[-1 1];
-         assert(IsInRect(xT,yT,stimulusRect));
+         if ~IsInRect(xT,yT,stimulusRect)
+            ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
+            stimulusSize=[RectWidth(stimulusRect) RectHeight(stimulusRect)];
+            ffprintf(ff,'stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
+               stimulusSize,stimulusSize/pixPerDeg,...
+               oo(condition).fix.x/pixPerDeg,oo(condition).fix.y/pixPerDeg,...
+               oo(condition).eccentricity.xDeg,oo(condition).eccentricity.yDeg,...
+               xT/pixPerDeg,yT/pixPerDeg);
+            error('Sorry the target (eccentricity %.0f deg) is falling off the screen. Please reduce the viewing distance.',oo(condition).eccentricity.deg);
+         end
+         assert(length(spacingPix)==1);
          if oo(condition).fixedSpacingOverSize
-            xF=xT+scalar*spacingPix*(1+0.5*oo(condition).fixedSpacingOverSize)*sind(orientation);
-            yF=yT-scalar*spacingPix*(1+0.5*oo(condition).fixedSpacingOverSize)*cosd(orientation);
+            xF=xT+[-1 1]*spacingPix*(1+0.5*oo(condition).fixedSpacingOverSize)*sind(orientation);
+            yF=yT-[-1 1]*spacingPix*(1+0.5*oo(condition).fixedSpacingOverSize)*cosd(orientation);
             [xF,yF]=ClipLineSegment(xF,yF,stimulusRect);
             spacingPix=min(sqrt((xF-xT).^2 + (yF-yT).^2))/(1+0.5*oo(condition).fixedSpacingOverSize);
          else
-            xF=xT+scalar*(spacingPix+0.5*oo(condition).targetPix)*sind(orientation);
-            yF=yT-scalar*(spacingPix+0.5*oo(condition).targetPix)*cosd(orientation);
+            xF=xT+[-1 1]*(spacingPix+0.5*oo(condition).targetPix)*sind(orientation);
+            yF=yT-[-1 1]*(spacingPix+0.5*oo(condition).targetPix)*cosd(orientation);
             [xF,yF]=ClipLineSegment(xF,yF,stimulusRect);
             spacingPix=min(sqrt((xF-xT).^2 + (yF-yT).^2))-0.5*oo(condition).targetPix;
          end
+         assert(length(spacingPix)==1);
          spacingPix=max(0,spacingPix);
-         xF=xT+scalar*spacingPix*sind(orientation);
-         yF=yT-scalar*spacingPix*cosd(orientation);
+         assert(length(spacingPix)==1);
+         xF=xT+[-1 1]*spacingPix*sind(orientation);
+         yF=yT-[-1 1]*spacingPix*cosd(orientation);
          % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
          outerSpacingPix=0;
       end
       if streq(oo(condition).radialOrTangential,'radial') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
          orientation=oo(condition).eccentricity.clockwiseAngleDeg;
-         scalar=[-1 1];
          if oo(condition).eccentricity.pix==0
             % Flanker must fit on screen
             if oo(condition).fixedSpacingOverSize
@@ -1724,8 +1756,8 @@ try
                spacingPix=min(spacingPix,(RectWidth(stimulusRect)-oo(condition).targetPix)/2);
             end
             assert(spacingPix>=0);
-            xF(end+1:end+2)=xT+scalar*spacingPix*sind(orientation);
-            yF(end+1:end+2)=yT-scalar*spacingPix*cosd(orientation);
+            xF(end+1:end+2)=xT+[-1 1]*spacingPix*sind(orientation);
+            yF(end+1:end+2)=yT-[-1 1]*spacingPix*cosd(orientation);
             % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
             outerSpacingPix=0;
             if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
