@@ -406,6 +406,7 @@ o.durationSec=inf; % Duration of display of target and flankers
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=1;
+o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
@@ -1956,6 +1957,11 @@ try
             % Show only the target, omitting all flankers.
             textures=textures(2);
             dstRects=dstRects(1:4,2);
+         end
+         if oo(condition).oneFlanker
+            % Show target with only one of the two flankers.
+            textures=textures(1:2);
+            dstRects=dstRects(1:4,1:2);
          end
       else
          xMin=xT-xSpacing*floor((xT-0.5*xPix)/xSpacing);
