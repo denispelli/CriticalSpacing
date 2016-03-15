@@ -37,7 +37,7 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricity.deg=0; % Distance of target from fixation. 
+o.eccentricity.deg=0; % Distance of target from fixation.
 o.eccentricity.clockwiseAngleDeg=90; % Direction of target from fixation.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
@@ -58,7 +58,7 @@ o.targetDeg=nan;
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='$';
 o.targetFont='Pelli';
-o.alphabet='123456789'; 
+o.alphabet='123456789';
 o.borderLetter='$';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm XLight';
@@ -87,14 +87,14 @@ o.tGuessSd=nan;
 o.useQuest=1; % true(1) or false(0)
 
 % DEBUGGING AIDS
-o.frameTheTarget=0; 
+o.frameTheTarget=0;
 o.printScreenResolution=0;
 o.printSizeAndSpacing=0;
-o.showAlphabet=0; 
+o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0; 
+o.useFractionOfScreen=0;
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -107,8 +107,8 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
-o.useFractionOfScreen=0; 
-o.viewingDistanceCm=30; % Default for runtime question.
+o.useFractionOfScreen=0;
+o.viewingDistanceCm=25; % Default for runtime question.
 o.fixationLocation='normalizedXY';
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -122,6 +122,21 @@ o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 
 for i=1:2
+   o.oneFlanker=0;
+   o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing, horizontally and vertically.
+   for ori=0:30:90
+      if ori==0
+         o.fix.normalizedXY=[0.5 0.9];
+      elseif ori==90
+         o.fix.normalizedXY=[0.1 0.5];
+      else
+         o.fix.normalizedXY=[0.1 0.9];
+      end
+      o.eccentricity.clockwiseAngleDeg=ori; % Direction of target from fixation.
+      o=CriticalSpacing(o);
+   end
+   o.oneFlanker=1;
+   o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
    for ori=0:30:90
       if ori==0
          o.fix.normalizedXY=[0.5 0.9];
