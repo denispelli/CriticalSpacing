@@ -7,7 +7,7 @@ function fixationLines=ComputeFixationLines(fix)
 % fix.eccentricityPix=eccentricityPix;  % Positive or negative horizontal
 %                                       % offset of target from fixation.
 %                                       % +inf or -inf is ok for offscreen
-%                                       % fixation.
+%                                       % fixation(?).
 % fix.bouma=0.5;                        % Critical spacing multiple of
 %                                       % eccentricity.
 % fix.clipRect=screenRect;              % Restrict lines to this rect.
@@ -36,8 +36,7 @@ function fixationLines=ComputeFixationLines(fix)
 %
 % History:
 % October, 2015. Denis Pelli wrote it.
-% November 1, 2015. Enhanced to cope with fixation or target being
-% off screen.
+% November 1, 2015. Enhanced to cope with off screen fixation or target.
 if ~isfield(fix,'bouma') || ~isfinite(fix.bouma)
     fix.bouma=0.5;
 end
@@ -57,6 +56,9 @@ if ~isfield(fix,'targetHeightOverWidth') || ~isfinite(fix.targetHeightOverWidth)
    warning('fix.targetHeightOverWidth is undefined. Assuming it is 1.');
    fix.targetHeightOverWidth=1;
 end
+fix.eccentricityXPix=round(fix.eccentricityPix*sind(fix.eccentricityClockwiseAngleDeg));
+fix.eccentricityYPix=round(-fix.eccentricityPix*cosd(fix.eccentricityClockwiseAngleDeg));
+
 blankingHeightPix=fix.blankingRadiusReTargetHeight*fix.targetHeightPix;
 blankingWidthPix=fix.blankingRadiusReTargetWidth*fix.targetHeightPix/fix.targetHeightOverWidth;
 
