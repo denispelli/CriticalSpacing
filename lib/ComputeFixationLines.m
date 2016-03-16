@@ -70,7 +70,7 @@ blankingWidthPix=fix.blankingRadiusReTargetWidth*fix.targetHeightPix/fix.targetH
 % at (0,0).
 r=OffsetRect(fix.clipRect,-fix.x,-fix.y);
 
-% Horizontal line indicating fixation and target
+% Horizontal line indicating fixation 
 if 0>=r(2) && 0<=r(4) % Fixation is on screen.
     lineStart=-fix.fixationCrossPix/2;
     lineEnd=fix.fixationCrossPix/2;
