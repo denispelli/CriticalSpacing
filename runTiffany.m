@@ -120,6 +120,7 @@ o.eccentricity.deg=30;
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
+o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 
 for i=1:2
    o.oneFlanker=0;
