@@ -6,8 +6,8 @@ function fixationLines=ComputeFixationLines(fix)
 % fix.y=screenHeight/2;                 % y location of fixation on screen.
 % fix.eccentricityPix=eccentricityPix;  % Positive or negative horizontal
 %                                       % offset of target from fixation.
-%                                       % +inf or -inf is ok for offscreen
-%                                       % fixation(?).
+% fix.eccentricityClockwiseAngleDeg=0;  % Orientation of vector from
+%                                       % fixation to target.
 % fix.bouma=0.5;                        % Critical spacing multiple of
 %                                       % eccentricity.
 % fix.clipRect=screenRect;              % Restrict lines to this rect.
@@ -36,7 +36,7 @@ function fixationLines=ComputeFixationLines(fix)
 %
 % History:
 % October, 2015. Denis Pelli wrote it.
-% November 1, 2015. Enhanced to cope with off screen fixation or target.
+% November 1, 2015. Enhanced to cope with off-screen fixation or target.
 if ~isfield(fix,'bouma') || ~isfinite(fix.bouma)
     fix.bouma=0.5;
 end
@@ -58,6 +58,14 @@ if ~isfield(fix,'targetHeightOverWidth') || ~isfinite(fix.targetHeightOverWidth)
 end
 fix.eccentricityXPix=round(fix.eccentricityPix*sind(fix.eccentricityClockwiseAngleDeg));
 fix.eccentricityYPix=round(-fix.eccentricityPix*cosd(fix.eccentricityClockwiseAngleDeg));
+%%%%%%%% The rest of this program ought to use XPix and YPix, but currently
+%%%%%%%% uses only Pix. We ought to compute a list of lines for fixation
+%%%%%%%% and target location (two crosses, a list of four lines), then
+%%%%%%%% rotate all the lines so that the target eccentricity is
+%%%%%%%% horizontal. Then define a crowding rect around the target and use
+%%%%%%%% it to ErasePartOfLineSegment for every line in the list, which may
+%%%%%%%% increase or decrease the list length. Finally we should rotate the
+%%%%%%%% lines back to the original orientation.
 
 blankingHeightPix=fix.blankingRadiusReTargetHeight*fix.targetHeightPix;
 blankingWidthPix=fix.blankingRadiusReTargetWidth*fix.targetHeightPix/fix.targetHeightOverWidth;
