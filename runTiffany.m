@@ -37,11 +37,11 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricity.deg=0; % Distance of target from fixation.
-o.eccentricity.clockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityDeg=0; % Distance of target from fixation.
+o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
-o.fourFlankers=1;
+o.fourFlankers=0;
 o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
@@ -116,7 +116,7 @@ o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
-o.eccentricity.deg=30;
+o.eccentricityDeg=30;
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
@@ -133,7 +133,7 @@ for i=1:2
       else
          o.fix.normalizedXY=[0.1 0.9];
       end
-      o.eccentricity.clockwiseAngleDeg=ori; % Direction of target from fixation.
+      o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
       o=CriticalSpacing(o);
    end
    o.oneFlanker=1;
@@ -146,7 +146,7 @@ for i=1:2
       else
          o.fix.normalizedXY=[0.1 0.9];
       end
-      o.eccentricity.clockwiseAngleDeg=ori; % Direction of target from fixation.
+      o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
       o=CriticalSpacing(o);
    end
 end

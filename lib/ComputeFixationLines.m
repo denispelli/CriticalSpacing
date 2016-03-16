@@ -4,7 +4,7 @@ function fixationLines=ComputeFixationLines(fix)
 % the struct argument "fix".
 % fix.x=50;                             % x location of fixation on screen.
 % fix.y=screenHeight/2;                 % y location of fixation on screen.
-% fix.eccentricity.pix=eccentricityPix;  % Positive or negative horizontal
+% fix.eccentricityPix=eccentricityPix;  % Positive or negative horizontal
 %                                       % offset of target from fixation.
 %                                       % +inf or -inf is ok for offscreen
 %                                       % fixation.
@@ -19,7 +19,7 @@ function fixationLines=ComputeFixationLines(fix)
 %                                       % target location, left and right,
 %                                       % i.e. from (1-bouma)*ecc to
 %                                       % (1+bouma)*ecc, where ecc is
-%                                       % target eccentricity. We also
+%                                       % target eccentricity We also
 %                                       % blank a radius proportional to
 %                                       % target radius.
 % fix.blankingRadiusReTargetHeight=1.5; % Make vertical blanking radius 1.5
@@ -75,8 +75,8 @@ if 0>=r(2) && 0<=r(4) % Fixation is on screen.
     lineStart=max(lineStart,r(1)); % clip to fix.clipRect
     lineEnd=min(lineEnd,r(3)); % clip to fix.clipRect
     if fix.fixationCrossBlankedNearTarget
-        blankStart=min(abs(fix.eccentricity.pix)*(1-fix.bouma),abs(fix.eccentricity.pix)-blankingWidthPix);
-        blankEnd=max(abs(fix.eccentricity.pix)*(1+fix.bouma),abs(fix.eccentricity.pix)+blankingWidthPix);
+        blankStart=min(abs(fix.eccentricityPix)*(1-fix.bouma),abs(fix.eccentricityPix)-blankingWidthPix);
+        blankEnd=max(abs(fix.eccentricityPix)*(1+fix.bouma),abs(fix.eccentricityPix)+blankingWidthPix);
     else
         blankStart=lineStart-1;
         blankEnd=blankStart;
@@ -101,7 +101,7 @@ if 0>=r(2) && 0<=r(4) % Fixation is on screen.
     else
         error('Impossible fixation line result. line %d %d; blank %d %d',lineStart,lineEnd,blankStart,blankEnd);
     end
-    if fix.eccentricity.pix<0
+    if fix.eccentricityPix<0
         fixationLines=-fixationLines;
     end
 else
@@ -115,7 +115,7 @@ if 0>=r(1) && 0<=r(3) % Fixation is on screen.
     lineStart=max(lineStart,r(2)); % clip to fix.clipRect
     lineEnd=min(lineEnd,r(4)); % clip to fix.clipRect
     fixationLinesV=[];
-    if ~fix.fixationCrossBlankedNearTarget || abs(fix.eccentricity.pix)>blankingHeightPix
+    if ~fix.fixationCrossBlankedNearTarget || abs(fix.eccentricityPix)>blankingHeightPix
         % no blanking of line
         fixationLinesV(1:2,1:2)=[0 0;lineStart lineEnd];
     elseif lineStart<-blankingHeightPix
@@ -130,7 +130,7 @@ if 0>=r(1) && 0<=r(3) % Fixation is on screen.
 end
 
 % Vertical target line
-if fix.targetCross && fix.eccentricity.pix>=r(1) && fix.eccentricity.pix<=r(3)
+if fix.targetCross && fix.eccentricityPix>=r(1) && fix.eccentricityPix<=r(3)
     % Compute at eccentricity zero, and then offset to desired target
     % eccentricity.
     lineStart=-fix.fixationCrossPix/2;
@@ -149,7 +149,7 @@ if fix.targetCross && fix.eccentricity.pix>=r(1) && fix.eccentricity.pix<=r(3)
         % whole line is blanked
         fixationLinesV=[0 0;0 0];
     end
-    fixationLinesV(1,:)=fixationLinesV(1,:)+fix.eccentricity.pix; % target eccentricity
+    fixationLinesV(1,:)=fixationLinesV(1,:)+fix.eccentricityPix; % target eccentricity
     fixationLines=[fixationLines fixationLinesV];
 end
 
