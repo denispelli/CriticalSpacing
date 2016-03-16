@@ -12,7 +12,7 @@ function oo=CriticalSpacing(oIn)
 % the other is a MATLAB save file .MAT and easily read by MATLAB. Please
 % keep both. The filenames are unique and easy to sort, so it's fine to let
 % all your data files accumulate in your CriticalSpacing/data/ folder.
-% 
+%
 % THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
 % "o" struct and setting its fields to specify your testing condition. Call
 % CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
@@ -23,7 +23,7 @@ function oo=CriticalSpacing(oIn)
 % array, then CriticalSpacing runs all the conditions interleaved,
 % measuring a threshold for each. I sometimes pass two identical conditions
 % to get two thresholds for the same condition.
-% 
+%
 % USER-WRITTEN SCRIPTS. CriticalSpacing.m is meant to be driven by a brief
 % user-written script. Your run script is short and very easy to write. It
 % just assigns values to the fields of an "o" struct and then calls
@@ -38,7 +38,7 @@ function oo=CriticalSpacing(oIn)
 % The rest is just one eye chart after another, each showing one or two
 % targets (with or without repetitions). Presentation can be brief or
 % static (o.durationSec=inf).
-% 
+%
 % RUN A SCRIPT. To test an observer, double click "runCriticalSpacing.m" or
 % your own modified script. They're easy to write. Say "Ok" if MATLAB
 % offers to change the current folder. CriticalSpacing automatically saves
@@ -49,7 +49,7 @@ function oo=CriticalSpacing(oIn)
 %
 % PUBLICATION. You can read more about this program and its purpose in our
 % 2016 article:
-% 
+%
 % Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S.,
 % Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H.
 % (2016) A clinical test for visual crowding [version 1; referees: 2
@@ -58,13 +58,13 @@ function oo=CriticalSpacing(oIn)
 %
 % INSTALL. To install and run CriticalSpacing on your computer:
 % Download the CriticalSpacing software from
-% https://github.com/denispelli/CriticalSpacing/archive/master.zip 
+% https://github.com/denispelli/CriticalSpacing/archive/master.zip
 % Unpack the zip archive, producing a folder called CriticalSpacing. Inside
 % the CriticalSpacing folder, open the Word document "Install
 % CriticalSpacing.docx" for detailed instructions for installation of
 % MATLAB, Psychtoolbox, and CriticalSpacing software. Install. Type "help
 % CriticalSpacing" in the MATLAB Command Window.
-% 
+%
 % PRINT THE ALPHABET. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
 % o.readAlphabetFromDisk=1. We recommend "Pelli" for threshold spacing and
@@ -83,20 +83,20 @@ function oo=CriticalSpacing(oIn)
 % current font. Like the printed version, it shows the nine possible
 % letters or digits. This may help observers choose an answer, especially
 % when they are guessing.
-% 
+%
 % MATLAB & Psychtoolbox. To run this program, you need a computer with
 % MATLAB (or Octave) and the Psychtoolbox installed. The computer OS can be
 % OS X, Windows, or Linux. CriticalSpacing automatically reads the screen
 % resolution in pixels and size in cm. That won't work with an analog CRT
 % display, but we could add code to allow you to measure it manually and
 % specify it in your script. Let me know if you need that.
-% 
+%
 % MAC OS X: PERMIT MATLAB TO CONTROL YOUR COMPUTER. Open the System
 % Preferences: Security and Privacy: Privacy tab. Select Accessibility.
 % Click to open the lock in lower left, providing your computer password.
 % Click to select MATLAB, allowing it to control your computer. Click the
 % lock again to close it.
-% 
+%
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable because a normally
 % sighted observer viewing foveally has excellent vision and must be many
 % meters away from the screen, and thus will be unable to reach a built-in
@@ -105,21 +105,21 @@ function oo=CriticalSpacing(oIn)
 % Logitech K760 $86 solar-powered wireless keyboard, because its batteries
 % never run out. It's no longer made, but still available on Amazon and
 % eBay:
-% 
+%
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
-% 
+%
 % TAPE OR LASER MEASURE FOR VIEWING DISTANCE. The viewing distance will
 % typically be several meters, and it's important that you set it
 % accurately, within five percent. You can measure it with a $10 tape
 % measure marked in centimeters. A fancy $40 alternative is a Bosch laser
 % measure, which gives you the answer in two clicks. The laser will work
 % even with a mirror.
-% 
+%
 % http://www.amazon.com/gp/product/B0016A2UHO
 % http://www.amazon.com/gp/product/B00LGANH8K
 % https://www.boschtools.com/us/en/boschtools-ocs/laser-measuring-glm-15-0601072810--120449-p/
-% 
+%
 % MIRROR. In a small room, you might need a mirror to achieve a long
 % viewing distance. When CriticalSpacing asks you about viewing distance,
 % you can indicate that you're using a mirror by entering the viewing
@@ -132,7 +132,7 @@ function oo=CriticalSpacing(oIn)
 % needs to accomodate observer's of various heights, so I listed several of
 % Amazon's offerings, ranging up to 24" by 48". The five-pack is a good
 % deal, five 12"x24" mirrors for $67.
-% 
+%
 % http://www.amazon.com/Acrylic-Wall-Mirror-Size-24/dp/B001CWAOJW/ref=sr_1_19
 % http://www.amazon.com/Childrens-Factory-Look-At-Mirror/dp/B003BL7TMC/ref=sr_1_14
 % https://www.inventables.com/technologies/first-surface-mirror-coated-acrylic
@@ -161,13 +161,13 @@ function oo=CriticalSpacing(oIn)
 % double-click the font file and say "yes" when your computer offers to
 % install it for you. Once you've installed a font, you must quit and
 % restart MATLAB to use the newly available font.
-% 
+%
 % OPTIONAL: ADDING A NEW FONT. Running the program SaveAlphabetToDisk in
 % the CriticalSpacing/lib/ folder, after you edit it to specify the font,
 % alphabet, and borderCharacter you want, will add a snapshot of your
 % font's alphabet to the pdf folder and add a new folder, named for your
 % font, to the CriticalSpacing/alphabets/ folder.
-% 
+%
 % OPTIONAL: USING YOUR COMPUTER'S FONTS, LIVE. Set
 % o.readAlphabetFromDisk=0. You may wish to install Pelli or Sloan from the
 % CriticalSpacing/fonts/ folder into your computer's OS. Restart MATLAB
@@ -177,13 +177,13 @@ function oo=CriticalSpacing(oIn)
 % access to it is not blocked by the presence of an obsolete version. For
 % explanation see "help drawtextplugin". You need this only if want to set
 % o.readAlphabetFromDisk=0.
-% 
+%
 % CHILDREN. Adults and children seem to find it easy and intuitive, but
 % we've only tested a few children so far. Aenne Brielmann has designed an
 % astronaut metaphar for children, to make it more like a game, which we
 % plan to implement. Try running runCriticalSpacing. It measures four
 % thresholds.
-% 
+%
 % CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
 % o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
 % viewing distance (or declare that you're using a mirror) at the beginning
@@ -200,9 +200,9 @@ function oo=CriticalSpacing(oIn)
 % letter size you want to show with 8 pixels and the resolution (pixels per
 % centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
 % paper cited at the beginning,
-% 
+%
 % minViewingDistanceCm=57*(minimumTargetPix/letterDeg)/(screenWidthPix/screenWidthCm);
-% 
+%
 % where minimumTargetPix=8 and letterDeg=0.02 for the healthy adult fovea.
 %
 % NAME THE EXPERIMENTER & OBSERVER. If it doesn't already know,
@@ -219,7 +219,7 @@ function oo=CriticalSpacing(oIn)
 % times provokes a "sticky keys" dialog that you won't see because it's
 % hidden behind the CriticalSpacing window, so you'll be stuck. The caps
 % lock key is always safe.)
-% 
+%
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
 % CriticalSpacing will then print out (and save to disk) results so far,
@@ -228,7 +228,7 @@ function oo=CriticalSpacing(oIn)
 % whole session also sets the flag o.quitSession. If o.quitSession is
 % already set when you call CriticalSpacing, it returns immediately after
 % processing arguments. (CriticalSpacing ignores o.quitRun on input.)
-% 
+%
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
 % the observer is overwhelmed by this trial, you can press the spacebar
@@ -250,29 +250,29 @@ function oo=CriticalSpacing(oIn)
 % it to avoid a crisis. In general it's important to set up the right
 % expectation at the outset. Warn the observer that this is a game and
 % nobody gets them all right. You just try to get as many as you can.
-% 
+%
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures threshold spacing in either of two
 % directions, selected by the variable o.targetSizeIsHeight, 1 for
 % vertically, and 0 for horizontally. Target size can be made proportional
 % to spacing, allowing measurement of critical spacing without knowing the
 % acuity, because we use the largest possible letter for each spacing. The
-% ratio SpacingOverSize is computed for spacing and size along the 
+% ratio SpacingOverSize is computed for spacing and size along the
 % axis specified by o.spaceRadialOrTangential. The final report by
 % CriticalSpacing includes the aspect ratio of your font: o.heightOverWidth.
 %
-% ECCENTRICITY. Set o.eccentricity.deg and o.eccentricity.clockwiseAngleDeg
-% in your script. Current testing is focussed on o.eccentricity.deg=0 and
+% ECCENTRICITY. Set o.eccentricityDeg and o.eccentricityClockwiseAngleDeg
+% in your script. Current testing is focussed on o.eccentricityDeg=0 and
 % o.durationSec=inf, i.e. infinity. For peripheral testing, it's usually
 % best to set o.durationSec=0.2 to exclude eye movements during the brief
 % target presentation. When the flankers are radial, the specified spacing
 % refers to the inner flanker, between target and fixation. We define
 % scaling eccentricity as eccentricity plus 0.05 deg. The critical spacing
-% of crowding is proportional to the scaling eccentricity. The outer
+% of crowding is proportional to the scaling eccentricity The outer
 % flanker is at the scaling eccentricity that has the same ratio to the
 % target scaling eccentricity, as the target scaling eccentricity does to
 % the inner-flanker scaling eccentricity.
-% 
+%
 % SAVING LETTER-CONFUSION DATA
 % For each condition we keep track of which letters the observer has
 % trouble with (time and accuracy). This might lead us to adjust or drop
@@ -291,9 +291,9 @@ function oo=CriticalSpacing(oIn)
 % oo(condition).trialData(i).targetScores
 % oo(condition).trialData(i).responses
 % oo(condition).trialData(i).responseScores
-% oo(condition).trialData(i).reactionTimes 
+% oo(condition).trialData(i).reactionTimes
 % The other relevant parameters of the condition do not change from trial
-% to trial: age, font, thresholdParameter, repeatedTarget.
+% to trial: age, font, thresholdParameter, repeatedTargets.
 %
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 
@@ -321,34 +321,34 @@ function oo=CriticalSpacing(oIn)
 
 % EXPLANATION FROM MARIO KLEINER (2/9/16) ON RESTORING RESOLUTION
 % "The current behavior is something like this:
-% 
+%
 % "* On OSX it tries to restore the video mode that was present at the time
 % when the user changed video mode the first time in a session via
 % Screen('Resolution'), whenever a window gets closed by code or due to
 % error. The OS may restore video mode to whatever it thinks makes sense
 % also if Matlab/Octave exits or crashes.
-% 
+%
 % "* On Windows some kind of approximation of the above, at the discretion
 % of the OS. I don't know if different recent Windows versions could behave
 % differently. We tell the OS that the mode we set is dynamic/temporary and
 % the OS restores to something meaningful (to it) at error/window close
 % time, or probably also at Matlab exit/crash time.
-% 
+%
 % "* Linux X11 approximation of OSX, except in certain multi-display
 % configurations where it doesn't auto-restore anything. And a crash/exit
 % of Matlab doesn't auto-restore either. Linux with a future Wayland
 % display system will likely have a different behavior again, due to
 % ongoing design decisions wrt. desktop security.
-% 
+%
 % "It's one of these areas where true cross-platform portability is not
 % really possible.
-% 
+%
 % "In my git repo i have a Screen mex file which no longer triggers errors
 % during error handling, but just prints an error message if OSX screws up
 % in doing its job as an OS:
-% 
+%
 % https://github.com/kleinerm/Psychtoolbox-3/raw/master/Psychtoolbox/PsychBasic/Screen.mexmaci64
-% 
+%
 % "Running latest PsychToolbox on MATLAB 2015b on latest El Capitan on
 % MacBook Air with attached Dell display."
 %
@@ -396,21 +396,21 @@ o.usePurring=0;
 o.useSpeech=1;
 
 % VISUAL STIMULUS
-o.eccentricity.deg=0; % Distance of target from fixation, in degrees. 
-o.eccentricity.clockwiseAngleDeg=90; % Direction of target from fixation.
-o.eccentricity.xDeg=o.eccentricity.deg*sind(o.eccentricity.clockwiseAngleDeg);
-o.eccentricity.yDeg=-o.eccentricity.deg*cosd(o.eccentricity.clockwiseAngleDeg);
-% o.eccentricity.deg=sqrt(o.eccentricity.xDeg^2+o.eccentricity.yDeg^2);
-% o.eccentricity.clockwiseAngleDeg=atan2d(o.eccentricity.xDeg,o.eccentricity.yDeg);
+o.eccentricityDeg=0; % Distance of target from fixation, in degrees.
+o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXDeg=o.eccentricityDeg*sind(o.eccentricityClockwiseAngleDeg);
+o.eccentricityYDeg=-o.eccentricityDeg*cosd(o.eccentricityClockwiseAngleDeg);
+% o.eccentricityDeg=sqrt(o.eccentricityXDeg^2+o.eccentricityYDeg^2);
+% o.eccentricityClockwiseAngleDeg=atan2d(o.eccentricityXDeg,o.eccentricityYDeg);
 o.durationSec=inf; % Duration of display of target and flankers
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
-o.fourFlankers=1;
+o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.radialOrTangential='tangential'; % vertically arranged flankers for single target
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+% o.radialOrTangential='tangential'; % tangentially arranged flankers for single target
+o.radialOrTangential='radial'; % radially arranged flankers for single target
 o.repeatedTargets=1;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
@@ -423,7 +423,7 @@ o.targetDeg=nan;
 % o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
 % o.borderLetter='$';
 o.targetFont='Pelli';
-o.alphabet='123456789'; 
+o.alphabet='123456789';
 o.borderLetter='$';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm XLight';
@@ -453,14 +453,14 @@ o.tGuessSd=nan;
 o.useQuest=1; % true(1) or false(0)
 
 % DEBUGGING AIDS
-o.frameTheTarget=0; 
+o.frameTheTarget=0;
 o.printScreenResolution=0;
 o.printSizeAndSpacing=0;
-o.showAlphabet=0; 
+o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0; 
+o.useFractionOfScreen=0;
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -507,7 +507,8 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
    'minimumScreenSizeDeg' 'typicalThesholdSizeDeg' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
-   'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution'};
+   'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
+   'targetSizeIsHeight'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -539,13 +540,13 @@ Screen('Preference','SkipSyncTests',1);
 
 % Set up defaults. Clumsy.
 for condition=1:conditions
-   switch oo(condition).thresholdParameter
-      case 'size',
-         if ~isfinite(oo(condition).targetSizeIsHeight)
+   if ~isfinite(oo(condition).targetSizeIsHeight)
+      switch oo(condition).thresholdParameter
+         case 'size',
             oo(condition).targetSizeIsHeight=1;
-         end
-      case 'spacing',
-         oo(condition).targetSizeIsHeight=0;
+         case 'spacing',
+            oo(condition).targetSizeIsHeight=0;
+      end
    end
 end
 % Set up for KbCheck. We can safely use this mode AND collect kb responses
@@ -626,7 +627,7 @@ else
    end
 end
 oo(1).resolution=Screen('Resolution',oo(1).screen);
-   
+
 try
    black=0;
    white=255;
@@ -667,7 +668,7 @@ try
    diary off
    Screen('Preference','SuppressAllWarnings',1);
    Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
-   oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);   
+   oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);
    if oo(1).standardDrawTextPlugin
       oo(1).drawTextPluginWarning='';
    else
@@ -739,14 +740,14 @@ try
       screenHeightPix=RectHeight(screenRect);
       if oo(1).useFractionOfScreen
          pixPerDeg=oo(1).useFractionOfScreen*screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
-%          pixPerDeg=screenWidthPix/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
+         %          pixPerDeg=screenWidthPix/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
       else
          pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       end
       for condition=1:conditions
          % Adjust textSize so our string fits on screen.
          instructionalMargin=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
-         oo(condition).textSize=round(oo(condition).textSizeDeg*pixPerDeg);
+         oo(condition).textSize=40; % Rough guess.
          Screen('TextSize',window,oo(condition).textSize);
          Screen('TextFont',window,oo(condition).textFont,0);
          font=Screen('TextFont',window);
@@ -758,24 +759,25 @@ try
          instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
          boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
          fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMargin);
+         % Adjust textSize so our line fits perfectly.
          oo(condition).textSize=round(oo(condition).textSize/fraction);
       end
       if oo(1).useFractionOfScreen
-%          pixPerDeg=screenWidthPix/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
+         %          pixPerDeg=screenWidthPix/(oo(1).useFractionOfScreen*screenWidthCm*57/oo(1).viewingDistanceCm);
          pixPerDeg=oo(1).useFractionOfScreen*screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       else
          pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       end
       for condition=1:conditions
          oo(condition).viewingDistanceCm=oo(1).viewingDistanceCm;
-         oo(condition).normalAcuityDeg=0.029*(abs(oo(condition).eccentricity.deg)+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+         oo(condition).normalAcuityDeg=0.029*(abs(oo(condition).eccentricityDeg)+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
          if ismember(oo(condition).targetFont,{'Pelli'})
             oo(condition).normalAcuityDeg=oo(condition).normalAcuityDeg/5; % For Pelli font.
          end
-         % oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricity.deg)+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+         % oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
          % We adjust it to our finding that critical spacing is 0.05 deg at zero
          % eccentricity.
-         oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricity.deg)+0.15); % Adjusted.
+         oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.15); % Adjusted.
          oo(condition).typicalThesholdSizeDeg=oo(condition).normalAcuityDeg;
          if oo(condition).fixedSpacingOverSize && streq(oo(condition).thresholdParameter,'spacing')
             oo(condition).typicalThesholdSizeDeg=max(oo(condition).typicalThesholdSizeDeg,oo(condition).normalCriticalSpacingDeg/oo(condition).fixedSpacingOverSize);
@@ -791,26 +793,26 @@ try
       end
       minimumScreenSizeDeg=[0 0];
       for i=1:conditions
-         oo(i).eccentricity.xDeg=oo(i).eccentricity.deg*sind(oo(i).eccentricity.clockwiseAngleDeg);
-         oo(i).eccentricity.yDeg=-oo(i).eccentricity.deg*cosd(oo(i).eccentricity.clockwiseAngleDeg);
+         oo(i).eccentricityXDeg=oo(i).eccentricityDeg*sind(oo(i).eccentricityClockwiseAngleDeg);
+         oo(i).eccentricityYDeg=-oo(i).eccentricityDeg*cosd(oo(i).eccentricityClockwiseAngleDeg);
          switch oo(i).fixationLocation
             case 'left',
-               width=max(0,oo(i).eccentricity.xDeg);
-               height=2*abs(oo(i).eccentricity.yDeg);
+               width=max(0,oo(i).eccentricityXDeg);
+               height=2*abs(oo(i).eccentricityYDeg);
             case 'right',
-               width=max(0,-oo(i).eccentricity.xDeg);
-               height=2*abs(oo(i).eccentricity.yDeg);
+               width=max(0,-oo(i).eccentricityXDeg);
+               height=2*abs(oo(i).eccentricityYDeg);
             case 'center',
-               width=2*abs(oo(i).eccentricity.xDeg);
-               height=2*abs(oo(i).eccentricity.yDeg);
+               width=2*abs(oo(i).eccentricityXDeg);
+               height=2*abs(oo(i).eccentricityYDeg);
             case 'lowerLeft',
-               width=max(0,oo(i).eccentricity.xDeg);
-               height=max(0,-oo(i).eccentricity.yDeg);
+               width=max(0,oo(i).eccentricityXDeg);
+               height=max(0,-oo(i).eccentricityYDeg);
             case 'normalizedXY',
                oo(i).fix.x=oo(i).fix.normalizedXY(1)*RectWidth(screenRect);
                oo(i).fix.y=oo(i).fix.normalizedXY(2)*RectHeight(screenRect);
-               width=abs(oo(i).eccentricity.xDeg);
-               height=abs(oo(i).eccentricity.yDeg);
+               width=abs(oo(i).eccentricityXDeg);
+               height=abs(oo(i).eccentricityYDeg);
          end
          oo(i).minimumScreenSizeDeg=[width,height];
          minimumScreenSizeDeg=max(minimumScreenSizeDeg,[width,height]);
@@ -819,7 +821,7 @@ try
       end
       ratio=min([RectWidth(screenRect) RectHeight(screenRect)]./minimumScreenSizeDeg)/pixPerDeg;
       maximumViewingDistanceCm=round(oo(1).viewingDistanceCm*ratio);
-
+      
       % Look for wireless keyboard.
       clear PsychHID; % Force new enumeration of devices to detect external keyboard.
       clear KbCheck; % Clear cache of keyboard devices.
@@ -839,7 +841,7 @@ try
          warning('The long viewing distance may demand an external keyboard.');
          warning backtrace on
       end
-
+      
       % BIG TEXT
       % Say hello, and get viewing distance.
       Screen('FillRect',window,white);
@@ -850,7 +852,7 @@ try
          oo(1).viewingDistanceCm);
       Screen('TextSize',window,oo(1).textSize);
       [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
- 
+      
       % SIZE LIMITS
       string='';
       for condition=1:conditions
@@ -897,7 +899,7 @@ try
             'select "Default" resolution, or type "r" below, ' ...
             'followed by RETURN.\n\n'],string);
       end
-
+      
       % MIRROR
       if oo(1).flipScreenHorizontally
          string=sprintf(['%sMIRROR: To turn off mirroring, ' ...
@@ -921,73 +923,73 @@ try
       
       % OFFSCREEN FIXATION
       % Type "o", followed by RETURN, to set up offscreen fixation.
-%       maxOnscreenFixationOffsetPix=round(RectWidth(o.stimulusRect)/2-20*fixationCrossWeightPix); % max possible fixation offset, with 20 linewidth margin.
-%       maxTargetOffsetPix=RectWidth(o.stimulusRect)/2-o.targetHeightPix/2; % max possible target offset for eccentric viewing.
-%       if o.useFlankers
-%          maxTargetOffsetPix=maxTargetOffsetPix-o.flankerSpacingDeg*o.pixPerDeg;
-%       end
-%       maxTargetOffsetPix=floor(maxTargetOffsetPix-max(o.targetHeightPix/4,0.2*o.pixPerDeg));
-%       assert(maxTargetOffsetPix>=0);
-%       if abs(eccentricityPix) > maxOnscreenFixationOffsetPix+maxTargetOffsetPix
-%          fixationOffscreenCm=round((abs(eccentricityPix)-RectWidth(o.stimulusRect)/2)/pixPerCm);
-%          fixationOffscreenCm=-sign(eccentricityPix)*max(fixationOffscreenCm,4); % at least 4 cm, to avoid collision with the display.
-%          if fixationOffscreenCm<0
-%             question1=sprintf('Please set up a fixation mark %.0f cm to the left of the edge of this bright patch. ',-fixationOffscreenCm);
-%          else
-%             question1=sprintf('Please set up a fixation mark %.0f cm to the right of the edge of this bright patch. ',fixationOffscreenCm);
-%          end
-%          question2='Then hit <return>.  ';
-%          question3='Or hit <escape>, to keep fixation on the screen at reduced eccentricity.';
-%          Screen('TextSize',window,textSize);
-%          Screen('TextFont',window,'Verdana');
-%          Screen('FillRect',window,black);
-%          Screen('FillRect',window,white,o.stimulusRect);
-%          Screen('DrawText',window,question1,10,RectHeight(screenRect)/2-48,black,white,1);
-%          Screen('DrawText',window,question2,10,RectHeight(screenRect)/2,black,white,1);
-%          Screen('DrawText',window,question3,10,RectHeight(screenRect)/2+48,black,white,1);
-%          if o.flipClick; Speak(['before Flip ' num2str(MFileLineNr)]);GetClicks; end
-%          Screen('Flip',window);
-%          if o.flipClick; Speak(['after Flip ' num2str(MFileLineNr)]);GetClicks; end
-%          question=[question1 question2 question3];
-%          if o.speakInstructions
-%             Speak(question);
-%          end
-%          if o.isKbLegacy
-%             answer=questdlg(question,'Fixation','Ok','Cancel','Ok');
-%          else
-%             ListenChar(0); % get ready for the quesdlg
-%             answer=questdlg(question,'Fixation','Ok','Cancel','Ok');
-%             ListenChar(2); % go back to orig status; no echo
-%          end
-%          
-%          switch answer
-%             case 'Ok',
-%                fixationIsOffscreen=1;
-%                if fixationOffscreenCm<0
-%                   ffprintf(ff,'Offscreen fixation mark is %.0f cm left of the left edge of the stimulusRect.\n',-fixationOffscreenCm);
-%                else
-%                   ffprintf(ff,'Offscreen fixation mark is %.0f cm right of the right edge of the stimulusRect.\n',fixationOffscreenCm);
-%                end
-%                fixationOffsetPix=sign(fixationOffscreenCm)*(abs(fixationOffscreenCm)*pixPerCm+RectWidth(o.stimulusRect)/2);
-%             otherwise,
-%                fixationIsOffscreen=0;
-%                fixationOffscreenCm=0;
-%                oldEccX=o.eccentricity.xDeg;
-%                fixationOffsetPix=-sign(eccentricity.xDeg)*maxOnscreenFixationOffsetPix;
-%                targetOffsetPix=sign(eccentricity.xDeg)*maxTargetOffsetPix;
-%                eccentricity.xPix=targetOffsetPix-fixationOffsetPix;
-%                o.eccentricity.xDeg=atand(eccentricity.xPix/pixPerCm/o.distanceCm);
-%                ffprintf(ff,'WARNING: User refused offscreen fixation. Requested horizontal eccentricity %.1f deg reduced to %.1f deg, to allow on-screen fixation.\n',oldEccX,o.eccentricity.xDeg);
-%                warning('WARNING: User refused offscreen fixation. Requested horizontal eccentricity %.1f deg reduced to %.1f deg, to allow on-screen fixation.\n',oldEccX,o.eccentricity.xDeg);
-%          end
-%       else
-%          fixationOffscreenCm=0;
-%          fixationIsOffscreen=0;
-%          fixationOffsetPix=-sign(eccentricity.xPix)*min(abs(eccentricity.xPix),maxOnscreenFixationOffsetPix);
-%       end
-%       targetOffsetPix=eccentricity.xPix+fixationOffsetPix;
-%       assert(abs(targetOffsetPix)<=maxTargetOffsetPix);
-
+      %       maxOnscreenFixationOffsetPix=round(RectWidth(o.stimulusRect)/2-20*fixationCrossWeightPix); % max possible fixation offset, with 20 linewidth margin.
+      %       maxTargetOffsetPix=RectWidth(o.stimulusRect)/2-o.targetHeightPix/2; % max possible target offset for eccentric viewing.
+      %       if o.useFlankers
+      %          maxTargetOffsetPix=maxTargetOffsetPix-o.flankerSpacingDeg*o.pixPerDeg;
+      %       end
+      %       maxTargetOffsetPix=floor(maxTargetOffsetPix-max(o.targetHeightPix/4,0.2*o.pixPerDeg));
+      %       assert(maxTargetOffsetPix>=0);
+      %       if abs(eccentricityPix) > maxOnscreenFixationOffsetPix+maxTargetOffsetPix
+      %          fixationOffscreenCm=round((abs(eccentricityPix)-RectWidth(o.stimulusRect)/2)/pixPerCm);
+      %          fixationOffscreenCm=-sign(eccentricityPix)*max(fixationOffscreenCm,4); % at least 4 cm, to avoid collision with the display.
+      %          if fixationOffscreenCm<0
+      %             question1=sprintf('Please set up a fixation mark %.0f cm to the left of the edge of this bright patch. ',-fixationOffscreenCm);
+      %          else
+      %             question1=sprintf('Please set up a fixation mark %.0f cm to the right of the edge of this bright patch. ',fixationOffscreenCm);
+      %          end
+      %          question2='Then hit <return>.  ';
+      %          question3='Or hit <escape>, to keep fixation on the screen at reduced eccentricity';
+      %          Screen('TextSize',window,textSize);
+      %          Screen('TextFont',window,'Verdana');
+      %          Screen('FillRect',window,black);
+      %          Screen('FillRect',window,white,o.stimulusRect);
+      %          Screen('DrawText',window,question1,10,RectHeight(screenRect)/2-48,black,white,1);
+      %          Screen('DrawText',window,question2,10,RectHeight(screenRect)/2,black,white,1);
+      %          Screen('DrawText',window,question3,10,RectHeight(screenRect)/2+48,black,white,1);
+      %          if o.flipClick; Speak(['before Flip ' num2str(MFileLineNr)]);GetClicks; end
+      %          Screen('Flip',window);
+      %          if o.flipClick; Speak(['after Flip ' num2str(MFileLineNr)]);GetClicks; end
+      %          question=[question1 question2 question3];
+      %          if o.speakInstructions
+      %             Speak(question);
+      %          end
+      %          if o.isKbLegacy
+      %             answer=questdlg(question,'Fixation','Ok','Cancel','Ok');
+      %          else
+      %             ListenChar(0); % get ready for the quesdlg
+      %             answer=questdlg(question,'Fixation','Ok','Cancel','Ok');
+      %             ListenChar(2); % go back to orig status; no echo
+      %          end
+      %
+      %          switch answer
+      %             case 'Ok',
+      %                fixationIsOffscreen=1;
+      %                if fixationOffscreenCm<0
+      %                   ffprintf(ff,'Offscreen fixation mark is %.0f cm left of the left edge of the stimulusRect.\n',-fixationOffscreenCm);
+      %                else
+      %                   ffprintf(ff,'Offscreen fixation mark is %.0f cm right of the right edge of the stimulusRect.\n',fixationOffscreenCm);
+      %                end
+      %                fixationOffsetPix=sign(fixationOffscreenCm)*(abs(fixationOffscreenCm)*pixPerCm+RectWidth(o.stimulusRect)/2);
+      %             otherwise,
+      %                fixationIsOffscreen=0;
+      %                fixationOffscreenCm=0;
+      %                oldEccX=o.eccentricityXDeg;
+      %                fixationOffsetPix=-sign(eccentricityXDeg)*maxOnscreenFixationOffsetPix;
+      %                targetOffsetPix=sign(eccentricityXDeg)*maxTargetOffsetPix;
+      %                eccentricityXPix=targetOffsetPix-fixationOffsetPix;
+      %                o.eccentricityXDeg=atand(eccentricityXPix/pixPerCm/o.distanceCm);
+      %                ffprintf(ff,'WARNING: User refused offscreen fixation. Requested horizontal eccentricity %.1f deg reduced to %.1f deg, to allow on-screen fixation.\n',oldEccX,o.eccentricityXDeg);
+      %                warning('WARNING: User refused offscreen fixation. Requested horizontal eccentricity %.1f deg reduced to %.1f deg, to allow on-screen fixation.\n',oldEccX,o.eccentricityXDeg);
+      %          end
+      %       else
+      %          fixationOffscreenCm=0;
+      %          fixationIsOffscreen=0;
+      %          fixationOffsetPix=-sign(eccentricityXPix)*min(abs(eccentricityXPix),maxOnscreenFixationOffsetPix);
+      %       end
+      %       targetOffsetPix=eccentricityXPix+fixationOffsetPix;
+      %       assert(abs(targetOffsetPix)<=maxTargetOffsetPix);
+      
       % Draw all the small text on screen.
       Screen('TextSize',window,round(oo(1).textSize*0.6));
       [~,y]=DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
@@ -995,7 +997,7 @@ try
       % COPYRIGHT
       Screen('TextSize',window,round(oo(1).textSize*0.35));
       Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
-
+      
       % Get typed response
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
@@ -1213,7 +1215,13 @@ try
       else
          oo(condition).presentations=oo(condition).trials;
       end
-        % prepare to draw fixation cross
+      if oo(condition).repeatedTargets && streq(oo(condition).radialOrTangential,'tangential')
+         warning backtrace off
+         warning('You are using o.repeatedTargets=1, so I''m setting o.radialOrTangential=''radial''');
+         warning backtrace on
+         oo(condition).radialOrTangential='radial';
+      end
+      % prepare to draw fixation cross
       fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
       fixationCrossPix=min(fixationCrossPix,2*RectWidth(stimulusRect)); % full width and height, can extend off screen
       fixationLineWeightPix=round(oo(condition).fixationLineWeightDeg*pixPerDeg);
@@ -1238,10 +1246,10 @@ try
             error('Unknown o.fixationLocation %s',oo(condition).fixationLocation);
       end
       oo(condition).fix.x=round(oo(condition).fix.x);
-      oo(condition).eccentricity.pix=oo(condition).eccentricity.deg*pixPerDeg;
-      oo(condition).eccentricity.xPix=round(oo(condition).eccentricity.pix*sind(oo(condition).eccentricity.clockwiseAngleDeg));
-      oo(condition).eccentricity.yPix=round(-oo(condition).eccentricity.pix*cosd(oo(condition).eccentricity.clockwiseAngleDeg));
-      oo(condition).fix.eccentricity=oo(condition).eccentricity;
+      oo(condition).eccentricityPix=oo(condition).eccentricityDeg*pixPerDeg;
+      oo(condition).eccentricityXPix=round(oo(condition).eccentricityPix*sind(oo(condition).eccentricityClockwiseAngleDeg));
+      oo(condition).eccentricityYPix=round(-oo(condition).eccentricityPix*cosd(oo(condition).eccentricityClockwiseAngleDeg));
+      oo(condition).fix.eccentricityPix=oo(condition).eccentricityPix;
       oo(condition).fix.clipRect=stimulusRect;
       oo(condition).fix.fixationCrossPix=fixationCrossPix;
       oo(condition).fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
@@ -1252,7 +1260,7 @@ try
       else
          oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
       end
-      if oo(condition).eccentricity.xPix>=0
+      if oo(condition).eccentricityXPix>=0
          % Target fits on screen, with half-target margin.
          maxEccXPix=round(max(0,stimulusRect(3)-oo(condition).fix.x-pixPerDeg*oo(condition).targetDeg));
          minEccXPix=0;
@@ -1261,13 +1269,13 @@ try
          minEccXPix=round(min(0,stimulusRect(1)-oo(condition).fix.x+pixPerDeg*oo(condition).targetDeg));
          maxEccXPix=0;
       end
-      oldEccXDeg=oo(condition).eccentricity.xDeg;
-      reducingEcc=oo(condition).eccentricity.xPix<minEccXPix || oo(condition).eccentricity.xPix>maxEccXPix;
-      oo(condition).eccentricity.xPix=max(minEccXPix,min(maxEccXPix,oo(condition).eccentricity.xPix));
-      oo(condition).eccentricity.xDeg=oo(condition).eccentricity.xPix/pixPerDeg;
+      oldEccXDeg=oo(condition).eccentricityXDeg;
+      reducingEcc=oo(condition).eccentricityXPix<minEccXPix || oo(condition).eccentricityXPix>maxEccXPix;
+      oo(condition).eccentricityXPix=max(minEccXPix,min(maxEccXPix,oo(condition).eccentricityXPix));
+      oo(condition).eccentricityXDeg=oo(condition).eccentricityXPix/pixPerDeg;
       if reducingEcc
-         ffprintf(ff,'%d: WARNING: Reducing horizontal eccentricity from %.1f to %.1f deg, to accomodate %.1f deg target on %.1f deg-wide screen.\n',...
-            condition,oldEccXDeg,oo(condition).eccentricity.xDeg,oo(condition).targetDeg,RectWidth(stimulusRect)/pixPerDeg);
+         ffprintf(ff,'%d: WARNING: Reducing horizontal eccentricity from %.1f to %.1f deg, to accommodate %.1f deg target on %.1f deg-wide screen.\n',...
+            condition,oldEccXDeg,oo(condition).eccentricityXDeg,oo(condition).targetDeg,RectWidth(stimulusRect)/pixPerDeg);
       end
       addonDeg=0.15;
       addonPix=pixPerDeg*addonDeg;
@@ -1276,17 +1284,17 @@ try
       else
          oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       end
-      if streq(oo(condition).thresholdParameter,'spacing') && streq(oo(condition).radialOrTangential,'radial')
-         assert(oo(condition).eccentricity.pix>=0);
-         oo(condition).eccentricity.pix=round(min(oo(condition).eccentricity.pix,RectWidth(stimulusRect)-oo(condition).fix.x-pixPerDeg*(oo(condition).spacingDeg+oo(condition).targetDeg/2))); % flanker fits on screen.
-         oo(condition).eccentricity.pix=max(oo(condition).eccentricity.pix,0);
-         assert(oo(condition).eccentricity.pix>=0);
-         oo(condition).eccentricity.deg=oo(condition).eccentricity.pix/pixPerDeg;
-         oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricity.deg)+0.45); % Eq. 14 from Song, Levi, and Pelli (2014).
+      oo(condition).eccentricityDeg=oo(condition).eccentricityPix/pixPerDeg;
+      oo(condition).normalCriticalSpacingDeg=0.3*(abs(oo(condition).eccentricityDeg)+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
+      if oo(condition).eccentricityDeg>1 && streq(oo(condition).radialOrTangential,'tangential')
+         oo(condition).normalCriticalSpacingDeg=oo(condition).normalCriticalSpacingDeg/2; % Toet and Levi.
+      end
+      if streq(oo(condition).thresholdParameter,'spacing')
          oo(condition).spacingDeg=oo(condition).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       end
       oo(condition).spacings=oo(condition).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
-      oo(condition).spacingsSequence=repmat(oo(condition).spacings,1,ceil(oo(condition).presentations/length(oo(condition).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
+      oo(condition).spacingsSequence=repmat(oo(condition).spacings,1,...
+         ceil(oo(condition).presentations/length(oo(condition).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
       switch oo(condition).thresholdParameter
          case 'size',
             if oo(condition).targetSizeIsHeight
@@ -1295,11 +1303,19 @@ try
                ori='horizontal';
             end
          case 'spacing',
-            ori=oo(condition).radialOrTangential;
+            if ~oo(condition).repeatedTargets
+               ori=oo(condition).radialOrTangential;
+            else
+               if oo(condition).targetSizeIsHeight
+                  ori='vertical';
+               else
+                  ori='horizontal';
+               end
+            end
       end
-      ffprintf(ff,'   %s: %s\n',oo(condition).experimenter,oo(condition).observer);
+      ffprintf(ff,'%d: %s: %s\n',1,oo(1).experimenter,oo(1).observer);
       if oo(condition).useQuest
-          ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',condition,oo(condition).trials,ori,oo(condition).thresholdParameter);
+         ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',condition,oo(condition).trials,ori,oo(condition).thresholdParameter);
       else
          ffprintf(ff,'%d: %.0f trials of "method of constant stimuli" with fixed list of %s spacings [',condition,oo(condition).trials,ori);
          ffprintf(ff,'%.1f ',oo(condition).spacings);
@@ -1317,7 +1333,7 @@ try
          oo(condition).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(condition).targetPix;
       end
       oo(condition).targetPix=oo(condition).targetDeg*pixPerDeg;
-   
+      
       for cd=1:conditions
          for i=1:length(oo(cd).validKeyNames)
             oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
@@ -1369,15 +1385,15 @@ try
       string(1)=upper(string(1));
       ffprintf(ff,'%s',string);
    end
-%    for condition=1:conditions
-%       if streq(oo(condition).thresholdParameter,'spacing')
-%          if ~oo(condition).repeatedTargets
-%             if oo(condition).eccentricity.deg~=0
-%                ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
-%             end
-%          end
-%       end
-%    end
+   %    for condition=1:conditions
+   %       if streq(oo(condition).thresholdParameter,'spacing')
+   %          if ~oo(condition).repeatedTargets
+   %             if oo(condition).eccentricityDeg~=0
+   %                ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
+   %             end
+   %          end
+   %       end
+   %    end
    for condition=1:conditions
       if oo(condition).fixedSpacingOverSize
          ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',condition,oo(condition).fixedSpacingOverSize);
@@ -1393,10 +1409,10 @@ try
       ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
          condition,oo(condition).viewingDistanceCm,oo(condition).minimumViewingDistanceCm,oo(condition).normalAcuityDeg/2);
    end
-   ffprintf(ff,['Needing screen size of at least %.0fx%.0f deg, ' ...
+   ffprintf(ff,['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
       'you should view from at most %.0f cm.\n'],...
-      minimumScreenSizeDeg,maximumViewingDistanceCm);
-
+      condition,minimumScreenSizeDeg,maximumViewingDistanceCm);
+   
    ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
    for ii=1:length(oo(1).keyboardNameAndTransport)
       ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{ii});
@@ -1424,9 +1440,9 @@ try
       ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',condition,oo(condition).targetHeightOverWidth,oo(condition).targetFontHeightOverNominalPtSize);
    end
    for condition=1:conditions
-      ffprintf(ff,'%d: durationSec %.2f, eccentricity.deg %.1f, eccentricity.clockwiseAngleDeg %.1f\n',...
-         condition,oo(condition).durationSec,oo(condition).eccentricity.deg,...
-         oo(condition).eccentricity.clockwiseAngleDeg);
+      ffprintf(ff,'%d: durationSec %.2f, eccentricityDeg %.1f, eccentricityClockwiseAngleDeg %.1f\n',...
+         condition,oo(condition).durationSec,oo(condition).eccentricityDeg,...
+         oo(condition).eccentricityClockwiseAngleDeg);
    end
    
    % Identify the computer
@@ -1462,7 +1478,7 @@ try
    %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
    %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
    if oo(1).flipScreenHorizontally
-       ffprintf(ff,'Using mirror. ');
+      ffprintf(ff,'Using mirror. ');
    end
    ffprintf(ff,'Viewing distance %.0f cm,',oo(1).viewingDistanceCm);
    ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
@@ -1557,7 +1573,7 @@ try
    Screen('Flip',window,[],1);
    SetMouse(screenRect(3),screenRect(4),window);
    answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(condition),window,stimulusRect);
-
+   
    Screen('FillRect',window);
    if streq(answer,'ESCAPE')
       oo(1).quitRun=1;
@@ -1666,44 +1682,51 @@ try
                   minSpacesY=2;
                   minSpacesX=2;
                else
-                  switch oo(condition).radialOrTangential
-                     case 'radial',
-                        minSpacesY=2;
-                        minSpacesX=0;
-                     case 'tangential',
-                        minSpacesY=0;
-                        minSpacesX=2;
+                  if oo(condition).targetSizeIsHeight
+                     minSpacesY=2;
+                     minSpacesX=0;
+                  else
+                     minSpacesY=0;
+                     minSpacesX=2;
                   end
                end
             case 'size',
                minSpacesY=0;
                minSpacesX=0;
-       end
+         end
       end
-      switch oo(condition).radialOrTangential
-         case 'radial',
-            if oo(condition).fixedSpacingOverSize
-               spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)));
-               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
-               oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
-            else
-               spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
-               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/minSpacesX));
-            end
-         case 'tangential',
-            if oo(condition).fixedSpacingOverSize
-               spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
-               spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)/oo(condition).targetHeightOverWidth));
-               oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
-            else
-               spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
-               spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/4));
-            end
+      % The spacings are center to center, so we'll fill the screen when we
+      % have the prescribed minSpacesX or minSpacesY plus a half letter at
+      % each border. We impose an upper bound on spacingPix to guarantee
+      % that we have the requested number of spaces horizontally
+      % (minSpacesX) and vertically (minSpacesY).
+      if ~oo(condition).targetSizeIsHeight
+         % spacingPix is vertical. It is scaled by
+         % heightOverWidth in the orthogonal direction.
+         if oo(condition).fixedSpacingOverSize
+            spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
+            oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
+         else
+            spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesY));
+            spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetPix/oo(condition).targetHeightOverWidth)/minSpacesX));
+         end
+      else
+         % spacingPix is horizontal. It is scaled by
+         % heightOverWidth in the orthogonal direction.
+         if oo(condition).fixedSpacingOverSize
+            spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(condition).fixedSpacingOverSize)/oo(condition).targetHeightOverWidth));
+            oo(condition).targetPix=spacingPix/oo(condition).fixedSpacingOverSize;
+         else
+            spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(condition).targetPix)/minSpacesX));
+            spacingPix=min(spacingPix,floor(oo(condition).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(condition).targetHeightOverWidth*oo(condition).targetPix)/4));
+         end
       end
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       oo(condition).spacingDeg=spacingPix/pixPerDeg;
-      xT=oo(condition).fix.x+oo(condition).eccentricity.xPix; % target
-      yT=oo(condition).fix.y+oo(condition).eccentricity.yPix; % target
+      xT=oo(condition).fix.x+oo(condition).eccentricityXPix; % target
+      yT=oo(condition).fix.y+oo(condition).eccentricityYPix; % target
       if oo(condition).printSizeAndSpacing;
          fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xT %d, yT %d\n',...
             condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg,xT,yT);
@@ -1716,16 +1739,16 @@ try
          % Compute where tangent line interesects stimulusRect. The
          % tangent line goes through target (xT,yT) and is orthogonal to
          % the line from fixation.
-         orientation=oo(condition).eccentricity.clockwiseAngleDeg+90;
+         orientation=oo(condition).eccentricityClockwiseAngleDeg+90;
          if ~IsInRect(xT,yT,stimulusRect)
             ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
             stimulusSize=[RectWidth(stimulusRect) RectHeight(stimulusRect)];
             ffprintf(ff,'stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
                stimulusSize,stimulusSize/pixPerDeg,...
                oo(condition).fix.x/pixPerDeg,oo(condition).fix.y/pixPerDeg,...
-               oo(condition).eccentricity.xDeg,oo(condition).eccentricity.yDeg,...
+               oo(condition).eccentricityXDeg,oo(condition).eccentricityYDeg,...
                xT/pixPerDeg,yT/pixPerDeg);
-            error('Sorry the target (eccentricity %.0f deg) is falling off the screen. Please reduce the viewing distance.',oo(condition).eccentricity.deg);
+            error('Sorry the target (eccentricity %.0f deg) is falling off the screen. Please reduce the viewing distance.',oo(condition).eccentricityDeg);
          end
          assert(length(spacingPix)==1);
          if oo(condition).fixedSpacingOverSize
@@ -1748,8 +1771,8 @@ try
          outerSpacingPix=0;
       end
       if streq(oo(condition).radialOrTangential,'radial') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
-         orientation=oo(condition).eccentricity.clockwiseAngleDeg;
-         if oo(condition).eccentricity.pix==0
+         orientation=oo(condition).eccentricityClockwiseAngleDeg;
+         if oo(condition).eccentricityPix==0
             % Flanker must fit on screen
             if oo(condition).fixedSpacingOverSize
                spacingPix=min(spacingPix,RectWidth(stimulusRect)/(2+1/oo(condition).fixedSpacingOverSize));
@@ -1764,14 +1787,14 @@ try
             if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
          else % eccentricity not zero
             assert(spacingPix>=0);
-            assert(oo(condition).eccentricity.pix>=0);
-            spacingPix=min(oo(condition).eccentricity.pix,spacingPix); % Inner flanker must be between fixation and target.
+            assert(oo(condition).eccentricityPix>=0);
+            spacingPix=min(oo(condition).eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
             assert(spacingPix>=0);
             if oo(condition).fixedSpacingOverSize
                spacingPix=min(spacingPix,xT/(1+1/oo(condition).fixedSpacingOverSize/2)); % Inner flanker is on screen.
                assert(spacingPix>=0);
                for i=1:100
-                  outerSpacingPix=(oo(condition).eccentricity.pix+addonPix)^2/(oo(condition).eccentricity.pix+addonPix-spacingPix)-(oo(condition).eccentricity.pix+addonPix);
+                  outerSpacingPix=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacingPix)-(oo(condition).eccentricityPix+addonPix);
                   assert(outerSpacingPix>=0);
                   if outerSpacingPix<=RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2; % Outer flanker is on screen.
                      break;
@@ -1785,11 +1808,11 @@ try
                end
             else
                spacingPix=min(spacingPix,xT-oo(condition).targetPix/2); % inner flanker on screen
-               outerSpacingPix=(oo(condition).eccentricity.pix+addonPix)^2/(oo(condition).eccentricity.pix+addonPix-spacingPix)-(oo(condition).eccentricity.pix+addonPix);
+               outerSpacingPix=(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix-spacingPix)-(oo(condition).eccentricityPix+addonPix);
                outerSpacingPix=min(outerSpacingPix,RectWidth(stimulusRect)-xT-oo(condition).targetPix/2); % outer flanker on screen
             end
             assert(outerSpacingPix>=0);
-            spacingPix=oo(condition).eccentricity.pix+addonPix-(oo(condition).eccentricity.pix+addonPix)^2/(oo(condition).eccentricity.pix+addonPix+outerSpacingPix);
+            spacingPix=oo(condition).eccentricityPix+addonPix-(oo(condition).eccentricityPix+addonPix)^2/(oo(condition).eccentricityPix+addonPix+outerSpacingPix);
             assert(spacingPix>=0);
             spacingPix=round(spacingPix);
             assert(spacingPix>=0);
@@ -1813,7 +1836,7 @@ try
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       % Prepare to draw fixation cross.
       oo(condition).fix.targetHeightPix=oo(condition).targetPix;
-      oo(condition).fix.bouma=max(0.5,(outerSpacingPix+oo(condition).targetPix/2)/oo(condition).eccentricity.pix);
+      oo(condition).fix.bouma=max(0.5,(outerSpacingPix+oo(condition).targetPix/2)/oo(condition).eccentricityPix);
       oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
       if oo(condition).targetSizeIsHeight
          oo(condition).fix.targetHeightPix=oo(condition).targetPix;
@@ -1834,7 +1857,7 @@ try
          r(4)=round(r(4)*(1-presentation/length(condList)));
          Screen('FillRect',window,[220 220 220],r); % grey background
       end
-      Screen('Flip',window,[],1); % Display instructions and fixation. 
+      Screen('Flip',window,[],1); % Display instructions and fixation.
       if isfinite(oo(condition).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
@@ -1923,7 +1946,7 @@ try
          ySpacing=spacingPix*oo(condition).targetHeightOverWidth;
       end
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',condition,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
-      if ~oo(condition).repeatedTargets 
+      if ~oo(condition).repeatedTargets
          xStimulus=[xF(1) xT xF(2:end)];
          yStimulus=[yF(1) yT yF(2:end)];
          if oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing')
@@ -2116,8 +2139,8 @@ try
          Screen('Close',texture);
          x=50;
          y=-bounds(2)+0.3*oo(condition).textSize;
-%          fixationClipRect=stimulusRect;
-%          fixationClipRect(2)=y+bounds(4)+0.3*oo(condition).textSize;
+         %          fixationClipRect=stimulusRect;
+         %          fixationClipRect(2)=y+bounds(4)+0.3*oo(condition).textSize;
          % Draw text.
          Screen('DrawText',window,string,x,y,black,white,1);
          Screen('TextSize',window,oo(condition).textSize);
@@ -2125,7 +2148,7 @@ try
          alphabetBounds=round(alphabetBounds*oo(condition).textSize/RectHeight(alphabetBounds));
          x=50;
          y=stimulusRect(4)-0.3*RectHeight(alphabetBounds);
-%          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
+         %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
          for i=1:length(oo(condition).alphabet)
             dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
             for j=1:length(letterStruct)
@@ -2304,19 +2327,19 @@ try
       end
       switch oo(condition).thresholdParameter
          case 'spacing',
-            if ~oo(condition).repeatedTargets && oo(condition).eccentricity.deg~=0
+            if ~oo(condition).repeatedTargets && oo(condition).eccentricityDeg~=0
                switch(oo(condition).radialOrTangential)
                   case 'radial'
                      ffprintf(ff,'Radial spacing of far flanker from target.\n');
                   case 'tangential'
-                     ffprintf(ff,'Tangential spacing up and down.\n');
+                     ffprintf(ff,'Tangential spacing of flankers.\n');
                end
             end
             ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
             if 10^t<oo(condition).minimumSpacingDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSpacingDeg);
                if oo(condition).useSpeech
-%                   Speak('WARNING: Please increase viewing distance.');
+                  %                   Speak('WARNING: Please increase viewing distance.');
                end
             end
             if oo(condition).responseCount>1
@@ -2332,7 +2355,7 @@ try
             if 10^t<oo(condition).minimumSizeDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSizeDeg);
                if oo(condition).useSpeech
-%                   Speak('WARNING: Please increase viewing distance.');
+                  %                   Speak('WARNING: Please increase viewing distance.');
                end
             end
             if oo(condition).responseCount>1
@@ -2383,9 +2406,9 @@ try
          p=sum(trials.responses(2,:))/sum(sum(trials.responses));
          switch oo(condition).thresholdParameter
             case 'spacing',
-               ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. %.1f deg, critical spacing %.2f deg.\n',oo(condition).observer,100*p,oo(condition).targetDeg,oo(condition).eccentricity.deg,10^QuestMean(oo(condition).q));
+               ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. %.1f deg, critical spacing %.2f deg.\n',oo(condition).observer,100*p,oo(condition).targetDeg,oo(condition).eccentricityDeg,10^QuestMean(oo(condition).q));
             case 'size',
-               ffprintf(ff,'%s: p %.0f%%, ecc. %.2f deg, threshold size %.3f deg.\n',oo(condition).observer,100*p,oo(condition).eccentricity.deg,10^QuestMean(oo(condition).q));
+               ffprintf(ff,'%s: p %.0f%%, ecc. %.2f deg, threshold size %.3f deg.\n',oo(condition).observer,100*p,oo(condition).eccentricityDeg,10^QuestMean(oo(condition).q));
          end
       end
    end
