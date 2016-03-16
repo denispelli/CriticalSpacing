@@ -508,7 +508,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'minimumScreenSizeDeg' 'typicalThesholdSizeDeg' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
-   'targetSizeIsHeight'};
+   'targetSizeIsHeight' 'eccentricityXPix' 'eccentricityYPix'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -1250,6 +1250,7 @@ try
       oo(condition).eccentricityXPix=round(oo(condition).eccentricityPix*sind(oo(condition).eccentricityClockwiseAngleDeg));
       oo(condition).eccentricityYPix=round(-oo(condition).eccentricityPix*cosd(oo(condition).eccentricityClockwiseAngleDeg));
       oo(condition).fix.eccentricityPix=oo(condition).eccentricityPix;
+      oo(condition).fix.eccentricityClockwiseAngleDeg=oo(condition).eccentricityClockwiseAngleDeg;
       oo(condition).fix.clipRect=stimulusRect;
       oo(condition).fix.fixationCrossPix=fixationCrossPix;
       oo(condition).fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
