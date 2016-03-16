@@ -1,11 +1,19 @@
 function [xClipped,yClipped]=ClipLineSegment(x,y,r)
 %[x,y]=ClipLineSegment(x,y,r);
-% Clips a line segment by a rect, and returns the new line segment
-% (possibly zero length) or nothing (empty rects). The line segment is
-% (x(1),y(1)) to (x(2),y(2)). Direction (from point 1 to point 2) is
-% preserved. Returns NANs if you provide an ambiguous line segment.
+% Clips a line segment by a rect, and returns the new line segment of
+% non-zero length or nothing (empty rects). The line segment is (x(1),y(1))
+% to (x(2),y(2)). Direction (from point 1 to point 2) is preserved. Returns
+% NANs if you provide an ambiguous line segment.
 % 2016 denis.pelli@nyu.edu
-
+assert(length(x)==2);
+assert(length(y)==2);
+assert(length(r)==4);
+% Discard zero-length line.
+if diff(x)^2+diff(y)^2==0
+   xClipped=[];
+   yClipped=[];
+   return;
+end
 % Make sure the two points define a line.
 if (any(~isfinite(x)) && y(1)~=y(2)) || (any(~isfinite(y)) && x(1)~=x(2))
    xClipped=[nan nan];
@@ -34,10 +42,16 @@ yHit=yHit(~isnan(yHit));
 if length(xHit)>1
    % Remove duplicates.
    for i=length(xHit):-1:2
-      for j=1:i-1
+      for j=i-1:-1:1
          if xHit(j)==xHit(i) && yHit(j)==yHit(i)
-            xHit=xHit([1:i-1 min(i+1,end):end]);
-            yHit=yHit([1:i-1 min(i+1,end):end]);
+            if i==length(xHit)
+               xHit=xHit(1:i-1);
+               yHit=yHit(1:i-1);
+            else
+               xHit=xHit([1:i-1 i+1:end]);
+               yHit=yHit([1:i-1 i+1:end]);
+            end;
+            break;
          end
       end
    end
@@ -59,16 +73,34 @@ switch length(xHit)
          xClipped(2)=xHit;
          yClipped(2)=yHit;
       end
-      return
    case 2;
       % Clip rect cut off both ends of line segment.
       % Retain direction.
-      if sign(x(1)-x(2))~=sign(xHit(1)-xHit(2)) || sign(y(1)-y(2))~=sign(yHit(1)-yHit(2))
+      if sign(x(1)-x(2))~=sign(xHit(1)-xHit(2)) || ...
+            sign(y(1)-y(2))~=sign(yHit(1)-yHit(2))
          xHit=xHit([2 1]);
          yHit=yHit([2 1]);
       end
       % Clip both ends.
       xClipped=xHit;
       yClipped=yHit;
-      return
 end
+% Discard zero-length lines.
+if length(xClipped)==4
+   if diff(xClipped(3:4))^2+diff(yClipped(3:4))^2==0
+      xClipped=xClipped(1:2);
+      yClipped=yClipped(1:2);
+   end
+end
+if length(xClipped)==2
+   if diff(xClipped(1:2))^2+diff(yClipped(1:2))^2==0
+      if length(xClipped)>2
+         xClipped=xClipped(3:4);
+         yClipped=yClipped(3:4);
+      else
+         xClipped=[];
+         yClipped=[];
+      end
+   end
+end
+return
