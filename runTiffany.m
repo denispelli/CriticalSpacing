@@ -116,36 +116,18 @@ o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
-o.eccentricityDeg=30;
+o.eccentricityDeg=20;
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
+% o.useFractionOfScreen=0.2;
 
+o.oneFlanker=0;
+o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 for i=1:2
-   o.oneFlanker=0;
-   o.fixedSpacingOverSize=1.8; % Requests size proportional to spacing, horizontally and vertically.
-   for ori=0:30:90
-      if ori==0
-         o.fix.normalizedXY=[0.5 0.9];
-      elseif ori==90
-         o.fix.normalizedXY=[0.1 0.5];
-      else
-         o.fix.normalizedXY=[0.1 0.9];
-      end
-      o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
-      o=CriticalSpacing(o);
-   end
-   o.oneFlanker=1;
-   o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
-   for ori=0:30:90
-      if ori==0
-         o.fix.normalizedXY=[0.5 0.9];
-      elseif ori==90
-         o.fix.normalizedXY=[0.1 0.5];
-      else
-         o.fix.normalizedXY=[0.1 0.9];
-      end
+   for ori=0:30:360
+      o.fix.normalizedXY=0.5+0.4*[-sind(ori) cosd(ori)];
       o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
       o=CriticalSpacing(o);
    end
