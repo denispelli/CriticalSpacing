@@ -9,7 +9,7 @@ if isnan(x) || isnan(y)
    return
 end
 jnd=1e-10;
-isXInLineSegment=@(x,line)(x>=line(1,1)-jnd && x<=line(1,2))+jnd || (x<=line(1,1)+jnd && x>=line(1,2)-jnd);
+isXInLineSegment=@(x,line)(x>=line(1,1)-jnd && x<=line(1,2)+jnd) || (x<=line(1,1)+jnd && x>=line(1,2)-jnd);
 isYInLineSegment=@(y,line)(y>=line(2,1)-jnd && y<=line(2,2)+jnd) || (y<=line(2,1)+jnd && y>=line(2,2)-jnd);
 if isXInLineSegment(x,lineA) && isYInLineSegment(y,lineA) && isXInLineSegment(x,lineB) && isYInLineSegment(y,lineB) 
    return
