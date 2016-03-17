@@ -1246,6 +1246,7 @@ try
             error('Unknown o.fixationLocation %s',oo(condition).fixationLocation);
       end
       oo(condition).fix.x=round(oo(condition).fix.x);
+      oo(condition).fix.y=round(oo(condition).fix.y);
       oo(condition).eccentricityPix=oo(condition).eccentricityDeg*pixPerDeg;
       oo(condition).eccentricityXPix=round(oo(condition).eccentricityPix*sind(oo(condition).eccentricityClockwiseAngleDeg));
       oo(condition).eccentricityYPix=round(-oo(condition).eccentricityPix*cosd(oo(condition).eccentricityClockwiseAngleDeg));
@@ -1253,7 +1254,11 @@ try
       oo(condition).fix.eccentricityClockwiseAngleDeg=oo(condition).eccentricityClockwiseAngleDeg;
       oo(condition).fix.clipRect=stimulusRect;
       oo(condition).fix.fixationCrossPix=fixationCrossPix;
-      oo(condition).fix.fixationCrossBlankedNearTarget=oo(condition).fixationCrossBlankedNearTarget;
+      if oo(condition).fixationCrossBlankedNearTarget
+         oo(condition).fix.blankingRadiusPix=oo(condition).targetDeg*2*pixPerDeg;
+      else
+         oo(condition).fix.blankingRadiusPix=0;
+      end
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each display.
       if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
@@ -1347,10 +1352,18 @@ try
       end
       
       % prepare to draw fixation cross
-      oo(condition).fix.targetHeightPix=oo(condition).targetPix;
-      oo(condition).fix.targetCross=oo(condition).targetCross;
-      oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
-      fixationLines=ComputeFixationLines(oo(condition).fix);
+      oo(condition).fix.eccentricityPix=oo(condition).eccentricityPix;
+      assert(isfinite(oo(condition).fix.eccentricityPix));
+      oo(condition).fix.eccentricityClockwiseAngleDeg=oo(condition).eccentricityClockwiseAngleDeg;
+      oo(condition).fix.clipRect=screenRect;
+      oo(condition).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
+      if oo(condition).targetCross;
+         oo(condition).fix.targetCrossPix=oo(condition).targetDeg*pixPerDeg*2;
+      else
+         oo(condition).fix.targetCrossPix=0;
+      end
+      oo(condition).fix.blankingRadiusPix=0.5*oo(condition).fix.eccentricityPix;
+      fixationLines=ComputeFixationLines2(oo(condition).fix);
       
       oo(1).quitRun=0;
       
@@ -1836,16 +1849,7 @@ try
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       % Prepare to draw fixation cross.
-      oo(condition).fix.targetHeightPix=oo(condition).targetPix;
-      oo(condition).fix.bouma=max(0.5,(outerSpacingPix+oo(condition).targetPix/2)/oo(condition).eccentricityPix);
-      oo(condition).fix.targetHeightOverWidth=oo(condition).targetHeightOverWidth;
-      if oo(condition).targetSizeIsHeight
-         oo(condition).fix.targetHeightPix=oo(condition).targetPix;
-      else
-         oo(condition).fix.targetHeightPix=oo(condition).targetHeightOverWidth*oo(condition).targetPix;
-      end
-      oo(condition).fix.targetCross=oo(condition).targetCross;
-      fixationLines=ComputeFixationLines(oo(condition).fix);
+      fixationLines=ComputeFixationLines2(oo(condition).fix);
       % Set up fixation.
       if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
          % Draw fixation.
