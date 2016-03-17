@@ -1,13 +1,24 @@
 function [xClipped,yClipped]=ClipLineSegment(x,y,r)
 %[x,y]=ClipLineSegment(x,y,r);
-% Clips a line segment by a rect, and returns the new line segment of
-% non-zero length or nothing (empty rects). The line segment is (x(1),y(1))
-% to (x(2),y(2)). Direction (from point 1 to point 2) is preserved. Returns
-% NANs if you provide an ambiguous line segment.
+% Clips one (or more) line segment by a rect, and teturns (for each line
+% received) a new line segment of non-zero length or nothing (empty rects).
+% x and y may contain many lines on input and output. The line segment is
+% (x(1),y(1)) to (x(2),y(2)). Direction (from point 1 to point 2) is
+% preserved. Returns NANs if you provide an ambiguous line segment.
 % 2016 denis.pelli@nyu.edu
-assert(length(x)==2);
-assert(length(y)==2);
+assert(length(x)>=2 && length(x)/2==round(length(x)/2));
+assert(length(y)==length(x));
 assert(length(r)==4);
+if length(x)>2
+   xClipped=[];
+   yClipped=[];
+   for i=1:2:length(x)-1
+      [xTemp,yTemp]=ClipLineSegment(x(i:i+1),y(i:i+1),r);
+      xClipped=[xClipped xTemp];
+      yClipped=[yClipped yTemp];
+   end
+   return
+end 
 % Discard zero-length line.
 if diff(x)^2+diff(y)^2==0
    xClipped=[];
