@@ -6,10 +6,19 @@ function [xClipped,yClipped]=ErasePartOfLineSegment(x,y,r)
 % point 1 to point 2) is preserved. Returns NANs if you provide an
 % ambiguous line segment.
 % 2016 denis.pelli@nyu.edu
-
-assert(length(x)==2);
-assert(length(y)==2);
+assert(length(x)>=2 && length(x)/2==round(length(x)/2))
+assert(length(y)==length(x));
 assert(length(r)==4);
+if length(x)>2
+   xClipped=[];
+   yClipped=[];
+   for i=1:2:length(x)-1
+      [xTemp,yTemp]=ErasePartOfLineSegment(x(i:i+1),y(i:i+1),r);
+      xClipped=[xClipped xTemp];
+      yClipped=[yClipped yTemp];
+   end
+   return
+end 
 % Discard zero-length line.
 if diff(x)^2+diff(y)^2==0
    xClipped=[];
