@@ -295,18 +295,16 @@ function oo=CriticalSpacing(oIn)
 % The other relevant parameters of the condition do not change from trial
 % to trial: age, font, thresholdParameter, repeatedTargets.
 %
+% FIXATION LOCATION. o.fix.normalizedXY=[x,y] allows experimenter to
+% specify (x,y) locations in a unit square that maps to the screen, with [0
+% 0] in upper left: fix.normalizedXY=[x,y], where x and y are in the range
+% 0 to 1.
+%
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 
 % PLANS
 % I'd like the viewing-distance page to respond to a new command: "o" to
 % set up offscreen fixation.
-%
-% Add option for fixation location to be 'normalizedXY'. Allow observer to
-% specify (x,y) locations in a unit square that maps to the screen, with
-% origin in upper left: fixationNormalizedXY=[x,y], where x and y are in
-% the range 0 to 1.
-%
-% The fixation generation needs to be updated for orientation angle.
 %
 % The eccentricity check needs to look 0.3 further when the spacing
 % orientation is radial.
