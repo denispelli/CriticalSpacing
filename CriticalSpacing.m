@@ -396,8 +396,10 @@ o.useSpeech=1;
 % VISUAL STIMULUS
 o.eccentricityDeg=0; % Distance of target from fixation, in degrees.
 o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
-o.eccentricityXDeg=o.eccentricityDeg*sind(o.eccentricityClockwiseAngleDeg);
-o.eccentricityYDeg=-o.eccentricityDeg*cosd(o.eccentricityClockwiseAngleDeg);
+% o.eccentricityXDeg=o.eccentricityDeg*sind(o.eccentricityClockwiseAngleDeg);
+% o.eccentricityYDeg=-o.eccentricityDeg*cosd(o.eccentricityClockwiseAngleDeg);
+o.eccentricityXDeg=nan;
+o.eccentricityYDeg=nan;
 % o.eccentricityDeg=sqrt(o.eccentricityXDeg^2+o.eccentricityYDeg^2);
 % o.eccentricityClockwiseAngleDeg=atan2d(o.eccentricityXDeg,o.eccentricityYDeg);
 o.durationSec=inf; % Duration of display of target and flankers
