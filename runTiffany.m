@@ -108,7 +108,6 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
 o.useFractionOfScreen=0;
-o.viewingDistanceCm=25; % Default for runtime question.
 o.fixationLocation='normalizedXY';
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -123,15 +122,39 @@ o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 % o.useFractionOfScreen=0.2;
 
-o.oneFlanker=0;
+% TEST ALL ECCENTRICITIES
+ori=90;
+o.fix.normalizedXY=0.5+0.4*[-sind(ori) cosd(ori)];
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
-for i=1:2
-   for ori=0:30:360
-      o.fix.normalizedXY=0.5+0.4*[-sind(ori) cosd(ori)];
+o.viewingDistanceCm=25; % Default for runtime question.
+for ecc=[3 10 30 60]
+   o.viewingDistanceCm=2*round(0.5*25*30/ecc);
+   o.viewingDistanceCm=min(60,o.viewingDistanceCm);
+   Speak(sprintf('Viewing distance %d centimeters.',o.viewingDistanceCm));
+   for one=0:1
+      o.oneFlanker=one;
       o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
+      o.eccentricityDeg=ecc;
       o=CriticalSpacing(o);
+      if o.quitSession
+         break;
+      end
+   end
+   if o.quitSession
+      break;
    end
 end
+
+% TEST ALL MERIDIANS
+% o.oneFlanker=0;
+% o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
+% for i=1:2
+%    for ori=0:30:360
+%       o.fix.normalizedXY=0.5+0.4*[-sind(ori) cosd(ori)];
+%       o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
+%       o=CriticalSpacing(o);
+%    end
+% end
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
