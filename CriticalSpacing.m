@@ -845,7 +845,7 @@ try
       % BIG TEXT
       % Say hello, and get viewing distance.
       Screen('FillRect',window,white);
-      string=sprintf(['Welcome to CriticalSpacing. \n\n' ...
+      string=sprintf(['Welcome to CriticalSpacing. ' ...
          'If you want a viewing distance of %.0f cm, ' ...
          'please move me to that distance from your eye, and hit RETURN. ' ...
          'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
@@ -1254,11 +1254,6 @@ try
       oo(condition).fix.eccentricityClockwiseAngleDeg=oo(condition).eccentricityClockwiseAngleDeg;
       oo(condition).fix.clipRect=stimulusRect;
       oo(condition).fix.fixationCrossPix=fixationCrossPix;
-      if oo(condition).fixationCrossBlankedNearTarget
-         oo(condition).fix.blankingRadiusPix=oo(condition).targetDeg*2*pixPerDeg;
-      else
-         oo(condition).fix.blankingRadiusPix=0;
-      end
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each display.
       if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
@@ -1362,7 +1357,13 @@ try
       else
          oo(condition).fix.targetCrossPix=0;
       end
-      oo(condition).fix.blankingRadiusPix=0.5*oo(condition).fix.eccentricityPix;
+      if oo(condition).fixationCrossBlankedNearTarget
+         % Blanking to prevent masking and crowding. Blanking radius is max
+         % of target diameter and half eccentricity.
+         oo(condition).fix.blankingRadiusPix=max(oo(condition).targetHeightOverWidth*oo(condition).targetDeg*pixPerDeg,0.5*oo(condition).eccentricityPix);
+      else
+         oo(condition).fix.blankingRadiusPix=0;
+      end
       fixationLines=ComputeFixationLines2(oo(condition).fix);
       
       oo(1).quitRun=0;
@@ -1849,6 +1850,14 @@ try
       oo(condition).targetDeg=oo(condition).targetPix/pixPerDeg;
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       % Prepare to draw fixation cross.
+      if oo(condition).fixationCrossBlankedNearTarget
+         % Blanking to prevent masking and crowding. Blanking radius is max
+         % of target diameter and half eccentricity.
+         oo(condition).fix.blankingRadiusPix=max(oo(condition).targetHeightOverWidth*oo(condition).targetDeg*pixPerDeg,0.5*oo(condition).eccentricityPix);
+         fprintf('blanking radius %d\n',oo(condition).fix.blankingRadiusPix);
+      else
+         oo(condition).fix.blankingRadiusPix=0;
+      end
       fixationLines=ComputeFixationLines2(oo(condition).fix);
       % Set up fixation.
       if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
