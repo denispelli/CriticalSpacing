@@ -11,8 +11,8 @@ function fixationLines=ComputeFixationLines2(fix)
 % fix.clipRect=screenRect;              % Restrict lines to this rect.
 % fix.fixationCrossPix=fixationCrossPix;% Full width & height of fixation
 %                                       % cross.
-% fix.targetCrossPix=1;                 % Draw cross at 
-%                                       % target location. 0 for none. 
+% fix.targetCrossPix=1;                 % Draw cross at
+%                                       % target location. 0 for none.
 % fix.blankingRadiusPix=0.5*eccentricityPix; % 0 for no blanking.
 % fixationLines=ComputeFixationLines(fix);
 % Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
@@ -24,16 +24,16 @@ function fixationLines=ComputeFixationLines2(fix)
 % and target, using my new ClipLineSegment and ErasePartOfLineSegment
 % routines.
 if ~isfield(fix,'fixationCrossPix')
-    fix.targetCross=100; % Default is no vertical line indicating target location.
+   fix.targetCross=100; % Default is no vertical line indicating target location.
 end
 if ~isfield(fix,'targetCrossPix')
-    fix.targetCross=0; % Default is no vertical line indicating target location.
+   fix.targetCross=0; % Default is no vertical line indicating target location.
 end
 if ~isfield(fix,'blankingRadiusPix')
-    fix.targetCross=fix.eccentricityPix/2; % Default is no vertical line indicating target location.
+   fix.targetCross=fix.eccentricityPix/2; % Default is no vertical line indicating target location.
 end
 if ~isfield(fix,'fixationCrossBlankedNearTarget')
-    fix.fixationCrossBlankedNearTarget=1; % Default is yes.
+   fix.fixationCrossBlankedNearTarget=1; % Default is yes.
 end
 fix.eccentricityXPix=round(fix.eccentricityPix*sind(fix.eccentricityClockwiseAngleDeg));
 fix.eccentricityYPix=round(-fix.eccentricityPix*cosd(fix.eccentricityClockwiseAngleDeg));
@@ -52,8 +52,13 @@ assert(isfinite(fix.blankingRadiusPix));
 x=[x tX-tR tX+tR tX tX];
 y=[y tY tY tY-tR tY+tR];
 [x,y]=ClipLineSegment(x,y,fix.clipRect);
-rect=[-1 -1 1 1]*fix.blankingRadiusPix;
-rect=OffsetRect(rect,tX,tY);
-[x,y]=ErasePartOfLineSegment(x,y,rect);
+if ~isempty(x) && fix.blankingRadiusPix>0
+   rect=[-1 -1 1 1]*fix.blankingRadiusPix;
+   rect=OffsetRect(rect,tX,tY);
+   x
+   y
+   rect
+   [x,y]=ErasePartOfLineSegment(x,y,rect);
+end
 fixationLines=[x;y];
 return
