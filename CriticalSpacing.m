@@ -1360,7 +1360,11 @@ try
       if oo(condition).fixationCrossBlankedNearTarget
          % Blanking to prevent masking and crowding. Blanking radius is max
          % of target diameter and half eccentricity.
-         oo(condition).fix.blankingRadiusPix=max(oo(condition).targetHeightOverWidth*oo(condition).targetDeg*pixPerDeg,0.5*oo(condition).eccentricityPix);
+         diameter=oo(condition).targetDeg*pixPerDeg;
+         if ~oo(condition).targetSizeIsHeight
+            diameter=diameter*oo(condition).targetHeightOverWidth;
+         end
+         oo(condition).fix.blankingRadiusPix=max(diameter,0.5*oo(condition).eccentricityPix);
       else
          oo(condition).fix.blankingRadiusPix=0;
       end
@@ -1853,8 +1857,11 @@ try
       if oo(condition).fixationCrossBlankedNearTarget
          % Blanking to prevent masking and crowding. Blanking radius is max
          % of target diameter and half eccentricity.
-         oo(condition).fix.blankingRadiusPix=max(oo(condition).targetHeightOverWidth*oo(condition).targetDeg*pixPerDeg,0.5*oo(condition).eccentricityPix);
-         fprintf('blanking radius %d\n',oo(condition).fix.blankingRadiusPix);
+         diameter=oo(condition).targetDeg*pixPerDeg;
+         if ~oo(condition).targetSizeIsHeight
+            diameter=diameter*oo(condition).targetHeightOverWidth;
+         end
+         oo(condition).fix.blankingRadiusPix=max(diameter,0.5*oo(condition).eccentricityPix);
       else
          oo(condition).fix.blankingRadiusPix=0;
       end
