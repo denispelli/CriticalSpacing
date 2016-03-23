@@ -619,10 +619,15 @@ else
             '%.1f-fold by increasing the screen resolution to native maximum ("Default"). '],...
             oo(1).nativeWidth/RectWidth(actualScreenRect));
       else
-         ffprintf(ff,'WARNING: Your screen resolution %d x %d exceeds its maximum native resolution %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
-         warning('Your screen resolution %d x %d exceeds its maximum native resolution %d x %d. This may be a problem.',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+         ffprintf(ff,'WARNING: Your screen resolution %d x %d exceeds its maximum native resolution %d x %d.\n',...
+            RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+         warning(['Your screen resolution %d x %d exceeds its maximum native resolution %d x %d. '...
+            'Small letters may be impossible to read.'],...
+            RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+            oo(1).nativeWidth,oo(1).nativeHeight);
       end
-      ffprintf(ff,'(To use native resolution, set o.permissionToChangeResolution=1 in your script, \nor use System Preferences:Displays to select "Default" resolution.)\n');
+      ffprintf(ff,['(To use native resolution, set o.permissionToChangeResolution=1 in your script, \n'...
+         'or use System Preferences:Displays to select "Default" resolution.)\n']);
       warning backtrace on
    end
 end
@@ -675,6 +680,11 @@ try
       fileId=fopen(drawTextWarningFileName);
       oo(1).drawTextPluginWarning= char(fread(fileId)');
       fclose(fileId);
+      if oo(condition).readAlphabetFromDisk
+         warning backtrace off
+         warning('Please ignore any warnings above about DrawText. You aren''t using it.');
+         warning backtrace on
+      end
    end
    for condition=1:conditions
       if ~oo(condition).readAlphabetFromDisk
