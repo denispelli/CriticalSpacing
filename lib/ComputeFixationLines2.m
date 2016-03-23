@@ -55,9 +55,9 @@ y=[y tY tY tY-tR tY+tR];
 if ~isempty(x) && fix.blankingRadiusPix>0
    rect=[-1 -1 1 1]*fix.blankingRadiusPix;
    rect=OffsetRect(rect,tX,tY);
-   x
-   y
-   rect
+%    x
+%    y
+%    rect
    [x,y]=ErasePartOfLineSegment(x,y,rect);
 end
 fixationLines=[x;y];
