@@ -115,11 +115,10 @@ o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.radialOrTangential='tangential'; 
-o.eccentricityDeg=30;
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
+o.fixationCrossDeg=20; % 0, 3, and inf are a typical values.
 
 % TEST ALL ECCENTRICITIES
 % ori=90;
@@ -145,6 +144,7 @@ o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 % end
 
 % TEST ALL MERIDIANS
+o.eccentricityDeg=60;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 for one=0:1
    o.oneFlanker=one;
