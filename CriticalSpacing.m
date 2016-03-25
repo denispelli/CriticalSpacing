@@ -2351,13 +2351,9 @@ try
       % Ask Quest for the final estimate of threshold.
       t=QuestMean(oo(condition).q);
       sd=QuestSd(oo(condition).q);
-      if oo(condition).targetSizeIsHeight
-         ori='vertical';
-      else
-         ori='horizontal';
-      end
       switch oo(condition).thresholdParameter
          case 'spacing',
+            ori=oo(condition).radialOrTangential;
             if ~oo(condition).repeatedTargets && oo(condition).eccentricityDeg~=0
                switch(oo(condition).radialOrTangential)
                   case 'radial'
@@ -2382,6 +2378,11 @@ try
                ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(condition).q,trials.intensity-oo(condition).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
             end
          case 'size',
+            if oo(condition).targetSizeIsHeight
+               ori='vertical';
+            else
+               ori='horizontal';
+            end
             ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
             if 10^t<oo(condition).minimumSizeDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSizeDeg);
