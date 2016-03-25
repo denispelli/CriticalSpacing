@@ -119,7 +119,7 @@ o.eccentricityDeg=30;
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
+o.fixationCrossDeg=12; % 0, 3, and inf are a typical values.
 % o.useFractionOfScreen=0.2;
 
 % TEST ALL ECCENTRICITIES
