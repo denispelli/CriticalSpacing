@@ -412,6 +412,7 @@ o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerC
 % o.radialOrTangential='tangential'; % tangentially arranged flankers for single target
 o.radialOrTangential='radial'; % radially arranged flankers for single target
 o.repeatedTargets=1;
+o.maxFixationErrorXYDeg=[3 1];
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
@@ -1414,15 +1415,6 @@ try
       string(1)=upper(string(1));
       ffprintf(ff,'%s',string);
    end
-   %    for condition=1:conditions
-   %       if streq(oo(condition).thresholdParameter,'spacing')
-   %          if ~oo(condition).repeatedTargets
-   %             if oo(condition).eccentricityDeg~=0
-   %                ffprintf(ff,'%d: Orientation %s\n',condition,oo(condition).radialOrTangential);
-   %             end
-   %          end
-   %       end
-   %    end
    for condition=1:conditions
       if oo(condition).fixedSpacingOverSize
          ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',condition,oo(condition).fixedSpacingOverSize);
@@ -1623,7 +1615,7 @@ try
       string=[string 'To begin, please fix your gaze at the center of crosshairs below, and, while fixating, press the SPACEBAR. '];
       string=strrep(string,'letter',symbolName);
       fixationClipRect(2)=5*oo(condition).textSize;
-      x=50;
+      x=instructionalMargin;
       y=0.3*oo(1).textSize;
       Screen('TextSize',window,oo(condition).textSize);
       DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
@@ -1695,11 +1687,11 @@ try
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       if oo(condition).repeatedTargets
          if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
-            minSpacesY=4;
-            minSpacesX=2;
+            minSpacesY=3;
+            minSpacesX=0;
          else
-            minSpacesY=2;
-            minSpacesX=4;
+            minSpacesY=0;
+            minSpacesX=3;
          end
       else
          % Just one target
@@ -1758,14 +1750,15 @@ try
       yT=oo(condition).fix.y+oo(condition).eccentricityYPix; % target
       if oo(condition).printSizeAndSpacing;
          fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xT %d, yT %d\n',...
-            condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg,xT,yT);
+            condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,...
+            spacingPix,oo(condition).spacingDeg,xT,yT);
       end
       spacingPix=round(spacingPix);
       xF=[];
       yF=[];
       if streq(oo(condition).radialOrTangential,'tangential') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
          % Flankers must fit on screen.
-         % Compute where tangent line interesects stimulusRect. The
+         % Compute where tangent line intersects stimulusRect. The
          % tangent line goes through target (xT,yT) and is orthogonal to
          % the line from fixation.
          orientation=oo(condition).eccentricityClockwiseAngleDeg+90;
@@ -2018,10 +2011,44 @@ try
             dstRects=dstRects(1:4,1:2);
          end
       else
+         % repeatedTargets
+         % Fill screen with letters.
          xMin=xT-xSpacing*floor((xT-0.5*xPix)/xSpacing);
          xMax=xT+xSpacing*floor((RectWidth(stimulusRect)-xT-0.5*xPix)/xSpacing);
          yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
          yMax=yT+ySpacing*floor((RectHeight(stimulusRect)-yT-0.5*yPix)/ySpacing);
+         % Show only as many letters as we need so that, despite a fixation
+         % error (in any direction) as large as roughly +/-
+         % maxFixationErrorXYDeg, at least one of the many target letters
+         % will land an eccentricity at which critical spacing (in normal
+         % adult) is less than half the actual spacing.
+         % criticalSpacing=0.3*(ecc+0.15);
+         % ecc=criticalSpacing/0.3-0.15;
+         criticalSpacingDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
+         % Zero, or greatest ecc whose normal adult critical spacing is
+         % half the test spacing.
+         ecc=max(0,criticalSpacingDeg/0.3-0.15);
+         % Needed extent of repetition to put some target within that
+         % radius.
+         xR=max(0,oo(condition).maxFixationErrorXYDeg(1)-ecc)*pixPerDeg;
+         yR=max(0,oo(condition).maxFixationErrorXYDeg(2)-ecc)*pixPerDeg;
+         % Round radius to integer number of spacings.
+         xR=xSpacing*round(xR/xSpacing);
+         yR=ySpacing*round(yR/ySpacing);
+         % If nonzero, add a spacing for margin.
+         if xR>0
+            xR=xR+xSpacing;
+         end
+         if yR>0
+            yR=yR+ySpacing;
+         end
+         % Enforce minSpaces
+         xR=max(xSpacing*minSpacesX/2,xR);
+         yR=max(ySpacing*minSpacesY/2,yR);
+         xMin=xT-min(ceil(xR),xT-xMin);
+         xMax=xT+min(floor(xR),xMax-xT);
+         yMin=yT-min(ceil(yR),yT-yMin);
+         yMax=yT+min(floor(yR),yMax-yT);
          if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',condition,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
@@ -2091,10 +2118,10 @@ try
          clear textures dstRects
          lineIndex=1;
          for y=yMin:ySpacing:yMax
-            if ismember(y,[yMin yMax])
-               whichLetter=1;
+            if minSpacesY>2 && ismember(y,[yMin yMax])
+               whichLetter=1; % Horizontal row of border letters.
             else
-               whichLetter=2+mod(lineIndex,2);
+               whichLetter=2+mod(lineIndex,2); % Horizontal row of targets.
             end
             textures(lineIndex)=lineTexture(whichLetter);
             dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
@@ -2168,7 +2195,7 @@ try
          Screen('TextSize',texture,oo(condition).textSize);
          bounds=TextBounds(texture,string,1);
          Screen('Close',texture);
-         x=50;
+         x=instructionalMargin;
          y=-bounds(2)+0.3*oo(condition).textSize;
          %          fixationClipRect=stimulusRect;
          %          fixationClipRect(2)=y+bounds(4)+0.3*oo(condition).textSize;
@@ -2177,7 +2204,7 @@ try
          Screen('TextSize',window,oo(condition).textSize);
          [letterStruct,alphabetBounds]=CreateLetterTextures(condition,oo(condition),window);
          alphabetBounds=round(alphabetBounds*oo(condition).textSize/RectHeight(alphabetBounds));
-         x=50;
+         x=instructionalMargin;
          y=stimulusRect(4)-0.3*RectHeight(alphabetBounds);
          %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
          for i=1:length(oo(condition).alphabet)
