@@ -409,10 +409,11 @@ o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.radialOrTangential='tangential'; % tangentially arranged flankers for single target
-o.radialOrTangential='radial'; % radially arranged flankers for single target
+% o.radialOrTangential='tangential'; % Tangentially arranged flankers for
+                                    % single target.
+o.radialOrTangential='radial'; % Radially arranged flankers for single target
 o.repeatedTargets=1;
-o.maxFixationErrorXYDeg=[3 1];
+o.maxFixationErrorXYDeg=[3 1]; % Repeat targets enough to cope with errors up to this size.
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
