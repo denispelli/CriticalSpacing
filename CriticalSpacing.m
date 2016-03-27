@@ -104,7 +104,8 @@ function oo=CriticalSpacing(oIn)
 % then have the experimenter type the observer's verbal answers. I like the
 % Logitech K760 $86 solar-powered wireless keyboard, because its batteries
 % never run out. It's no longer made, but still available on Amazon and
-% eBay:
+% eBay (below). To "pair" the keyboard with your computer's blue tooth,
+% press the tiny button on the back of the keyboard.
 %
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
