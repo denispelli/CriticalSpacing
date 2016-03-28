@@ -110,6 +110,7 @@ o.useFractionOfScreen=0;
 
 % o.useFractionOfScreen=0.5; 
 
+o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
