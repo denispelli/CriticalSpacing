@@ -1253,10 +1253,10 @@ try
          case 'right',
             oo(condition).fix.x=stimulusRect(3)-100;
          case 'normalizedXY',
-            oo(i).fix.x=oo(i).fix.normalizedXY(1)*RectWidth(stimulusRect);
-            oo(i).fix.y=oo(i).fix.normalizedXY(2)*RectHeight(stimulusRect);
+            oo(condition).fix.x=stimulusRect(1)+oo(condition).fix.normalizedXY(1)*RectWidth(stimulusRect);
+            oo(condition).fix.y=stimulusRect(2)+oo(condition).fix.normalizedXY(2)*RectHeight(stimulusRect);
          otherwise,
-            error('Unknown o.fixationLocation %s',oo(condition).fixationLocation);
+            error('Unknown o.fixationLocation ''%s''',oo(condition).fixationLocation);
       end
       oo(condition).fix.x=round(oo(condition).fix.x);
       oo(condition).fix.y=round(oo(condition).fix.y);
