@@ -1689,11 +1689,11 @@ try
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       if oo(condition).repeatedTargets
          if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
-            minSpacesY=3;
+            minSpacesY=3+1;
             minSpacesX=0;
          else
             minSpacesY=0;
-            minSpacesX=3;
+            minSpacesX=3+1;
          end
       else
          % Just one target
@@ -1797,11 +1797,11 @@ try
       if streq(oo(condition).radialOrTangential,'radial') || (oo(condition).fourFlankers && streq(oo(condition).thresholdParameter,'spacing'))
          orientation=oo(condition).eccentricityClockwiseAngleDeg;
          if oo(condition).eccentricityPix==0
-            % Flanker must fit on screen
+            % Flanker must fit on screen, horizontally
             if oo(condition).fixedSpacingOverSize
-               spacingPix=min(spacingPix,RectWidth(stimulusRect)/(2+1/oo(condition).fixedSpacingOverSize));
+               spacingPix=min(spacingPix,RectWidth(stimulusRect)/(minSpacesX+1/oo(condition).fixedSpacingOverSize));
             else
-               spacingPix=min(spacingPix,(RectWidth(stimulusRect)-oo(condition).targetPix)/2);
+               spacingPix=min(spacingPix,(RectWidth(stimulusRect)-oo(condition).targetPix)/minSpacesX);
             end
             assert(spacingPix>=0);
             xF(end+1:end+2)=xT+[-1 1]*spacingPix*sind(orientation);
