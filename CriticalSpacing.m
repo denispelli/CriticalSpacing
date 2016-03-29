@@ -141,15 +141,14 @@ function oo=CriticalSpacing(oIn)
 % http://www.amazon.com/12-Acrylic-Mirror-Sheet-Pack/dp/B00JPJK3T0/ref=sr_1_13
 % http://www.amazon.com/Double-Infant-Mirror-surface-Approved/dp/B0041TABOG/ref=pd_sim_sbs_468_9
 %
-% FONTS. If you set o.readAlphabetFromDisk=1 in your script then you won't
-% need to install any fonts. Instead you can use any of the "fonts" inside
-% the CriticalSpacing/alphabets/ folder, which you can best see by
-% looking at the alphabet files in CriticalSpacing/pdf/. You can easily
-% create and add a new "font" to the alphabets folder. Name the folder
-% after your "font", and put one image file per letter inside the folder,
-% named for the letter. That's it. You can now specify your new "font" as
-% the o.targetFont and CriticalSpacing will use it. You can make the
-% drawings yourself, or you can run
+% readAlphabetFromDisk. If you set o.readAlphabetFromDisk=1 in your script
+% you can use any of the "fonts" inside the CriticalSpacing/alphabets/
+% folder, which you can best see by looking at the alphabet files in
+% CriticalSpacing/pdf/. You can easily create and add a new "font" to the
+% alphabets folder. Name the folder after your "font", and put one image
+% file per letter inside the folder, named for the letter. That's it. You
+% can now specify your new "font" as the o.targetFont and CriticalSpacing
+% will use it. You can make the drawings yourself, or you can run
 % CriticalSpacing/lib/SaveAlphabetToDisk.m to create a new folder based on
 % a computer font that you already own. This scheme makes it easy to
 % develop a new font, and also makes it easy to share font images without
@@ -163,20 +162,20 @@ function oo=CriticalSpacing(oIn)
 % install it for you. Once you've installed a font, you must quit and
 % restart MATLAB to use the newly available font.
 %
-% OPTIONAL: ADDING A NEW FONT. Running the program SaveAlphabetToDisk in
+% OPTIONAL: ADD A NEW FONT. Running the program SaveAlphabetToDisk in
 % the CriticalSpacing/lib/ folder, after you edit it to specify the font,
 % alphabet, and borderCharacter you want, will add a snapshot of your
 % font's alphabet to the pdf folder and add a new folder, named for your
 % font, to the CriticalSpacing/alphabets/ folder.
 %
-% OPTIONAL: USING YOUR COMPUTER'S FONTS, LIVE. Set
-% o.readAlphabetFromDisk=0. You may wish to install Pelli or Sloan from the
-% CriticalSpacing/fonts/ folder into your computer's OS. Restart MATLAB
-% after installing a new font. To render fonts well, Psychtoolbox needs to
-% load the FTGL DrawText dropin. It typically takes some fiddling with
-% dynamic libraries to make sure the right library is available and that
-% access to it is not blocked by the presence of an obsolete version. For
-% explanation see "help drawtextplugin". You need this only if want to set
+% OPTIONAL: USE YOUR COMPUTER'S FONTS, LIVE. Set o.readAlphabetFromDisk=0.
+% You may wish to install Pelli or Sloan from the CriticalSpacing/fonts/
+% folder into your computer's OS. Restart MATLAB after installing a new
+% font. To render fonts well, Psychtoolbox needs to load the FTGL DrawText
+% dropin. It typically takes some fiddling with dynamic libraries to make
+% sure the right library is available and that access to it is not blocked
+% by the presence of an obsolete version. For explanation see "help
+% drawtextplugin". You need this only if want to set
 % o.readAlphabetFromDisk=0.
 %
 % CHILDREN. Adults and children seem to find it easy and intuitive, but
@@ -213,10 +212,10 @@ function oo=CriticalSpacing(oIn)
 % specify it in your script, e.g. o.experimenter='Denis' or
 % o.observer='JohnK', and CriticalSpacing will skip that question.
 %
-% CAPS LOCK KEY: DISPLAY THE ALPHABET. Anytime that CriticalSpacing is
+% CAPS-LOCK KEY: DISPLAY THE ALPHABET. Anytime that CriticalSpacing is
 % running trials, pressing the caps lock key will display the font's
 % alphabet at a large size, filling the screen. (The shift key works too,
-% but it's dangerous on Windows. On Windows, pressing the shit key five
+% but it's dangerous on Windows. On Windows, pressing the shift key five
 % times provokes a "sticky keys" dialog that you won't see because it's
 % hidden behind the CriticalSpacing window, so you'll be stuck. The caps
 % lock key is always safe.)
@@ -303,14 +302,32 @@ function oo=CriticalSpacing(oIn)
 %
 % Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
 
-% PLANS
+%% PLANS
+%
 % I'd like the viewing-distance page to respond to a new command: "o" to
 % set up offscreen fixation.
 %
 % The eccentricity check needs to look 0.3 further when the spacing
 % orientation is radial.
+%
+% Add switch to use only border characters as flankers.
+%
+% Shrink stimulusRect 10% so that letters have white above and below.
+%
+% Add training phase, for children, that introduced repetition gradually.
+% Discard training data, then begin actual run.
+% 
+% In repetition mode, don't assume one centered target and an even number
+% of spaces. We might want to center between two targets to show an odd
+% number of spaces.
+%
+% I am very tempted to all the NoiseDiscrmination features to the
+% CriticalSpacing program.
+%
+% Help Jon's lab use CriticalSpacing and NoiseDiscrimination.
 
-% HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
+
+%% HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
 
@@ -1689,11 +1706,11 @@ try
       if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetFontHeightOverNominalPtSize,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
       if oo(condition).repeatedTargets
          if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(condition).targetHeightOverWidth;
-            minSpacesY=3+1;
+            minSpacesY=3+1; 
             minSpacesX=0;
          else
             minSpacesY=0;
-            minSpacesX=3+1;
+            minSpacesX=3+1; % Layout code currently assumes a target in center, so minSpaces must be even.
          end
       else
          % Just one target
@@ -2176,7 +2193,7 @@ try
          targets=stimulus(2);
       end
       if isfinite(oo(condition).durationSec)
-         WaitSecs(oo(condition).durationSec); % display of letters
+         WaitSecs(oo(condition).durationSec); % Display letters.
          Screen('FillRect',window,white,stimulusRect); % Clear letters.
          if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
             fl=ClipLines(fixationLines,fixationClipRect);
@@ -2253,7 +2270,9 @@ try
       skipping=0;
       flipSecs=GetSecs;
       for i=1:length(targets)
-         [answer,secs]=GetKeypressWithHelp([spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes],oo(condition),window,stimulusRect,letterStruct,responseString);
+         [answer,secs]=GetKeypressWithHelp( ...
+            [spaceKeyCode escapeKeyCode oo(condition).responseKeyCodes], ...
+            oo(condition),window,stimulusRect,letterStruct,responseString);
          trialData.reactionTimes(i)=secs-flipSecs;
          
          if streq(answer,'ESCAPE')
@@ -2394,9 +2413,6 @@ try
             ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
             if 10^t<oo(condition).minimumSpacingDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSpacingDeg);
-               if oo(condition).useSpeech
-                  %                   Speak('WARNING: Please increase viewing distance.');
-               end
             end
             if oo(condition).responseCount>1
                trials=QuestTrials(oo(condition).q);
@@ -2415,9 +2431,6 @@ try
             ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
             if 10^t<oo(condition).minimumSizeDeg
                ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(condition).minimumSizeDeg);
-               if oo(condition).useSpeech
-                  %                   Speak('WARNING: Please increase viewing distance.');
-               end
             end
             if oo(condition).responseCount>1
                trials=QuestTrials(oo(condition).q);
@@ -2481,14 +2494,14 @@ try
    fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch
    ListenChar(0);
-   % Some of these functions spoil psychlasterror, so i don't use them.
+   % One or more of these functions spoils psychlasterror, so i don't use them.
    %     Snd('Close');
    %     ShowCursor;
    if exist('dataFid','file') && dataFid~=-1
       fclose(dataFid);
       dataFid=-1;
    end
-   sca; % screen close all. This cleans up without canceling the error message.
+   sca; % Screen Close All. This cleans up without canceling the error message.
    psychrethrow(psychlasterror);
 end
 end
