@@ -1231,6 +1231,7 @@ try
          ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(condition).unknownFields{:}) '.\n'],condition);
       end
    end
+   ffprintf(ff,'*: %s: %s\n',oo(1).experimenter,oo(1).observer);
    for condition=1:conditions
       if oo(condition).showProgressBar
          progressBarRect=[round(screenRect(3)*(1-1/screenWidthCm)) 0 screenRect(3) screenRect(4)]; % 1 cm wide.
@@ -1344,7 +1345,6 @@ try
                end
             end
       end
-      ffprintf(ff,'%d: %s: %s\n',1,oo(1).experimenter,oo(1).observer);
       if oo(condition).useQuest
          ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',condition,oo(condition).trials,ori,oo(condition).thresholdParameter);
       else
