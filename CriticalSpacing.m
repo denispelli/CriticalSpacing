@@ -431,10 +431,13 @@ o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerC
                                     % single target.
 o.radialOrTangential='radial'; % Radially arranged flankers for single target
 o.repeatedTargets=1;
-o.maxFixationErrorXYDeg=[3 1]; % Repeat targets enough to cope with errors up to this size.
+o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
+o.practicePresentations=3;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
+o.stimulusMarginFraction=0.05; % White margin around stimulusRect.
+
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -567,6 +570,15 @@ for condition=1:conditions
          case 'spacing',
             oo(condition).targetSizeIsHeight=0;
       end
+   end
+end
+for condition=1:conditions
+   if oo(condition).practicePresentations && oo(condition).repeatedTargets
+      oo(condition).maxRepetition=1;
+      oo(condition).practiceCountdown=oo(condition).practicePresentations;
+   else
+      oo(condition).practiceCountdown=0;
+      oo(condition).maxRepetition=inf;
    end
 end
 % Set up for KbCheck. We can safely use this mode AND collect kb responses
@@ -1240,8 +1252,13 @@ try
       if oo(condition).showProgressBar
          stimulusRect(3)=progressBarRect(1);
       end
+      if oo(condition).stimulusMarginFraction>0
+         s=oo(condition).stimulusMarginFraction*stimulusRect;
+         s=round(s);
+         stimulusRect=InsetRect(stimulusRect,RectWidth(s),RectHeight(s));
+      end
       if oo(condition).repeatedTargets
-         oo(condition).presentations=ceil(oo(condition).trials/2);
+         oo(condition).presentations=ceil(oo(condition).trials/2)+oo(condition).practicePresentations;
          oo(condition).trials=2*oo(condition).presentations;
       else
          oo(condition).presentations=oo(condition).trials;
@@ -1252,7 +1269,7 @@ try
          warning backtrace on
          oo(condition).radialOrTangential='radial';
       end
-      % prepare to draw fixation cross
+      % Prepare to draw fixation cross.
       fixationCrossPix=round(oo(condition).fixationCrossDeg*pixPerDeg);
       fixationCrossPix=min(fixationCrossPix,2*RectWidth(stimulusRect)); % full width and height, can extend off screen
       fixationLineWeightPix=round(oo(condition).fixationLineWeightDeg*pixPerDeg);
@@ -1264,7 +1281,7 @@ try
          case 'left',
             oo(condition).fix.x=100+stimulusRect(1);
          case 'lowerLeft',
-            oo(condition).fix.x=round(0.67*stimulusRect(1)+0.33*stimulusRect(4));
+            oo(condition).fix.x=round(0.67*stimulusRect(1)+0.33*stimulusRect(3));
             oo(condition).fix.y=round(0.33*stimulusRect(2)+0.67*stimulusRect(4));
          case 'center',
             oo(condition).fix.x=(stimulusRect(1)+stimulusRect(3))/2; % location of fixation
@@ -1710,7 +1727,7 @@ try
             minSpacesX=0;
          else
             minSpacesY=0;
-            minSpacesX=3+1; % Layout code currently assumes a target in center, so minSpaces must be even.
+            minSpacesX=3+1; % Layout code currently assumes a centered target, so minSpaces must be even.
          end
       else
          % Just one target
@@ -2031,11 +2048,11 @@ try
          end
       else
          % repeatedTargets
-         % Fill screen with letters.
-         xMin=xT-xSpacing*floor((xT-0.5*xPix)/xSpacing);
-         xMax=xT+xSpacing*floor((RectWidth(stimulusRect)-xT-0.5*xPix)/xSpacing);
-         yMin=yT-ySpacing*floor((yT-0.5*yPix)/ySpacing);
-         yMax=yT+ySpacing*floor((RectHeight(stimulusRect)-yT-0.5*yPix)/ySpacing);
+         % Screen bounds on letter array.
+         xMin=xT-xSpacing*floor((xT-stimulusRect(1)-0.5*xPix)/xSpacing);
+         xMax=xT+xSpacing*floor((stimulusRect(3)-xT-0.5*xPix)/xSpacing);
+         yMin=yT-ySpacing*floor((yT-stimulusRect(2)-0.5*yPix)/ySpacing);
+         yMax=yT+ySpacing*floor((stimulusRect(4)-yT-0.5*yPix)/ySpacing);
          % Show only as many letters as we need so that, despite a fixation
          % error (in any direction) as large as roughly +/-
          % maxFixationErrorXYDeg, at least one of the many target letters
@@ -2046,15 +2063,19 @@ try
          criticalSpacingDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
          % Zero, or greatest ecc whose normal adult critical spacing is
          % half the test spacing.
-         ecc=max(0,criticalSpacingDeg/0.3-0.15);
-         % Needed extent of repetition to put some target within that
-         % radius.
-         xR=max(0,oo(condition).maxFixationErrorXYDeg(1)-ecc)*pixPerDeg;
-         yR=max(0,oo(condition).maxFixationErrorXYDeg(2)-ecc)*pixPerDeg;
-         % Round radius to integer number of spacings.
+         eccDeg=max(0,criticalSpacingDeg/0.3-0.15);
+         % Compute needed extent of the repetition to put some target
+         % within that ecc radius.
+         xR=max(0,oo(condition).maxFixationErrorXYDeg(1)-eccDeg)*pixPerDeg;
+         yR=max(0,oo(condition).maxFixationErrorXYDeg(2)-eccDeg)*pixPerDeg;
+         % Round the radius to an integer number of spacings.
          xR=xSpacing*round(xR/xSpacing);
          yR=ySpacing*round(yR/ySpacing);
-         % If nonzero, add a spacing for margin.
+         if oo(condition).practiceCountdown
+            xR=xSpacing*min(xR/xSpacing,oo(condition).maxRepetition);
+            yR=ySpacing*min(yR/ySpacing,floor(oo(condition).maxRepetition/4));
+         end
+         % If nonzero, add a spacing for margin character.
          if xR>0
             xR=xR+xSpacing;
          end
@@ -2064,10 +2085,12 @@ try
          % Enforce minSpaces
          xR=max(xSpacing*minSpacesX/2,xR);
          yR=max(ySpacing*minSpacesY/2,yR);
-         xMin=xT-min(ceil(xR),xT-xMin);
-         xMax=xT+min(floor(xR),xMax-xT);
-         yMin=yT-min(ceil(yR),yT-yMin);
-         yMax=yT+min(floor(yR),yMax-yT);
+         xR=round(xR);
+         yR=round(yR);
+         xMin=xT-min(xR,xT-xMin);
+         xMax=xT+min(xR,xMax-xT);
+         yMin=yT-min(yR,yT-yMin);
+         yMax=yT+min(yR,yMax-yT);
          if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',condition,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
@@ -2094,7 +2117,8 @@ try
                assert(length(whichLetter)==1)
                textures(textureIndex)=letterStruct(whichLetter).texture;
                if oo(condition).showLineOfLetters
-                  fprintf('textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
+                  fprintf('%d: %d: textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',...
+                     condition,MFileLineNr,textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
                end
                xPos=round(x-xPix/2);
                
@@ -2129,7 +2153,7 @@ try
                GetClicks;
             end
             % Create a texture holding one line of letters.
-            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 RectWidth(stimulusRect) heightPix],8,0);
+            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 stimulusRect(3) heightPix],8,0);
             Screen('FillRect',lineTexture(lineIndex),white);
             r=Screen('Rect',textures(1));
             Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
@@ -2144,7 +2168,8 @@ try
             end
             textures(lineIndex)=lineTexture(whichLetter);
             dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
-            %                 fprintf('line %d, whichLetter %d, texture %d, dstRect %d %d %d %d\n',lineIndex,whichLetter,lineTexture(whichLetter),dstRects(1:4,lineIndex));
+%             fprintf('%d: %d: line %d, whichLetter %d, texture %d, dstRect %.0f %.0f %.0f %.0f\n',...
+%                condition,MFileLineNr,lineIndex,whichLetter,lineTexture(whichLetter),dstRects(1:4,lineIndex));
             lineIndex=lineIndex+1;
          end
       end
@@ -2153,16 +2178,16 @@ try
          fprintf('%d: %d: line heights',condition,MFileLineNr);
          for ii=1:size(dstRects,2)
             y=RectHeight(dstRects(:,ii)');
-            fprintf(' %d',y);
+            fprintf(' %.0f',y);
          end
          fprintf('\n');
          fprintf('%d: %d: line dstRects centered at',condition,MFileLineNr);
          for ii=1:size(dstRects,2)
             [x,y]=RectCenter(dstRects(:,ii));
-            fprintf(' (%d,%d)',x,y);
+            fprintf(' (%.0f,%.0f)',x,y);
             Screen('FrameRect',window,[255 0 0],dstRects(:,ii),4);
          end
-         fprintf('. target center (%d,%d)\n',xT,yT);
+         fprintf('. Target center (%d,%d)\n',xT,yT);
          letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xT,yT);
          Screen('FrameRect',window,[255 0 0],letterRect);
          fprintf('%d: %d: screenHeightPix %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',...
@@ -2352,10 +2377,12 @@ try
       trialData.responses=responseString;
       trialData.responseScores=responseScores;
       % trialData.reactionTimes is computed above.
-      if isempty(oo(condition).trialData)
-         oo(condition).trialData=trialData;
-      else
-         oo(condition).trialData(end+1)=trialData;
+      if ~oo(condition).practiceCountdown
+         if isempty(oo(condition).trialData)
+            oo(condition).trialData=trialData;
+         else
+            oo(condition).trialData(end+1)=trialData;
+         end
       end
       for responseScore=responseScores
          switch oo(condition).thresholdParameter
@@ -2364,8 +2391,22 @@ try
             case 'size'
                intensity=log10(oo(condition).targetDeg);
          end
-         oo(condition).responseCount=oo(condition).responseCount+1;
-         oo(condition).q=QuestUpdate(oo(condition).q,intensity,responseScore);
+         if ~oo(condition).practiceCountdown
+            oo(condition).responseCount=oo(condition).responseCount+1;
+            oo(condition).q=QuestUpdate(oo(condition).q,intensity,responseScore);
+         end
+      end
+%       if oo(condition).practiceCountdown
+%          fprintf('%d: %d: practiceCountdown %d, maxRepetitions %d\n',...
+%             condition,MFileLineNr,oo(condition).practiceCountdown,oo(condition).maxRepetition);
+%       end
+      if oo(condition).practiceCountdown && all(responseScores)
+         oo(condition).practiceCountdown=oo(condition).practiceCountdown-1;
+         if oo(condition).practiceCountdown
+            oo(condition).maxRepetition=2*oo(condition).maxRepetition;
+         else
+            oo(condition).maxRepetition=inf;
+         end
       end
       if oo(1).quitRun
          break;
