@@ -1,5 +1,5 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2015,2016, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2016 Denis G. Pelli, denis.pelli@nyu.edu
 
 % We recommend leaving the boilerplate header alone, and customizing by
 % copying lines from the boilerplate to your customized section at the
@@ -46,7 +46,9 @@ o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
-o.repeatedTargets=1;
+o.repeatedTargets=1; % Repeat targets for immunity to fixation errors.
+o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
+o.practicePresentations=3;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
@@ -107,20 +109,27 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
-% o.useFractionOfScreen=0.2;
+% o.frameTheTarget=1;
+% o.printScreenResolution=0;
+o.printSizeAndSpacing=1;
+o.speakSizeAndSpacing=1;
+% o.showAlphabet=0;
+% o.showBounds=1;
+% o.showLineOfLetters=1;
+o.useFractionOfScreen=0.2;
 o.fixationLocation='normalizedXY';
-o.targetFont='Sloan';
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
+% o.targetFont='Sloan';
+% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+% o.borderLetter='X';
 o.repeatedTargets=1;
 o.thresholdParameter='spacing';
-o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
-o.eccentricityDeg=30;
+o.thresholdParameter='size';
+% o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
+% o.eccentricityDeg=30;
 % o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
-% o.useFractionOfScreen=0.2;
 
 % TEST FOVEA
 o.targetFont='Pelli';
@@ -131,8 +140,9 @@ o.fix.normalizedXY=[0.5 0.5];
 o.fixationCrossBlankedNearTarget=1;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.viewingDistanceCm=300; % Default for runtime question.
-o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
+o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
 o.eccentricityDeg=0;
-o.maxFixationErrorXYDeg=[3 0];
+o.maxFixationErrorXYDeg=[5 5];
+o.practicePresentations=3;
 o=CriticalSpacing(o);
 
