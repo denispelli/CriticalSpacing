@@ -81,7 +81,9 @@ o=CriticalSpacing(o); % dual targets, repeated indefinitely
 % o=CriticalSpacing(o); % dual targets, repeated indefinitely
 % 
 % o.viewingDistanceCm=600;
-% o.repeatedTargets=1;
+o.repeatedTargets=1; % Repeat targets for immunity to fixation errors.
+o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
+o.practicePresentations=3;
 % o.thresholdParameter='size';
 % o=CriticalSpacing(o); % dual targets, repeated indefinitely
 % o.repeatedTargets=0;
