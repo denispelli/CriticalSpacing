@@ -493,7 +493,42 @@ o.useFractionOfScreen=0;
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
 % o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
-
+% o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==1. 
+                        % Provides easy practice presentations, ramping up
+                        % the number of targets after each correct report
+                        % of both letters in a presentation, until the
+                        % observer gets three presentations right. Then we
+                        % seamlessly begin the official run.
+                        
+% PRACTICE PRESENTATIONS.
+% In several instances, very young children (4 years old) refused to even
+% try to guess the letters when the screen is covered by letters in the
+% repeated-letters condition. 8 year olds and adults are unphased. Sarah
+% Waugh found that the 4 years olds were willing to identify one or two
+% target letters, and we speculated that once they succeeded at that, they
+% might be willing to try the repeated-letters condition, with many more
+% letters.
+%
+% You can now request this by setting o.practicePresentations=3. My hope is
+% that children will be emboldened by their success on the first three
+% trials to succeed on the repeated condition, in which letters cover most
+% of the screen.
+%
+% o.practicePresentations=3 only affects the repeated-targets condition,
+% i.e. when o.repeatedTargets=1. This new options adds 3 practice
+% presentations at the beginning of every repeatedTargets run. The first
+% presentation has only a few target letters (two unique) in a single row.
+% Subsequent presentations are similar, until the observer gets both
+% targets right. Then it doubles the number of targets. Again it waits for
+% the observer to get both targets right, and then doubles the number of
+% targets. After 3 successful practice presentations, the official run
+% begins. The practice presentation responses are discarded and not passed
+% to Quest.
+% 
+% You can restore the old behavior by setting o.practicePresentations=0.
+% After the practice, the run estimates threshold by the same procedure
+% whether o.practicePresentation is 0 or 3.
+                        
 % NOT SET BY USER
 o.deviceIndex=-3; % all keyboard and keypad devices
 o.easyCount=0;
