@@ -112,9 +112,15 @@ o.useFractionOfScreen=0;
 
 % o.useFractionOfScreen=0.5; 
 
-o.repeatedTargets=0;
+% o.targetFont='Sloan';
+% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+% o.borderLetter='X';
+
+o.repeatedTargets=1;
 o.thresholdParameter='spacing';
-o(2)=o(1); % Copy the condition
+% o(2)=o(1); % Copy the condition
+o=CriticalSpacing(o); 
+o.observer='vania';
 o=CriticalSpacing(o); 
 
 % Results are printed in MATLAB's Command Window and saved in the
