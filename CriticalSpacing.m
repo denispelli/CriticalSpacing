@@ -384,7 +384,7 @@ addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in sam
 % They are overridden by what you provide in the argument struct oIn.
 
 % PROCEDURE
-o.easyBoost=0.3; % Increase the log threshold parameter of easy trials by this much.
+o.easyBoost=0.3; % On easy trials, boost log threshold parameter by this.
 o.experimenter=''; % Put name here to skip the runtime question.
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.fractionEasyTrials=0;
@@ -566,7 +566,8 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'minimumScreenSizeDeg' 'typicalThesholdSizeDeg' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
-   'targetSizeIsHeight' 'eccentricityXPix' 'eccentricityYPix'};
+   'targetSizeIsHeight' 'eccentricityXPix' 'eccentricityYPix' ...
+   'maxRepetition' 'practiceCountdown'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -608,8 +609,12 @@ for condition=1:conditions
    end
 end
 for condition=1:conditions
-   if oo(condition).practicePresentations && oo(condition).repeatedTargets
-      oo(condition).maxRepetition=1;
+   if oo(condition).practicePresentations
+      if oo(condition).repeatedTargets
+         oo(condition).maxRepetition=1;
+      else
+         oo(condition).maxRepetition=0;
+      end
       oo(condition).practiceCountdown=oo(condition).practicePresentations;
    else
       oo(condition).practiceCountdown=0;
@@ -1787,6 +1792,23 @@ try
                minSpacesX=0;
          end
       end
+      if oo(condition).practiceCountdown>=3
+         if oo(condition).repeatedTargets
+            if minSpacesX
+               minSpacesX=1;
+            end
+            if minSpacesY
+               minSpacesY=1;
+            end
+            if minSpacesX && minSpacesY
+               minSpacesY=0;
+            end
+         else
+            minSpacesX=0;
+            minSpacesY=0;
+         end
+      end
+      if oo(condition).printSizeAndSpacing; fprintf('%d: %d: minSpacesX %d, minSpacesY %d, \n',condition,MFileLineNr,minSpacesX,minSpacesY); end;
       % The spacings are center to center, so we'll fill the screen when we
       % have the prescribed minSpacesX or minSpacesY plus a half letter at
       % each border. We impose an upper bound on spacingPix to guarantee
@@ -2071,7 +2093,7 @@ try
                fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
             end
          end
-         if ~streq(oo(condition).thresholdParameter,'spacing')
+         if ~streq(oo(condition).thresholdParameter,'spacing') || oo(condition).practiceCountdown
             % Show only the target, omitting all flankers.
             textures=textures(2);
             dstRects=dstRects(1:4,2);
@@ -2109,15 +2131,17 @@ try
          if oo(condition).practiceCountdown
             xR=xSpacing*min(xR/xSpacing,oo(condition).maxRepetition);
             yR=ySpacing*min(yR/ySpacing,floor(oo(condition).maxRepetition/4));
+         else
+            % If nonzero, add a spacing for margin character.
+            % But no margin during practice.
+            if xR>0
+               xR=xR+xSpacing;
+            end
+            if yR>0
+               yR=yR+ySpacing;
+            end
          end
-         % If nonzero, add a spacing for margin character.
-         if xR>0
-            xR=xR+xSpacing;
-         end
-         if yR>0
-            yR=yR+ySpacing;
-         end
-         % Enforce minSpaces
+         % Enforce minSpacesX and minSpacesY
          xR=max(xSpacing*minSpacesX/2,xR);
          yR=max(ySpacing*minSpacesY/2,yR);
          xR=round(xR);
@@ -2126,6 +2150,13 @@ try
          xMax=xT+min(xR,xMax-xT);
          yMin=yT-min(yR,yT-yMin);
          yMax=yT+min(yR,yMax-yT);
+         if oo(condition).practiceCountdown>=3
+            % Quick hack to reduce 3 letters to two.
+            xMin=xT-min(xR/2,xT-xMin);
+            xMax=xT+min(xR/2,xMax-xT);
+            yMin=yT-min(yR/2,yT-yMin);
+            yMax=yT+min(yR/2,yMax-yT);
+         end
          if oo(condition).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xT %.0f, yT %.0f\n',condition,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xT,yT); end;
          if oo(condition).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',condition,MFileLineNr,oo(condition).targetPix,oo(condition).targetDeg,spacingPix,oo(condition).spacingDeg); end;
@@ -2143,7 +2174,7 @@ try
                   case 'size',
                      whichTarget=x>mean([xMin xMax]);
                end
-               if ismember(x,[xMin xMax]) || lineIndex==1
+               if ~oo(condition).practiceCountdown && (ismember(x,[xMin xMax]) || lineIndex==1)
                   letter=oo(condition).borderLetter;
                else
                   letter=stimulus(1+whichTarget);
