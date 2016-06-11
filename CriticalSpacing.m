@@ -1346,10 +1346,12 @@ try
       oo(condition).fix.fixationCrossPix=fixationCrossPix;
       
       oo(condition).responseCount=1; % When we have two targets we get two responses for each display.
-      if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
-         oo(condition).targetDeg=oo(condition).targetDegGuess;
-      else
-         oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+      if streq(oo(condition).thresholdParameter,'size')
+         if isfield(oo(condition),'targetDegGuess') && isfinite(oo(condition).targetDegGuess)
+            oo(condition).targetDeg=oo(condition).targetDegGuess;
+         else
+            oo(condition).targetDeg=2*oo(condition).normalAcuityDeg; % initial guess for threshold size.
+         end
       end
       if oo(condition).eccentricityXPix>=0
          % Target fits on screen, with half-target margin.
@@ -1497,10 +1499,14 @@ try
       if oo(condition).fixedSpacingOverSize
          ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',condition,oo(condition).fixedSpacingOverSize);
       else
-         if streq(oo(condition).thresholdParameter,'size')
-            ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',condition);
-         else
-            ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',condition,oo(condition).targetDeg,oo(condition).targetDeg*pixPerDeg);
+         switch oo(condition).thresholdParameter
+            case 'size',
+               ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',condition);
+            case 'spacing'
+               ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',condition,oo(condition).targetDeg,oo(condition).targetDeg*pixPerDeg);
+               if ~isfinite(oo(condition).targetDeg)
+                  error('To measure spacing threshold you must define either o.fixedSpacingOverSize or o.targetDeg.');
+               end
          end
       end
    end
@@ -1524,7 +1530,12 @@ try
          spacingPix=round(oo(condition).minimumTargetPix*oo(condition).fixedSpacingOverSize);
          ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
       else
-         ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(condition).spacingPix,oo(condition).spacingDeg);
+         switch oo(condition).thresholdParameter
+            case 'size',
+               ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(condition).spacingPix,oo(condition).spacingDeg);
+            case 'spacing',
+               ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',oo(condition).targetPix,oo(condition).targetDeg);
+         end
       end
    end
    for condition=1:conditions
@@ -1742,6 +1753,8 @@ try
                oo(condition).spacingDeg=10^intensity;
                if oo(condition).fixedSpacingOverSize
                   oo(condition).targetDeg=oo(condition).spacingDeg/oo(condition).fixedSpacingOverSize;
+               else
+                  oo(condition).spacingDeg=max(oo(condition).spacingDeg,1.1*oo(condition).targetDeg);
                end
             case 'size',
                oo(condition).targetDeg=10^intensity;
