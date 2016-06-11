@@ -112,12 +112,21 @@ o.useFractionOfScreen=0;
 
 % o.useFractionOfScreen=0.5; 
 
+o.practicePresentations=0;
 % o.targetFont='Sloan';
 % o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 % o.borderLetter='X';
+o.fixationLocation='left';
+o.fixationCrossBlankedNearTarget=0;
+o.fixationCrossDeg=3;
+% o.targetCross=1; 
+o.durationSec=0.2;
 
+o.experimenter='Denis';
 o.observer='Denis';
-o.contrast=0.05;
+o.viewingDistanceCm=50;
+o.eccentricityDeg=10;
+o.contrast=0.2;
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 % o(2)=o(1); % Copy the condition
