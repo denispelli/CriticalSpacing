@@ -1,8 +1,8 @@
 function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % Create textures, one per letter in o.alphabet plus o.borderLetter.
-% Returns "letterStruct" an array with one struct element per letter, plus
-% "alphabetBounds" a bounding box that will hold any letter. Called by
+% Returns array "letterStruct" with one struct element per letter, plus
+% bounding box "alphabetBounds" that will hold any letter. Called by
 % CriticalSpacing.m. The font is o.targetFont.
 % 
 % If o.readAlphabetFromDisk==0 then the font is rendered by Screen DrawText
@@ -90,14 +90,18 @@ if o.readAlphabetFromDisk
    
    % Create textures, one per letter.
    for i=1:length(letters)
-      which=strfind([savedAlphabet.letters],letters(i));
+       which=strfind([savedAlphabet.letters],letters(i));
       if length(which)~=1
          error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),o.targetFont,savedAlphabet.letters);
       end
       assert(length(which)==1);
       r=savedAlphabet.rect;
       letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
-      letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
+      if o.contrast==1
+         letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
+      else
+         letterStruct(i).texture=Screen('MakeTexture',window,uint8(white+(double(letterImage)-white)*o.contrast));
+      end
       letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
       % Screen DrawTexture will later scale and stretch, as needed.
    end
@@ -169,6 +173,10 @@ else % if o.readAlphabetFromDisk
       end
       Screen('TextSize',letterStruct(i).texture,sizePix);
       Screen('FillRect',letterStruct(i).texture,white);
-      Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2),black,white,1);
+      if o.contrast==1
+         Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2),black,white,1);
+      else
+         Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2),uint8(white+(double(black)-white)*o.contrast),white,1);
+      end
    end
 end % if o.readAlphabetFromDisk
