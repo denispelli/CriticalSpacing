@@ -120,7 +120,8 @@ o.repeatedTargets=1;
 o.thresholdParameter='spacing';
 % o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
-o.observer='vania';
+o.observer='Susan-Barry';
+o=CriticalSpacing(o); 
 o=CriticalSpacing(o); 
 
 % Results are printed in MATLAB's Command Window and saved in the
