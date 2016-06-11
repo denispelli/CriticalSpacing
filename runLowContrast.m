@@ -111,24 +111,31 @@ o.useFractionOfScreen=0;
 % RUN (measure two thresholds, interleaved)
 
 % o.useFractionOfScreen=0.5; 
+o.frameTheTarget=0; 
+o.printSizeAndSpacing=1;
+o.showBounds=0;
+o.showLineOfLetters=0;
+o.speakSizeAndSpacing=0;
 
 o.practicePresentations=0;
 % o.targetFont='Sloan';
 % o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 % o.borderLetter='X';
-o.fixationLocation='left';
-o.fixationCrossBlankedNearTarget=0;
-o.fixationCrossDeg=3;
+% o.fixationLocation='left';
+o.fixationCrossBlankedNearTarget=1;
+o.fixationCrossDeg=inf;
 % o.targetCross=1; 
 o.durationSec=0.2;
 
 o.experimenter='Denis';
 o.observer='Denis';
 o.viewingDistanceCm=50;
-o.eccentricityDeg=10;
-o.contrast=0.2;
+o.eccentricityDeg=0;
+o.contrast=1;
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
+o.fixedSpacingOverSize=0; 
+o.targetDeg=10;
 % o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
 %o=CriticalSpacing(o); 
