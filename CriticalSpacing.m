@@ -412,6 +412,7 @@ o.usePurring=0;
 o.useSpeech=1;
 
 % VISUAL STIMULUS
+o.contrast=1; % Nominal contrast, not calibrated.
 o.eccentricityDeg=0; % Distance of target from fixation, in degrees.
 o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
 % o.eccentricityXDeg=o.eccentricityDeg*sind(o.eccentricityClockwiseAngleDeg);
@@ -1292,6 +1293,7 @@ try
       if oo(condition).showProgressBar
          stimulusRect(3)=progressBarRect(1);
       end
+      clearRect=stimulusRect;
       if oo(condition).stimulusMarginFraction>0
          s=oo(condition).stimulusMarginFraction*stimulusRect;
          s=round(s);
@@ -1692,7 +1694,7 @@ try
       string=strrep(string,'letter',symbolName);
       fixationClipRect(2)=5*oo(condition).textSize;
       x=instructionalMargin;
-      y=0.3*oo(1).textSize;
+      y=1.3*oo(1).textSize;
       Screen('TextSize',window,oo(condition).textSize);
       DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
       Screen('Flip',window,[],1); % Don't clear.
@@ -1918,7 +1920,7 @@ try
                   end
                end
                if i==100
-                  ffprintf(ff,'ERROR: outerSpacingPix %.1f exceeds max %.1f pix.\n',spacingPix,outerSpacingPix,RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2)
+                  ffprintf(ff,'ERROR: outerSpacingPix %.1f exceeds max %.1f pix.\n',spacingPix,outerSpacingPix,RectWidth(stimulusRect)-xT-spacingPix/oo(condition).fixedSpacingOverSize/2);
                   error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
                end
             else
@@ -1995,6 +1997,7 @@ try
             beginAfterKeypress=0;
          end
          Screen('FillRect',window,white,stimulusRect);
+         Screen('FillRect',window,white,clearRect);
          % Define fixation bounds midway through first trial, for rest of
          % trials.
          fixationClipRect=InsetRect(stimulusRect,0,1.6*oo(condition).textSize);
@@ -2006,6 +2009,7 @@ try
          Screen('Flip',window,[],1); % Display fixation.
          WaitSecs(1); % Duration of fixation display, before stimulus appears.
          Screen('FillRect',window,[],stimulusRect); % Clear screen; keep progress bar.
+         Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
          if ~oo(condition).repeatedTargets && isfinite(oo(condition).durationSec)
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
