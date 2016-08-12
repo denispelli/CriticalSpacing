@@ -110,7 +110,7 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
 
-% o.useFractionOfScreen=0.5; 
+o.useFractionOfScreen=0.5; 
 
 % o.targetFont='Sloan';
 % o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
