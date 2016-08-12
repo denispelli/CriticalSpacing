@@ -48,6 +48,7 @@ if o.readAlphabetFromDisk
    ok=~[d.isdir];
    for i=1:length(ok)
       systemFile=streq(d(i).name(1),'.') && length(d(i).name)>1;
+      systemFile=systemFile || streq(d(i).name,'Thumbs.db'); % ignore Windows cache
       ok(i)=ok(i) && ~systemFile;
    end
    d=d(ok);
