@@ -449,6 +449,7 @@ o.stimulusMarginFraction=0.05; % White margin around stimulusRect.
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
+o.flankerLetter='';
 % o.targetFont='ClearviewText';
 % o.targetFont='Gotham Cond SSm XLight';
 % o.targetFont='Gotham Cond SSm Light';
@@ -568,7 +569,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
    'targetSizeIsHeight' 'eccentricityXPix' 'eccentricityYPix' ...
-   'maxRepetition' 'practiceCountdown'};
+   'maxRepetition' 'practiceCountdown' 'flankerLetter'};
 unknownFields=cell(0);
 for condition=1:conditions
    fields=fieldnames(oIn(condition));
@@ -2033,6 +2034,13 @@ try
       end
       stimulus=Shuffle(oo(condition).alphabet);
       stimulus=stimulus(1:3); % three random letters, all different.
+      if isfield(oo(condition),'flankerLetter') && length(oo(condition).flankerLetter)==1
+         stimulus(1)=oo(condition).flankerLetter;
+         stimulus(3)=oo(condition).flankerLetter;
+         while stimulus(2)==oo(condition).flankerLetter
+            stimulus(2)=oo(condition).alphabet(randi(length(oo(condition).alphabet)));
+         end
+      end
       if isfinite(oo(condition).targetFontHeightOverNominalPtSize)
          if oo(condition).targetSizeIsHeight
             sizePix=round(oo(condition).targetPix/oo(condition).targetFontHeightOverNominalPtSize);
