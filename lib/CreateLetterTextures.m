@@ -84,7 +84,12 @@ if o.readAlphabetFromDisk
       if isempty(savedAlphabet.rect)
          savedAlphabet.rect=savedAlphabet.bounds{i};
       else
+         a=savedAlphabet.rect;
          savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
+         b=savedAlphabet.rect;
+         if ~all(a==b)
+           disp('A change in alphabet size'); % put a breakpoint here
+         end
       end
    end
    alphabetBounds=savedAlphabet.rect;
