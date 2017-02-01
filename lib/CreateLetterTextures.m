@@ -4,7 +4,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % Returns array "letterStruct" with one struct element per letter, plus
 % bounding box "alphabetBounds" that will hold any letter. Called by
 % CriticalSpacing.m. The font is o.targetFont.
-% 
+%
 % If o.readAlphabetFromDisk==0 then the font is rendered by Screen DrawText
 % to create a texture for each desired letter. The font's TextSize is
 % computed to yield the desired o.targetPix size in the direction specified
@@ -40,7 +40,7 @@ if o.readAlphabetFromDisk
    if ~exist(alphabetsFolder,'dir')
       error('Folder missing: "%s"',alphabetsFolder);
    end
-   folder=fullfile(alphabetsFolder,urlencode(o.targetFont));
+   folder=fullfile(alphabetsFolder,urlencoding(o.targetFont));
    if ~exist(folder,'dir')
       error('Folder missing: "%s". Target font "%s" has not been saved.',folder,o.targetFont);
    end
@@ -70,7 +70,7 @@ if o.readAlphabetFromDisk
       if isempty(savedAlphabet.images{i})
          error('Cannot read image file "%s".',filename);
       end
-      [~,name]=fileparts(urldecode(d(i).name));
+      [~,name]=fileparts(urldecoding(d(i).name));
       if length(name)~=1
          error('Saved "%s" alphabet letter image file "%s" must have a one-character filename after urldecoding.',o.targetFont,name);
       end
@@ -88,7 +88,7 @@ if o.readAlphabetFromDisk
       end
    end
    alphabetBounds=savedAlphabet.rect;
-   
+
    % Create textures, one per letter.
    for i=1:length(letters)
        which=strfind([savedAlphabet.letters],letters(i));
@@ -106,7 +106,7 @@ if o.readAlphabetFromDisk
       letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
       % Screen DrawTexture will later scale and stretch, as needed.
    end
-   
+
 else % if o.readAlphabetFromDisk
    % Draw font and get bounds.
    scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
@@ -154,7 +154,7 @@ else % if o.readAlphabetFromDisk
       letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
    end
    Screen('Close',scratchWindow);
-   
+
    % Create texture for each letter
    canvasRect=bounds;
    canvasRect=OffsetRect(canvasRect,-canvasRect(1),-canvasRect(2));
@@ -181,3 +181,29 @@ else % if o.readAlphabetFromDisk
       end
    end
 end % if o.readAlphabetFromDisk
+end
+
+function u = urlencoding(s)
+  u = '';
+  for k = 1:length(s),
+    if isalnum(s(k))
+      u(end+1) = s(k);
+    else
+      u=[u,'%',dec2hex(s(k)+0)];
+    end;
+  end
+end
+
+function u = urldecoding(s)
+  u = '';
+  k = 1;
+  while k<=length(s)
+    if s(k) == '%' && k+2 <= length(s)
+      u = sprintf('%s%c', u, char(hex2dec(s((k+1):(k+2)))));
+      k = k + 3;
+    else
+      u = sprintf('%s%c', u, s(k));
+      k = k + 1;
+    end
+  end
+end
