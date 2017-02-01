@@ -89,6 +89,7 @@ if o.readAlphabetFromDisk
          b=savedAlphabet.rect;
          if ~all(a==b)
            disp('A change in alphabet size'); % put a breakpoint here
+           keyboard
          end
       end
    end
