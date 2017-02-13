@@ -88,8 +88,8 @@ if o.readAlphabetFromDisk
          savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
          b=savedAlphabet.rect;
          if ~all(a==b)
-           disp('A change in alphabet size'); % put a breakpoint here
-           keyboard
+           warning('Found a change in alphabet size!'); % put a breakpoint here
+           % keyboard
          end
       end
    end
