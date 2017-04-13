@@ -15,10 +15,22 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % If o.readAlphabetFromDisk==1 then we look for a folder inside
 % CriticalSpacing/lib/alphabets/ whose name matches that of the desired
 % font. We give a fatal error if it's not found. The folder is very simple,
-% one image file per letter; the filename is the letter, URL encoded to
-% allow you to specify symbols, including a space.
+% one image file per letter; the filename is the letter, URL-encoded to
+% cope with symbols, including a space.
 %
 % The argument "condition" is used only for diagnostic printout.
+
+% Enhanced checking of image size now gives detailed report if an error is
+% detected, for instance:
+% ERROR: Found a change in letter image size within the alphabet.
+% File "/Users/denispelli/Dropbox/CriticalSpacing/alphabets/Pelli/b.png".
+% Letter "b", 12 of 12, image size [0 0 1024 1024] differs from 
+% the image size of the preceding letters [0 0 102 513].
+% Error using CreateLetterTextures (line 102)
+% All letters must have the same image size!
+% Error in CreateLetterTextures (line 102)
+%            error('All letters must have the same image size!');
+
 if ~isfinite(o.targetHeightOverWidth)
    o.targetHeightOverWidth=1;
 end
@@ -29,7 +41,7 @@ end
 % if o.targetSizeIsHeight
 %    canvasRect=[0 0 o.targetPix o.targetPix];
 % else
-   canvasRect=[0 0 o.targetPix o.targetPix]*o.targetHeightOverWidth;
+canvasRect=[0 0 o.targetPix o.targetPix]*max(1,o.targetHeightOverWidth);
 % end
 black=0;
 white=255;
@@ -58,6 +70,8 @@ if o.readAlphabetFromDisk
    savedAlphabet.letters=[];
    savedAlphabet.images={};
    savedAlphabet.rect=[];
+   savedAlphabet.imageRects={};
+   savedAlphabet.imageRect=[];
    for i=1:length(d)
       filename=fullfile(folder,d(i).name);
       try
@@ -76,20 +90,28 @@ if o.readAlphabetFromDisk
       end
       savedAlphabet.letters(i)=name;
       savedAlphabet.bounds{i}=ImageBounds(savedAlphabet.images{i},255);
-      savedAlphabet.imageBounds{i}=RectOfMatrix(savedAlphabet.images{i});
+      savedAlphabet.imageRects{i}=RectOfMatrix(savedAlphabet.images{i});
       if o.showLineOfLetters
          fprintf('%d: CreateLetterTextures "%c" image(%d) width %d, ',condition,savedAlphabet.letters(i),i,RectWidth(savedAlphabet.bounds{i}));
-         fprintf('bounds %d %d %d %d, image %d %d %d %d.\n',savedAlphabet.bounds{i},savedAlphabet.imageBounds{i});
+         fprintf('bounds %d %d %d %d, image %d %d %d %d.\n',savedAlphabet.bounds{i},savedAlphabet.imageRects{i});
       end
       if isempty(savedAlphabet.rect)
          savedAlphabet.rect=savedAlphabet.bounds{i};
       else
-         a=savedAlphabet.rect;
          savedAlphabet.rect=UnionRect(savedAlphabet.rect,savedAlphabet.bounds{i});
-         b=savedAlphabet.rect;
+      end
+      if isempty(savedAlphabet.imageRect)
+         savedAlphabet.imageRect=savedAlphabet.imageRects{i};
+      else
+         a=savedAlphabet.imageRects{i};
+         b=savedAlphabet.imageRect;
+         savedAlphabet.imageRect=UnionRect(savedAlphabet.imageRect,a);
          if ~all(a==b)
-           warning('Found a change in alphabet size!'); % put a breakpoint here
-           % keyboard
+           fprintf('\nERROR: Found a change in letter image size within the alphabet.\n');
+           fprintf(['File "%s".\nLetter "%s", %d of %d, image size [%d %d %d %d] differs from \n'...
+              'the image size of the preceding letters [%d %d %d %d].\n'],...
+              filename,name,i,length(d),a,b);
+           error('All letters must have the same image size!');
          end
       end
    end
