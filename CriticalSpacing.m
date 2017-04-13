@@ -2379,7 +2379,7 @@ try
          filename=[filename '.png'];
          img=Screen('GetImage',window);
          imwrite(img,fullfile(mypath,filename),'png');
-         ffprintf(ff,'Saving image to file "%s" ',filename);
+         ffprintf(ff,'Saving image to file "%s".\n',filename);
       end
       
       responseString='';
