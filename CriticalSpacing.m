@@ -300,7 +300,7 @@ function oo=CriticalSpacing(oIn)
 % 0] in upper left: fix.normalizedXY=[x,y], where x and y are in the range
 % 0 to 1.
 %
-% Copyright 2016, Denis Pelli, denis.pelli@nyu.edu
+% Copyright © 2016,2017, Denis Pelli, denis.pelli@nyu.edu
 
 %% PLANS
 %
@@ -1080,7 +1080,7 @@ try
       
       % COPYRIGHT
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       
       % Get typed response
       Screen('TextSize',window,oo(1).textSize);
@@ -1089,7 +1089,8 @@ try
       else
          background=WhiteIndex(window);
       end
-      [d,terminatorChar]=GetEchoString(window,'Enter viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',instructionalMargin,0.82*screenRect(4)-oo(1).textSize*1.4);
+      [d,terminatorChar]=GetEchoString(window,'enter viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if terminatorChar==27
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
@@ -1168,7 +1169,7 @@ try
       Screen('TextSize',window,round(0.6*oo(1).textSize));
       Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMargin,screenRect(4)/2-1.5*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
          background=[];
@@ -1204,7 +1205,7 @@ try
       Screen('DrawText',window,'Hello Observer,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
       Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
          background=[];
@@ -1677,7 +1678,7 @@ try
    string=[string 'Now, to begin, please press the SPACE BAR. '];
    Screen('TextFont',window,oo(condition).textFont,0);
    Screen('TextSize',window,round(oo(condition).textSize*0.35));
-   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
    Screen('TextSize',window,oo(condition).textSize);
    string=strrep(string,'letter',symbolName);
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
