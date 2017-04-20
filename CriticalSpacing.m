@@ -2034,7 +2034,15 @@ try
          Screen('FillRect',window); % Clear screen.
       end
       stimulus=Shuffle(oo(condition).alphabet);
+      if length(stimulus)>=3
       stimulus=stimulus(1:3); % three random letters, all different.
+      else
+         % three random letters, independent samples, with replacement.
+         b=Shuffle(stimulus);
+         c=Shuffle(stimulus);
+         stimulus(2)=b(1);
+         stimulus(3)=c(1);
+      end
       if isfield(oo(condition),'flankerLetter') && length(oo(condition).flankerLetter)==1
          stimulus(1)=oo(condition).flankerLetter;
          stimulus(3)=oo(condition).flankerLetter;
