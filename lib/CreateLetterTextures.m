@@ -127,7 +127,7 @@ if o.readAlphabetFromDisk
       r=savedAlphabet.rect;
       letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
       if o.contrast==1
-         letterStruct(i).texture=Screen('MakeTexture',window,letterImage);
+         letterStruct(i).texture=Screen('MakeTexture',window,uint8(letterImage));
       else
          letterStruct(i).texture=Screen('MakeTexture',window,uint8(white+(double(letterImage)-white)*o.contrast));
       end
