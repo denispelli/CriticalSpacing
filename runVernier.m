@@ -109,11 +109,11 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
-o.useFractionOfScreen=0.3;
+% o.useFractionOfScreen=0.3;
 o.fixationLocation='normalizedXY';
-o.targetFont='Vernier';
+o.targetFont='VernierH';
 o.alphabet='12'; % Vernier alphabet
-o.borderLetter=' ';
+o.borderLetter='0';
 o.repeatedTargets=0;
 o.thresholdParameter='size';
 o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
@@ -129,7 +129,7 @@ o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 % o.targetFont='Sloan';
 % o.alphabet='DHKNORSVZ';
 % o.borderLetter='X';
-o.targetSizeIsHeight=0;
+o.targetSizeIsHeight=1;
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.fix.normalizedXY=[0.5 0.5];
 o.fixationCrossBlankedNearTarget=1;
