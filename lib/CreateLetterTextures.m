@@ -137,6 +137,7 @@ if o.readAlphabetFromDisk
 
 else % if o.readAlphabetFromDisk
    % Draw font and get bounds.
+   Screen('Preference','TextAntiAliasing',0);
    scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
    if ~isempty(o.targetFontNumber)
       Screen('TextFont',scratchWindow,o.targetFontNumber);
@@ -208,6 +209,7 @@ else % if o.readAlphabetFromDisk
          Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2),uint8(white+(double(black)-white)*o.contrast),white,1);
       end
    end
+   Screen('Preference','TextAntiAliasing',1);
 end % if o.readAlphabetFromDisk
 end
 
