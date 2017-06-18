@@ -2,8 +2,7 @@ function fixationLines=ComputeFixationLines2(fix)
 % ComputeFixationLines2 returns an array suitable for Screen('Drawlines')
 % to draw a fixation cross and target cross specified by the parameters in
 % the struct argument "fix".
-% fix.x=50;                             % x location of fixation on screen.
-% fix.y=screenHeight/2;                 % y location of fixation on screen.
+% fix.xy=[50 screenHeight/2];            %  location of fixation on screen.
 % fix.eccentricityXYPix=eccentricityXYPix;  % Positive or negative horizontal
 %                                       % offset of target from fixation.
 % fix.clipRect=screenRect;              % Restrict lines to this rect.
@@ -35,15 +34,16 @@ if ~isfield(fix,'fixationCrossBlankedNearTarget')
    fix.fixationCrossBlankedNearTarget=1; % Default is yes.
 end
 % We compute a list of four lines to draw crosses at fixation and target
-% locations. We clip each line with the clipRect. We then define a blanking rect
-% around the target and use it to ErasePartOfLineSegment for every line in
-% the list, which may increase or decrease the list length.
-x=[fix.x-fix.fixationCrossPix/2 fix.x+fix.fixationCrossPix/2 ...
-   fix.x fix.x];
-y=[fix.y fix.y ...
-   fix.y-fix.fixationCrossPix/2 fix.y+fix.fixationCrossPix/2];
-tX=fix.x+fix.eccentricityXYPix(1);
-tY=fix.y+fix.eccentricityXYPix(2);
+% locations. We clip each line with the clipRect. We then define a blanking
+% rect around the target and use it to ErasePartOfLineSegment for every
+% line in the list, which may increase or decrease the list length.
+x0=fix.xy(1);
+y0=fix.xy(2);
+x=[x0-fix.fixationCrossPix/2 x0+fix.fixationCrossPix/2 x0 x0];
+y=[y0 y0 y0-fix.fixationCrossPix/2 y0+fix.fixationCrossPix/2];
+tXY=fix.xy+fix.eccentricityXYPix;
+tX=tXY(1);
+tY=tXY(2);
 tR=fix.blankingRadiusPix;
 assert(isfinite(fix.blankingRadiusPix));
 x=[x tX-tR tX+tR tX tX];
