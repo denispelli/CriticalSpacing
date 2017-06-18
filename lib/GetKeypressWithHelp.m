@@ -24,7 +24,7 @@ while 1
       if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky;
          KbReleaseWait(o.deviceIndex);
       end
-      % Save screen
+      %% SAVE SCREEN
       switch savingMethod
          case 'CopyWindow',
             % CopyWindow copies the backbuffer.
@@ -54,7 +54,7 @@ while 1
          % Discard the letter textures, to free graphics memory.
          DestroyLetterTextures(letterStruct);
       end
-      % Restore screen
+      %% RESTORE SCREEN
       switch savingMethod
          case 'CopyWindow',
             Screen('DrawTexture',window,savedTexture);
@@ -64,8 +64,22 @@ while 1
       end
       Screen('Flip',window,[],1); % Restore from back buffer.
    else
-      % Ignore any key that has already been pressed.
-      if ~ismember(answer,responseString);
+      % I copied this string processing from GetKeypress.
+      answer=lower(answer);
+      if streq(answer,'space'); answer=' '; end
+      if streq(answer,'escape'); answer=char(27); end
+      if streq(answer,'return'); answer=char(13); end
+      % We assume that only one key is pressed (no shift, caps lock, etc.).
+      % For keys in the upper row of the keyboard, including the number keys,
+      % KbName returns 2 characters, e.g. '0)'. When KbName returns two
+      % characters, we return the first and discard the second. Thus we do not
+      % distinguish between a number key on a number pad and a number key on
+      % the main keyboard.
+      if length(answer)==2
+         answer=answer(1);
+      end
+     % Ignore any key that has already been pressed.
+      if ~ismember(answer,lower(responseString));
          break;
       end
    end
