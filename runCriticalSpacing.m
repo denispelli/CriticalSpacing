@@ -110,8 +110,9 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN 
 
-o.useFractionOfScreen=0.2; 
+% o.useFractionOfScreen=0.3; 
 
+o.eccentricityXYDeg=[60 0]; % Distance of target from fixation. Positive up and to right.
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
@@ -119,7 +120,7 @@ o.targetDeg=2;
 
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
-o.viewingDistanceCm=40;
+o.viewingDistanceCm=50;
 % o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
 
