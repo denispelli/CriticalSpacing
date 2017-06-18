@@ -6,6 +6,9 @@ end
 escapeKeyCode=KbName('ESCAPE');
 spaceKeyCode=KbName('space');
 returnKeyCode=KbName('return');
+graveAccentKeyCode=KbName('`~');
+escapeChar=char(27);
+graveAccentChar='`';
 Screen('FillRect',window);
 Screen('TextFont',window,oo(1).textFont,0);
 string='Quitting the run. Hit ESCAPE again to quit the whole session. To proceed with the next run, hit SPACE or RETURN.';
@@ -17,8 +20,8 @@ Screen('TextSize',window,round(oo(1).textSize*0.35));
 Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
 Screen('TextSize',window,oo(1).textSize);
 Screen('Flip',window);
-answer=GetKeypress([returnKeyCode spaceKeyCode escapeKeyCode],oo(1).deviceIndex);
-quitSession=streq(answer,'ESCAPE');
+answer=GetKeypress([returnKeyCode spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
+quitSession=ismember(answer,[escapeChar,graveAccentChar]);
 if oo(1).useSpeech
    if quitSession
       Speak('Escape. Done.');
