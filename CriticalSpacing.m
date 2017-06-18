@@ -430,7 +430,7 @@ o.spacingDeg=nan;
 o.targetDeg=nan;
 o.stimulusMarginFraction=0.05; % White margin around stimulusRect.
 o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetHeightDeg.
-
+o.textSizeDeg = 0.6;
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -614,8 +614,13 @@ for oi=1:conditions
       oo(oi).maxRepetition=inf;
    end
 end
-% Set up for KbCheck. We can safely use this mode AND collect kb responses
-% without worrying about writing to MATLAB console/editor
+Screen('Preference','TextAntiAliasing',1);
+% Set up for KbCheck. Calling ListenChar(2) tells the MATLAB console/editor
+% to ignore what we type, so we don't inadvertently echo observer responses
+% into the Command window or any open file. We use this mode while use the
+% KbCheck family of functions to collect keyboard responses. When we exit,
+% we must reenable the keyboard by calling ListenChar() or hitting
+% Control-C.
 ListenChar(2); % no echo
 KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
@@ -1281,9 +1286,16 @@ try
          end
       end
 
-      if oo(oi).repeatedTargets
-         oo(oi).useFixation=0;
+      for ii=1:conditions
+         if oo(ii).repeatedTargets
+            oo(ii).useFixation=0;
+         end
+         oo(ii).textSize = round(oo(ii).textSizeDeg*oo(1).pixPerDeg);
+         oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
+         oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
+         oo(ii).speakInstructions=oo(ii).useSpeech;
       end
+      
       oo=SetUpFixation(window,oo,oi,ff);
       
       addonDeg=0.15;
@@ -1561,8 +1573,8 @@ try
       error('Targets are neither digits nor letters');
    end
    Screen('FillRect',window,white);
-   string=[sprintf('Hello %s,  ',oo(oi).observer)];
-   string=[string 'Please turn the computer sound on. '];
+   string=[sprintf('Hello %s. ',oo(oi).observer)];
+   string=[string 'Please turn on this computer''s sound. '];
    string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
    string=[string 'You might also have the alphabet on a piece of paper. '];
    string=[string 'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
@@ -1588,7 +1600,11 @@ try
    if ~any(isfinite([oo.durationSec]))
       string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
-   string=[string 'Now, to begin, please press the SPACE BAR. '];
+   if oo(oi).useFixation
+      string=[string '\n\nIMPORTANT: You must put your eye(s) on the fixation mark before each trial begins. When you are fixating, and you''re ready to begin, please press the SPACE BAR. '];
+   else
+      string=[string 'Now, to begin, please press the SPACE BAR. '];
+   end
    Screen('TextFont',window,oo(oi).textFont,0);
    Screen('TextSize',window,round(oo(oi).textSize*0.35));
    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
@@ -1596,6 +1612,9 @@ try
    string=strrep(string,'letter',symbolName);
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window,[],1);
+   if oo(oi).useSpeech
+      Speak(string);
+   end
    SetMouse(screenRect(3),screenRect(4),window);
    answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
    
@@ -2621,6 +2640,11 @@ end
 
 %% SET UP FIXATION
 function oo=SetUpFixation(window,oo,oi,ff)
+white=WhiteIndex(window);
+black=BlackIndex(window);
+escapeChar=char(27);
+graveAccentChar='`';
+returnChar=char(13);
 oo(oi).fixationXYPix=XYPixOfXYDeg(oo(oi),[0 0]);
 if ~oo(oi).useFixation
    oo(oi).fixationIsOffscreen = 0;
@@ -2639,9 +2663,9 @@ else
          oriCheck=atan2d(fixationOffsetXYCm(2),fixationOffsetXYCm(1));
          rCmCheck=sqrt(sum(fixationOffsetXYCm.^2));
          rDegCheck=2*asind(0.5*rCm/oo(oi).viewingDistanceCm);
-         xyDegCheck=[cosd(ori) sind(ori)]*rDeg;
-         fprintf('CHECK OFFSCREEN GEOMETRY: ori %.1f %.1f; rCm %.1f %.1f; rDeg %.1f %.1f; xyDeg [%.1f %.1f] [%.1f %.1f]\n',...
-            ori,oriCheck,rCm,rCmCheck,rDeg,rDegCheck,-oo(oi).nearPointXYDeg,xyDegCheck);
+         xyDegCheck=-[cosd(ori) sind(ori)]*rDeg;
+         fprintf('CHECK NEAR-POINT GEOMETRY: ori %.1f %.1f; rCm %.1f %.1f; rDeg %.1f %.1f; xyDeg [%.1f %.1f] [%.1f %.1f]\n',...
+            ori,oriCheck,rCm,rCmCheck,rDeg,rDegCheck,oo(oi).nearPointXYDeg,xyDegCheck);
       end
       fixationOffsetXYCm(2)=-fixationOffsetXYCm(2); % Make y increase upward.
       string='';
@@ -2673,15 +2697,21 @@ else
       Screen('DrawLine',window,black,x-a,y,x+a,y,a/20);
       Screen('DrawLine',window,black,x,y-a,x,y+a,a/20);
       Screen('Flip',window); % Display question.
-      if oo(oi).speakInstructions
+      if 0 && oo(oi).speakInstructions
+         string=strrep(string,'below ','');
+         string=strrep(string,'.0','');
          Speak(string);
       end
-      if oo(oi).isKbLegacy
-         answer = questdlg('','Fixation','Ok','Cancel','Ok');
-      else
-         ListenChar(0); % get ready for the quesdlg
-         answer = questdlg('','Fixation','Ok','Cancel','Ok');
-         ListenChar(2); % go back to orig status; no echo
+      %       ListenChar(0); % get ready for the quesdlg
+      %       answer = questdlg('','Fixation','Ok','Cancel','Ok');
+      %       ListenChar(2); % go back to orig status; no echo
+      response=GetKeypress;
+      answer=[];
+      if ismember(response,[escapeChar graveAccentChar])
+         answer='No';
+      end
+      if ismember(response,[returnChar ' '])
+         answer='Ok';
       end
       Screen('FillRect',window,white);
       Screen('Flip',window); % Blank, to acknowledge response.
