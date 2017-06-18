@@ -15,13 +15,15 @@ if 1
    if o.hiDPIMultiple~=1
       PsychImaging('AddTask','General','UseRetinaResolution');
    end
-   % Mario says the Virtual Frame Buffer makes the back buffer more
+   % Mario says the virtual frame buffer makes the back buffer more
    % reliable, for better performance.
    PsychImaging('AddTask','General','UseVirtualFramebuffer');
    if ~o.useFractionOfScreen
       [window,r]=PsychImaging('OpenWindow',o.screen,white);
    else
-      [window,r]=PsychImaging('OpenWindow',o.screen,white,round(o.useFractionOfScreen*screenBufferRect));
+      r=round(o.useFractionOfScreen*screenBufferRect);
+      r=AlignRect(r,screenBufferRect,'right','bottom');
+      [window,r]=PsychImaging('OpenWindow',o.screen,white,r);
    end
 else
    [window,r]=Screen('OpenWindow',o.screen,white,screenBufferRect);
