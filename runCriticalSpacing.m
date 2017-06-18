@@ -37,8 +37,8 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricityDeg=0; % Distance of target from fixation. 
-o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXYDeg=[0 0]; % Distance of target from fixation. Positive up and to right.
+o.nearPointXYInUnitSquare=[0.5 0.5];
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=0;
@@ -77,8 +77,8 @@ o.borderLetter='$';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.fixationLocation='center'; % 'center', 'left', 'right'
 o.targetCross=0; % 1 to mark target location
+o.useFixation=1;
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -108,20 +108,19 @@ o.useFractionOfScreen=0;
 % o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
 
 %% CUSTOM CODE
-% RUN (measure two thresholds, interleaved)
+% RUN 
 
-% o.useFractionOfScreen=0.5; 
+o.useFractionOfScreen=0.2; 
 
-% o.targetFont='Sloan';
-% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-% o.borderLetter='X';
+o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+o.targetDeg=2;
 
-o.repeatedTargets=1;
+o.repeatedTargets=0;
 o.thresholdParameter='spacing';
+o.viewingDistanceCm=40;
 % o(2)=o(1); % Copy the condition
-o=CriticalSpacing(o); 
-o.observer='Susan-Barry';
-o=CriticalSpacing(o); 
 o=CriticalSpacing(o); 
 
 % Results are printed in MATLAB's Command Window and saved in the
