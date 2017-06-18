@@ -222,12 +222,15 @@ function oo=CriticalSpacing(oIn)
 %
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
-% CriticalSpacing will then print out (and save to disk) results so far,
-% and ask whether you're quitting the whole session or proceeding to the
-% next run. Quitting this run sets the flag o.quitRun, and quitting the
-% whole session also sets the flag o.quitSession. If o.quitSession is
-% already set when you call CriticalSpacing, it returns immediately after
-% processing arguments. (CriticalSpacing ignores o.quitRun on input.)
+% Because at least one computer (the 2017 MacBook Pro with track bar) lacks
+% an ESCAPE key, we accept the GRAVE ACCENT key (also in upper left of
+% keyboard) as equivalent. CriticalSpacing will then print out (and save to
+% disk) results so far, and ask whether you're quitting the whole session
+% or proceeding to the next run. Quitting this run sets the flag o.quitRun,
+% and quitting the whole session also sets the flag o.quitSession. If
+% o.quitSession is already set when you call CriticalSpacing, the
+% CriticalSpacing returns immediately after processing arguments.
+% (CriticalSpacing ignores o.quitRun on input.)
 %
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
@@ -618,6 +621,9 @@ KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
 escapeKeyCode=KbName('ESCAPE');
 spaceKeyCode=KbName('space');
+graveAccentKeyCode=KbName('`~');
+escapeChar=char(27);
+graveAccentChar='`';
 for oi=1:conditions
    oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).alphabet);
    for i=1:length(oo(oi).validKeyNames)
@@ -957,7 +963,7 @@ try
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
       string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
-         'the screen is %.0fx%.0f deg, and I can display characters'...
+         'the screen is %.0fx%.0f deg, and can display characters'...
          ' as small as %.2f deg with spacing as small as %.2f deg. '],...
          string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,RectHeight(screenRect)/pixPerDeg,...
          sizeDeg,spacingDeg);
@@ -1030,11 +1036,11 @@ try
       end
       Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',instructionalMargin,0.82*screenRect(4)-oo(1).textSize*1.4);
       [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if terminatorChar==27
+      if ismember(terminatorChar,[escapeChar,graveAccentChar]) 
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
          if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated. Skipping any remaining runs.\n');
+            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
          else
             ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
          end
@@ -1116,7 +1122,7 @@ try
          background=WhiteIndex(window);
       end
       [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if terminatorChar==27
+      if ismember(terminatorChar,[escapeChar,graveAccentChar])
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
          if oo(1).quitSession
@@ -1152,11 +1158,11 @@ try
          background=WhiteIndex(window);
       end
       [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if terminatorChar==27
+      if ismember(terminatorChar,[escapeChar,graveAccentChar])
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
          if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
          else
             ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
          end
@@ -1503,7 +1509,7 @@ try
    ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
       pixPerDeg,RectWidth(actualScreenRect)/pixPerDeg,...
       RectHeight(actualScreenRect)/pixPerDeg);
-   ffprintf(ff,'o.screen %d, %dx%d pixels, (%dx%d native,) %.1fx%.1f cm, %.0f pix/cm.\n',...
+   ffprintf(ff,'o.screen %d, %dx%d pixels, (%dx%d native) %.1fx%.1f cm, %.0f pix/cm.\n',...
       cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       oo(1).nativeWidth,oo(1).nativeHeight,...
       screenWidthMm/10,screenHeightMm/10,...
@@ -1578,7 +1584,7 @@ try
    end
    string=[string 'Sometimes the letters will be easy to identify. Sometimes they will be nearly impossible. '];
    string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, and just get as many as you can. '];
-   string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.) '];
+   string=[string 'Type slowly. (Quit anytime by pressing ESCAPE or "`".) '];
    if ~any(isfinite([oo.durationSec]))
       string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
@@ -1591,10 +1597,10 @@ try
    DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window,[],1);
    SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(oi),window,stimulusRect);
+   answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
    
    Screen('FillRect',window);
-   if streq(answer,'ESCAPE')
+   if ismember(answer,[escapeChar graveAccentChar])
       oo(1).quitRun=1;
       oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
       if oo(1).quitSession
@@ -1902,7 +1908,7 @@ try
       if isfinite(oo(oi).durationSec)
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
-            answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode],oo(oi),window,stimulusRect);
+            answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
             if streq(answer,'ESCAPE')
                oo(1).quitRun=1;
                oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
@@ -2303,15 +2309,15 @@ try
       flipSecs=GetSecs;
       for i=1:length(targets)
          [answer,secs]=GetKeypressWithHelp( ...
-            [spaceKeyCode escapeKeyCode oo(oi).responseKeyCodes], ...
+            [spaceKeyCode escapeKeyCode graveAccentKeyCode oo(oi).responseKeyCodes], ...
             oo(oi),window,stimulusRect,letterStruct,responseString);
          trialData.reactionTimes(i)=secs-flipSecs;
          
-         if streq(answer,'ESCAPE')
+         if ismember(answer,[escapeChar graveAccentChar]);
             oo(1).quitRun=1;
             break;
          end
-         if streq(upper(answer),'SPACE')
+         if streq(upper(answer),' ')
             responsesNumber=length(responseString);
             if GetSecs-trialTimeSecs>oo(oi).secsBeforeSkipCausesGuess
                if oo(oi).speakEachLetter && oo(oi).useSpeech
@@ -2338,9 +2344,10 @@ try
             ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
             break;
          end
-         % GetKeypress returns, in answer, both key labels when there
-         % are two, e.g. "3#". We score the response as whichever target
-         % letter is included in the "answer" string.
+         % GetKeypressWithHelp now returns only one character. OBSOLETE:
+         % GetKeypress returns, in answer, both key labels when there are
+         % two, e.g. "3#". We score the response as whichever target letter
+         % is included in the "answer" string.
          reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).alphabet),upper(answer)));
          if oo(oi).speakEachLetter && oo(oi).useSpeech
             % Speak the target that the observer saw, e.g '1', not the keyCode '1!'
