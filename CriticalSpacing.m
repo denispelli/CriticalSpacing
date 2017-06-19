@@ -3,8 +3,8 @@ function oo=CriticalSpacing(oIn)
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
 % threshold spacing and size) to help characterize the observer's vision.
 % This program takes over your screen to measure the observer's size or
-% spacing threshold for letter identification. It takes about 10 minutes to
-% measure four thresholds. It's meant to be called by a short user-written
+% spacing threshold for letter identification. It takes about 5 minutes to
+% measure two thresholds. It's meant to be called by a short user-written
 % script, and should work well in clinical environments. All results are
 % returned in the "o" struct and also saved to disk in two files whose file
 % names include your script name, the experimenter and observer names, and
@@ -55,6 +55,7 @@ function oo=CriticalSpacing(oIn)
 % Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H.
 % (2016) A clinical test for visual crowding. F1000Research 5:81 (doi:
 % 10.12688/f1000research.7835.1) http://f1000research.com/articles/5-81/v1
+% It's open access. Download freely.
 %
 % INSTALL. To install and run CriticalSpacing on your computer:
 % Download the CriticalSpacing software from
@@ -65,7 +66,7 @@ function oo=CriticalSpacing(oIn)
 % MATLAB, Psychtoolbox, and CriticalSpacing software. Install. Type "help
 % CriticalSpacing" in the MATLAB Command Window.
 %
-% PRINT THE ALPHABET. Choose a font from those available in the
+% PRINT THE ALPHABET ON PAPER. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
 % o.readAlphabetFromDisk=1. We have done most of our work with the "Sloan"
 % and "Pelli" fonts. Only Pelli is skinny enough to measure foveal
@@ -87,9 +88,12 @@ function oo=CriticalSpacing(oIn)
 % letters or digits. This may help observers choose an answer, especially
 % when they are guessing.
 %
-% MATLAB & Psychtoolbox. To run this program, you need a computer with
+% MATLAB AND PSYCHTOOLBOX. To run this program, you need a computer with
 % MATLAB (or Octave) and the Psychtoolbox installed. The computer OS can be
-% OS X, Windows, or Linux. 
+% OS X, Windows, or Linux. MATLAB is commercially available, and many
+% universites have site licences. Psychtoolbox is free.
+% https://www.mathworks.com/
+% http://psychtoolbox.org/
 % 
 % OPTIONAL: MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically
 % reads your display screen's resolution in pixels and size in cm, and
@@ -666,6 +670,7 @@ KbName('UnifyKeyNames');
 RestrictKeysForKbCheck([]);
 escapeKeyCode=KbName('ESCAPE');
 spaceKeyCode=KbName('space');
+returnKeyCode=KbName('Return');
 graveAccentKeyCode=KbName('`~');
 escapeChar=char(27);
 graveAccentChar='`';
@@ -1095,7 +1100,7 @@ try
       end
       Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',instructionalMarginPix,0.82*screenRect(4)-oo(1).textSize*1.4);
       [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if ismember(terminatorChar,[escapeChar,graveAccentChar]) 
+      if ismember(terminatorChar,[escapeChar graveAccentChar]) 
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
@@ -1181,7 +1186,7 @@ try
          background=WhiteIndex(window);
       end
       [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if ismember(terminatorChar,[escapeChar,graveAccentChar])
+      if ismember(terminatorChar,[escapeChar graveAccentChar])
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
@@ -1217,7 +1222,7 @@ try
          background=WhiteIndex(window);
       end
       [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if ismember(terminatorChar,[escapeChar,graveAccentChar])
+      if ismember(terminatorChar,[escapeChar graveAccentChar])
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
@@ -1284,7 +1289,7 @@ try
    ffprintf(ff,'\n%s %s\n',oo(1).functionNames,datestr(now));
    ffprintf(ff,'Saving results in:\n');
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
-   ffprintf(ff,'Keep both. The .txt file is human-readable. The .mat file is machine-readable.\n');
+   ffprintf(ff,'Keep both files, .txt and .mat, to be read by humans and machines.\n');
    for oi=1:conditions
       if ~isempty(oo(oi).unknownFields)
          ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
@@ -1293,7 +1298,7 @@ try
    ffprintf(ff,'*: %s: %s\n',oo(1).experimenter,oo(1).observer);
    for oi=1:conditions
       if oo(oi).showProgressBar
-         progressBarRect=[round(screenRect(3)*0.95) 0 screenRect(3) screenRect(4)]; % 5% of screen width.
+         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 5% of screen width.
       end
       stimulusRect=screenRect;
       if oo(oi).showProgressBar
@@ -1574,16 +1579,16 @@ try
    ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
       pixPerDeg,RectWidth(actualScreenRect)/pixPerDeg,...
       RectHeight(actualScreenRect)/pixPerDeg);
-   ffprintf(ff,'o.screen %d, %dx%d pixels, (%dx%d native) %.1fx%.1f cm, %.0f pix/cm.\n',...
+   ffprintf(ff,'o.screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.0f pix/cm.\n',...
       cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       oo(1).nativeWidth,oo(1).nativeHeight,...
       screenWidthMm/10,screenHeightMm/10,...
       RectWidth(actualScreenRect)/(screenWidthMm/10));
-   ffprintf(ff,'%s, %s, %s, %s\n',computer.system,cal.processUserLongName,cal.localHostName,cal.macModelName);
+   ffprintf(ff,'%s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
    oo(1).matlab=version;
    [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
    v=oo(1).psychtoolbox;
-   ffprintf(ff,'MATLAB %s, Psychtoolbox %d.%d.%d\n',oo(1).matlab,v.major,v.minor,v.point);
+   ffprintf(ff,'%s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
    assert(cal.screenWidthCm==screenWidthMm/10);
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
@@ -1652,16 +1657,13 @@ try
       string=[string 'The two kinds of letter can be mixed together all over the display, or separated into left and right sides. '];
    end
    string=[string 'Sometimes the letters will be easy to identify. Sometimes they will be nearly impossible. '];
-   string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, and just get as many as you can. '];
-   string=[string 'Type slowly. (Quit anytime by pressing ESCAPE or "`".) '];
-   if ~any(isfinite([oo.durationSec]))
+   string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, ' ...
+      'and just get as many as you can. '];
+   string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.) '];
+   if ~any(oo.useFixation)
       string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
-   if oo(oi).useFixation
-      string=[string '\n\nIMPORTANT: You must put your eye(s) on the fixation mark before each trial begins. When you are fixating, and you''re ready to begin, please press the SPACE BAR. '];
-   else
-      string=[string 'Now, to begin, please press the SPACE BAR. '];
-   end
+   string=[string 'To continue, please hit RETURN. '];
    Screen('TextFont',window,oo(oi).textFont,0);
    Screen('TextSize',window,round(oo(oi).textSize*0.35));
    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
@@ -1670,13 +1672,12 @@ try
    DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window,[],1);
    if 0 && oo(oi).useSpeech
-      string=strrep(string,' or "`"','');
       string=strrep(string,'\n','');
       string=strrep(string,'eye(s)','eyes');
       Speak(string);
    end
    SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
+   answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
    
    Screen('FillRect',window);
    if ismember(answer,[escapeChar graveAccentChar])
@@ -1693,9 +1694,9 @@ try
       return
    end
    fixationClipRect=stimulusRect;
-   if any(isfinite([oo.durationSec]))
-      string='Please use the crosshairs on every trial. ';
-      string=[string 'To begin, please fix your gaze at the center of crosshairs below, and, while fixating, press the SPACEBAR. '];
+   if any(oo.useFixation)
+      string='On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. ';
+      string=[string 'To begin, please fix your gaze at the center of the crosshairs below, and, while fixating, press the SPACEBAR. '];
       string=strrep(string,'letter',symbolName);
       fixationClipRect(2)=5*oo(oi).textSize;
       x=instructionalMarginPix;
@@ -1972,7 +1973,7 @@ try
       end
       fixationLines=ComputeFixationLines2(oo(oi).fix);
       % Set up fixation.
-      if ~oo(oi).repeatedTargets && isfinite(oo(oi).durationSec)
+      if ~oo(oi).repeatedTargets && oo(oi).useFixation
          % Draw fixation.
          fl=ClipLines(fixationLines,fixationClipRect);
          Screen('DrawLines',window,fl,fixationLineWeightPix,black);
@@ -1984,11 +1985,11 @@ try
          Screen('FillRect',window,[220 220 220],r); % grey background
       end
       Screen('Flip',window,[],1); % Display instructions and fixation.
-      if isfinite(oo(oi).durationSec)
+      if oo(oi).useFixation
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
             answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
-            if streq(answer,'ESCAPE')
+            if ismember(answer,[escapeChar graveAccentChar])
                oo(1).quitRun=1;
                oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
                if oo(1).quitSession
@@ -2008,7 +2009,7 @@ try
          % Define fixation bounds midway through first trial, for rest of
          % trials.
          fixationClipRect=InsetRect(stimulusRect,0,1.6*oo(oi).textSize);
-         if ~oo(oi).repeatedTargets && isfinite(oo(oi).durationSec)
+         if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
@@ -2017,7 +2018,7 @@ try
          WaitSecs(1); % Duration of fixation display, before stimulus appears.
          Screen('FillRect',window,[],stimulusRect); % Clear screen; keep progress bar.
          Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
-         if ~oo(oi).repeatedTargets && isfinite(oo(oi).durationSec)
+         if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
@@ -2312,7 +2313,7 @@ try
       if isfinite(oo(oi).durationSec)
          WaitSecs(oo(oi).durationSec); % Display letters.
          Screen('FillRect',window,white,stimulusRect); % Clear letters.
-         if ~oo(oi).repeatedTargets && isfinite(oo(oi).durationSec)
+         if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
@@ -2353,7 +2354,7 @@ try
             x=x+1.5*RectWidth(dstRect);
          end
          Screen('TextFont',window,oo(oi).textFont,0);
-         if ~oo(oi).repeatedTargets && isfinite(oo(oi).durationSec)
+         if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
@@ -2709,10 +2710,12 @@ oo(oi).fixationXYPix=XYPixOfXYDeg(oo(oi),[0 0]);
 if ~oo(oi).useFixation
    oo(oi).fixationIsOffscreen = 0;
 else
-   if ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect)
-      oo(oi).fixationIsOffscreen = 1;
+   oo(oi).fixationIsOffscreen = ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
+   if oo(oi).fixationIsOffscreen
+      fprintf('off %d, fixationXYPix %.0f %.0f, stimulusRect %d %d %d %d\n',...
+         oo(oi).fixationIsOffscreen,oo(oi).fixationXYPix,oo(oi).stimulusRect);
       % oo(oi).fixationXYPix is in plane of display. Off-screen fixation is
-      % not! It is the same distance from the eye as the near point.
+      % not! Instead it is the same distance from the eye as the near point.
       % fixationOffsetXYCm is vector from near point to fixation.
       rDeg=sqrt(sum(oo(oi).nearPointXYDeg.^2));
       ori=atan2d(-oo(oi).nearPointXYDeg(2),-oo(oi).nearPointXYDeg(1));
