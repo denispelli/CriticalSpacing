@@ -951,11 +951,15 @@ try
          if ~IsXYInRect(oo(i).nearPointXYInUnitSquare,[0 0 1 1])
             error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',oo(i).nearPointXYInUnitSquare);
          end
+         if ~isfinite(oo(i).targetDeg)
+            ecc=sqrt(sum(oo(i).eccentricityXYDeg.^2));
+            oo(i).targetDeg=0.3*(ecc+0.15)/oo(i).fixedSpacingOverSize;
+         end
          xy=oo(i).nearPointXYInUnitSquare;
          xy(2)=1-xy(2); % Move origin from lower left to upper left.
          oo(i).nearPointXYPix=xy.*[RectWidth(oo(i).stimulusRect) RectHeight(oo(i).stimulusRect)];
          oo(i).nearPointXYPix=oo(i).nearPointXYPix+oo(i).stimulusRect(1:2);
-         % oo(i).nearPointXYPix is screen coordinate.
+         % oo(i).nearPointXYPix is a screen coordinate.
          % Require margin between target and edge of stimulusRect.
          r=InsetRect(oo(i).stimulusRect,(0.5+oo(i).targetMargin)*oo(i).targetDeg*oo(i).pixPerDeg,0.6*oo(i).targetDeg*oo(i).pixPerDeg);
          if ~all(r(1:2)<=r(3:4))
