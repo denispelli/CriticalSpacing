@@ -113,6 +113,8 @@ o.useFractionOfScreen=0;
 % o.useFractionOfScreen=0.3; 
 
 o.practicePresentations=0;
+o.experimenter='Jing';
+o.observer='junk';
 
 o.viewingDistanceCm=15;
 o.eccentricityXYDeg=[30 0]; % Distance of target from fixation. Positive up and to right.
