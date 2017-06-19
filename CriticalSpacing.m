@@ -9,18 +9,19 @@ function oo=CriticalSpacing(oIn)
 % returned in the "o" struct and also saved to disk in two files whose file
 % names include your script name, the experimenter and observer names, and
 % the date. One of those files is plain text .txt and easy for you to read;
-% the other is a MATLAB save file .MAT and easily read by MATLAB. Please
-% keep both. The filenames are unique and easy to sort, so it's fine to let
-% all your data files accumulate in your CriticalSpacing/data/ folder.
+% the other is a MATLAB save file .MAT and easily read by MATLAB programs.
+% It's best to keep both. The filenames are unique and easy to sort, so
+% it's fine to let all your data files accumulate in your
+% CriticalSpacing/data/ folder.
 %
 % THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
 % "o" struct and setting its fields to specify your testing condition. Call
 % CriticalSpacing, passing the "o" struct. CriticalSpacing will measure a
-% threshold for your condition and return the "o" struct with all the
+% threshold for your condition and return the "o" struct including all the
 % results as additional fields. CriticalSpacing may adjust some of your
 % parameters to satisfy physical constraints including screen size and
 % maximum possible contrast. If you provide several conditions, as an o
-% array, then CriticalSpacing runs all the conditions interleaved,
+% array, then CriticalSpacing runs all the conditions randomly interleaved,
 % measuring a threshold for each. I sometimes pass two identical conditions
 % to get two thresholds for the same condition.
 %
@@ -28,11 +29,11 @@ function oo=CriticalSpacing(oIn)
 % user-written script. Your run script is short and very easy to write. It
 % just assigns values to the fields of an "o" struct and then calls
 % CriticalSpacing to measure a threshold. I have provided
-% runCriticalSpacing as a example. You control the behavior of
-% CriticalSpacing by setting parameters in the fields of a struct called
-% "o". "o" defines a condition for which a threshold will be measured. If
-% you provide several conditions, as an o array, then CriticalSpacing runs
-% all the conditions interleaved, measuring a threshold for each.
+% runCriticalSpacing as an example. You control the behavior of
+% CriticalSpacing by setting parameters in the fields the "o" struct. "o"
+% defines a condition for which a threshold will be measured. If you
+% provide several conditions, as an o array, then CriticalSpacing runs all
+% the conditions interleaved, measuring a threshold for each.
 % CriticalSpacing initially confirms the viewing distance, asks for the
 % experimenter's and observer's names, and presents a page of instructions.
 % The rest is just one eye chart after another, each showing one or two
@@ -42,7 +43,7 @@ function oo=CriticalSpacing(oIn)
 % RUN A SCRIPT. To test an observer, double click "runCriticalSpacing.m" or
 % your own modified script. They're easy to write. Say "Ok" if MATLAB
 % offers to change the current folder. CriticalSpacing automatically saves
-% your results to the "CriticalSpacing/data" folder. The filenames are
+% your results to the "CriticalSpacing/data" folder. The data filenames are
 % unique and intuitive, so it's ok to let lots of data accumulate in the
 % data folder. runCriticalSpacing takes 5 min to test one observer (with 20
 % trials per threshold), measuring two thresholds, interleaved.
@@ -52,8 +53,7 @@ function oo=CriticalSpacing(oIn)
 %
 % Pelli, D. G., Waugh, S. J., Martelli, M., Crutch, S. J., Primativo, S.,
 % Yong, K. X., Rhodes, M., Yee, K., Wu, X., Famira, H. F., & Yiltiz, H.
-% (2016) A clinical test for visual crowding [version 1; referees: 2
-% approved with reservations]. F1000Research 5:81 (doi:
+% (2016) A clinical test for visual crowding. F1000Research 5:81 (doi:
 % 10.12688/f1000research.7835.1) http://f1000research.com/articles/5-81/v1
 %
 % INSTALL. To install and run CriticalSpacing on your computer:
@@ -67,16 +67,19 @@ function oo=CriticalSpacing(oIn)
 %
 % PRINT THE ALPHABET. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
-% o.readAlphabetFromDisk=1. We recommend "Pelli" for threshold spacing and
-% Sloan for threshold size. Print the PDF for your font, e.g. "Pelli
+% o.readAlphabetFromDisk=1. We have done most of our work with the "Sloan"
+% and "Pelli" fonts. Only Pelli is skinny enough to measure foveal
+% crowding. Outside the fovea you can use any font. We recommend "Pelli"
+% for threshold spacing (crowding) in the fovea, and Sloan for threshold
+% size (acuity) anywhere. Print the PDF for your font, e.g. "Pelli
 % alphabet.pdf" or "Sloan alphabet.pdf". Give the printed alphabet page to
 % your observer. It shows the possible letters, e.g. "DHKNORSVZ" or
 % "1234567889". Most observers will find it helpful to consult this page
 % while choosing an answer, especially when they are guessing. And children
-% may prefer to respond by pointing at the printed target letters on
-% the alphabet page. However, patients who have trouble directing
-% their attention may be better off without the paper, to give their
-% undivided attention to the display.
+% may prefer to respond by pointing at the printed target letters on the
+% alphabet page. However, patients who have trouble directing their
+% attention may be better off without the paper, to give their undivided
+% attention to the display.
 %
 % DISPLAY ALPHABET ON SCREEN. Anytime you press the "caps lock" key,
 % CriticalSpacing will display the alphabet of possible responses in the
@@ -86,10 +89,16 @@ function oo=CriticalSpacing(oIn)
 %
 % MATLAB & Psychtoolbox. To run this program, you need a computer with
 % MATLAB (or Octave) and the Psychtoolbox installed. The computer OS can be
-% OS X, Windows, or Linux. CriticalSpacing automatically reads the screen
-% resolution in pixels and size in cm. That won't work with an analog CRT
-% display, but we could add code to allow you to measure it manually and
-% specify it in your script. Let me know if you need that.
+% OS X, Windows, or Linux. 
+% 
+% YOU CAN MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically reads
+% your display screen's resolution in pixels and size in cm, and reports
+% them in every data file. Alas, the reported size in cm is sometimes
+% (very) wrong in Windows, and may not always be available for external
+% monitors under any OS. So we allow users to measure the display screen
+% size themselves and provide it in the "o" struct as
+% o.measuredScreenWidthCm and o.measuredScreenWidthCm. Measure the width
+% and height of your screen's rectangle of glowing pixels.
 %
 % MAC OS X: PERMIT MATLAB TO CONTROL YOUR COMPUTER. Open the System
 % Preferences: Security and Privacy: Privacy tab. Select Accessibility.
@@ -114,8 +123,8 @@ function oo=CriticalSpacing(oIn)
 % typically be several meters, and it's important that you set it
 % accurately, within five percent. You can measure it with a $10 tape
 % measure marked in centimeters. A fancy $40 alternative is a Bosch laser
-% measure, which gives you the answer in two clicks. The laser will work
-% even with a mirror.
+% measure, which gives you the answer in two clicks. The laser works even
+% with a mirror.
 %
 % http://www.amazon.com/gp/product/B0016A2UHO
 % http://www.amazon.com/gp/product/B00LGANH8K
@@ -175,14 +184,15 @@ function oo=CriticalSpacing(oIn)
 % dropin. It typically takes some fiddling with dynamic libraries to make
 % sure the right library is available and that access to it is not blocked
 % by the presence of an obsolete version. For explanation see "help
-% drawtextplugin". You need this only if want to set
+% drawtextplugin". You need this only if you want to set
 % o.readAlphabetFromDisk=0.
 %
-% CHILDREN. Adults and children seem to find it easy and intuitive, but
-% we've only tested a few children so far. Aenne Brielmann has designed an
-% astronaut metaphar for children, to make it more like a game, which we
-% plan to implement. Try running runCriticalSpacing. It measures four
-% thresholds.
+% CHILDREN. Adults and children seem to find it easy and intuitive. Sarah
+% Waugh (Dept. of Vision and Hearing Sciences, Anglia Ruskin University)
+% has tested 200 children of ages 4 to 16 (?). To test children, Sarah used
+% an fictional astronaut adventure story about this test. The game,
+% designed by Aenne Brielmann, in my lab here at NYU, includes an
+% illustrated story book and alien dolls.
 %
 % CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
 % o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
@@ -222,15 +232,15 @@ function oo=CriticalSpacing(oIn)
 %
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
-% Because at least one computer (the 2017 MacBook Pro with track bar) lacks
-% an ESCAPE key, we accept the GRAVE ACCENT key (also in upper left of
-% keyboard) as equivalent. CriticalSpacing will then print out (and save to
-% disk) results so far, and ask whether you're quitting the whole session
-% or proceeding to the next run. Quitting this run sets the flag o.quitRun,
-% and quitting the whole session also sets the flag o.quitSession. If
-% o.quitSession is already set when you call CriticalSpacing, the
-% CriticalSpacing returns immediately after processing arguments.
-% (CriticalSpacing ignores o.quitRun on input.)
+% Because at least one computer (e.g. the 2017 MacBook Pro with track bar)
+% lacks an ESCAPE key, we accept the GRAVE ACCENT key (also in upper left
+% of keyboard) as equivalent. CriticalSpacing will then print out (and save
+% to disk) results so far, and ask whether you're quitting the whole
+% session or proceeding to the next run. Quitting this run sets the flag
+% o.quitRun, and quitting the whole session also sets the flag
+% o.quitSession. If o.quitSession is already set when you call
+% CriticalSpacing, the CriticalSpacing returns immediately after processing
+% arguments. (CriticalSpacing ignores o.quitRun on input.)
 %
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
@@ -411,7 +421,6 @@ o.useSpeech=1;
 o.contrast=1; % Nominal contrast, not calibrated.
 o.eccentricityXYDeg = [0 0]; % eccentricity of target center re fixation, + for right & up.
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
-
 o.durationSec=inf; % Duration of display of target and flankers
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
@@ -419,8 +428,7 @@ o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.radialOrTangential='tangential'; % Tangentially arranged flankers for
-                                    % single target.
+% o.radialOrTangential='tangential'; % Arrange flankers radially or tangentially.
 o.radialOrTangential='radial'; % Radially arranged flankers for single target
 o.repeatedTargets=1;
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
@@ -431,6 +439,8 @@ o.targetDeg=nan;
 o.stimulusMarginFraction=0.05; % White margin around stimulusRect.
 o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetHeightDeg.
 o.textSizeDeg = 0.6;
+o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
+o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -638,9 +648,22 @@ end
 
 % Set up for Screen
 oo(1).screen=max(Screen('Screens'));
+% The screen size in cm is valuable when the OS provides it, via the
+% Psychtoolbox, but it's sometimes wrong on Windows computers, and may
+% not always be available for external monitors. So we allow users to
+% measure it themselves and provide it in the o struct as
+% o.measuredScreenWidthCm and o.measuredScreenWidthCm.
 [screenWidthMm,screenHeightMm]=Screen('DisplaySize',oo(1).screen);
-screenWidthCm=screenWidthMm/10;
-screenHeightCm=screenHeightMm/10;
+if isfinite(oo(1).measuredScreenWidthCm)
+   screenWidthCm=oo(1).measuredScreenWidthCm;
+else
+   screenWidthCm=screenWidthMm/10;
+end
+if isfinite(oo(1).measuredScreenWidthCm)
+   screenHeightCm=oo(1).measuredScreenHeightCm;
+else
+   screenHeightCm=screenHeightMm/10;
+end
 screenRect=Screen('Rect',oo(1).screen);
 if oo(1).useFractionOfScreen
    screenRect=round(oo(oi).useFractionOfScreen*screenRect);
@@ -831,7 +854,7 @@ try
       pixPerCm=screenWidthPix/screenWidthCm;
       for oi=1:conditions
          % Adjust textSize so our string fits on screen.
-         instructionalMargin=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
+         instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
          oo(oi).textSize=40; % Rough guess.
          Screen('TextSize',window,oo(oi).textSize);
          Screen('TextFont',window,oo(oi).textFont,0);
@@ -843,10 +866,11 @@ try
          end
          instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
          boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
-         fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMargin);
+         fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMarginPix);
          % Adjust textSize so our line fits perfectly.
          oo(oi).textSize=round(oo(oi).textSize/fraction);
       end
+      fprintf('*: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
       pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       if oo(1).useFractionOfScreen
          pixPerDeg=oo(1).useFractionOfScreen*pixPerDeg;
@@ -953,7 +977,7 @@ try
          'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
          oo(1).viewingDistanceCm);
       Screen('TextSize',window,oo(1).textSize);
-      [~,y]=DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
       
       % SIZE LIMITS
       string='';
@@ -1026,11 +1050,11 @@ try
     
       % Draw all the small text on screen.
       Screen('TextSize',window,round(oo(1).textSize*0.6));
-      [~,y]=DrawFormattedText(window,string,instructionalMargin,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
+      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
       
       % COPYRIGHT
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
       
       % Get typed response
       Screen('TextSize',window,oo(1).textSize);
@@ -1039,11 +1063,11 @@ try
       else
          background=WhiteIndex(window);
       end
-      Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',instructionalMargin,0.82*screenRect(4)-oo(1).textSize*1.4);
-      [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',instructionalMarginPix,0.82*screenRect(4)-oo(1).textSize*1.4);
+      [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar,graveAccentChar]) 
          oo(1).quitRun=1;
-         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
          else
@@ -1113,25 +1137,25 @@ try
    if isempty(oo(1).experimenter)
       Screen('FillRect',window);
       Screen('TextFont',window,oo(1).textFont,0);
-      Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Hello Experimenter,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
+      Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(0.6*oo(1).textSize));
-      Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMargin,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
          background=[];
       else
          background=WhiteIndex(window);
       end
-      [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar,graveAccentChar])
          oo(1).quitRun=1;
-         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
          else
             ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
          end
@@ -1151,21 +1175,21 @@ try
       Screen('FillRect',window);
       Screen('TextSize',window,oo(1).textSize);
       Screen('TextFont',window,oo(1).textFont,0);
-      Screen('DrawText',window,'',instructionalMargin,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Hello Observer,',instructionalMargin,screenRect(4)/2-5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMargin,screenRect(4)/2-3*oo(1).textSize,black,white);
+      Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
       Screen('TextSize',window,oo(1).textSize);
       if IsWindows
          background=[];
       else
          background=WhiteIndex(window);
       end
-      [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMargin,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar,graveAccentChar])
          oo(1).quitRun=1;
-         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
          else
@@ -1290,7 +1314,6 @@ try
          if oo(ii).repeatedTargets
             oo(ii).useFixation=0;
          end
-         oo(ii).textSize = round(oo(ii).textSizeDeg*oo(1).pixPerDeg);
          oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
          oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
          oo(ii).speakInstructions=oo(ii).useSpeech;
@@ -1573,7 +1596,11 @@ try
       error('Targets are neither digits nor letters');
    end
    Screen('FillRect',window,white);
-   string=[sprintf('Hello %s. ',oo(oi).observer)];
+   if length(oo(oi).observer)>0
+      string=[sprintf('Hello %s. ',oo(oi).observer)];
+   else
+      string='Hello. ';
+   end
    string=[string 'Please turn on this computer''s sound. '];
    string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
    string=[string 'You might also have the alphabet on a piece of paper. '];
@@ -1607,12 +1634,15 @@ try
    end
    Screen('TextFont',window,oo(oi).textFont,0);
    Screen('TextSize',window,round(oo(oi).textSize*0.35));
-   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
    Screen('TextSize',window,oo(oi).textSize);
    string=strrep(string,'letter',symbolName);
-   DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+   DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window,[],1);
-   if oo(oi).useSpeech
+   if 0 && oo(oi).useSpeech
+      string=strrep(string,' or "`"','');
+      string=strrep(string,'\n','');
+      string=strrep(string,'eye(s)','eyes');
       Speak(string);
    end
    SetMouse(screenRect(3),screenRect(4),window);
@@ -1621,9 +1651,9 @@ try
    Screen('FillRect',window);
    if ismember(answer,[escapeChar graveAccentChar])
       oo(1).quitRun=1;
-      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
       if oo(1).quitSession
-         ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+         ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
       else
          ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
       end
@@ -1638,7 +1668,7 @@ try
       string=[string 'To begin, please fix your gaze at the center of crosshairs below, and, while fixating, press the SPACEBAR. '];
       string=strrep(string,'letter',symbolName);
       fixationClipRect(2)=5*oo(oi).textSize;
-      x=instructionalMargin;
+      x=instructionalMarginPix;
       y=1.3*oo(1).textSize;
       Screen('TextSize',window,oo(oi).textSize);
       DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
@@ -1930,9 +1960,9 @@ try
             answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
             if streq(answer,'ESCAPE')
                oo(1).quitRun=1;
-               oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+               oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
                if oo(1).quitSession
-                  ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+                  ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
                else
                   ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
                end
@@ -2271,7 +2301,7 @@ try
          Screen('TextSize',texture,oo(oi).textSize);
          bounds=TextBounds(texture,string,1);
          Screen('Close',texture);
-         x=instructionalMargin;
+         x=instructionalMarginPix;
          y=-bounds(2)+0.3*oo(oi).textSize;
          %          fixationClipRect=stimulusRect;
          %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
@@ -2280,7 +2310,7 @@ try
          Screen('TextSize',window,oo(oi).textSize);
          [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
          alphabetBounds=round(alphabetBounds*oo(oi).textSize/RectHeight(alphabetBounds));
-         x=instructionalMargin;
+         x=instructionalMarginPix;
          y=stimulusRect(4)-0.3*RectHeight(alphabetBounds);
          %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
          for i=1:length(oo(oi).alphabet)
@@ -2447,9 +2477,9 @@ try
    end % for presentation=1:length(condList)
    % Quitting just this run or whole session?
    if oo(1).quitRun
-      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect);
+      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
       if oo(1).quitSession
-         ffprintf(ff,'*** User typed ESCAPE ESCAPE. Session terminated.\n');
+         ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
       else
          ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
       end
@@ -2658,8 +2688,8 @@ else
       ori=atan2d(-oo(oi).nearPointXYDeg(2),-oo(oi).nearPointXYDeg(1));
       rCm=2*sind(0.5*rDeg)*oo(oi).viewingDistanceCm;
       fixationOffsetXYCm=[cosd(ori) sind(ori)]*rCm;
-      if 1
-         % check
+      if 0
+         % Check the geometry.
          oriCheck=atan2d(fixationOffsetXYCm(2),fixationOffsetXYCm(1));
          rCmCheck=sqrt(sum(fixationOffsetXYCm.^2));
          rDegCheck=2*asind(0.5*rCm/oo(oi).viewingDistanceCm);
@@ -2686,7 +2716,7 @@ else
       string = sprintf('%sAdjust the viewing distances so both your fixation mark and the cross below are %.1f cm from the observer''s eye. ',...
          string,oo(oi).viewingDistanceCm);
       string = [string 'Tilt and swivel the display so that the cross is orthogonal to the observer''s line of sight. '...
-         'Then hit RETURN to proceed, or ESCAPE to quit. '];
+         'Once the fixation is properly arranged, hit RETURN to proceed. Otherwise hit ESCAPE to quit. '];
       Screen('TextSize',window,oo(oi).textSize);
       Screen('TextFont',window,'Verdana');
       Screen('FillRect',window,white);
@@ -2702,9 +2732,6 @@ else
          string=strrep(string,'.0','');
          Speak(string);
       end
-      %       ListenChar(0); % get ready for the quesdlg
-      %       answer = questdlg('','Fixation','Ok','Cancel','Ok');
-      %       ListenChar(2); % go back to orig status; no echo
       response=GetKeypress;
       answer=[];
       if ismember(response,[escapeChar graveAccentChar])
@@ -2714,15 +2741,15 @@ else
          answer='Ok';
       end
       Screen('FillRect',window,white);
-      Screen('Flip',window); % Blank, to acknowledge response.
-      
+      Screen('Flip',window); % Blank the screen, to acknowledge response.
       switch answer
          case 'Ok',
             oo(oi).fixationIsOffscreen = 1;
             ffprintf(ff,'Offscreen fixation mark (%.1f,%.1f) cm from near point of display.\n',fixationOffsetXYCm);
          otherwise,
             oo(oi).fixationIsOffscreen = 0;
-            error('User refused off-screen fixation. Please reduce viewing distance (%.1f cm) or o.eccentricityXYDeg (%.1f %.1f).',...
+            ffprintf(ff,['\n\n' WrapString(string) '\n']);
+            error('User declined to set up off-screen fixation. Consider reducing viewing distance (%.1f cm) or o.eccentricityXYDeg (%.1f %.1f).',...
                oo(oi).viewingDistanceCm,oo(oi).eccentricityXYDeg);
       end
    else
