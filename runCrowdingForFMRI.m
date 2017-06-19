@@ -216,4 +216,10 @@ for i=1:length(oo)
    o.repeatedTargets=0;
    o.thresholdParameter='spacing';
    o=CriticalSpacing(o);
+   if ~o.quitRun
+      fprintf('Finished row %d.\n',i);
+   end
+   if o.quitSession
+      break
+   end
 end
