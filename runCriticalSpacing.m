@@ -46,7 +46,7 @@ o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
-o.repeatedTargets=1; % Repeat targets for immunity to fixation errors.
+o.repeatedTargets=0; % Repeat targets for immunity to fixation errors.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
 o.practicePresentations=3;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
@@ -112,7 +112,12 @@ o.useFractionOfScreen=0;
 
 % o.useFractionOfScreen=0.3; 
 
+o.practicePresentations=0;
+
+o.viewingDistanceCm=15;
 o.eccentricityXYDeg=[60 0]; % Distance of target from fixation. Positive up and to right.
+o.nearPointXYInUnitSquare=[0.9 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
+
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
@@ -120,7 +125,6 @@ o.targetDeg=2;
 
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
-o.viewingDistanceCm=50;
 % o(2)=o(1); % Copy the condition
 o=CriticalSpacing(o); 
 
