@@ -38,12 +38,12 @@ o.useSpeech=1;
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
 o.eccentricityXYDeg=[0 0]; % Distance of target from fixation. Positive up and to right.
-o.nearPointXYInUnitSquare=[0.5 0.5];
+o.nearPointXYInUnitSquare=[0.5 0.5]; % Target location, re lower-left corner of screen.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=0;
-o.targetSizeIsHeight=nan; % depends on parameter
-o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
+o.targetSizeIsHeight=nan; % "Size" is either height (1) or width (0).
+o.minimumTargetPix=6; % Minimum viewing distance depends soley on this and pixPerCm.
 % o.radialOrTangential='tangential'; % vertically arranged flankers for single target
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.repeatedTargets=0; % Repeat targets for immunity to fixation errors.
@@ -115,9 +115,10 @@ o.useFractionOfScreen=0;
 o.practicePresentations=0;
 
 o.viewingDistanceCm=15;
-o.eccentricityXYDeg=[60 0]; % Distance of target from fixation. Positive up and to right.
-o.nearPointXYInUnitSquare=[0.9 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
+o.eccentricityXYDeg=[30 0]; % Distance of target from fixation. Positive up and to right.
+o.nearPointXYInUnitSquare=[0.7 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
 
+o.durationSec=0.2; % duration of display of target and flankers
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
