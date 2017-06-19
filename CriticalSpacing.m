@@ -91,14 +91,15 @@ function oo=CriticalSpacing(oIn)
 % MATLAB (or Octave) and the Psychtoolbox installed. The computer OS can be
 % OS X, Windows, or Linux. 
 % 
-% YOU CAN MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically reads
-% your display screen's resolution in pixels and size in cm, and reports
-% them in every data file. Alas, the reported size in cm is sometimes
-% (very) wrong in Windows, and may not always be available for external
-% monitors under any OS. So we allow users to measure the display screen
-% size themselves and provide it in the "o" struct as
-% o.measuredScreenWidthCm and o.measuredScreenWidthCm. Measure the width
-% and height of your screen's rectangle of glowing pixels.
+% OPTIONAL: MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically
+% reads your display screen's resolution in pixels and size in cm, and
+% reports them in every data file. Alas, the reported size in cm is
+% sometimes (very) wrong in Windows, and is not always available for
+% external monitors under any OS. So we allow users to measure the display
+% screen size themselves and provide it in the "o" struct as
+% o.measuredScreenWidthCm and o.measuredScreenWidthCm. Use a meter stick to
+% measure the width and height of your screen's rectangle of glowing
+% pixels.
 %
 % MAC OS X: PERMIT MATLAB TO CONTROL YOUR COMPUTER. Open the System
 % Preferences: Security and Privacy: Privacy tab. Select Accessibility.
@@ -150,26 +151,27 @@ function oo=CriticalSpacing(oIn)
 % http://www.amazon.com/12-Acrylic-Mirror-Sheet-Pack/dp/B00JPJK3T0/ref=sr_1_13
 % http://www.amazon.com/Double-Infant-Mirror-surface-Approved/dp/B0041TABOG/ref=pd_sim_sbs_468_9
 %
-% readAlphabetFromDisk. If you set o.readAlphabetFromDisk=1 in your script
-% you can use any of the "fonts" inside the CriticalSpacing/alphabets/
-% folder, which you can best see by looking at the alphabet files in
-% CriticalSpacing/pdf/. You can easily create and add a new "font" to the
-% alphabets folder. Name the folder after your "font", and put one image
-% file per letter inside the folder, named for the letter. That's it. You
-% can now specify your new "font" as the o.targetFont and CriticalSpacing
-% will use it. You can make the drawings yourself, or you can run
-% CriticalSpacing/lib/SaveAlphabetToDisk.m to create a new folder based on
-% a computer font that you already own. This scheme makes it easy to
-% develop a new font, and also makes it easy to share font images without
-% violating a font's commercial distribution license. (US Copyright law
-% does not cover fonts. Adobe patents the font program, but the images are
-% public domain.) You can also ask CriticalSpacing to use any font that's
-% installed in your computer OS by setting o.readAlphabetFromDisk=0. The
-% Pelli and Sloan fonts are provided in the CriticalSpacing/fonts/ folder,
-% and you can install them in your computer OS. On a Mac, you can just
-% double-click the font file and say "yes" when your computer offers to
-% install it for you. Once you've installed a font, you must quit and
-% restart MATLAB to use the newly available font.
+% READ ALPHABET FROM DISK. If you set o.readAlphabetFromDisk=1 in your
+% script you can use any of the "fonts" inside the
+% CriticalSpacing/alphabets/ folder, which you can best see by looking at
+% the alphabet files in CriticalSpacing/pdf/. You can easily create and add
+% a new "font" to the alphabets folder. Name the folder after your "font",
+% and put one image file per letter inside the folder, named for the
+% letter. That's it. You can now specify your new "font" as the
+% o.targetFont and CriticalSpacing will use it. You can make the drawings
+% yourself, or you can run CriticalSpacing/lib/SaveAlphabetToDisk.m to
+% create a new folder based on a computer font that you already own. This
+% scheme makes it easy to develop a new font, and also makes it easy to
+% share font images without violating a font's commercial distribution
+% license. (US Copyright law does not cover fonts. Adobe patents the font
+% program, but the images are public domain.) You can also ask
+% CriticalSpacing to use any font that's installed in your computer OS by
+% setting o.readAlphabetFromDisk=0. The Pelli and Sloan fonts are provided
+% in the CriticalSpacing/fonts/ folder, and you can install them in your
+% computer OS. On a Mac, you can just double-click the font file and say
+% "yes" when your computer offers to install it for you. Once you've
+% installed a font, you must quit and restart MATLAB to use the newly
+% available font.
 %
 % OPTIONAL: ADD A NEW FONT. Running the program SaveAlphabetToDisk in
 % the CriticalSpacing/lib/ folder, after you edit it to specify the font,
@@ -215,6 +217,43 @@ function oo=CriticalSpacing(oIn)
 %
 % where minimumTargetPix=8 and letterDeg=0.02 for the healthy adult fovea.
 %
+% PERSPECTIVE DISTORTION IS MINIMIZED BY PLACING THE TARGET AT THE NEAR
+% POINT. At the beginning of each run, the CriticalSpacing program gives
+% directions to arrange the display so that its "near point" (i.e. point
+% closest to the observer's eye) is orthogonal to the observer's line of
+% sight. This guarantees minimal effects of perspective distortaion on any
+% target placed there. 
+
+% ECCENTRICITY OF THE TARGET. Eccentricity of the target is achieved by
+% placing fixation appropriately far away. Modest eccentricities, up to
+% perhaps 30 deg, are achieved automatically. You choose a near point at
+% one end of your display, using o.nearPointXYInUnitSquare=[x,y], and let
+% CriticalSpacing automatically draw the fixation mark at a point on the
+% screen that is the right distance from the target. Larger eccentricities
+% require off-screen fixation, which we now explain how to set up.
+%
+% HORIZONAL OFF-SCREEN FIXATION. To achieve a large horizontaol
+% eccentricity, pick a stable object that has roughly the same height as
+% your display, perhaps a can or a cardboard box. Place the sturdy object
+% next to your display. (Alternatively, a goose neck clamp, described
+% below, could be clamped to a side edge of your display.) Follow the
+% instructions of CriticalSpacing to draw a fixation mark, e.g. with a
+% black sharpee, on your object at the same height as the cross on the
+% screen. CriticalSpacing will tell you how far it should be from the
+% on-screen cross (the target location) and how far it shold be from the
+% observer's eye. In addition to the sturdy object and marker, you'll need
+% a meter stick.
+%
+% VERTICAL OFF-SCREEN FIXATION. To achieve a large vertical eccentricity, I
+% recommend a gooseneck clamp, like the Wimberley PP-200 Plamp II used by
+% photographers to hold things.
+% https://www.amazon.com/gp/product/B00SCXUZM0/ref=oh_aui_detailpage_o01_s00
+% For a negative vertical eccentricity, clamp one end on the top edge of
+% your display, and CriticalSpacing will tell you how to position the other
+% end, which acts as your fixation mark. For a positive eccentricity, bring
+% your display forward to the edge of your table, and clamp the bottom edge
+% of the display. You need just the gooseneck clamp and a meter stick.
+% 
 % NAME THE EXPERIMENTER & OBSERVER. If it doesn't already know,
 % CriticalSpacing asks for the name of the experimenter and observer. These
 % names are included in the data files, and incorporated into the data file
@@ -320,18 +359,9 @@ function oo=CriticalSpacing(oIn)
 %
 % Shrink stimulusRect 10% so that letters have white above and below.
 %
-% Add training phase, for children, that introduced repetition gradually.
-% Discard training data, then begin actual run.
-% 
 % In repetition mode, don't assume one centered target and an even number
 % of spaces. We might want to center between two targets to show an odd
 % number of spaces.
-%
-% I am very tempted to all the NoiseDiscrmination features to the
-% CriticalSpacing program.
-%
-% Help Jon's lab use CriticalSpacing and NoiseDiscrimination.
-
 
 %% HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
