@@ -905,7 +905,7 @@ try
          % Adjust textSize so our line fits perfectly.
          oo(oi).textSize=round(oo(oi).textSize/fraction);
       end
-      fprintf('*: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
+%       fprintf('*: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
       pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       if oo(1).useFractionOfScreen
          pixPerDeg=oo(1).useFractionOfScreen*pixPerDeg;
