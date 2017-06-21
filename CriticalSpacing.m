@@ -351,19 +351,17 @@ function oo=CriticalSpacing(oIn)
 % The other relevant parameters of the condition do not change from trial
 % to trial: age, font, thresholdParameter, repeatedTargets.
 %
-% Copyright © 2016,2017, Denis Pelli, denis.pelli@nyu.edu
+% You can use o.stimulusMarginFraction to shrink stimulusRect e.g. 10% so
+% that letters have white above and below.
+%
+% Copyright © 2016, 2017, Denis Pelli, denis.pelli@nyu.edu
 
 %% PLANS
 %
 % I'd like the viewing-distance page to respond to a new command: "o" to
 % set up offscreen fixation.
 %
-% The eccentricity check needs to look 0.3 further when the spacing
-% orientation is radial.
-%
 % Add switch to use only border characters as flankers.
-%
-% Shrink stimulusRect 10% so that letters have white above and below.
 %
 % In repetition mode, don't assume one centered target and an even number
 % of spaces. We might want to center between two targets to show an odd
@@ -605,7 +603,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
-   'minimumScreenSizeDeg' 'typicalThesholdSizeDeg' ...
+   'minimumScreenSizeXYDeg' 'typicalThesholdSizeDeg' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
    'targetSizeIsHeight'  ...
@@ -735,7 +733,7 @@ for i=1:length(res)
 end
 actualScreenRect=Screen('Rect',oo(1).screen,1);
 if oo(1).nativeWidth==RectWidth(actualScreenRect)
-   ffprintf(ff,'Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
+   ffprintf(ff,'%d: Your screen resolution is at its native maximum %d x %d. Excellent!\n',1,oo(1).nativeWidth,oo(1).nativeHeight);
 else
    warning backtrace off
    if oo(1).permissionToChangeResolution
@@ -751,7 +749,7 @@ else
       actualScreenRect=Screen('Rect',oo(1).screen,1);
    end
    if oo(1).nativeWidth==RectWidth(actualScreenRect)
-      ffprintf(ff,'Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
+      ffprintf(ff,'1: Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
    else
       if RectWidth(actualScreenRect)<oo(1).nativeWidth
          ffprintf(ff,'WARNING: Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
@@ -828,6 +826,16 @@ try
    end
    for oi=1:conditions
       oo(oi).stimulusRect=screenRect;
+      if oo(oi).showProgressBar
+         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
+         oo(oi).stimulusRect(3)=progressBarRect(1);
+      end
+      clearRect=oo(oi).stimulusRect;
+      if oo(oi).stimulusMarginFraction>0
+         s=oo(oi).stimulusMarginFraction*oo(oi).stimulusRect;
+         s=round(s);
+         oo(oi).stimulusRect=InsetRect(oo(oi).stimulusRect,RectWidth(s),RectHeight(s));
+      end
       if ~oo(oi).readAlphabetFromDisk
          if ~oo(1).standardDrawTextPlugin
             error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
@@ -915,7 +923,7 @@ try
          % Adjust textSize so our line fits perfectly.
          oo(oi).textSize=round(oo(oi).textSize/fraction);
       end
-%       fprintf('*: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
+%       fprintf('1: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
       pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       for oi=1:conditions
          oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
@@ -940,7 +948,7 @@ try
       if oo(1).speakViewingDistance && oo(1).useSpeech
          Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
       end
-      minimumScreenSizeDeg=[0 0];
+      minimumScreenSizeXYDeg=[0 0];
       for oi=1:conditions
          % Compute fixation location, given target eccentricity and
          % location.
@@ -1015,17 +1023,19 @@ try
          end
          
          %% IS SCREEN BIG ENOUGH TO HOLD TARGET AND FIXATION?
-         % We protect fixationCoreSizeDeg diameter from clipping by screen edge.
+         % We protect fixationCoreSizeDeg diameter from clipping by screen
+         % edge.
          if oo(oi).isolatedTarget
-            % In the screen, include the target itself, plus a fraction o.targetMargin of
-            % the target size.
+            % In the screen, include the target itself, plus a fraction
+            % o.targetMargin of the target size.
             totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg*(0.5+oo(oi).targetMargin);
          else
             totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + 1.66*abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg/2;
          end
-         % Compute angular subtense of stimulusRect, assuming the near point is at center.
-         rectSizeDeg(1)=2*atand(0.5*RectWidth(oo(oi).stimulusRect)/oo(1).pixPerCm/oo(1).viewingDistanceCm);
-         rectSizeDeg(2)=2*atand(0.5*RectHeight(oo(oi).stimulusRect)/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+         % Compute angular subtense of stimulusRect, assuming the near
+         % point is at center.
+         xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
+         rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
          if all(totalSizeXYDeg <= rectSizeDeg);
             oo(oi).fixationOnScreen=1;
             verb='fits in';
@@ -1055,12 +1065,13 @@ try
             % If necessary, shift nearPointXYPix just enought to get
             % fixation on screen.
             xy=XYPixOfXYDeg(oo(oi),[0 0]);
-            r=InsetRect(oo(1).stimulusRect,oo(oi).fixationCoreSizeDeg/2,oo(oi).fixationCoreSizeDeg/2);
+            pix=oo(oi).pixPerDeg*oo(oi).fixationCoreSizeDeg/2;
+            r=InsetRect(oo(1).stimulusRect,pix,pix);
             if ~IsXYInRect(xy,r)
-               xyNew = ClipLineSegment2(xy,oo(oi).nearPointXYPix,r(1:2),r(3:4));
+               xyNew=ClipLineSegment2(xy,oo(oi).nearPointXYPix,r);
                % Apply the needed shift of fixation, from xy to xyNew, to the nearPointXYPix
-               ffprintf(ff,'NOTE: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to get fixation onto the screen.',...
-                  oo(oi).nearPointXYPix,xy,oo(oi).nearPointXYPix+xyNew-xy);
+               ffprintf(ff,'%d: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to get fixation onto the screen.\n',...
+                  1,oo(oi).nearPointXYPix,oo(oi).nearPointXYPix+xyNew-xy);
                oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
             end
          end
@@ -1069,7 +1080,7 @@ try
          oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
          oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
 
-         % Compute minimumScreenSizeDeg and maximumViewingDistanceCm required for on-screen fixation.
+         % Compute minimumScreenSizeXYDeg and maximumViewingDistanceCm required for on-screen fixation.
          if oi==1
             minimumScreenSizeXYDeg=totalSizeXYDeg;
          else
@@ -1128,11 +1139,11 @@ try
          ' as small as %.2f deg with spacing as small as %.2f deg. '],...
          string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,RectHeight(screenRect)/pixPerDeg,...
          sizeDeg,spacingDeg);
-      if any(minimumScreenSizeDeg>0)
+      if any(minimumScreenSizeXYDeg>0)
          string=sprintf(['%sTo display your peripheral targets ' ...
             '(requiring a screen size of at least %.0fx%.0f deg), ' ...
             'view me from at most %.0f cm. '],...
-            string,minimumScreenSizeDeg,maximumViewingDistanceCm);
+            string,minimumScreenSizeXYDeg,maximumViewingDistanceCm);
       end
       smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
       string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
@@ -1383,31 +1394,18 @@ try
    assert(dataFid>-1);
    ff=[1 dataFid];
    ffError=[2 dataFid];
-   ffprintf(ff,'\n%s %s\n',oo(1).functionNames,datestr(now));
+   ffprintf(ff,'%s %s. ',oo(1).functionNames,datestr(now));
    ffprintf(ff,'Saving results in:\n');
    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
-   ffprintf(ff,'Keep both files, .txt and .mat, to be read by humans and machines.\n');
+   ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
    for oi=1:conditions
       if ~isempty(oo(oi).unknownFields)
          ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
       end
    end
-   ffprintf(ff,'*: %s: %s\n',oo(1).experimenter,oo(1).observer);
+   ffprintf(ff,'1: %s: %s\n',oo(1).experimenter,oo(1).observer);
    for oi=1:conditions
-      if oo(oi).showProgressBar
-         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
-      end
-      stimulusRect=screenRect;
-      if oo(oi).showProgressBar
-         stimulusRect(3)=progressBarRect(1);
-      end
-      clearRect=stimulusRect;
-      if oo(oi).stimulusMarginFraction>0
-         s=oo(oi).stimulusMarginFraction*stimulusRect;
-         s=round(s);
-         stimulusRect=InsetRect(stimulusRect,RectWidth(s),RectHeight(s));
-      end
-      if oo(oi).repeatedTargets
+       if oo(oi).repeatedTargets
          oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
          oo(oi).trials=2*oo(oi).presentations;
       else
@@ -1421,12 +1419,12 @@ try
       end
       % Prepare to draw fixation cross.
       fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
-      fixationCrossPix=min(fixationCrossPix,2*RectWidth(stimulusRect)); % full width and height, can extend off screen
+      fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
       fixationLineWeightPix=round(oo(oi).fixationLineWeightDeg*pixPerDeg);
       fixationLineWeightPix=max(1,fixationLineWeightPix);
       fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
       oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
-      oo(oi).fix.clipRect=stimulusRect;
+      oo(oi).fix.clipRect=oo(oi).stimulusRect;
       oo(oi).fix.fixationCrossPix=fixationCrossPix;
    
       oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]); 
@@ -1599,7 +1597,7 @@ try
    end
    ffprintf(ff,['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
       'you should view from at most %.0f cm.\n'],...
-      oi,minimumScreenSizeDeg,maximumViewingDistanceCm);
+      oi,minimumScreenSizeXYDeg,maximumViewingDistanceCm);
    
    ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
    for i=1:length(oo(1).keyboardNameAndTransport)
@@ -1672,29 +1670,29 @@ try
    if oo(1).flipScreenHorizontally
       ffprintf(ff,'Using mirror. ');
    end
-   ffprintf(ff,'Viewing distance %.0f cm,',oo(1).viewingDistanceCm);
-   ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
-      pixPerDeg,RectWidth(screenRect)/pixPerDeg,...
-      RectHeight(screenRect)/pixPerDeg);
-   ffprintf(ff,'o.screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.0f pix/cm.\n',...
-      cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+   ffprintf(ff,'%d: Viewing distance %.0f cm,',1,oo(1).viewingDistanceCm);
+   xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
+   xyDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+   ffprintf(ff,' %.0f pixPerDeg, %.0f pix/cm.\n',...
+      pixPerDeg,RectWidth(actualScreenRect)/(screenWidthMm/10));
+   ffprintf(ff,'%d: Screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.1fx%.1f deg.\n',...
+      1,cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       oo(1).nativeWidth,oo(1).nativeHeight,...
-      screenWidthMm/10,screenHeightMm/10,...
-      RectWidth(actualScreenRect)/(screenWidthMm/10));
-   ffprintf(ff,'%s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
+      screenWidthMm/10,screenHeightMm/10,xyDeg);
+   ffprintf(ff,'1: %s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
    oo(1).matlab=version;
    [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
    v=oo(1).psychtoolbox;
-   ffprintf(ff,'%s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
+   ffprintf(ff,'1: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
    assert(cal.screenWidthCm==screenWidthMm/10);
    cal.ScreenConfigureDisplayBrightnessWorks=1;
    if cal.ScreenConfigureDisplayBrightnessWorks
       cal.brightnessSetting=1;
-      % ffprintf(ff,'Turning autobrightness off. Setting "brightness" to %.2f, on a scale of 0.0 to 1.0;\n',cal.brightnessSetting);
       % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
       % silently do nothing if not supported. But when I used it on my
       % video projector, Screen gave a fatal error. How can my program know
       % when it's safe to use Screen ConfigureDisplay?
+      % Bug reported to Psychtoolbox forum June 2017.
       if computer.osx || computer.macintosh
          Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
       end
@@ -1774,7 +1772,7 @@ try
       Speak(string);
    end
    SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
+   answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
    
    Screen('FillRect',window);
    if ismember(answer,[escapeChar graveAccentChar])
@@ -1790,7 +1788,7 @@ try
       sca;
       return
    end
-   fixationClipRect=stimulusRect;
+   fixationClipRect=oo(oi).stimulusRect;
    if any(oo.useFixation)
       string='On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. ';
       if oo(1).fixationOnScreen
@@ -1887,7 +1885,7 @@ try
       end
       if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
       if oo(oi).repeatedTargets
-         if RectHeight(stimulusRect)/RectWidth(stimulusRect) > oo(oi).targetHeightOverWidth;
+         if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth;
             minSpacesY=3+1; 
             minSpacesX=0;
          else
@@ -1943,23 +1941,23 @@ try
          % spacingPix is vertical. It is scaled by
          % heightOverWidth in the orthogonal direction.
          if oo(oi).fixedSpacingOverSize
-            spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
-            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
             oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
          else
-            spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(oi).targetPix)/minSpacesY));
-            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
+            spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesY));
+            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
          end
       else
          % spacingPix is horizontal. It is scaled by
          % heightOverWidth in the orthogonal direction.
          if oo(oi).fixedSpacingOverSize
-            spacingPix=min(spacingPix,floor(RectWidth(stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
-            spacingPix=min(spacingPix,floor(RectHeight(stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
+            spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
+            spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
             oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
          else
-            spacingPix=min(spacingPix,floor((RectHeight(stimulusRect)-oo(oi).targetPix)/minSpacesX));
-            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(stimulusRect)-oo(oi).targetHeightOverWidth*oo(oi).targetPix)/4));
+            spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX));
+            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetHeightOverWidth*oo(oi).targetPix)/4));
          end
       end
       oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
@@ -1977,12 +1975,11 @@ try
          % Flankers must fit on screen. Compute where tangent line
          % intersects stimulusRect. The tangent line goes through target
          % xyT and is orthogonal to the line from fixation.
-%          orientation=oo(oi).eccentricityClockwiseAngleDeg+90;
          orientation=90+atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
-         if ~IsXYInRect(xyT,stimulusRect)
+         if ~IsXYInRect(xyT,oo(oi).stimulusRect)
             ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
-            stimulusSize=[RectWidth(stimulusRect) RectHeight(stimulusRect)];
-            ffprintf(ff,'stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
+            stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
+            ffprintf(ff,'o.stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
                stimulusSize,stimulusSize/pixPerDeg,...
                oo(oi).fix.x/pixPerDeg,oo(oi).fix.y/pixPerDeg,...
                oo(oi).eccentricityXYDeg,...
@@ -1993,12 +1990,12 @@ try
          if oo(oi).fixedSpacingOverSize
             xF=xyT(1)+[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*sind(orientation);
             yF=xyT(2)-[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*cosd(orientation);
-            [xF,yF]=ClipLineSegment(xF,yF,stimulusRect);
+            [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
             spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))/(1+0.5*oo(oi).fixedSpacingOverSize);
          else
             xF=xyT(1)+[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*sind(orientation);
             yF=xyT(2)-[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*cosd(orientation);
-            [xF,yF]=ClipLineSegment(xF,yF,stimulusRect);
+            [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
             spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))-0.5*oo(oi).targetPix;
          end
          assert(length(spacingPix)==1);
@@ -2016,9 +2013,9 @@ try
          if eccentricityPix==0
             % Flanker must fit on screen, horizontally
             if oo(oi).fixedSpacingOverSize
-               spacingPix=min(spacingPix,RectWidth(stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
+               spacingPix=min(spacingPix,RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
             else
-               spacingPix=min(spacingPix,(RectWidth(stimulusRect)-oo(oi).targetPix)/minSpacesX);
+               spacingPix=min(spacingPix,(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX);
             end
             assert(spacingPix>=0);
             xF(end+1:end+2)=xyT(1)+[-1 1]*spacingPix*sind(orientation);
@@ -2036,20 +2033,20 @@ try
                for i=1:100
                   outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
                   assert(outerSpacingPix>=0);
-                  if outerSpacingPix<=RectWidth(stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2; % Outer flanker is on screen.
+                  if outerSpacingPix<=RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2; % Outer flanker is on screen.
                      break;
                   else
                      spacingPix=0.9*spacingPix;
                   end
                end
                if i==100
-                  ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
+                  ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
                   error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
                end
             else
                spacingPix=min(spacingPix,xyT(1)-oo(oi).targetPix/2); % inner flanker on screen
                outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
-               outerSpacingPix=min(outerSpacingPix,RectWidth(stimulusRect)-xyT(1)-oo(oi).targetPix/2); % outer flanker on screen
+               outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-oo(oi).targetPix/2); % outer flanker on screen
             end
             assert(outerSpacingPix>=0);
             spacingPix=eccentricityPix+addonPix-(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix+outerSpacingPix);
@@ -2066,11 +2063,11 @@ try
       end
       oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
       if oo(oi).targetSizeIsHeight
-         oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(stimulusRect));
-         oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(stimulusRect)*oo(oi).targetHeightOverWidth);
+         oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect));
+         oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(oo(oi).stimulusRect)*oo(oi).targetHeightOverWidth);
       else
-         oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(stimulusRect));
-         oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(stimulusRect)/oo(oi).targetHeightOverWidth);
+         oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(oo(oi).stimulusRect));
+         oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
       end
       oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
       if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
@@ -2103,7 +2100,7 @@ try
       if oo(oi).useFixation
          if beginAfterKeypress
             SetMouse(screenRect(3),screenRect(4),window);
-            answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,stimulusRect);
+            answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
             if ismember(answer,[escapeChar graveAccentChar])
                oo(1).quitRun=1;
                oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
@@ -2119,11 +2116,11 @@ try
             end
             beginAfterKeypress=0;
          end
-         Screen('FillRect',window,white,stimulusRect);
+         Screen('FillRect',window,white,oo(oi).stimulusRect);
          Screen('FillRect',window,white,clearRect);
          % Define fixation bounds midway through first trial, for rest of
          % trials.
-         fixationClipRect=InsetRect(stimulusRect,0,1.6*oo(oi).textSize);
+         fixationClipRect=InsetRect(oo(oi).stimulusRect,0,1.6*oo(oi).textSize);
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
@@ -2131,7 +2128,7 @@ try
          end
          Screen('Flip',window,[],1); % Display fixation.
          WaitSecs(1); % Duration of fixation display, before stimulus appears.
-         Screen('FillRect',window,[],stimulusRect); % Clear screen; keep progress bar.
+         Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
          Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
@@ -2179,7 +2176,7 @@ try
          % observer to familiarize herself with the alphabet.
          for i=1:length(letters)
             r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
-            s=RectWidth(stimulusRect)/(1.5*length(letters))/RectWidth(r);
+            s=RectWidth(oo(oi).stimulusRect)/(1.5*length(letters))/RectWidth(r);
             r=round(s*r);
             r=OffsetRect(r,(0.5+1.5*(i-1))*RectWidth(r),RectHeight(r));
             Screen('DrawTexture',window,letterStruct(i).texture,[],r);
@@ -2248,10 +2245,10 @@ try
       else
          % repeatedTargets
          % Screen bounds on letter array.
-         xMin=xyT(1)-xSpacing*floor((xyT(1)-stimulusRect(1)-0.5*xPix)/xSpacing);
-         xMax=xyT(1)+xSpacing*floor((stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
-         yMin=xyT(2)-ySpacing*floor((xyT(2)-stimulusRect(2)-0.5*yPix)/ySpacing);
-         yMax=xyT(2)+ySpacing*floor((stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
+         xMin=xyT(1)-xSpacing*floor((xyT(1)-oo(oi).stimulusRect(1)-0.5*xPix)/xSpacing);
+         xMax=xyT(1)+xSpacing*floor((oo(oi).stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
+         yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
+         yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
          % Show only as many letters as we need so that, despite a fixation
          % error (in any direction) as large as roughly +/-
          % maxFixationErrorXYDeg, at least one of the many target letters
@@ -2302,7 +2299,7 @@ try
          if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
          if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end;
          if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
-         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(stimulusRect)-xMax,yMin,RectHeight(stimulusRect)-yMax); end;
+         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end;
          clear textures dstRects
          n=length(xMin:xSpacing:xMax);
          textures=zeros(1,n);
@@ -2361,7 +2358,7 @@ try
                GetClicks;
             end
             % Create a texture holding one line of letters.
-            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 stimulusRect(3) heightPix],8,0);
+            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 oo(oi).stimulusRect(3) heightPix],8,0);
             Screen('FillRect',lineTexture(lineIndex),white);
             r=Screen('Rect',textures(1));
             Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
@@ -2399,7 +2396,7 @@ try
          letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xyT(1),xyT(2));
          Screen('FrameRect',window,[255 0 0],letterRect);
          fprintf('%d: %d: screenHeightPix %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',...
-            oi,MFileLineNr,RectHeight(stimulusRect),RectHeight(letterRect),oo(oi).targetPix,Screen('TextSize',window),xPix,yPix);
+            oi,MFileLineNr,RectHeight(oo(oi).stimulusRect),RectHeight(letterRect),oo(oi).targetPix,Screen('TextSize',window),xPix,yPix);
       end
       Screen('TextFont',window,oo(oi).textFont,0);
       if oo(oi).showProgressBar
@@ -2427,13 +2424,13 @@ try
       end
       if isfinite(oo(oi).durationSec)
          WaitSecs(oo(oi).durationSec); % Display letters.
-         Screen('FillRect',window,white,stimulusRect); % Clear letters.
+         Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
          Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
-         Screen('FillRect',window,white,stimulusRect);
+         Screen('FillRect',window,white,oo(oi).stimulusRect);
          WaitSecs(0.2); % pause before response screen
          Screen('TextFont',window,oo(oi).textFont,0);
          Screen('TextSize',window,oo(oi).textSize);
@@ -2449,7 +2446,7 @@ try
          Screen('Close',texture);
          x=instructionalMarginPix;
          y=-bounds(2)+0.3*oo(oi).textSize;
-         %          fixationClipRect=stimulusRect;
+         %          fixationClipRect=oo(oi).stimulusRect;
          %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
          % Draw text.
          Screen('DrawText',window,string,x,y,black,white,1);
@@ -2457,7 +2454,7 @@ try
          [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
          alphabetBounds=round(alphabetBounds*oo(oi).textSize/RectHeight(alphabetBounds));
          x=instructionalMarginPix;
-         y=stimulusRect(4)-0.3*RectHeight(alphabetBounds);
+         y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
          %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
          for i=1:length(oo(oi).alphabet)
             dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
@@ -2474,7 +2471,7 @@ try
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
          Screen('Flip',window,[],1); % Display fixation & response instructions.
-         Screen('FillRect',window,white,stimulusRect);
+         Screen('FillRect',window,white,oo(oi).stimulusRect);
       end
       
       if oo(oi).takeSnapshot
@@ -2505,7 +2502,7 @@ try
       for i=1:length(targets)
          [answer,secs]=GetKeypressWithHelp( ...
             [spaceKeyCode escapeKeyCode graveAccentKeyCode oo(oi).responseKeyCodes], ...
-            oo(oi),window,stimulusRect,letterStruct,responseString);
+            oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
          trialData.reactionTimes(i)=secs-flipSecs;
          
          if ismember(answer,[escapeChar graveAccentChar]);
@@ -2760,12 +2757,12 @@ end
 end
 
 function xyPix=XYPixOfXYDeg(o,xyDeg)
-% Convert position from deg (relative to fixation) to (x,y) coordinate in
-% o.stimulusRect. Deg increase right and up. Pix are in Apple screen
+% Convert position from deg (relative to fixation) to (x,y) screen
+% coordinate. Deg increase right and up. Pix are in Apple screen
 % coordinates which increase down and right. The perspective transformation
 % is relative to location of near point, which is orthogonal to line of
-% sight. "location" refers to the near point. We typically put the target
-% there, but that is not assumed in this routine.
+% sight. We typically put the target there, but that is not assumed in this
+% routine.
 xyDeg=xyDeg-o.nearPointXYDeg;
 rDeg=sqrt(sum(xyDeg.^2));
 rPix=o.pixPerCm*o.viewingDistanceCm*tand(rDeg);
@@ -2808,7 +2805,7 @@ if ~oo(oi).useFixation
 else
    oo(oi).fixationIsOffscreen = ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
    if oo(oi).fixationIsOffscreen
-      fprintf('off %d, fixationXYPix %.0f %.0f, stimulusRect %d %d %d %d\n',...
+      fprintf('off %d, fixationXYPix %.0f %.0f, o.stimulusRect %d %d %d %d\n',...
          oo(oi).fixationIsOffscreen,oo(oi).fixationXYPix,oo(oi).stimulusRect);
       % oo(oi).fixationXYPix is in plane of display. Off-screen fixation is
       % not! Instead it is the same distance from the eye as the near point.
@@ -2887,9 +2884,9 @@ else
 end
 oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
 if oo(oi).fixationCrossBlankedNearTarget
-   ffprintf(ff,'Fixation cross is blanked near target. No delay in showing fixation after target.\n');
+   ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
-   ffprintf(ff,'Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oo(oi).fixationCrossBlankedUntilSecAfterTarget);
+   ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
 end
 end
 
