@@ -110,12 +110,12 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 
 % Crowding distance at 25 combinations of location and orientation:
-% ? (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
-% ? (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
-% ? (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
-% ? (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
+% * (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
+% * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
+% * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
+% * (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
 
-% ? (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
+% * (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
 clear o oo
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -139,7 +139,7 @@ for ecc=[-25 -5 -1 1 5 25]
    end
 end
 
-% ? (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
+% * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
 for meridianDeg=45:90:315
    for rep=1:2
       for radial=0:1
@@ -159,7 +159,7 @@ for meridianDeg=45:90:315
    end
 end
 
-% ? (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
+% * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
 for ecc=[-5 5]
    for rep=1:2
       for radial=0:1
@@ -179,13 +179,13 @@ for ecc=[-5 5]
    end
 end
 
-% ? (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
+% * (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
 for rep=1:2
    o.eccentricityXYDeg=[0 0];
-   o.radialOrTangential='radial';
+   o.radialOrTangential='tangential';
    %    o=CriticalSpacing(o);
    if exist('oo','var')
       oo(end+1)=o;
@@ -195,20 +195,14 @@ for rep=1:2
 end
 for i=1:length(oo)
    radialDeg=sqrt(sum(oo(i).eccentricityXYDeg.^2));
-   oo(i).viewingDistanceCm=max(30,min(400,round(12/tand(radialDeg))));
-%    oo(i).xyCm=round(tand(oo(i).eccentricityXYDeg)*oo(i).viewingDistanceCm);
-%    oo(i).nearPointXYInUnitSquare=[0.5 0.5] + 0.25*oo(i).xyCm/14;
-%    oo(i).nearPointXYInUnitSquare=round(oo(i).nearPointXYInUnitSquare*10)/10;
+   oo(i).viewingDistanceCm=max(30,min(400,round(9/tand(radialDeg))));
    oo(i).row=i;
 end
 t=struct2table(oo);
-% t.alphabet=[]; % Temporarily suppress from print out. Restore before testing.
-% t.borderLetter=[];% Temporarily suppress from print out. Restore before testing.
 t
 for i=1:length(oo)
    o=oo(i);
 % o.useFractionOfScreen=0.5;
-o.eccentricityXYDeg=[0 0];
    o.fixationLineWeightDeg=0.04;
    o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
    o.trials=30;
