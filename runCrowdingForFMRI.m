@@ -207,7 +207,8 @@ t=struct2table(oo);
 t
 for i=1:length(oo)
    o=oo(i);
-o.useFractionOfScreen=0.3;
+% o.useFractionOfScreen=0.5;
+o.eccentricityXYDeg=[0 0];
    o.fixationLineWeightDeg=0.04;
    o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
    o.trials=30;
