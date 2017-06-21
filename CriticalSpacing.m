@@ -607,7 +607,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
    'targetSizeIsHeight'  ...
-   'maxRepetition' 'practiceCountdown' 'flankerLetter'};
+   'maxRepetition' 'practiceCountdown' 'flankerLetter' 'row'};
 unknownFields=cell(0);
 for oi=1:conditions
    fields=fieldnames(oIn(oi));
@@ -1052,7 +1052,9 @@ try
          end
          ffprintf(ff,'%d: Combined size of target and fixation %.1f x %.1f deg %s screen %.1f x %.1f deg.\n',...
             oi,totalSizeXYDeg,verb,rectSizeDeg);
-
+         if streq(verb,'exceeds') && ~oo(oi).forceFixationOffScreen
+            ffprintf(ff,'%d: This forces the fixation off-screen. Consider reducing the viewing distance or eccentricity.\n',oi);
+         end
        
          %% SET NEAR POINT AS NEAR AS WE CAN TO DESIRED LOCATION
          xy=oo(oi).nearPointXYInUnitSquare;
@@ -1077,8 +1079,10 @@ try
          end
          % XYPixOfXYDeg results depend on o.nearPointXYDeg and
          % o.nearPointXYPix.
-         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
+         % fix.xy is a screen coordinate.
          oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
+         % eccentricityXYPix is a vector from fixation to target.
+         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
 
          % Compute minimumScreenSizeXYDeg and maximumViewingDistanceCm required for on-screen fixation.
          if oi==1
@@ -1113,13 +1117,19 @@ try
       % BIG TEXT
       % Say hello, and get viewing distance.
       Screen('FillRect',window,white);
+      cmString=sprintf('%.0f cm',oo(1).viewingDistanceCm);
       string=sprintf(['Welcome to CriticalSpacing. ' ...
          'If you want a viewing distance of %.0f cm, ' ...
          'please move me to that distance from your eye, and hit RETURN. ' ...
          'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
          oo(1).viewingDistanceCm);
       Screen('TextSize',window,oo(1).textSize);
-      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3-2*length(cmString),[],[],1.1);
+      Screen('TextSize',window,2*oo(1).textSize);
+      bounds=Screen('TextBounds',window,cmString,[],[],1);
+      x=screenRect(3)-bounds(3)-bounds(3)/length(cmString);
+      Screen('DrawText',window,cmString,x,y,black,white,1);
+      Screen('TextSize',window,oo(1).textSize);
       
       % SIZE LIMITS
       string='';
@@ -1419,7 +1429,7 @@ try
       end
       % Prepare to draw fixation cross.
       fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
-      fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
+%       fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
       fixationLineWeightPix=round(oo(oi).fixationLineWeightDeg*pixPerDeg);
       fixationLineWeightPix=max(1,fixationLineWeightPix);
       fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
@@ -1428,7 +1438,7 @@ try
       oo(oi).fix.fixationCrossPix=fixationCrossPix;
    
       oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]); 
-      oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
+      oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
       oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
       
       oo(oi).responseCount=1; % When we have two targets we get two responses for each display.
@@ -1529,14 +1539,19 @@ try
          oo(oi).fix.targetCrossPix=0;
       end
       if oo(oi).fixationCrossBlankedNearTarget
-         % Blanking to prevent masking and crowding. Blanking radius is max
-         % of target diameter and half eccentricity.
+         % Blanking of marks to prevent masking and crowding of the target
+         % by the marks. Blanking radius (centered at target) is max of
+         % target diameter and half eccentricity.
          diameter=oo(oi).targetDeg*pixPerDeg;
          if ~oo(oi).targetSizeIsHeight
             diameter=diameter*oo(oi).targetHeightOverWidth;
          end
          eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
-         oo(oi).fix.blankingRadiusPix=max(diameter,0.5*eccentricityPix);
+         oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
+         if oo(oi).fix.blankingRadiusPix >= eccentricityPix
+            % Make sure we can see fixation. Extend the lines.
+            oo(oi).fix.fixationCrossPix=inf;
+         end
       else
          oo(oi).fix.blankingRadiusPix=0;
       end
@@ -2073,13 +2088,19 @@ try
       if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
       % Prepare to draw fixation cross.
       if oo(oi).fixationCrossBlankedNearTarget
-         % Blanking to prevent masking and crowding. Blanking radius is max
-         % of target diameter and half eccentricity.
+         % Blanking of marks to prevent masking and crowding of the target
+         % by the marks. Blanking radius (centered at target) is max of
+         % target diameter and half eccentricity.
          diameter=oo(oi).targetDeg*pixPerDeg;
          if ~oo(oi).targetSizeIsHeight
             diameter=diameter*oo(oi).targetHeightOverWidth;
          end
-         oo(oi).fix.blankingRadiusPix=max(diameter,0.5*eccentricityPix);
+         eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+         oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
+         if oo(oi).fix.blankingRadiusPix >= eccentricityPix
+            % Make sure we can see fixation. Extend the lines.
+            oo(oi).fix.fixationCrossPix=inf;
+         end
       else
          oo(oi).fix.blankingRadiusPix=0;
       end
@@ -2120,10 +2141,12 @@ try
          Screen('FillRect',window,white,clearRect);
          % Define fixation bounds midway through first trial, for rest of
          % trials.
-         fixationClipRect=InsetRect(oo(oi).stimulusRect,0,1.6*oo(oi).textSize);
+%          fixationClipRect=InsetRect(oo(oi).stimulusRect,0,1.6*oo(oi).textSize);
+         fixationClipRect=oo(oi).stimulusRect;
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
+            Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
          Screen('Flip',window,[],1); % Display fixation.
@@ -2133,6 +2156,7 @@ try
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
+            Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
             Screen('DrawLines',window,fl,fixationLineWeightPix,black);
          end
       else
@@ -2427,14 +2451,19 @@ try
          Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
-            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+             Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+             Screen('DrawLines',window,fl,fixationLineWeightPix,black); 
          end
          Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
          Screen('FillRect',window,white,oo(oi).stimulusRect);
          WaitSecs(0.2); % pause before response screen
          Screen('TextFont',window,oo(oi).textFont,0);
          Screen('TextSize',window,oo(oi).textSize);
-         string='Type your response, or ESCAPE to quit.   ';
+         if oo(oi).useFixation
+            string='Look at the cross as you type your response. Or ESCAPE to quit.   ';
+         else
+            string='Type your response, or ESCAPE to quit.   ';
+         end
          if oo(oi).repeatedTargets
             string=strrep(string,'response','two responses');
          end
@@ -2468,7 +2497,8 @@ try
          Screen('TextFont',window,oo(oi).textFont,0);
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
-            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+             Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+             Screen('DrawLines',window,fl,fixationLineWeightPix,black); 
          end
          Screen('Flip',window,[],1); % Display fixation & response instructions.
          Screen('FillRect',window,white,oo(oi).stimulusRect);
@@ -2757,7 +2787,7 @@ end
 end
 
 function xyPix=XYPixOfXYDeg(o,xyDeg)
-% Convert position from deg (relative to fixation) to (x,y) screen
+% Convert position from deg (relative to fixation) to integet (x,y) screen
 % coordinate. Deg increase right and up. Pix are in Apple screen
 % coordinates which increase down and right. The perspective transformation
 % is relative to location of near point, which is orthogonal to line of
@@ -2773,6 +2803,7 @@ else
    xyPix=[0 0];
 end
 xyPix=xyPix+o.nearPointXYPix;
+xyPix=round(xyPix);
 end
 
 function isTrue=IsXYInRect(xy,rect)
@@ -2796,6 +2827,10 @@ end
 function oo=SetUpFixation(window,oo,oi,ff)
 white=WhiteIndex(window);
 black=BlackIndex(window);
+escapeKeyCode=KbName('ESCAPE');
+spaceKeyCode=KbName('space');
+returnKeyCode=KbName('Return');
+graveAccentKeyCode=KbName('`~');
 escapeChar=char(27);
 graveAccentChar='`';
 returnChar=char(13);
@@ -2805,8 +2840,8 @@ if ~oo(oi).useFixation
 else
    oo(oi).fixationIsOffscreen = ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
    if oo(oi).fixationIsOffscreen
-      fprintf('off %d, fixationXYPix %.0f %.0f, o.stimulusRect %d %d %d %d\n',...
-         oo(oi).fixationIsOffscreen,oo(oi).fixationXYPix,oo(oi).stimulusRect);
+      fprintf('%d: Fixation is off screen. fixationXYPix %.0f %.0f, o.stimulusRect [%d %d %d %d]\n',...
+         oi,oo(oi).fixationXYPix,oo(oi).stimulusRect);
       % oo(oi).fixationXYPix is in plane of display. Off-screen fixation is
       % not! Instead it is the same distance from the eye as the near point.
       % fixationOffsetXYCm is vector from near point to fixation.
@@ -2827,16 +2862,20 @@ else
       string='';
       if fixationOffsetXYCm(1)~=0
          if fixationOffsetXYCm(1) < 0
-            string = sprintf('%sPlease set up a fixation mark %.1f cm to the left of the cross. ',string,-fixationOffsetXYCm(1));
+            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm to the left of the cross. ',string,-fixationOffsetXYCm(1));
+            ffprintf(ff,'%d: Requesting fixation mark %.1f cm to the left of the cross.\n',oi,-fixationOffsetXYCm(1));
          else
-            string = sprintf('%sPlease set up a fixation mark %.1f cm to the right of the cross. ',string,fixationOffsetXYCm(1));
+            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm to the right of the cross. ',string,fixationOffsetXYCm(1));
+            ffprintf(ff,'%d: Requesting fixation mark %.1f cm to the right of the cross.\n',oi,fixationOffsetXYCm(1));
          end
       end
       if fixationOffsetXYCm(2)~=0
          if fixationOffsetXYCm(2) < 0
-            string = sprintf('%sPlease set fixation %.1f cm higher than the cross. ',string,-fixationOffsetXYCm(2));
+            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm higher than the cross below. ',string,-fixationOffsetXYCm(2));
+            ffprintf(ff,'%d: Requesting fixation mark %.1f cm above the cross.\n',oi,-fixationOffsetXYCm(2));
          else
-            string = sprintf('%sPlease set fixation %.1f cm lower than the cross. ',string,fixationOffsetXYCm(2));
+            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm lower than the cross. ',string,fixationOffsetXYCm(2));
+            ffprintf(ff,'%d: Requesting fixation mark %.1f cm below the cross.\n',oi,fixationOffsetXYCm(2));
          end
       end
       string = sprintf('%sAdjust the viewing distances so both your fixation mark and the cross below are %.1f cm from the observer''s eye. ',...
@@ -2858,25 +2897,26 @@ else
          string=strrep(string,'.0','');
          Speak(string);
       end
-      response=GetKeypress;
+      response=GetKeypress([escapeKeyCode,returnKeyCode,graveAccentKeyCode]);
       answer=[];
       if ismember(response,[escapeChar graveAccentChar])
-         answer='No';
+         answer=0;
       end
-      if ismember(response,[returnChar ' '])
-         answer='Ok';
+      if ismember(response,[returnChar])
+         answer=1;
       end
       Screen('FillRect',window,white);
       Screen('Flip',window); % Blank the screen, to acknowledge response.
-      switch answer
-         case 'Ok',
-            oo(oi).fixationIsOffscreen = 1;
-            ffprintf(ff,'Offscreen fixation mark (%.1f,%.1f) cm from near point of display.\n',fixationOffsetXYCm);
-         otherwise,
-            oo(oi).fixationIsOffscreen = 0;
-            ffprintf(ff,['\n\n' WrapString(string) '\n']);
-            error('User declined to set up off-screen fixation. Consider reducing viewing distance (%.1f cm) or o.eccentricityXYDeg (%.1f %.1f).',...
-               oo(oi).viewingDistanceCm,oo(oi).eccentricityXYDeg);
+      if answer
+         oo(oi).fixationIsOffscreen = 1;
+         ffprintf(ff,'%d: Offscreen fixation mark (%.1f,%.1f) cm from near point of display.\n',oi,fixationOffsetXYCm);
+      else
+         oo(oi).fixationIsOffscreen = 0;
+         ffprintf(ff,['\n\n' WrapString(string) '\n'...
+            'ERROR: User declined to set up off-screen fixation.\n'...
+            'Consider reducing viewing distance (%.1f cm) or o.eccentricityXYDeg (%.1f %.1f).\n'],...
+            oo(oi).viewingDistanceCm,oo(oi).eccentricityXYDeg);
+         error('User declined to set up off-screen fixation.');
       end
    else
       oo(oi).fixationIsOffscreen = 0;
