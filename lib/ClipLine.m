@@ -1,7 +1,7 @@
 function [xClipped,yClipped,xxClipped,yyClipped]=ClipLine(x,y,xx,yy,r)
 %[x,y,xx,yy]=ClipLine(x,y,xx,yy,r);
 % Clips a line segment by a rect, and returns the new line segment. Returns
-% four nans if there is no intersection of the line segment with the rect.
+% four nans when if the line segment is entirely outside the rect..
 % 2016 denis.pelli@nyu.edu
 xClipped=x;
 yClipped=y;
@@ -9,6 +9,14 @@ xxClipped=xx;
 yyClipped=yy;
 if IsInRect(x,y,r) && IsInRect(xx,yy,r)
    % Both endpoints in rect. No clipping required.
+   return;
+end
+if all([x y]==[xx yy])
+   % Zero length, outside rect.
+      xClipped=nan;
+      yClipped=nan;
+      xxClipped=nan;
+      yyClipped=nan;
    return;
 end
 % The line has two endpoints. At least one is outside rect. Replace each
