@@ -1,6 +1,6 @@
 function [xClipped,yClipped]=ClipLineSegment(x,y,r)
 %[x,y]=ClipLineSegment(x,y,r);
-% Clips one (or more) line segment by a rect, and teturns (for each line
+% Clips one (or more) line segment by a rect, and returns (for each line
 % received) a new line segment of non-zero length or nothing (empty rects).
 % x and y may contain many lines on input and output. The line segment is
 % (x(1),y(1)) to (x(2),y(2)). Direction (from point 1 to point 2) is
