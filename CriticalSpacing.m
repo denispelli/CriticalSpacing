@@ -229,12 +229,14 @@ function oo=CriticalSpacing(oIn)
 % target placed there. 
 
 % ECCENTRICITY OF THE TARGET. Eccentricity of the target is achieved by
-% placing fixation appropriately far away. Modest eccentricities, up to
-% perhaps 30 deg, are achieved automatically. You choose a near point at
-% one end of your display, using o.nearPointXYInUnitSquare=[x,y], and let
-% CriticalSpacing automatically draw the fixation mark at a point on the
-% screen that is the right distance from the target. Larger eccentricities
-% require off-screen fixation, which we now explain how to set up.
+% placing fixation appropriately. Modest eccentricities, up to perhaps 30
+% deg, are achieved with on-screen fixation. CriticalSpacing automatically
+% chooses the fixation location to allow the target to be as near as
+% possible to the center of the display. (More precisely, we place the
+% target at the near point and place the near point as close as possible to
+% o.nearPointXYInUnitSquare, whose default is 0.5 0.5.) If the eccentricity
+% is too large for on-screen fixation, then we help you set up off-screen
+% fixation.
 %
 % HORIZONAL OFF-SCREEN FIXATION. To achieve a large horizontaol
 % eccentricity, pick a stable object that has roughly the same height as
@@ -470,11 +472,12 @@ o.practicePresentations=3;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
-o.stimulusMarginFraction=0.05; % White margin around stimulusRect.
+o.stimulusMarginFraction=0.0; % White margin around stimulusRect.
 o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetHeightDeg.
 o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
+o.isolatedTarget=0; % Set to 1 when measuring acuity for a single isolated letter. Not yet fully supported.
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -503,6 +506,8 @@ o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
 o.targetCross=0; % 1 to mark target location
 o.useFixation=1;
+o.forceFixationOffScreen=0;
+o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -701,8 +706,11 @@ else
 end
 screenRect=Screen('Rect',oo(1).screen);
 if oo(1).useFractionOfScreen
+   % We want to simulate the full screen, and what we would normally see in
+   % it, shrunken into a tiny fraction. So we use a reduced number of
+   % pixels, but we pretend to retain the same screen size in cm, and
+   % angular subtense.
    screenRect=round(oo(oi).useFractionOfScreen*screenRect);
-   screenWidthCm=oo(oi).useFractionOfScreen*screenWidthCm;
 end
 
 for oi=1:conditions
@@ -882,7 +890,9 @@ try
       screenWidthPix=RectWidth(screenRect);
       screenHeightPix=RectHeight(screenRect);
       if oo(1).useFractionOfScreen
-         pixPerDeg=oo(1).useFractionOfScreen*screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
+%          pixPerDeg=oo(1).useFractionOfScreen*screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
+%dgp
+         pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       else
          pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
       end
@@ -907,9 +917,6 @@ try
       end
 %       fprintf('*: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
       pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
-      if oo(1).useFractionOfScreen
-         pixPerDeg=oo(1).useFractionOfScreen*pixPerDeg;
-      end
       for oi=1:conditions
          oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(oi).pixPerDeg=pixPerDeg;
@@ -934,60 +941,145 @@ try
          Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
       end
       minimumScreenSizeDeg=[0 0];
-      for i=1:conditions
+      for oi=1:conditions
          % Compute fixation location, given target eccentricity and
          % location.
          
          % PLACE TARGET AT NEAR POINT
-         oo(i).nearPointXYDeg=oo(i).eccentricityXYDeg;
+         oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
 
          %% COPIED FROM SET UP NEAR POINT
          white=WhiteIndex(window);
          black=BlackIndex(window);
-         if ~all(isfinite(oo(i).eccentricityXYDeg))
+         
+         % SELECT NEAR POINT
+         % The user specifies the target eccentricity o.eccentricityXYDeg,
+         % which specifies its offset from fixation. Currently, we always
+         % place the target and the near point together. We take
+         % o.nearPointXYInUnitSquare as the user's designation of a point
+         % on the screen and the desire that the target (and near point) be
+         % placed as close to there as possible, while still achieving the
+         % specified eccentricity by shifting target and fixation together
+         % enough to get the fixation mark to fit on screen. If the
+         % eccentricity is too large to allow both the target and fixation
+         % to be on-screen, then the fixation mark is placed off-screen and
+         % we place the target and near point at o.nearPointXYInUnitSquare.
+         % Thus o.eccentricityXYDeg is a requirement, and we'll error-exit
+         % if it cannot be achieved, while o.nearPointXYInUnitSquare is
+         % merely a preference for where to place the target.
+         %
+         % To achieve this we first imagine the target at the desired spot
+         % (typically the center of the screen) and note where fixation
+         % would land, given the specified eccentricity. If it's on-screen
+         % then we're done. If it's off-screen then we push the target just
+         % enough in the direction of the eccentricity vector to allow the
+         % fixation mark to just fit on-screen. If we can do that without
+         % pushing the target off-screen, then we're done. 
+         %
+         % If we can't get both fixation and target on-screen, then the
+         % fixation goes off-screen and the target springs back to the
+         % desired spot.
+         %
+         % We don't mind partially clipping the fixation mark 0.5 deg from
+         % its center, but the target must not be clipped by the screen
+         % edge, and, further more, since this is a crowding test, there
+         % should be enough room to place a radial flanker beyond the
+         % target and not clip it. To test a diverse population we should
+         % allow twice the normal crowding distance beyond the target
+         % center, plus half the flanker size. We typically use equal
+         % target and flanker size.
+         %
+         % These requirements extend the eccentricity vector's length,
+         % first by adding 0.5 deg for the fixation mark. If necessary to
+         % keep fixation on-screen, we shift the target away from the
+         % desired location (in the direction of the eccentricity vector)
+         % just enough to get fixation on-screen. Then we have
+         % to decide whether it's acceptable. If we're measuring acuity, we
+         % just need room, radially (i.e. from fixation), beyond the target
+         % center for half the target. If we're measuring crowding, we need
+         % room radially, beyond the target center, for 2/3 the
+         % eccentricity, plus half the target size.
+         
+         %% SANITY CHECK OF ECCENTRICITY AND DESIRED NEAR POINT
+        if ~all(isfinite(oo(oi).eccentricityXYDeg))
             error('o.eccentricityXYDeg (%.1f %.1f) must be finite. o.useFixation=%d is optional.',...
-               oo(i).eccentricityXYDeg,oo(i).useFixation);
+               oo(oi).eccentricityXYDeg,oo(oi).useFixation);
          end
-         if ~IsXYInRect(oo(i).nearPointXYInUnitSquare,[0 0 1 1])
-            error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',oo(i).nearPointXYInUnitSquare);
+         if ~IsXYInRect(oo(oi).nearPointXYInUnitSquare,[0 0 1 1])
+            error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',oo(oi).nearPointXYInUnitSquare);
          end
-         if ~isfinite(oo(i).targetDeg)
-            ecc=sqrt(sum(oo(i).eccentricityXYDeg.^2));
-            oo(i).targetDeg=0.3*(ecc+0.15)/oo(i).fixedSpacingOverSize;
+         % Provide default target size if not already provided.
+         if ~isfinite(oo(oi).targetDeg)
+            ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+            oo(oi).targetDeg=0.3*(ecc+0.15)/oo(oi).fixedSpacingOverSize;
          end
-         xy=oo(i).nearPointXYInUnitSquare;
-         xy(2)=1-xy(2); % Move origin from lower left to upper left.
-         oo(i).nearPointXYPix=xy.*[RectWidth(oo(i).stimulusRect) RectHeight(oo(i).stimulusRect)];
-         oo(i).nearPointXYPix=oo(i).nearPointXYPix+oo(i).stimulusRect(1:2);
-         % oo(i).nearPointXYPix is a screen coordinate.
-         % Require margin between target and edge of stimulusRect.
-         r=InsetRect(oo(i).stimulusRect,(0.5+oo(i).targetMargin)*oo(i).targetDeg*oo(i).pixPerDeg,0.6*oo(i).targetDeg*oo(i).pixPerDeg);
-         if ~all(r(1:2)<=r(3:4))
-            error('o.targetDeg %.1f too big to fit (with %.2f o.targetMargin) in %.1f x %.1f deg screen. Reduce viewing distance or target size.',...
-               oo(i).targetDeg,oo(i).targetMargin,[RectWidth(oo(i).stimulusRect) RectHeight(oo(i).stimulusRect)]/oo(i).pixPerDeg);
+         
+         %% IS SCREEN BIG ENOUGH TO HOLD TARGET AND FIXATION?
+         % We protect fixationCoreSizeDeg diameter from clipping by screen edge.
+         if oo(oi).isolatedTarget
+            % In the screen, include the target itself, plus a fraction o.targetMargin of
+            % the target size.
+            totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg*(0.5+oo(oi).targetMargin);
+         else
+            totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + 1.66*abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg/2;
          end
-         if ~IsXYInRect(oo(i).nearPointXYPix,r)
-            % Adjust position of near point so target fits on screen.
-            oo(i).nearPointXYPix=LimitXYToRect(oo(i).nearPointXYPix,r);
-            % Update o.nearPointXYInUnitSquare.
-            xy=oo(i).nearPointXYPix;
-            xy=xy-oo(i).stimulusRect(1:2);
-            xy=xy./[RectWidth(oo(i).stimulusRect) RectHeight(oo(i).stimulusRect)];
-            xy(2)=1-xy(2);
-            ffprintf(ff,'NOTE: Adjusting o.nearPointXYInUnitSquare from [%.2f %.2f] to [%.2f %.2f] to fit %.1f deg target (with %.2f o.targetMargin) on screen.',...
-               oo(i).nearPointXYInUnitSquare,xy,oo(i).targetHeightDeg,oo(i).targetMargin);
-            oo(i).nearPointXYInUnitSquare=xy;
+         % Compute angular subtense of stimulusRect, assuming the near point is at center.
+         rectSizeDeg(1)=2*atand(0.5*RectWidth(oo(oi).stimulusRect)/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+         rectSizeDeg(2)=2*atand(0.5*RectHeight(oo(oi).stimulusRect)/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+         if all(totalSizeXYDeg <= rectSizeDeg);
+            oo(oi).fixationOnScreen=1;
+            verb='fits in';
+         else
+            oo(oi).fixationOnScreen=0;
+            verb='exceeds';
          end
+         if oo(oi).forceFixationOffScreen
+            if oo(oi).fixationOnScreen
+               ffprintf(ff,'Fixation would fit on-screen, but was forced off by o.forceFixationOffScreen=%d.\n',...
+                  oo(oi).forceFixationOffScreen);
+            end
+            oo(oi).fixationOnScreen=0;
+         end
+         ffprintf(ff,'%d: Combined size of target and fixation %.1f x %.1f deg %s screen %.1f x %.1f deg.\n',...
+            oi,totalSizeXYDeg,verb,rectSizeDeg);
 
-         % Compute maximumViewingDistanceCm, assuming fixation is on
-         % screen.
-         oo(i).eccentricityXYPix=XYPixOfXYDeg(oo(i),oo(i).eccentricityXYDeg);
-         oo(i).fix.xy=XYPixOfXYDeg(oo(i),[0 0]);
-         minimumScreenSizeDeg=max(minimumScreenSizeDeg,abs(oo(i).eccentricityXYDeg)+oo(i).targetDeg/2);
+       
+         %% SET NEAR POINT AS NEAR AS WE CAN TO DESIRED LOCATION
+         xy=oo(oi).nearPointXYInUnitSquare;
+         xy(2)=1-xy(2); % Move origin from lower left to upper left.
+         oo(oi).nearPointXYPix=xy.*[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
+         oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+oo(oi).stimulusRect(1:2);
+         % oo(oi).nearPointXYPix is a screen coordinate.
+         oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
+         if oo(oi).fixationOnScreen
+            % If necessary, shift nearPointXYPix just enought to get
+            % fixation on screen.
+            xy=XYPixOfXYDeg(oo(oi),[0 0]);
+            r=InsetRect(oo(1).stimulusRect,oo(oi).fixationCoreSizeDeg/2,oo(oi).fixationCoreSizeDeg/2);
+            if ~IsXYInRect(xy,r)
+               xyNew = ClipLineSegment2(xy,oo(oi).nearPointXYPix,r(1:2),r(3:4));
+               % Apply the needed shift of fixation, from xy to xyNew, to the nearPointXYPix
+               ffprintf(ff,'NOTE: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to get fixation onto the screen.',...
+                  oo(oi).nearPointXYPix,xy,oo(oi).nearPointXYPix+xyNew-xy);
+               oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
+            end
+         end
+         % XYPixOfXYDeg results depend on o.nearPointXYDeg and
+         % o.nearPointXYPix.
+         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
+         oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
+
+         % Compute minimumScreenSizeDeg and maximumViewingDistanceCm required for on-screen fixation.
+         if oi==1
+            minimumScreenSizeXYDeg=totalSizeXYDeg;
+         else
+            minimumScreenSizeXYDeg=max(minimumScreenSizeXYDeg,totalSizeXYDeg);
+         end
       end
-      maximumViewingDistanceCm=round(min( [screenWidthCm screenHeightCm]./(2*tand(0.5*minimumScreenSizeDeg)) ));
+      maximumViewingDistanceCm=round(min( [screenWidthCm screenHeightCm]./(2*tand(0.5*minimumScreenSizeXYDeg)) ));
       
       % Look for wireless keyboard.
+
       clear PsychHID; % Force new enumeration of devices to detect external keyboard.
       clear KbCheck; % Clear cache of keyboard devices.
       [~,~,devices]=GetKeyboardIndices;
@@ -1030,6 +1122,7 @@ try
       end
       sizeDeg=max([oo.minimumSizeDeg]);
       spacingDeg=max([oo.minimumSpacingDeg]);
+
       string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
          'the screen is %.0fx%.0f deg, and can display characters'...
          ' as small as %.2f deg with spacing as small as %.2f deg. '],...
@@ -1302,7 +1395,7 @@ try
    ffprintf(ff,'*: %s: %s\n',oo(1).experimenter,oo(1).observer);
    for oi=1:conditions
       if oo(oi).showProgressBar
-         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 5% of screen width.
+         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
       end
       stimulusRect=screenRect;
       if oo(oi).showProgressBar
@@ -1581,8 +1674,8 @@ try
    end
    ffprintf(ff,'Viewing distance %.0f cm,',oo(1).viewingDistanceCm);
    ffprintf(ff,' %.0f pixPerDeg, screen %.1fx%.1f deg.\n', ...
-      pixPerDeg,RectWidth(actualScreenRect)/pixPerDeg,...
-      RectHeight(actualScreenRect)/pixPerDeg);
+      pixPerDeg,RectWidth(screenRect)/pixPerDeg,...
+      RectHeight(screenRect)/pixPerDeg);
    ffprintf(ff,'o.screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.0f pix/cm.\n',...
       cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
       oo(1).nativeWidth,oo(1).nativeHeight,...
@@ -1700,7 +1793,25 @@ try
    fixationClipRect=stimulusRect;
    if any(oo.useFixation)
       string='On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. ';
-      string=[string 'To begin, please fix your gaze at the center of the crosshairs below, and, while fixating, press the SPACEBAR. '];
+      if oo(1).fixationOnScreen
+         where='below';
+      else
+         polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
+         quadrant=round(polarDeg/90);
+         quadrant=mod(quadrant,4);
+         switch quadrant
+            case 0,
+               where='to the right';
+            case 1,
+               where='above';
+            case 2,
+               where='to the left';
+            case 3,
+               where='below';
+         end
+      end
+      string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACEBAR. ',...
+         string,where);
       string=strrep(string,'letter',symbolName);
       fixationClipRect(2)=5*oo(oi).textSize;
       x=instructionalMarginPix;
@@ -2667,25 +2778,6 @@ end
 xyPix=xyPix+o.nearPointXYPix;
 end
 
-function xyDeg=XYDegOfXYPix(o,xyPix)
-% Convert position from (x,y) coordinate in o.stimulusRect to deg (relative
-% to fixation). Deg increase right and up. Pix are in Apple screen
-% coordinates which increase down and right. The perspective transformation
-% is relative to location of near point, which is orthogonal to line of
-% sight. We typically put the target at the near point, but that is not
-% assumed in this routine.
-xyPix=xyPix-o.nearPointXYPix;
-rPix=sqrt(sum(xyPix.^2));
-rDeg=atan2d(rPix/o.pixPerCm,o.viewingDistanceCm);
-if rPix>0
-   xyPix(2)=-xyPix(2); % Apple y goes down.
-   xyDeg=xyPix*rDeg/rPix;
-else
-   xyDeg=[0 0];
-end
-xyDeg=xyDeg+o.nearPointXYDeg;
-end
-
 function isTrue=IsXYInRect(xy,rect)
 if nargin~=2
    error('Need two args for function isTrue=IsXYInRect(xy,rect)');
@@ -2799,4 +2891,24 @@ if oo(oi).fixationCrossBlankedNearTarget
 else
    ffprintf(ff,'Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oo(oi).fixationCrossBlankedUntilSecAfterTarget);
 end
+end
+
+function xyDeg=XYDegOfXYPix(o,xyPix)
+% Convert position from (x,y) coordinate in o.stimulusRect to deg (relative
+% to fixation). Deg increase right and up. Pix are in Apple screen
+% coordinates which increase down and right. The perspective transformation
+% is relative to location of near point, which is orthogonal to line of
+% sight. THe near-point location is specified by o.nearPointXYPix and 
+% o.nearPointXYDeg. We typically put the target at the near point, but that
+% is not assumed in this routine.
+xyPix=xyPix-o.nearPointXYPix;
+rPix=sqrt(sum(xyPix.^2));
+rDeg=atan2d(rPix/o.pixPerCm,o.viewingDistanceCm);
+if rPix>0
+   xyPix(2)=-xyPix(2); % Apple y goes down.
+   xyDeg=xyPix*rDeg/rPix;
+else
+   xyDeg=[0 0];
+end
+xyDeg=xyDeg+o.nearPointXYDeg;
 end
