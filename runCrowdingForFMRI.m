@@ -108,7 +108,6 @@ o.useFractionOfScreen=0;
 % o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
 
 %% CUSTOM CODE
-% o.useFractionOfScreen=0.3;
 
 % Crowding distance at 25 combinations of location and orientation:
 % ? (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
@@ -197,9 +196,9 @@ end
 for i=1:length(oo)
    radialDeg=sqrt(sum(oo(i).eccentricityXYDeg.^2));
    oo(i).viewingDistanceCm=max(30,min(400,round(12/tand(radialDeg))));
-   oo(i).xyCm=round(tand(oo(i).eccentricityXYDeg)*oo(i).viewingDistanceCm);
-   oo(i).nearPointXYInUnitSquare=[0.5 0.5] + 0.25*oo(i).xyCm/14;
-   oo(i).nearPointXYInUnitSquare=round(oo(i).nearPointXYInUnitSquare*10)/10;
+%    oo(i).xyCm=round(tand(oo(i).eccentricityXYDeg)*oo(i).viewingDistanceCm);
+%    oo(i).nearPointXYInUnitSquare=[0.5 0.5] + 0.25*oo(i).xyCm/14;
+%    oo(i).nearPointXYInUnitSquare=round(oo(i).nearPointXYInUnitSquare*10)/10;
    oo(i).row=i;
 end
 t=struct2table(oo);
@@ -208,6 +207,9 @@ t=struct2table(oo);
 t
 for i=1:length(oo)
    o=oo(i);
+o.useFractionOfScreen=0.3;
+   o.fixationLineWeightDeg=0.04;
+   o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
    o.trials=30;
    o.practicePresentations=0;
    o.experimenter='Jing';
