@@ -100,9 +100,9 @@ function oo=CriticalSpacing(oIn)
 % reports them in every data file. Alas, the reported size in cm is
 % sometimes (very) wrong in Windows, and is not always available for
 % external monitors under any OS. So we allow users to measure the display
-% screen size themselves and provide it in the "o" struct as
+% screen size themselves and provide it in their "o" struct as
 % o.measuredScreenWidthCm and o.measuredScreenWidthCm. Use a meter stick to
-% measure the width and height of your screen's rectangle of glowing
+% measure the width and height of your screen's filled rectangle of glowing
 % pixels.
 %
 % MAC OS X: PERMIT MATLAB TO CONTROL YOUR COMPUTER. Open the System
@@ -110,6 +110,16 @@ function oo=CriticalSpacing(oIn)
 % Click to open the lock in lower left, providing your computer password.
 % Click to select MATLAB, allowing it to control your computer. Click the
 % lock again to close it.
+%
+% CONTROL SCREEN. When you run CriticalSpacing, the first screen you see is
+% the "control" screen. It tells you several useful things about your
+% display and stimuli. Most prominently, it asks you to adjust the actual
+% viewing distance to match the nominal value. I also alows you to change
+% the nominal value. Further, it tells you the min and view viewing
+% distance to be able to measure acuity at the specified acuity and to put
+% both your target and fixation point on the display. Further options
+% include mirroring, optimizing resolution,and  helping you to attach a
+% wireless keyboard.
 %
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable because a normally
 % sighted observer viewing foveally has excellent vision and must be many
@@ -222,12 +232,17 @@ function oo=CriticalSpacing(oIn)
 % where minimumTargetPix=8 and letterDeg=0.02 for the healthy adult fovea.
 %
 % PERSPECTIVE DISTORTION IS MINIMIZED BY PLACING THE TARGET AT THE NEAR
-% POINT. At the beginning of each run, the CriticalSpacing program gives
-% directions to arrange the display so that its "near point" (i.e. point
-% closest to the observer's eye) is orthogonal to the observer's line of
-% sight. This guarantees minimal effects of perspective distortaion on any
-% target placed there. 
-
+% POINT (new in June 2017). At the beginning of each run, the
+% CriticalSpacing program gives directions to arrange the display so that
+% its "near point" (i.e. point closest to the observer's eye) is orthogonal
+% to the observer's line of sight. This guarantees minimal effects of
+% perspective distortaion on any target placed there.
+%
+% CHOOSE VIEWING DISTANCE TO ALLOW ON-SCREEN FIXATION. The big control page
+% (the "splash screen") now (June 2017) gives advice about whether the
+% fixation will fit on-screen, and tells you the maximum viewing distance
+% that would allow that.
+%
 % ECCENTRICITY OF THE TARGET. Eccentricity of the target is achieved by
 % placing fixation appropriately. Modest eccentricities, up to perhaps 30
 % deg, are achieved with on-screen fixation. CriticalSpacing automatically
@@ -278,9 +293,9 @@ function oo=CriticalSpacing(oIn)
 % ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
 % Because at least one computer (e.g. the 2017 MacBook Pro with track bar)
-% lacks an ESCAPE key, we accept the GRAVE ACCENT key (also in upper left
-% of keyboard) as equivalent. CriticalSpacing will then print out (and save
-% to disk) results so far, and ask whether you're quitting the whole
+% lacks an ESCAPE key, we always accept the GRAVE ACCENT key (also in upper
+% left of keyboard) as equivalent. CriticalSpacing will then print out (and
+% save to disk) results so far, and ask whether you're quitting the whole
 % session or proceeding to the next run. Quitting this run sets the flag
 % o.quitRun, and quitting the whole session also sets the flag
 % o.quitSession. If o.quitSession is already set when you call
@@ -897,13 +912,7 @@ try
       screenRect=Screen('Rect',window);
       screenWidthPix=RectWidth(screenRect);
       screenHeightPix=RectHeight(screenRect);
-      if oo(1).useFractionOfScreen
-%          pixPerDeg=oo(1).useFractionOfScreen*screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
-%dgp
-         pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
-      else
-         pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
-      end
+      pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
       pixPerCm=screenWidthPix/screenWidthCm;
       for oi=1:conditions
          % Adjust textSize so our string fits on screen.
@@ -924,7 +933,7 @@ try
          oo(oi).textSize=round(oo(oi).textSize/fraction);
       end
 %       fprintf('1: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
-      pixPerDeg=screenWidthPix/(screenWidthCm*57/oo(1).viewingDistanceCm);
+      pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
       for oi=1:conditions
          oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(oi).pixPerDeg=pixPerDeg;
@@ -1036,9 +1045,11 @@ try
          % point is at center.
          xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
          rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+         fprintf('%d: screen %.0f %.0f, rectSizeDeg %.1f %.1f, pixPerCm %.1f, viewingDistance %.1f cm, xy %.0f %.0f\n',...
+             oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
          if all(totalSizeXYDeg <= rectSizeDeg);
             oo(oi).fixationOnScreen=1;
-            verb='fits in';
+            verb='fits within';
          else
             oo(oi).fixationOnScreen=0;
             verb='exceeds';
@@ -1050,8 +1061,9 @@ try
             end
             oo(oi).fixationOnScreen=0;
          end
-         ffprintf(ff,'%d: Combined size of target and fixation %.1f x %.1f deg %s screen %.1f x %.1f deg.\n',...
-            oi,totalSizeXYDeg,verb,rectSizeDeg);
+         fitsOnScreenString=sprintf('The combined size of target and fixation %.1f x %.1f deg %s the screen %.1f x %.1f deg.',...
+            totalSizeXYDeg,verb,rectSizeDeg);
+         ffprintf(ff,'%d: %s\n',oi,fitsOnScreenString);
          if streq(verb,'exceeds') && ~oo(oi).forceFixationOffScreen
             ffprintf(ff,'%d: This forces the fixation off-screen. Consider reducing the viewing distance or eccentricity.\n',oi);
          end
@@ -1091,7 +1103,8 @@ try
             minimumScreenSizeXYDeg=max(minimumScreenSizeXYDeg,totalSizeXYDeg);
          end
       end
-      maximumViewingDistanceCm=round(min( [screenWidthCm screenHeightCm]./(2*tand(0.5*minimumScreenSizeXYDeg)) ));
+      stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
+      maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
       
       % Look for wireless keyboard.
 
@@ -1147,14 +1160,14 @@ try
       string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
          'the screen is %.0fx%.0f deg, and can display characters'...
          ' as small as %.2f deg with spacing as small as %.2f deg. '],...
-         string,oo(1).viewingDistanceCm,RectWidth(screenRect)/pixPerDeg,RectHeight(screenRect)/pixPerDeg,...
+         string,oo(1).viewingDistanceCm,rectSizeDeg,...
          sizeDeg,spacingDeg);
-      if any(minimumScreenSizeXYDeg>0)
-         string=sprintf(['%sTo display your peripheral targets ' ...
-            '(requiring a screen size of at least %.0fx%.0f deg), ' ...
-            'view me from at most %.0f cm. '],...
-            string,minimumScreenSizeXYDeg,maximumViewingDistanceCm);
-      end
+     if any(oo.eccentricityXYDeg~=[0 0])
+         string=sprintf(['%s The combined size of the target and fixation %.1f x %.1f deg '...
+             '%s the screen %.1f x %.1f deg. ',...
+             'To allow on-screen fixation, view me from at most %.0f cm. '],...
+             string,minimumScreenSizeXYDeg,verb,rectSizeDeg,floor(maximumViewingDistanceCm));
+     end
       smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
       string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
          'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
@@ -1162,12 +1175,12 @@ try
       
       % RESOLUTION
       if oo(1).nativeWidth==RectWidth(actualScreenRect)
-         string=sprintf('%sRESOLUTION: Your screen resolution is optimal.\n\n',string);
+         string=sprintf('%sRESOLUTION  %.0fx%.0f: Your screen resolution is optimal.\n\n',string,RectWidth(actualScreenRect),RectHeight(actualScreenRect));
       else
          if RectWidth(actualScreenRect)<oo(1).nativeWidth
-            string=sprintf(['%sRESOLUTION: You could reduce the minimum viewing distance ' ...
-               '%.1f-fold by increasing the screen resolution to native resolution. '],...
-               string,oo(1).nativeWidth/RectWidth(actualScreenRect));
+            string=sprintf(['%sRESOLUTION %.0fx%.0f: You could reduce the minimum viewing distance ' ...
+               '%.1f-fold by increasing the screen resolution to native resolution %.0fx%.0f. '],...
+               string,RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth/RectWidth(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
          else
             string=sprintf(['%sRESOLUTION: Your screen resolution exceeds its maximum native resolution, ' ...
                'and may fail to render small characters. '],string);
@@ -1203,7 +1216,7 @@ try
     
       % Draw all the small text on screen.
       Screen('TextSize',window,round(oo(1).textSize*0.6));
-      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+2*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
+      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+1.5*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
       
       % COPYRIGHT
       Screen('TextSize',window,round(oo(1).textSize*0.35));
@@ -1216,8 +1229,10 @@ try
       else
          background=WhiteIndex(window);
       end
-      Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',instructionalMarginPix,0.82*screenRect(4)-oo(1).textSize*1.4);
-      [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+      Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',...
+          instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*(0.5-1.1));
+      [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
+          ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar graveAccentChar]) 
          oo(1).quitRun=1;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
@@ -1270,6 +1285,23 @@ try
                      oo(1).resolution=Screen('Resolution',oo(1).screen);
                      screenBufferRect=Screen('Rect',oo(1).screen);
                      screenRect=Screen('Rect',oo(1).screen,1);
+%                      fprintf('%d: NEW RES: actualScreenRect %.0f, screenBufferRect %.0f, screenRect %.0f\n',...
+%                          oi,actualScreenRect(3),screenBufferRect(3),screenRect(3));
+
+                  for ii=1:conditions
+                     oo(ii).stimulusRect=screenRect;
+                     if oo(ii).showProgressBar
+                         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
+                         oo(ii).stimulusRect(3)=progressBarRect(1);
+                     end
+                     clearRect=oo(ii).stimulusRect;
+                     if oo(ii).stimulusMarginFraction>0
+                         s=oo(ii).stimulusMarginFraction*oo(ii).stimulusRect;
+                         s=round(s);
+                         oo(ii).stimulusRect=InsetRect(oo(ii).stimulusRect,RectWidth(s),RectHeight(s));
+                     end
+                  end
+      
                   end
                case 'k',
                   if oo(1).useSpeech
