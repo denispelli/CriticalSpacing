@@ -1836,8 +1836,13 @@ try
       return
    end
    fixationClipRect=oo(oi).stimulusRect;
+   if oo(oi).showProgressBar
+      string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the run. ';
+   else
+      string='';
+   end
    if any(oo.useFixation)
-      string='On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. ';
+      string=[string 'On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. '];
       if oo(1).fixationOnScreen
          where='below';
       else
@@ -1867,6 +1872,9 @@ try
       beginAfterKeypress=1;
    else
       beginAfterKeypress=0;
+      % In this case, we ought to do something to print the string about the
+      % progress bar, if there is a progress bar. Right now I'm focused on
+      % testing with fixation.
    end
    easeRequest=0; % Positive to request easier trials.
    easyCount=0; % Number of easy presentations
