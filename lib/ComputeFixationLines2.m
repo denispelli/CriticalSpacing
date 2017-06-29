@@ -2,13 +2,22 @@ function fixationLines=ComputeFixationLines2(fix)
 % ComputeFixationLines2 returns an array suitable for Screen('Drawlines')
 % to draw a fixation cross and target cross specified by the parameters in
 % the struct argument "fix".
-% fix.xy=[50 screenHeight/2];            %  location of fixation on screen.
-% % fix.eccentricityXYPix=eccentricityXYPix;  % xy offset of target from fixation.
+% xy=XYPixOfXYDeg(o,[0 0]); % location of fixation
+% fix.xy=xy;            %  location of fixation on screen.
+% fix.eccentricityXYPix=eccentricityXYPix;  % xy offset of target from fixation.
 % fix.clipRect=screenRect;              % Restrict lines to this rect.
-% fix.fixationCrossPix=fixationCrossPix;% Full width & height of fixation
+% fix.fixationCrossPix=fixationCrossPix;% Width & height of fixation
 %                                       % cross. 0 for none.
 % fix.markTargetLocation=1;             % 0 or 1.
-% fix.blankingRadiusPix=0.5*sqrt(sum(eccentricityPix.^2)); % 0 for no blanking.
+% fix.targetMarkPix=targetMarkPix;      % 
+%
+% EITHER SPECIFY blankingRadiusPix:
+% fix.blankingRadiusPix=100;              % 0 for no blanking.
+% OR LET ME COMPUTE IT FROM:
+% fix.blankingRadiusReEccentricity=0.5;
+% fix.blankingRadiusReTargetHeight=1;
+% fix.targetHeightPix=o.targetHeightPix;
+%
 % fixationLines=ComputeFixationLines2(fix);
 % Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
 %
@@ -31,17 +40,25 @@ if ~isfield(fix,'markTargetLocation')
    fix.markTargetLocation=0; % Default is no mark indicating target location.
 end
 if ~isfield(fix,'blankingRadiusPix')
-   % Default is half the eccentricity.
+   if ~isfield(fix,'blankingRadiusReEccentricity');
+      o.blankingRadiusReEccentricity=0.5;
+   end
+   if ~isfield(fix,'blankingRadiusReTargetHeight');
+      o.blankingRadiusReTargetHeight=1;
+   end
+   if ~isfield(fix,'targetHeightPix')
+      o.targetHeightPix=0;
+   end
+   % Default is max of specified blanking re target height and
+   % eccentricity.
    eccentricityPix=sqrt(sum(fix.eccentricityXYPix.^2));
-   fix.blankingRadiusPix=eccentricityPix/2;
+   fix.blankingRadiusPix=fix.blankingRadiusReEccentricity*eccentricityPix; % 0 for no blanking.
+   fix.blankingRadiusPix=max(fix.blankingRadiusPix,fix.blankingRadiusReTargetHeight*fix.targetHeightPix);
 end
-if ~isfield(fix,'fixationCrossBlankedNearTarget')
-   fix.fixationCrossBlankedNearTarget=1; % Default is yes.
-end
-% We compute a list of four lines to draw a cross at fixation and to mark
-% the target location. We clip with the (screen) clipRect. We then define a
+% Compute a list of four lines to draw a cross at fixation and an X at the
+% target location. We clip with the (screen) clipRect. We then define a
 % blanking rect around the target and use it to ErasePartOfLineSegment for
-% every line in the list, which may increase or decrease the list length.
+% every line in the list. This may increase or decrease the list length.
 fix.xy=round(fix.xy); % printout is more readable for integers.
 x0=fix.xy(1); % fixation
 y0=fix.xy(2);
@@ -53,13 +70,14 @@ tXY=fix.xy+fix.eccentricityXYPix;
 tX=tXY(1);
 tY=tXY(2);
 % Blanking radius at target
-tR=fix.blankingRadiusPix;
 assert(isfinite(fix.blankingRadiusPix));
 if fix.markTargetLocation
    % Add two lines to mark target location.
-   %    x=[x tX-tR tX+tR tX tX]; % Make a cross.
-   %    y=[y tY tY tY-tR tY+tR];
-   r=tR/2^0.5;
+%    r=fix.targetMarkPix;
+%    x=[x tX-r tX+r tX tX]; % Make a cross.
+%    y=[y tY tY tY-r tY+r];
+   r=0.5*fix.targetMarkPix/2^0.5;
+   r=min(r,1e8); % Need finite value to draw tilted lines.
    x=[x tX-r tX+r tX-r tX+r]; % Make an X.
    y=[y tY-r tY+r tY+r tY-r];
 end
