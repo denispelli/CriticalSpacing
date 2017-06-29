@@ -2149,7 +2149,9 @@ try
       if ~oo(oi).repeatedTargets && oo(oi).useFixation
          % Draw fixation.
          fl=ClipLines(fixationLines,fixationClipRect);
-         Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+         if ~isempty(fl)
+            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+         end
       end
       if oo(oi).showProgressBar
          Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
@@ -2186,8 +2188,10 @@ try
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
-            Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            if ~isempty(fl)
+               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            end
          end
          Screen('Flip',window,[],1); % Display fixation.
          WaitSecs(1); % Duration of fixation display, before stimulus appears.
@@ -2196,8 +2200,10 @@ try
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
-            Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            if ~isempty(fl)
+               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            end
          end
       else
          Screen('FillRect',window); % Clear screen.
@@ -2491,8 +2497,10 @@ try
          Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
-             Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-             Screen('DrawLines',window,fl,fixationLineWeightPix,black); 
+            if ~isempty(fl)
+               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            end
          end
          Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
          Screen('FillRect',window,white,oo(oi).stimulusRect);
@@ -2537,8 +2545,10 @@ try
          Screen('TextFont',window,oo(oi).textFont,0);
          if ~oo(oi).repeatedTargets && oo(oi).useFixation
             fl=ClipLines(fixationLines,fixationClipRect);
-             Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-             Screen('DrawLines',window,fl,fixationLineWeightPix,black); 
+            if ~isempty(fl)
+               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            end
          end
          Screen('Flip',window,[],1); % Display fixation & response instructions.
          Screen('FillRect',window,white,oo(oi).stimulusRect);
