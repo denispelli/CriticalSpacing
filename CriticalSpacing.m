@@ -517,7 +517,7 @@ o.flankerLetter='';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.targetCross=0; % 1 to mark target location
+o.markTargetLocation=0; % 1 to mark target location
 o.useFixation=1;
 o.forceFixationOffScreen=0;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
@@ -1565,10 +1565,10 @@ try
       assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
       oo(oi).fix.clipRect=screenRect;
       oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
-      if oo(oi).targetCross;
-         oo(oi).fix.targetCrossPix=oo(oi).targetDeg*pixPerDeg*2;
+      if oo(oi).markTargetLocation;
+         oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
       else
-         oo(oi).fix.targetCrossPix=0;
+         oo(oi).fix.markTargetLocationPix=0;
       end
       if oo(oi).fixationCrossBlankedNearTarget
          % Blanking of marks to prevent masking and crowding of the target
