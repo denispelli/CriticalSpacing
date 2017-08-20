@@ -113,11 +113,11 @@ o.useFractionOfScreen=0;
 % o.useFractionOfScreen=0.3; 
 
 o.practicePresentations=0;
-o.experimenter='Jing';
+o.experimenter='Antje';
 o.observer='junk';
 
-o.viewingDistanceCm=15;
-o.eccentricityXYDeg=[30 0]; % Distance of target from fixation. Positive up and to right.
+o.viewingDistanceCm=50;
+o.eccentricityXYDeg=[10 0]; % Distance of target from fixation. Positive up and to right.
 o.nearPointXYInUnitSquare=[0.7 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
 
 o.durationSec=0.2; % duration of display of target and flankers
