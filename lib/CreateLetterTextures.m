@@ -5,12 +5,12 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % bounding box "alphabetBounds" that will hold any letter. Called by
 % CriticalSpacing.m. The font is o.targetFont.
 %
-% If o.readAlphabetFromDisk==0 then the font is rendered by Screen DrawText
-% to create a texture for each desired letter. The font's TextSize is
-% computed to yield the desired o.targetPix size in the direction specified
-% by o.targetSizeIsHeight. However, if
-% o.targetFontHeightOverNominalPtSize==nan then the TextSize is set equal
-% to o.targetPix.
+% If o.readAlphabetFromDisk is false then the font is rendered by Screen
+% DrawText to create a texture for each desired letter. The font's TextSize
+% is computed to yield the desired o.targetPix size in the direction
+% specified by o.targetSizeIsHeight (true for height, false for width).
+% However, if o.targetFontHeightOverNominalPtSize==nan then the TextSize is
+% set equal to o.targetPix.
 %
 % If o.readAlphabetFromDisk==1 then we look for a folder inside
 % CriticalSpacing/lib/alphabets/ whose name matches that of the desired
