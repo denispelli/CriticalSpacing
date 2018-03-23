@@ -1498,17 +1498,14 @@ try
       
       addonDeg=0.15;
       addonPix=pixPerDeg*addonDeg;
-      if isfield(oo(oi),'spacingDegGuess') && isfinite(oo(oi).spacingDegGuess)
-         oo(oi).spacingDeg=oo(oi).spacingDegGuess;
-      else
-         oo(oi).spacingDeg=oo(oi).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
-      end
       eccentricityDeg=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
       oo(oi).normalCriticalSpacingDeg=0.3*(eccentricityDeg+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
       if eccentricityDeg>1 && streq(oo(oi).radialOrTangential,'tangential')
          oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
       end
-      if streq(oo(oi).thresholdParameter,'spacing')
+      if isfield(oo(oi),'spacingDegGuess') && isfinite(oo(oi).spacingDegGuess)
+         oo(oi).spacingDeg=oo(oi).spacingDegGuess;
+      else
          oo(oi).spacingDeg=oo(oi).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       end
       oo(oi).spacings=oo(oi).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
