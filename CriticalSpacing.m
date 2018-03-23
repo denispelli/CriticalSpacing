@@ -1512,13 +1512,13 @@ try
       oo(oi).spacingsSequence=repmat(oo(oi).spacings,1,...
          ceil(oo(oi).presentations/length(oo(oi).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
       switch oo(oi).thresholdParameter
-         case 'size',
+         case 'size'
             if oo(oi).targetSizeIsHeight
                ori='vertical';
             else
                ori='horizontal';
             end
-         case 'spacing',
+         case 'spacing'
             if ~oo(oi).repeatedTargets
                ori=oo(oi).radialOrTangential;
             else
