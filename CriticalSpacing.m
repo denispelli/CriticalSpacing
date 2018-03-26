@@ -528,6 +528,7 @@ o.pThreshold=nan;
 o.tGuess=nan;
 o.tGuessSd=nan;
 o.useQuest=1; % true(1) or false(0)
+o.spacingGuessDeg = 0.3;
 
 % DEBUGGING AIDS
 o.frameTheTarget=0;
@@ -1503,8 +1504,8 @@ try
       if eccentricityDeg>1 && streq(oo(oi).radialOrTangential,'tangential')
          oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
       end
-      if isfield(oo(oi),'spacingDegGuess') && isfinite(oo(oi).spacingDegGuess)
-         oo(oi).spacingDeg=oo(oi).spacingDegGuess;
+      if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
+         oo(oi).spacingDeg=oo(oi).spacingGuessDeg;
       else
          oo(oi).spacingDeg=oo(oi).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
       end
