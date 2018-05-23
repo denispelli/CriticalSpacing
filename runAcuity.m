@@ -109,7 +109,7 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
 o.useFractionOfScreen=0;
-o.nearPointXYInUnitSquare=[0.8 0.5];
+o.nearPointXYInUnitSquare=[0.2  0.5];
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
@@ -146,7 +146,7 @@ end
 
 % % TEST ALL ECCENTRICITIES
 % ori=90;  % Direction of target from fixation.
-% o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
+% o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % o.viewingDistanceCm=25; % Default for runtime question.
 % for ecc=[3 10 30 60]
@@ -155,7 +155,7 @@ end
 %    Speak(sprintf('Viewing distance %d centimeters.',o.viewingDistanceCm));
 %    for one=0:1
 %       o.oneFlanker=one;
-%       o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
+%       o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
 %       o=CriticalSpacing(o);
 %       if o.quitSession
 %          break;
@@ -170,10 +170,9 @@ end
 % o.oneFlanker=0;
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % for i=1:2
-%    for ori=0:30:360
-%       o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
-%       ori; % Direction of target from fixation.
-%		o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
+%    for ori=0:30:360 % Direction of target from fixation.
+%       o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
+%		o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
 %       o=CriticalSpacing(o);
 %    end
 % end
