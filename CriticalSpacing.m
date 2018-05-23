@@ -1649,10 +1649,14 @@ try
       ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
          oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalAcuityDeg/2);
    end
-   ffprintf(ff,['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
-      'you should view from at most %.0f cm.\n'],...
-      oi,minimumScreenSizeXYDeg,maximumViewingDistanceCm);
-   
+   s=sprintf(['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
+       'you should view from at most'],oi,minimumScreenSizeXYDeg);
+   if maximumViewingDistanceCm<100
+       s=sprintf('%s %.0f cm.\n',s,maximumViewingDistanceCm);
+   else
+       s=sprintf('%s %.1f m.\n',s,maximumViewingDistanceCm/100);
+   end
+   ffprintf(ff,'%s',s);
    ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
    for i=1:length(oo(1).keyboardNameAndTransport)
       ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{i});
