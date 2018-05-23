@@ -1106,7 +1106,7 @@ try
          else
             minimumScreenSizeXYDeg=max(minimumScreenSizeXYDeg,totalSizeXYDeg);
          end
-      end
+      end % for oi=1:conditions
       stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
       maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
       
@@ -1172,11 +1172,11 @@ try
              'To allow on-screen fixation, view me from at most %.0f cm. '],...
              string,minimumScreenSizeXYDeg,verb,rectSizeDeg,floor(maximumViewingDistanceCm));
      end
-      smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
-      string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
+     smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
+     string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
          'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
          string,smallestDeg,minimumViewingDistanceCm);
-      
+     
       % RESOLUTION
       if oo(1).nativeWidth==RectWidth(actualScreenRect)
          string=sprintf('%sRESOLUTION  %.0fx%.0f: Your screen resolution is optimal.\n\n',string,RectWidth(actualScreenRect),RectHeight(actualScreenRect));
@@ -1224,7 +1224,7 @@ try
       
       % COPYRIGHT
       Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
       
       % Get typed response
       Screen('TextSize',window,oo(1).textSize);
