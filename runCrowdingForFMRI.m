@@ -77,7 +77,7 @@ o.borderLetter='$';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.targetCross=0; % 1 to mark target location
+o.markTargetLocation=false; % 1 to mark target location
 o.useFixation=1;
 
 % QUEST threshold estimation

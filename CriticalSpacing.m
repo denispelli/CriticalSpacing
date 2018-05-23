@@ -942,12 +942,12 @@ try
          oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
          oo(oi).pixPerDeg=pixPerDeg;
          oo(oi).pixPerCm=pixPerCm;
-         eccentricityDeg=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-         oo(oi).normalAcuityDeg=0.029*(eccentricityDeg+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+         ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+         oo(oi).normalAcuityDeg=0.029*(ecc+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
          if ismember(oo(oi).targetFont,{'Pelli'})
             oo(oi).normalAcuityDeg=oo(oi).normalAcuityDeg/5; % For Pelli font.
          end
-         oo(oi).normalCriticalSpacingDeg=0.3*(eccentricityDeg+0.15); % Adjusted.
+         oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % Adjusted.
          oo(oi).typicalThesholdSizeDeg=oo(oi).normalAcuityDeg;
          if oo(oi).fixedSpacingOverSize && streq(oo(oi).thresholdParameter,'spacing')
             oo(oi).typicalThesholdSizeDeg=max(oo(oi).typicalThesholdSizeDeg,oo(oi).normalCriticalSpacingDeg/oo(oi).fixedSpacingOverSize);
@@ -1499,9 +1499,9 @@ try
       
       addonDeg=0.15;
       addonPix=pixPerDeg*addonDeg;
-      eccentricityDeg=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-      oo(oi).normalCriticalSpacingDeg=0.3*(eccentricityDeg+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
-      if eccentricityDeg>1 && streq(oo(oi).radialOrTangential,'tangential')
+      ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+      oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
+      if ecc>1 && streq(oo(oi).radialOrTangential,'tangential')
          oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
       end
       if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
@@ -2063,7 +2063,6 @@ try
          outerSpacingPix=0;
       end
       if streq(oo(oi).radialOrTangential,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
-%          orientation=oo(oi).eccentricityClockwiseAngleDeg;
          orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
          eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
          if eccentricityPix==0
@@ -2730,8 +2729,8 @@ try
       switch oo(oi).thresholdParameter
          case 'spacing',
             ori=oo(oi).radialOrTangential;
-            eccentricityDeg=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-            if ~oo(oi).repeatedTargets && eccentricityDeg>0
+            ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+            if ~oo(oi).repeatedTargets && ecc>0
                switch(oo(oi).radialOrTangential)
                   case 'radial'
                      ffprintf(ff,'Radial spacing of far flanker from target.\n');

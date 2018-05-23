@@ -37,8 +37,7 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricityDeg=0; % Distance of target from fixation.
-o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXYDeg=[0 0]; % Distance of target from fixation.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=0;
@@ -77,8 +76,8 @@ o.borderLetter='$';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.fixationLocation='center'; % 'center', 'left', 'right'
-o.targetCross=0; % 1 to mark target location
+o.nearPointXYInUnitSquare=[0.5 0.5];
+o.markTargetLocation=false; % 1 to mark target location
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -110,14 +109,14 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
 o.useFractionOfScreen=0;
-o.fixationLocation='normalizedXY';
+o.nearPointXYInUnitSquare=[0.5 0.5];
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
-o.eccentricityDeg=30;
+o.eccentricityXYDeg=[30 0];
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
@@ -126,7 +125,7 @@ o.fixationCrossDeg=12; % 0, 3, and inf are a typical values.
 
 % TEST ALL ECCENTRICITIES
 ori=90;
-o.fix.normalizedXY=0.5+0.4*[-sind(ori) cosd(ori)];
+o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.viewingDistanceCm=25; % Default for runtime question.
 for ecc=[3 10 30 60]
@@ -135,8 +134,7 @@ for ecc=[3 10 30 60]
    Speak(sprintf('Viewing distance %d centimeters.',o.viewingDistanceCm));
    for one=0:1
       o.oneFlanker=one;
-      o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
-      o.eccentricityDeg=ecc;
+      o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
       o=CriticalSpacing(o);
       if o.quitSession
          break;
@@ -152,8 +150,8 @@ end
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % for i=1:2
 %    for ori=0:30:360
-%       o.fix.normalizedXY=0.5+0.4*[-sind(ori) cosd(ori)];
-%       o.eccentricityClockwiseAngleDeg=ori; % Direction of target from fixation.
+%       o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
+%	    o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
 %       o=CriticalSpacing(o);
 %    end
 % end

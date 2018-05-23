@@ -37,8 +37,7 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricityDeg=0; % Distance of target from fixation. 
-o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXYDeg=[0 0]; % Distance of target from fixation. 
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=0;
@@ -77,8 +76,8 @@ o.borderLetter='$';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.fixationLocation='center'; % 'center', 'left', 'right'
-o.targetCross=0; % 1 to mark target location
+o.nearPointXYInUnitSquare=[0.5 0.5];
+o.markTargetLocation=false; % 1 to mark target location
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -121,15 +120,15 @@ o.practicePresentations=0;
 % o.targetFont='Sloan';
 % o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 % o.borderLetter='X';
-% o.fixationLocation='left';
+% o.nearPointXYInUnitSquare=[0.2 0.5];
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf;
-% o.targetCross=1; 
+% o.markTargetLocation=true; 
 
 o.experimenter='Denis';
 o.observer='Denis';
 o.viewingDistanceCm=50;
-o.eccentricityDeg=4;
+o.eccentricityXYDeg=[4 0];
 o.durationSec=0.2;
 o.contrast=4/256;
 o.repeatedTargets=0;

@@ -37,8 +37,7 @@ o.useSpeech=1;
 
 % VISUAL STIMULUS
 o.durationSec=inf; % duration of display of target and flankers
-o.eccentricityDeg=0; % Distance of target from fixation.
-o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXYDeg=[0 0]; % Distance of target from fixation.
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.fourFlankers=0;
@@ -77,8 +76,8 @@ o.borderLetter='$';
 o.fixationCrossBlankedNearTarget=1;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.fixationLocation='center'; % 'center', 'left', 'right'
-o.targetCross=0; % 1 to mark target location
+o.nearPointXYInUnitSquare=[0.5 0.5];
+o.markTargetLocation=false; % 1 to mark target location
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -114,12 +113,11 @@ o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.targetCross=0; % 1 to mark target location
+o.markTargetLocation=false; % 1 to mark target location
 o.durationSec=0.2; % duration of display of target and flankers
 
 % Peripheral
-o.eccentricityDeg=8; % Distance of target from fixation.
-o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXYDeg=[8 0]; % Distance of target from fixation.
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
@@ -130,12 +128,11 @@ conditions=[];
 for ori=[-90 90]
    for ecc=[4 8]
       if ori<0
-         o.fixationLocation='right'; % 'center', 'left', 'right'
+         o.nearPointXYInUnitSquare=[0.8 0.5];
       else
-         o.fixationLocation='left'; % 'center', 'left', 'right'
+         o.nearPointXYInUnitSquare=[0.2 0.5];
       end
-      o.eccentricityDeg=ecc;
-      o.eccentricityClockwiseAngleDeg=ori;
+      o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
       if isempty(conditions)
          conditions=o;
       else
@@ -147,25 +144,23 @@ o.radialOrTangential='tangential';
 for ori=[-90 90]
    for ecc=[8]
       if ori<0
-         o.fixationLocation='right'; % 'center', 'left', 'right'
+         o.nearPointXYInUnitSquare=[0.8 0.5];
       else
-         o.fixationLocation='left'; % 'center', 'left', 'right'
+         o.nearPointXYInUnitSquare=[0.2 0.5];
       end
-      o.eccentricityDeg=ecc;
-      o.eccentricityClockwiseAngleDeg=ori;
+      o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
       conditions(end+1)=o;
    end
 end
 conditions=Shuffle(conditions);
 
 % Foveal
-o.eccentricityDeg=0; % Distance of target from fixation.
-o.eccentricityClockwiseAngleDeg=90; % Direction of target from fixation.
+o.eccentricityXYDeg=[0 0]; % Distance of target from fixation.
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
-o.fixationLocation='center'; % 'center', 'left', 'right'
+o.nearPointXYInUnitSquare=[0.5 0.5];
 o.viewingDistanceCm=400; 
 if rand>0.5
    % Foveal first
