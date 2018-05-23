@@ -435,6 +435,12 @@ end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
 
+% Once we call onCleanup, until CriticalSpacing ends, MyCleanupFunction
+% will run (closing any open windows) when this function terminates for any
+% reason, whether by reaching the end, the posting of an error here or in
+% any function called from here, or the user hitting control-C.
+cleanup=onCleanup(@() CloseWindowsAndCleanup);
+
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
 
@@ -2999,3 +3005,19 @@ else
 end
 xyDeg=xyDeg+o.nearPointXYDeg;
 end
+
+%% Clean up whenever CriticalSpacing terminates, even by control-c.
+function CloseWindowsAndCleanup()
+% Close any windows opened by the Psychtoolbox Screen command, and
+% re-enable keyboard.
+if ~isempty(Screen('Windows'))
+    % Screen CloseAll is very slow, so call it only if we need to.
+    Screen('CloseAll');
+    %     sca;
+    if ismac
+        AutoBrightness(0,1);
+    end
+end
+ListenChar; % May already be done by sca.
+ShowCursor; % May already be done by sca.
+end % function CloseWindowsAndCleanup()
