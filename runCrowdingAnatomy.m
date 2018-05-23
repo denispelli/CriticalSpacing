@@ -125,14 +125,14 @@ o.durationSec=0.2; % duration of display of target and flankers
 o.viewingDistanceCm=100; 
 o.radialOrTangential='radial'; % horizontally arranged flankers for single target
 conditions=[];
-for ori=[-90 90]
+for ori=[-90 90] % re straight up.
    for ecc=[4 8]
       if ori<0
-         o.nearPointXYInUnitSquare=[0.8 0.5];
+         o.nearPointXYInUnitSquare=[0.2  0.5];
       else
-         o.nearPointXYInUnitSquare=[0.2 0.5];
+         o.nearPointXYInUnitSquare=[0.8  0.5];
       end
-      o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
+      o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
       if isempty(conditions)
          conditions=o;
       else
@@ -141,14 +141,14 @@ for ori=[-90 90]
    end
 end
 o.radialOrTangential='tangential';
-for ori=[-90 90]
+for ori=[-90 90] % re straight up.
    for ecc=[8]
       if ori<0
-         o.nearPointXYInUnitSquare=[0.8 0.5];
+         o.nearPointXYInUnitSquare=[0.2  0.5];
       else
-         o.nearPointXYInUnitSquare=[0.2 0.5];
+         o.nearPointXYInUnitSquare=[0.8  0.5];
       end
-      o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
+      o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
       conditions(end+1)=o;
    end
 end

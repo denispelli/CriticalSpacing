@@ -142,8 +142,8 @@ for one=0:1
 end
 
 % % TEST ALL ECCENTRICITIES
-% ori=90;
-% o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
+% ori=90; % re straight up.
+% o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % o.viewingDistanceCm=25; % Default for runtime question.
 % for ecc=[3 10 30 60]
@@ -152,7 +152,7 @@ end
 %    Speak(sprintf('Viewing distance %d centimeters.',o.viewingDistanceCm));
 %    for one=0:1
 %       o.oneFlanker=one;
-%       o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];
+%       o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
 %       o=CriticalSpacing(o);
 %       if o.quitSession
 %          break;
@@ -168,8 +168,8 @@ end
 % o.oneFlanker=0;
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % for i=1:2
-%    for ori=0:30:360
-%       o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
+%    for ori=0:30:360  % re straight up.
+%       o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
 %		o.eccentricityXYDeg=ecc*[cosd(ori) sind(oir)];
 %       o=CriticalSpacing(o);
 %    end

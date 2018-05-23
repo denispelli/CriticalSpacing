@@ -146,7 +146,7 @@ o.borderLetter='X';
 o.thresholdParameter='size';
 o.targetSizeIsHeight=nan; % depends on parameter
 o.eccentricityXYDeg=[10 0];
-o.nearPointXYInUnitSquare=[0.2 0.5];
+o.nearPointXYInUnitSquare=[0.8  0.5];
 o=CriticalSpacing(o);
 
 % RUN measure threshold for spacing
@@ -156,5 +156,5 @@ o.alphabet='123456789'; % Sloan alphabet, excluding C
 o.borderLetter='$';
 o.targetSizeIsHeight=nan; % depends on parameter
 o.eccentricityXYDeg=[10 0];
-o.nearPointXYInUnitSquare=[0.2 0.5];
+o.nearPointXYInUnitSquare=[0.8  0.5];
 o=CriticalSpacing(o);

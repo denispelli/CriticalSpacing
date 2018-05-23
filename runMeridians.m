@@ -122,8 +122,8 @@ o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=20; % 0, 3, and inf are a typical values.
 
 % TEST ALL ECCENTRICITIES
-% ori=90;
-% o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
+% ori=90; % re straight up.
+% o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % o.viewingDistanceCm=25; % Default for runtime question.
 % for ecc=[3 10 30 60]
@@ -132,7 +132,7 @@ o.fixationCrossDeg=20; % 0, 3, and inf are a typical values.
 %    Speak(sprintf('Viewing distance %d centimeters.',o.viewingDistanceCm));
 %    for one=0:1
 %       o.oneFlanker=one;
-%       o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori)];;
+%       o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];;
 %       o=CriticalSpacing(o);
 %       if o.quitSession
 %          break;
@@ -148,9 +148,9 @@ o.eccentricityXYDeg=[60 0];
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 for one=0:1
    o.oneFlanker=one;
-   for ori=0:30:360
-      o.nearPointXYInUnitSquare=0.5+0.4*[-sind(ori) cosd(ori)];
-      o.eccentricityXYDeg=ecc*[cosd(ori) sind(ori];
+   for ori=0:30:360 % re straight up.
+      o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
+      o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
       o=CriticalSpacing(o);
    end
 end
