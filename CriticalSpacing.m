@@ -334,7 +334,7 @@ function oo=CriticalSpacing(oIn)
 % axis specified by o.spaceRadialOrTangential. The final report by
 % CriticalSpacing includes the aspect ratio of your font: o.heightOverWidth.
 %
-% ECCENTRICITY. Set o.eccentricityXYDeg in your script. For peripheral
+% ECCENTRICITY. Set o.eccentricityXYDeg=[x y] in your script. For peripheral
 % testing, it's usually best to set o.durationSec=0.2 to exclude eye
 % movements during the brief target presentation. When the flankers are
 % radial, the specified spacing refers to the inner flanker, between target
@@ -369,7 +369,7 @@ function oo=CriticalSpacing(oIn)
 % You can use o.stimulusMarginFraction to shrink stimulusRect e.g. 10% so
 % that letters have white above and below.
 %
-% Copyright © 2016, 2017, Denis Pelli, denis.pelli@nyu.edu
+% Copyright © 2016, 2017, 2018, Denis Pelli, denis.pelli@nyu.edu
 
 %% PLANS
 %
