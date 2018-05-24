@@ -68,7 +68,7 @@ function oo=CriticalSpacing(oIn)
 %
 % PRINT THE ALPHABET ON PAPER. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
-% o.readAlphabetFromDisk=1. We have done most of our work with the "Sloan"
+% o.readAlphabetFromDisk=true. We have done most of our work with the "Sloan"
 % and "Pelli" fonts. Only Pelli is skinny enough to measure foveal
 % crowding. Outside the fovea you can use any font. We recommend "Pelli"
 % for threshold spacing (crowding) in the fovea, and Sloan for threshold
@@ -150,7 +150,7 @@ function oo=CriticalSpacing(oIn)
 % you can indicate that you're using a mirror by entering the viewing
 % distance as a negative number. It will flip the display to be seen in a
 % mirror. (You can also request this, in advance, by setting
-% o.flipScreenHorizontally=1; in your run script.) I bought two acrylic
+% o.flipScreenHorizontally=true; in your run script.) I bought two acrylic
 % front surface mirrors for this. 12x24 inches, $46 each from inventables.
 % Front surface mirrors preserve image quality, and acrylic is hard to
 % break, making it safer than glass. I'm not yet sure how big a mirror one
@@ -165,7 +165,7 @@ function oo=CriticalSpacing(oIn)
 % http://www.amazon.com/12-Acrylic-Mirror-Sheet-Pack/dp/B00JPJK3T0/ref=sr_1_13
 % http://www.amazon.com/Double-Infant-Mirror-surface-Approved/dp/B0041TABOG/ref=pd_sim_sbs_468_9
 %
-% READ ALPHABET FROM DISK. If you set o.readAlphabetFromDisk=1 in your
+% READ ALPHABET FROM DISK. If you set o.readAlphabetFromDisk=true in your
 % script you can use any of the "fonts" inside the
 % CriticalSpacing/alphabets/ folder, which you can best see by looking at
 % the alphabet files in CriticalSpacing/pdf/. You can easily create and add
@@ -330,9 +330,13 @@ function oo=CriticalSpacing(oIn)
 % vertically, and 0 for horizontally. Target size can be made proportional
 % to spacing, allowing measurement of critical spacing without knowing the
 % acuity, because we use the largest possible letter for each spacing. The
-% ratio SpacingOverSize is computed for spacing and size along the
-% axis specified by o.spaceflankingDirection. The final report by
-% CriticalSpacing includes the aspect ratio of your font: o.heightOverWidth.
+% ratio SpacingOverSize is computed for spacing and size along the axis
+% specified by o.flankingPolarDeg. You can directly specify
+% o.flankingPolarDeg as a polar angle (right is 0, up is 90), or you can
+% leave it as [] and set o.flankingDirection: radial, tangential,
+% horizontal, or vertical, which will be used to compute
+% o.flankingPolarDeg. The final report by CriticalSpacing includes the
+% aspect ratio of your font: o.heightOverWidth.
 %
 % ECCENTRICITY. Set o.eccentricityXYDeg=[x y] in your script. For peripheral
 % testing, it's usually best to set o.durationSec=0.2 to exclude eye
@@ -447,30 +451,30 @@ cleanup=onCleanup(@() CloseWindowsAndCleanup);
 % PROCEDURE
 o.easyBoost=0.3; % On easy trials, boost log threshold parameter by this.
 o.experimenter=''; % Put name here to skip the runtime question.
-o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
+o.flipScreenHorizontally=false; % Set to 1 when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Put name here to skip the runtime question.
-o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
-o.readAlphabetFromDisk=1; % 1 makes the program more portable.
+o.permissionToChangeResolution=false; % Works for main screen only, due to Psychtoolbox bug.
+o.readAlphabetFromDisk=true; % 1 makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
-o.takeSnapshot=0; % To illustrate your talk or paper.
+o.takeSnapshot=false; % To illustrate your talk or paper.
 o.task='identify';
 o.textFont='Arial';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
-o.measureViewingDistanceToTargetNotFixation=1;
+o.measureViewingDistanceToTargetNotFixation=true;
 
 % SOUND & FEEDBACK
-o.beepNegativeFeedback=0;
-o.beepPositiveFeedback=1;
-o.showProgressBar=1;
-o.speakEachLetter=1;
-o.speakEncouragement=0;
-o.speakViewingDistance=0;
-o.usePurring=0;
-o.useSpeech=1;
+o.beepNegativeFeedback=false;
+o.beepPositiveFeedback=true;
+o.showProgressBar=true;
+o.speakEachLetter=true;
+o.speakEncouragement=false;
+o.speakViewingDistance=false;
+o.usePurring=false;
+o.useSpeech=true;
 
 % VISUAL STIMULUS
 o.contrast=1; % Nominal contrast, not calibrated.
@@ -483,9 +487,9 @@ o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.flankingDirection='tangential'; % Arrange flankers radially or tangentially.
-o.flankingDirection='radial'; % Radially arranged flankers for single target
-o.repeatedTargets=1;
+o.flankingDirection='radial'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
+o.flankingPolarDeg=[]; % Specify angle here (0 is right, 90 is up), or specify o.flankingDirection.
+o.repeatedTargets=true;
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
 o.practicePresentations=3;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
@@ -496,7 +500,7 @@ o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, 
 o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
-o.isolatedTarget=0; % Set to 1 when measuring acuity for a single isolated letter. Not yet fully supported.
+o.isolatedTarget=false; % Set to 1 when measuring acuity for a single isolated letter. Not yet fully supported.
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -520,40 +524,40 @@ o.flankerLetter='';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
+o.fixationCrossBlankedNearTarget=true;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.markTargetLocation=0; % 1 to mark target location
-o.useFixation=1;
-o.forceFixationOffScreen=0;
+o.markTargetLocation=false; % 1 to mark target location
+o.useFixation=true;
+o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 % QUEST threshold estimation
 o.beta=nan;
-o.measureBeta=0;
+o.measureBeta=false;
 o.pThreshold=nan;
 o.tGuess=nan;
 o.tGuessSd=nan;
-o.useQuest=1; % true(1) or false(0)
+o.useQuest=true; % true(1) or false(0)
 o.spacingGuessDeg = 0.3;
 
 % DEBUGGING AIDS
-o.frameTheTarget=0;
-o.printScreenResolution=0;
-o.printSizeAndSpacing=0;
-o.showAlphabet=0;
-o.showBounds=0;
-o.showLineOfLetters=0;
-o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0;
+o.frameTheTarget=false;
+o.printScreenResolution=false;
+o.printSizeAndSpacing=false;
+o.showAlphabet=false;
+o.showBounds=false;
+o.showLineOfLetters=false;
+o.speakSizeAndSpacing=false;
+o.useFractionOfScreen=false;
 
 % TO MEASURE BETA
-% o.measureBeta=0;
+% o.measureBeta=false;
 % o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
 % o.trials=200;
 
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
-% o.speakEncouragement=1; % 1 to say "good," "very good," or "nice" after every trial.
+% o.speakEncouragement=true; % 1 to say "good," "very good," or "nice" after every trial.
 % o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==1. 
                         % Provides easy practice presentations, ramping up
                         % the number of targets after each correct report
@@ -592,10 +596,10 @@ o.useFractionOfScreen=0;
                         
 % NOT SET BY USER
 o.deviceIndex=-3; % all keyboard and keypad devices
-o.easyCount=0;
-o.guessCount=0; % artificial guesses
-o.quitRun=0;
-o.quitSession=0;
+o.easyCount=0; % Number of easy presentations
+o.guessCount=0; % Number of artificial guess responses
+o.quitRun=false;
+o.quitSession=false;
 o.script='';
 o.scriptFullFileName='';
 o.scriptName='';
@@ -667,9 +671,9 @@ for oi=1:conditions
    if ~isfinite(oo(oi).targetSizeIsHeight)
       switch oo(oi).thresholdParameter
          case 'size',
-            oo(oi).targetSizeIsHeight=1;
+            oo(oi).targetSizeIsHeight=true;
          case 'spacing',
-            oo(oi).targetSizeIsHeight=0;
+            oo(oi).targetSizeIsHeight=false;
       end
    end
 end
@@ -682,7 +686,7 @@ for oi=1:conditions
       end
       oo(oi).practiceCountdown=oo(oi).practicePresentations;
    else
-      oo(oi).practiceCountdown=0;
+      oo(oi).practiceCountdown=false;
       oo(oi).maxRepetition=inf;
    end
 end
@@ -1058,10 +1062,10 @@ try
          fprintf('%d: screen %.0f %.0f, rectSizeDeg %.1f %.1f, pixPerCm %.1f, viewingDistance %.1f cm, xy %.0f %.0f\n',...
              oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
          if all(totalSizeXYDeg <= rectSizeDeg);
-            oo(oi).fixationOnScreen=1;
+            oo(oi).fixationOnScreen=true;
             verb='fits within';
          else
-            oo(oi).fixationOnScreen=0;
+            oo(oi).fixationOnScreen=false;
             verb='exceeds';
          end
          if oo(oi).forceFixationOffScreen
@@ -1069,7 +1073,7 @@ try
                ffprintf(ff,'Fixation would fit on-screen, but was forced off by o.forceFixationOffScreen=%d.\n',...
                   oo(oi).forceFixationOffScreen);
             end
-            oo(oi).fixationOnScreen=0;
+            oo(oi).fixationOnScreen=false;
          end
          fitsOnScreenString=sprintf('The combined size of target and fixation %.1f x %.1f deg %s the screen %.1f x %.1f deg.',...
             totalSizeXYDeg,verb,rectSizeDeg);
@@ -1244,7 +1248,7 @@ try
       [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
           ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar graveAccentChar]) 
-         oo(1).quitRun=1;
+         oo(1).quitRun=true;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
@@ -1284,7 +1288,7 @@ try
                      oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
                      res=Screen('Resolution',oo(1).screen);
                      if res.width==oo(1).nativeWidth
-                        oo(1).permissionToChangeResolution=1;
+                        oo(1).permissionToChangeResolution=true;
                         fprintf('SUCCESS!\n');
                      else
                         warning('FAILED.');
@@ -1347,7 +1351,7 @@ try
       end
       [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar graveAccentChar])
-         oo(1).quitRun=1;
+         oo(1).quitRun=true;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
@@ -1383,7 +1387,7 @@ try
       end
       [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar graveAccentChar])
-         oo(1).quitRun=1;
+         oo(1).quitRun=true;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
@@ -1463,11 +1467,46 @@ try
       else
          oo(oi).presentations=oo(oi).trials;
       end
-      if oo(oi).repeatedTargets && streq(oo(oi).flankingDirection,'tangential')
+      ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+      eccentricityPolarDeg=atand(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
+      if ~isfinite(oo(oi).flankingPolarDeg)
+          switch oo(oi).flankingDirection
+              case 'radial'
+                  oo(oi).flankingPolarDeg=eccentricityPolarDeg;
+              case 'tangential'
+                  oo(oi).flankingPolarDeg=eccentricityPolarDeg+90;
+              case 'horizontal'
+                  oo(oi).flankingPolarDeg=0;
+              case 'vertical'
+                  oo(oi).flankingPolarDeg=90;
+              otherwise
+                  error('Unknown o.flankingDirection ''%s''.',oo(oi).flankingDirection);
+          end
+      end
+      % From here on we consider o.flankingPolarDeg primary, and derive a
+      % rough o.flankingDirection. I need the rough o.flankingDirection for
+      % print outs and to keep old code that I don't have time to update
+      % right now.
+      if ecc==0
+          switch round(abs(oo(oi).flankingPolarDeg/90))
+              case [0 2]
+                  oo(oi).flankingDirection='horizontal';
+              case 1
+                  oo(oi).flankingDirection='vertical';
+          end
+      else
+          switch round(abs(oo(oi).flankingPolarDeg-eccentricityPolarDeg)/90)
+              case [0 2]
+                  oo(oi).flankingDirection='radial';
+              case 1
+                  oo(oi).flankingDirection='tangential';
+          end
+      end % if ecc==0
+      if oo(oi).repeatedTargets && oo(oi).flankingPolarDeg~=0
          warning backtrace off
-         warning('You are using o.repeatedTargets=1, so I''m setting o.flankingDirection=''radial''');
+         warning('o.repeatedTargets is true, so I''m setting o.flankingPolarDeg=0.');
          warning backtrace on
-         oo(oi).flankingDirection='radial';
+         oo(oi).flankingPolarDeg=0;
       end
       % Prepare to draw fixation cross.
       fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
@@ -1494,7 +1533,7 @@ try
 
       for ii=1:conditions
          if oo(ii).repeatedTargets
-            oo(ii).useFixation=0;
+            oo(ii).useFixation=false;
          end
          oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
          oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
@@ -1505,9 +1544,11 @@ try
       
       addonDeg=0.15;
       addonPix=pixPerDeg*addonDeg;
-      ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
       oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
-      if ecc>1 && streq(oo(oi).flankingDirection,'tangential')
+      % If flanking direction is orthogonal to eccentricity direction, then
+      % halve the expected crowding distance. A better model would deal
+      % with all possible differences in orientation.
+      if ecc>0 && abs(abs(oo(oi).flankingPolarDeg-oo(oi).eccentricityPolarDeg)-90)<20
          oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
       end
       if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
@@ -1575,7 +1616,7 @@ try
       if oo(oi).markTargetLocation;
          oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
       else
-         oo(oi).fix.markTargetLocationPix=0;
+         oo(oi).fix.markTargetLocationPix=false;
       end
       if oo(oi).fixationCrossBlankedNearTarget
          % Blanking of marks to prevent masking and crowding of the target
@@ -1596,7 +1637,7 @@ try
       end
       fixationLines=ComputeFixationLines2(oo(oi).fix);
       
-      oo(1).quitRun=0;
+      oo(1).quitRun=false;
       
       switch oo(oi).thresholdParameter
          case 'spacing',
@@ -1717,7 +1758,7 @@ try
       cal.macModelName=MacModelName;
    end
    cal.screenOutput=[]; % only for Linux
-   cal.ScreenConfigureDisplayBrightnessWorks=1; % default value
+   cal.ScreenConfigureDisplayBrightnessWorks=true; % default value
    cal.brightnessSetting=1.00; % default value
    cal.brightnessRMSError=0; % default value
    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
@@ -1743,7 +1784,7 @@ try
    v=oo(1).psychtoolbox;
    ffprintf(ff,'1: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
    assert(cal.screenWidthCm==screenWidthMm/10);
-   cal.ScreenConfigureDisplayBrightnessWorks=1;
+   cal.ScreenConfigureDisplayBrightnessWorks=true;
    if cal.ScreenConfigureDisplayBrightnessWorks
       cal.brightnessSetting=1;
       % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
@@ -1768,8 +1809,8 @@ try
    Snd('Open');
    
    % Instructions
-   usingDigits=0;
-   usingLetters=0;
+   usingDigits=false;
+   usingLetters=false;
    for conditions=1:conditions
       usingDigits=usingDigits || all(ismember(oo(oi).alphabet,'0123456789'));
       usingLetters=usingLetters || any(~ismember(oo(oi).alphabet,'0123456789'));
@@ -1834,7 +1875,7 @@ try
    
    Screen('FillRect',window);
    if ismember(answer,[escapeChar graveAccentChar])
-      oo(1).quitRun=1;
+      oo(1).quitRun=true;
       oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
       if oo(1).quitSession
          ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
@@ -1880,9 +1921,9 @@ try
       Screen('TextSize',window,oo(oi).textSize);
       DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
       Screen('Flip',window,[],1); % Don't clear.
-      beginAfterKeypress=1;
+      beginAfterKeypress=true;
    else
-      beginAfterKeypress=0;
+      beginAfterKeypress=false;
       % In this case, we ought to do something to print the string about the
       % progress bar, if there is a progress bar. Right now I'm focused on
       % testing with fixation.
@@ -1891,7 +1932,7 @@ try
    easyCount=0; % Number of easy presentations
    guessCount=0; % Number of artificial guess responses
    skipCount=0;
-   skipping=0;
+   skipping=false;
    condList=[];
    for oi=1:conditions
       % Run the specified number of presentations of each condition, in
@@ -2175,7 +2216,7 @@ try
             SetMouse(screenRect(3),screenRect(4),window);
             answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
             if ismember(answer,[escapeChar graveAccentChar])
-               oo(1).quitRun=1;
+               oo(1).quitRun=true;
                oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
                if oo(1).quitSession
                   ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
@@ -2187,7 +2228,7 @@ try
                sca;
                return
             end
-            beginAfterKeypress=0;
+            beginAfterKeypress=false;
          end
          Screen('FillRect',window,white,oo(oi).stimulusRect);
          Screen('FillRect',window,white,clearRect);
@@ -2587,7 +2628,7 @@ try
       end
       
       responseString='';
-      skipping=0;
+      skipping=false;
       flipSecs=GetSecs;
       for i=1:length(targets)
          [answer,secs]=GetKeypressWithHelp( ...
@@ -2596,7 +2637,7 @@ try
          trialData.reactionTimes(i)=secs-flipSecs;
          
          if ismember(answer,[escapeChar graveAccentChar]);
-            oo(1).quitRun=1;
+            oo(1).quitRun=true;
             break;
          end
          if streq(upper(answer),' ')
@@ -2620,7 +2661,7 @@ try
                guesses=0;
                presentation=presentation-floor(1-length(responseString)/length(targets));
             end
-            skipping=1;
+            skipping=true;
             skipCount=skipCount+1;
             easeRequest=easeRequest+1;
             ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
@@ -2746,6 +2787,12 @@ try
                      ffprintf(ff,'Radial spacing of far flanker from target.\n');
                   case 'tangential'
                      ffprintf(ff,'Tangential spacing of flankers.\n');
+                  case 'horizontal'
+                     ffprintf(ff,'Horizontal spacing of flankers.\n');
+                  case 'vertical'
+                     ffprintf(ff,'Vertical spacing of flankers.\n');
+                  otherwise
+                     warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
                end
             end
             ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
