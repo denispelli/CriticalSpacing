@@ -1813,7 +1813,7 @@ try
    string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, ' ...
       'and just get as many as you can. '];
    string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.) '];
-   if ~any(oo.useFixation)
+   if ~any([oo.useFixation])
       string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
    end
    string=[string 'To continue, please hit RETURN. '];
@@ -1852,7 +1852,7 @@ try
    else
       string='';
    end
-   if any(oo.useFixation)
+   if any([oo.useFixation])
       string=[string 'On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. '];
       if oo(1).fixationOnScreen
          where='below';
@@ -1861,13 +1861,13 @@ try
          quadrant=round(polarDeg/90);
          quadrant=mod(quadrant,4);
          switch quadrant
-            case 0,
+            case 0
                where='to the right';
-            case 1,
+            case 1
                where='above';
-            case 2,
+            case 2
                where='to the left';
-            case 3,
+            case 3
                where='below';
          end
       end
@@ -2754,7 +2754,7 @@ try
             end
             if oo(oi).responseCount>1
                trials=QuestTrials(oo(oi).q);
-               if any(~isreal(trials.intensity))
+               if any(~isreal([trials.intensity]))
                   error('trials.intensity returned by Quest should be real, but is complex.');
                end
                ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
