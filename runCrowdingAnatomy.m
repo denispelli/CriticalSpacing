@@ -43,8 +43,8 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontall
 o.fourFlankers=0;
 o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.radialOrTangential='tangential'; % vertically arranged flankers for single target
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+% o.flankingDirection='tangential'; % vertically arranged flankers for single target
+o.flankingDirection='radial'; % horizontally arranged flankers for single target
 o.repeatedTargets=1; % Repeat targets for immunity to fixation errors.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
 o.practicePresentations=3;
@@ -123,7 +123,7 @@ o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.durationSec=0.2; % duration of display of target and flankers
 o.viewingDistanceCm=100; 
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+o.flankingDirection='radial'; % horizontally arranged flankers for single target
 conditions=[];
 for ori=[-90 90] % re straight up.
    for ecc=[4 8]
@@ -140,7 +140,7 @@ for ori=[-90 90] % re straight up.
       end
    end
 end
-o.radialOrTangential='tangential';
+o.flankingDirection='tangential';
 for ori=[-90 90] % re straight up.
    for ecc=[8]
       if ori<0
@@ -156,7 +156,7 @@ conditions=Shuffle(conditions);
 
 % Foveal
 o.eccentricityXYDeg=[0 0]; % Distance of target from fixation.
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+o.flankingDirection='radial'; % horizontally arranged flankers for single target
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';

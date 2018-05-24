@@ -44,8 +44,8 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontall
 o.fourFlankers=0;
 o.targetSizeIsHeight=nan; % "Size" is either height (1) or width (0).
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this and pixPerCm.
-% o.radialOrTangential='tangential'; % vertically arranged flankers for single target
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+% o.flankingDirection='tangential'; % vertically arranged flankers for single target
+o.flankingDirection='radial'; % horizontally arranged flankers for single target
 o.repeatedTargets=0; % Repeat targets for immunity to fixation errors.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
 o.practicePresentations=3;
@@ -125,9 +125,9 @@ for ecc=[-25 -5 -1 1 5 25]
       for radial=0:1
          o.eccentricityXYDeg=[ecc 0];
          if radial
-            o.radialOrTangential='radial';
+            o.flankingDirection='radial';
          else
-            o.radialOrTangential='tangential';
+            o.flankingDirection='tangential';
          end
          %    o=CriticalSpacing(o);
          if exist('oo','var')
@@ -145,9 +145,9 @@ for meridianDeg=45:90:315
       for radial=0:1
          o.eccentricityXYDeg=5*[sind(meridianDeg) cosd(meridianDeg)];
          if radial
-            o.radialOrTangential='radial';
+            o.flankingDirection='radial';
          else
-            o.radialOrTangential='tangential';
+            o.flankingDirection='tangential';
          end
          %          o=CriticalSpacing(o);
          if exist('oo','var')
@@ -165,9 +165,9 @@ for ecc=[-5 5]
       for radial=0:1
          o.eccentricityXYDeg=[0 ecc];
          if radial
-            o.radialOrTangential='radial';
+            o.flankingDirection='radial';
          else
-            o.radialOrTangential='tangential';
+            o.flankingDirection='tangential';
          end
          %          o=CriticalSpacing(o);
          if exist('oo','var')
@@ -185,7 +185,7 @@ o.alphabet='123456789';
 o.borderLetter='$';
 for rep=1:2
    o.eccentricityXYDeg=[0 0];
-   o.radialOrTangential='tangential';
+   o.flankingDirection='tangential';
    %    o=CriticalSpacing(o);
    if exist('oo','var')
       oo(end+1)=o;

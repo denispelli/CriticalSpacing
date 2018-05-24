@@ -43,8 +43,8 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontall
 o.fourFlankers=0;
 o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.radialOrTangential='tangential'; % vertically arranged flankers for single target
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+% o.flankingDirection='tangential'; % vertically arranged flankers for single target
+o.flankingDirection='radial'; % horizontally arranged flankers for single target
 o.repeatedTargets=1; % Repeat targets for immunity to fixation errors.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
 o.practicePresentations=3;
@@ -115,7 +115,7 @@ o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
-o.radialOrTangential='tangential'; % horizontally arranged flankers for single target
+o.flankingDirection='tangential'; % horizontally arranged flankers for single target
 o.eccentricityXYDeg=[30 0];
 o.durationSec=0.2;
 o.fourFlankers=0;
@@ -129,7 +129,7 @@ o.targetFont='Sloan';
 
 o.alphabet='DHKNORSVZ';
 o.borderLetter='X';
-o.radialOrTangential='radial'; % horizontally arranged flankers for single target
+o.flankingDirection='radial'; % horizontally arranged flankers for single target
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.fixationCrossBlankedNearTarget=1;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
@@ -145,7 +145,7 @@ for one=0:1
 end
 
 % % TEST ALL ECCENTRICITIES
-% ori=90;  % Direction of target from fixation.
+% ori=90;  % Direction of target from fixation, re straight up.
 % o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % o.viewingDistanceCm=25; % Default for runtime question.
@@ -170,7 +170,7 @@ end
 % o.oneFlanker=0;
 % o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 % for i=1:2
-%    for ori=0:30:360 % Direction of target from fixation.
+%    for ori=0:30:360 % Direction of target from fixation, re straight up.
 %       o.nearPointXYInUnitSquare=0.5-0.4*[sind(ori) cosd(ori)];
 %		o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
 %       o=CriticalSpacing(o);
