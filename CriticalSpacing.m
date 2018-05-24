@@ -331,7 +331,7 @@ function oo=CriticalSpacing(oIn)
 % to spacing, allowing measurement of critical spacing without knowing the
 % acuity, because we use the largest possible letter for each spacing. The
 % ratio SpacingOverSize is computed for spacing and size along the
-% axis specified by o.spaceRadialOrTangential. The final report by
+% axis specified by o.spaceflankingDirection. The final report by
 % CriticalSpacing includes the aspect ratio of your font: o.heightOverWidth.
 %
 % ECCENTRICITY. Set o.eccentricityXYDeg=[x y] in your script. For peripheral
@@ -483,8 +483,8 @@ o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.radialOrTangential='tangential'; % Arrange flankers radially or tangentially.
-o.radialOrTangential='radial'; % Radially arranged flankers for single target
+% o.flankingDirection='tangential'; % Arrange flankers radially or tangentially.
+o.flankingDirection='radial'; % Radially arranged flankers for single target
 o.repeatedTargets=1;
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
 o.practicePresentations=3;
@@ -1463,11 +1463,11 @@ try
       else
          oo(oi).presentations=oo(oi).trials;
       end
-      if oo(oi).repeatedTargets && streq(oo(oi).radialOrTangential,'tangential')
+      if oo(oi).repeatedTargets && streq(oo(oi).flankingDirection,'tangential')
          warning backtrace off
-         warning('You are using o.repeatedTargets=1, so I''m setting o.radialOrTangential=''radial''');
+         warning('You are using o.repeatedTargets=1, so I''m setting o.flankingDirection=''radial''');
          warning backtrace on
-         oo(oi).radialOrTangential='radial';
+         oo(oi).flankingDirection='radial';
       end
       % Prepare to draw fixation cross.
       fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
@@ -1507,7 +1507,7 @@ try
       addonPix=pixPerDeg*addonDeg;
       ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
       oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
-      if ecc>1 && streq(oo(oi).radialOrTangential,'tangential')
+      if ecc>1 && streq(oo(oi).flankingDirection,'tangential')
          oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
       end
       if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
@@ -1527,7 +1527,7 @@ try
             end
          case 'spacing'
             if ~oo(oi).repeatedTargets
-               ori=oo(oi).radialOrTangential;
+               ori=oo(oi).flankingDirection;
             else
                if oo(oi).targetSizeIsHeight
                   ori='vertical';
@@ -2037,7 +2037,7 @@ try
       spacingPix=round(spacingPix);
       xF=[];
       yF=[];
-      if streq(oo(oi).radialOrTangential,'tangential') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
+      if streq(oo(oi).flankingDirection,'tangential') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
          % Flankers must fit on screen. Compute where tangent line
          % intersects stimulusRect. The tangent line goes through target
          % xyT and is orthogonal to the line from fixation.
@@ -2072,7 +2072,7 @@ try
          % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
          outerSpacingPix=0;
       end
-      if streq(oo(oi).radialOrTangential,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
+      if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
          orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
          eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
          if eccentricityPix==0
@@ -2738,10 +2738,10 @@ try
       sd=QuestSd(oo(oi).q);
       switch oo(oi).thresholdParameter
          case 'spacing',
-            ori=oo(oi).radialOrTangential;
+            ori=oo(oi).flankingDirection;
             ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
             if ~oo(oi).repeatedTargets && ecc>0
-               switch(oo(oi).radialOrTangential)
+               switch(oo(oi).flankingDirection)
                   case 'radial'
                      ffprintf(ff,'Radial spacing of far flanker from target.\n');
                   case 'tangential'
