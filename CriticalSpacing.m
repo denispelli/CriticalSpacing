@@ -326,8 +326,8 @@ function oo=CriticalSpacing(oIn)
 %
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures threshold spacing in either of two
-% directions, selected by the variable o.targetSizeIsHeight, 1 for
-% vertically, and 0 for horizontally. Target size can be made proportional
+% directions, selected by the variable o.targetSizeIsHeight, true for
+% vertically, and false for horizontally. Target size can be made proportional
 % to spacing, allowing measurement of critical spacing without knowing the
 % acuity, because we use the largest possible letter for each spacing. The
 % ratio SpacingOverSize is computed for spacing and size along the axis
@@ -451,11 +451,11 @@ cleanup=onCleanup(@() CloseWindowsAndCleanup);
 % PROCEDURE
 o.easyBoost=0.3; % On easy trials, boost log threshold parameter by this.
 o.experimenter=''; % Put name here to skip the runtime question.
-o.flipScreenHorizontally=false; % Set to 1 when using a mirror.
+o.flipScreenHorizontally=false; % Set to true when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Put name here to skip the runtime question.
 o.permissionToChangeResolution=false; % Works for main screen only, due to Psychtoolbox bug.
-o.readAlphabetFromDisk=true; % 1 makes the program more portable.
+o.readAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=false; % To illustrate your talk or paper.
 o.task='identify';
@@ -500,7 +500,7 @@ o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, 
 o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
-o.isolatedTarget=false; % Set to 1 when measuring acuity for a single isolated letter. Not yet fully supported.
+o.isolatedTarget=false; % Set to true when measuring acuity for a single isolated letter. Not yet fully supported.
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -527,7 +527,7 @@ o.flankerLetter='';
 o.fixationCrossBlankedNearTarget=true;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
-o.markTargetLocation=false; % 1 to mark target location
+o.markTargetLocation=false; % true to mark target location
 o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
@@ -557,7 +557,7 @@ o.useFractionOfScreen=false;
 
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
-% o.speakEncouragement=true; % 1 to say "good," "very good," or "nice" after every trial.
+% o.speakEncouragement=true; % true to say "good," "very good," or "nice" after every trial.
 % o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==1. 
                         % Provides easy practice presentations, ramping up
                         % the number of targets after each correct report
@@ -650,7 +650,7 @@ for oi=1:conditions
       end
    end
    oo(oi).unknownFields=unique(oo(oi).unknownFields);
-end
+end % for oi=1:conditions
 unknownFields=unique(unknownFields);
 if ~isempty(unknownFields)
    warning off backtrace
@@ -676,7 +676,7 @@ for oi=1:conditions
             oo(oi).targetSizeIsHeight=false;
       end
    end
-end
+end % for oi=1:conditions
 for oi=1:conditions
    if oo(oi).practicePresentations
       if oo(oi).repeatedTargets
@@ -689,7 +689,7 @@ for oi=1:conditions
       oo(oi).practiceCountdown=false;
       oo(oi).maxRepetition=inf;
    end
-end
+end % for oi=1:conditions
 Screen('Preference','TextAntiAliasing',1);
 % Set up for KbCheck. Calling ListenChar(2) tells the MATLAB console/editor
 % to ignore what we type, so we don't inadvertently echo observer responses
@@ -711,7 +711,7 @@ for oi=1:conditions
    for i=1:length(oo(oi).validKeyNames)
       oo(oi).responseKeyCodes(i)=KbName(oo(oi).validKeyNames{i}); % this returns keyCode as integer
    end
-end
+end % for oi=1:conditions
 
 % Set up for Screen
 oo(1).screen=max(Screen('Screens'));
@@ -747,11 +747,11 @@ for oi=1:conditions
    end
    assert(oo(oi).viewingDistanceCm==oo(1).viewingDistanceCm);
    assert(oo(oi).useFractionOfScreen==oo(1).useFractionOfScreen);
-end
+end % for oi=1:conditions
 
 % Are we using the screen at its maximum native resolution?
 ff=1;
-res = Screen('Resolutions',oo(1).screen);
+res=Screen('Resolutions',oo(1).screen);
 oo(1).nativeWidth=0;
 oo(1).nativeHeight=0;
 for i=1:length(res)
@@ -911,7 +911,7 @@ try
             warning on backtrace
          end
       end % if ~oo(1).readAlphabetFromDisk
-   end
+   end % for oi=1:conditions
    if ~oo(1).standardDrawTextPlugin
       warning off backtrace
       warning('The FGTL DrawText plugin failed to load. ');
@@ -922,7 +922,7 @@ try
    end
    
    % Ask about viewing distance
-   while 1
+   while true
       screenRect=Screen('Rect',window);
       screenWidthPix=RectWidth(screenRect);
       screenHeightPix=RectHeight(screenRect);
@@ -1136,8 +1136,8 @@ try
          && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Bluetooth'));
       if oo(1).needWirelessKeyboard
          warning backtrace off
-         warning('You have only one keyboard, and it''s not "wireless" or "bluetooth":');
-         warning('The long viewing distance may demand an external keyboard.');
+         warning('The long viewing distance may demand an external keyboard,');
+         warning('yet your only keyboard is not "wireless" or "bluetooth".');
          warning backtrace on
       end
       
@@ -1251,13 +1251,11 @@ try
          oo(1).quitRun=true;
          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
          if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
+             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
          else
-            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+             ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
          end
-         ListenChar(0);
-         ShowCursor;
-         sca;
+         CloseWindowsAndCleanup;
          return
       end
       if ~isempty(d)
@@ -1347,28 +1345,25 @@ try
       if IsWindows
          background=[];
       else
-         background=WhiteIndex(window);
+          background=WhiteIndex(window);
       end
       [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar graveAccentChar])
-         oo(1).quitRun=true;
-         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-         if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-         else
-            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-         end
-         ListenChar(0);
-         ShowCursor;
-         sca;
-         return
+          oo(1).quitRun=true;
+          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+          if oo(1).quitSession
+              ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+          else
+              ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+          end
+          for i=1:conditions
+              oo(i).experimenter=name;
+          end
+          Screen('FillRect',window);
+          CloseWindowsAndCleanup;
       end
-      for i=1:conditions
-         oo(i).experimenter=name;
-      end
-      Screen('FillRect',window);
-   end
-   
+   end % if isempty(oo(1).experimenter)
+       
    % Ask observer name
    if isempty(oo(1).observer)
       Screen('FillRect',window);
@@ -1387,30 +1382,28 @@ try
       end
       [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
       if ismember(terminatorChar,[escapeChar graveAccentChar])
-         oo(1).quitRun=true;
-         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-         if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-         else
-            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-         end
-         ListenChar(0);
-         ShowCursor;
-         sca;
-         return
+          oo(1).quitRun=true;
+          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+          if oo(1).quitSession
+              ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+          else
+              ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+          end
+          CloseWindowsAndCleanup;
+          return
       end
       for i=1:conditions
          oo(i).observer=name;
       end
       Screen('FillRect',window);
-   end
+   end % if isempty(oo(1).observer)
    
    oo(1).beginSecs=GetSecs;
    oo(1).beginningTime=now;
    timeVector=datevec(oo(1).beginningTime);
    stack=dbstack;
    assert(~isempty(stack));
-   if length(stack)==1;
+   if length(stack)==1
       oo(1).scriptName=[];
       oo(1).functionNames=stack.name;
    else
@@ -1468,8 +1461,10 @@ try
          oo(oi).presentations=oo(oi).trials;
       end
       ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-      eccentricityPolarDeg=atand(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
-      if ~isfinite(oo(oi).flankingPolarDeg)
+      eccentricityPolarDeg=atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
+      % We consult the o.flankingDirection string only if the user has not
+      % provided the o.flankingPolarDeg number.
+      if isempty(oo(oi).flankingPolarDeg)
           switch oo(oi).flankingDirection
               case 'radial'
                   oo(oi).flankingPolarDeg=eccentricityPolarDeg;
@@ -1482,6 +1477,16 @@ try
               otherwise
                   error('Unknown o.flankingDirection ''%s''.',oo(oi).flankingDirection);
           end
+      end
+      if oo(oi).repeatedTargets
+          if oo(oi).targetSizeIsHeight
+              oo(oi).flankingPolarDeg=90;
+          else
+              oo(oi).flankingPolarDeg=0;
+          end
+      end
+      if isempty(oo(oi).flankingPolarDeg)
+          error('o.flankingPolarDeg is empty.');
       end
       % From here on we consider o.flankingPolarDeg primary, and derive a
       % rough o.flankingDirection. I need the rough o.flankingDirection for
@@ -1502,12 +1507,6 @@ try
                   oo(oi).flankingDirection='tangential';
           end
       end % if ecc==0
-      if oo(oi).repeatedTargets && oo(oi).flankingPolarDeg~=0
-         warning backtrace off
-         warning('o.repeatedTargets is true, so I''m setting o.flankingPolarDeg=0.');
-         warning backtrace on
-         oo(oi).flankingPolarDeg=0;
-      end
       % Prepare to draw fixation cross.
       fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
 %       fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
@@ -1576,7 +1575,7 @@ try
                   ori='horizontal';
                end
             end
-      end
+      end % switch oo(oi).thresholdParameter
       if oo(oi).useQuest
          ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',oi,oo(oi).trials,ori,oo(oi).thresholdParameter);
       else
@@ -1640,10 +1639,10 @@ try
       oo(1).quitRun=false;
       
       switch oo(oi).thresholdParameter
-         case 'spacing',
+         case 'spacing'
             assert(oo(oi).spacingDeg>0);
             oo(oi).tGuess=log10(oo(oi).spacingDeg);
-         case 'size',
+         case 'size'
             assert(oo(oi).targetDeg>0);
             oo(oi).tGuess=log10(oo(oi).targetDeg);
       end
@@ -1865,27 +1864,26 @@ try
    string=strrep(string,'letter',symbolName);
    DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
    Screen('Flip',window,[],1);
-   if 0 && oo(oi).useSpeech
+   if false && oo(oi).useSpeech
       string=strrep(string,'\n','');
       string=strrep(string,'eye(s)','eyes');
       Speak(string);
    end
    SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
+   answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],...
+       oo(oi),window,oo(oi).stimulusRect);
    
    Screen('FillRect',window);
    if ismember(answer,[escapeChar graveAccentChar])
-      oo(1).quitRun=true;
-      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-      if oo(1).quitSession
-         ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-      else
-         ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-      end
-      ListenChar(0);
-      ShowCursor;
-      sca;
-      return
+       oo(1).quitRun=true;
+       oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+       if oo(1).quitSession
+           ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+       else
+           ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+       end
+       CloseWindowsAndCleanup;
+       return
    end
    fixationClipRect=oo(oi).stimulusRect;
    if oo(oi).showProgressBar
@@ -1941,7 +1939,7 @@ try
       oo(oi).spacingsSequence=Shuffle(oo(oi).spacingsSequence);
       oo(oi).q=QuestCreate(oo(oi).tGuess,oo(oi).tGuessSd,oo(oi).pThreshold,oo(oi).beta,delta,gamma,grain,range);
       oo(oi).trialData=struct([]);
-   end
+   end % for oi=1:conditions
    condList=Shuffle(condList);
    presentation=0;
    while presentation<length(condList)
@@ -2082,6 +2080,13 @@ try
          % Flankers must fit on screen. Compute where tangent line
          % intersects stimulusRect. The tangent line goes through target
          % xyT and is orthogonal to the line from fixation.
+         % NOTE: I think it would be easy to generalize this code to use
+         % the arbitrary direction of o.flankingPolarDeg instead of
+         % "orientation". When dealing with o.fourFlankers, we could
+         % analyze only with one pair of flankers or iterate to analyze
+         % both pairs.
+         %
+         % I think the two arguments to atan2d should be exchanged:
          orientation=90+atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
          if ~IsXYInRect(xyT,oo(oi).stimulusRect)
             ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
@@ -2091,7 +2096,7 @@ try
                oo(oi).fix.x/pixPerDeg,oo(oi).fix.y/pixPerDeg,...
                oo(oi).eccentricityXYDeg,...
                xyT/pixPerDeg);
-            error('Sorry the target (eccentricity [%.0f %.0f] deg) is falling off the screen. Please reduce the viewing distance.',oo(oi).eccentricityXYDeg);
+            error('Sorry, the target (eccentricity [%.0f %.0f] deg) is falling off the screen. Please reduce the viewing distance.',oo(oi).eccentricityXYDeg);
          end
          assert(length(spacingPix)==1);
          if oo(oi).fixedSpacingOverSize
@@ -2114,9 +2119,10 @@ try
          outerSpacingPix=0;
       end
       if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
-         orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
-         eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
-         if eccentricityPix==0
+          % I think the two arguments to atan2d should be exchanged:
+          orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
+          eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+          if eccentricityPix==0
             % Flanker must fit on screen, horizontally
             if oo(oi).fixedSpacingOverSize
                spacingPix=min(spacingPix,RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
@@ -2223,9 +2229,7 @@ try
                else
                   ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
                end
-               ListenChar(0);
-               ShowCursor;
-               sca;
+               CloseWindowsAndCleanup;
                return
             end
             beginAfterKeypress=false;
@@ -2773,125 +2777,123 @@ try
    ffprintf(ff,'Took %.0f s for %.0f trials, or %.0f s/trial.\n',oo(1).totalSecs,trials,oo(1).totalSecs/trials);
    ffprintf(ff,'%d skips, %d easy presentations, %d artificial guesses. \n',skipCount,easyCount,guessCount);
    for oi=1:conditions
-      ffprintf(ff,'CONDITION %d **********\n',oi);
-      % Ask Quest for the final estimate of threshold.
-      t=QuestMean(oo(oi).q);
-      sd=QuestSd(oo(oi).q);
-      switch oo(oi).thresholdParameter
-         case 'spacing',
-            ori=oo(oi).flankingDirection;
-            ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-            if ~oo(oi).repeatedTargets && ecc>0
-               switch(oo(oi).flankingDirection)
-                  case 'radial'
-                     ffprintf(ff,'Radial spacing of far flanker from target.\n');
-                  case 'tangential'
-                     ffprintf(ff,'Tangential spacing of flankers.\n');
-                  case 'horizontal'
-                     ffprintf(ff,'Horizontal spacing of flankers.\n');
-                  case 'vertical'
-                     ffprintf(ff,'Vertical spacing of flankers.\n');
-                  otherwise
-                     warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
+       ffprintf(ff,'CONDITION %d **********\n',oi);
+       % Ask Quest for the final estimate of threshold.
+       t=QuestMean(oo(oi).q);
+       sd=QuestSd(oo(oi).q);
+       switch oo(oi).thresholdParameter
+           case 'spacing'
+               ori=oo(oi).flankingDirection;
+               ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+               if ~oo(oi).repeatedTargets && ecc>0
+                   switch(oo(oi).flankingDirection)
+                       case 'radial'
+                           ffprintf(ff,'Radial spacing of far flanker from target.\n');
+                       case 'tangential'
+                           ffprintf(ff,'Tangential spacing of flankers.\n');
+                       case 'horizontal'
+                           ffprintf(ff,'Horizontal spacing of flankers.\n');
+                       case 'vertical'
+                           ffprintf(ff,'Vertical spacing of flankers.\n');
+                       otherwise
+                           warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
+                   end
                end
-            end
-            ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
-            if 10^t<oo(oi).minimumSpacingDeg
-               ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
-            end
-            if oo(oi).responseCount>1
-               trials=QuestTrials(oo(oi).q);
-               if any(~isreal([trials.intensity]))
-                  error('trials.intensity returned by Quest should be real, but is complex.');
+               ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',...
+                   ori,t,sd,10^t);
+               if 10^t<oo(oi).minimumSpacingDeg
+                   ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
                end
-               ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
-               ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
-            end
-         case 'size',
-            if oo(oi).targetSizeIsHeight
-               ori='vertical';
-            else
-               ori='horizontal';
-            end
-            ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
-            if 10^t<oo(oi).minimumSizeDeg
-               ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSizeDeg);
-            end
-            if oo(oi).responseCount>1
-               trials=QuestTrials(oo(oi).q);
-               ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
-               ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
-            end
-      end
-      for oi=1:conditions
-         if oo(oi).measureBeta
-            % reanalyze the data with beta as a free parameter.
-            ffprintf(ff,'%d: o.measureBeta **************************************\n',oi);
-            ffprintf(ff,'offsetToMeasureBeta %.1f to %.1f\n',min(offsetToMeasureBeta),max(offsetToMeasureBeta));
-            bestBeta=QuestBetaAnalysis(oo(oi).q);
-            qq=oo(oi).q;
-            qq.beta=bestBeta;
-            qq=QuestRecompute(qq);
-            ffprintf(ff,'thresh %.2f deg, log thresh %.2f, beta %.1f\n',10^QuestMean(qq),QuestMean(qq),qq.beta);
-            ffprintf(ff,' deg     t     P fit\n');
-            tt=QuestMean(qq);
-            for offset=sort(offsetToMeasureBeta)
+               if oo(oi).responseCount>1
+                   trials=QuestTrials(oo(oi).q);
+                   if any(~isreal([trials.intensity]))
+                       error('trials.intensity returned by Quest should be real, but is complex.');
+                   end
+                   ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
+                   ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+               end
+           case 'size'
+               if oo(oi).targetSizeIsHeight
+                   ori='vertical';
+               else
+                   ori='horizontal';
+               end
+               ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
+               if 10^t<oo(oi).minimumSizeDeg
+                   ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSizeDeg);
+               end
+               if oo(oi).responseCount>1
+                   trials=QuestTrials(oo(oi).q);
+                   ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
+                   ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+               end
+       end % switch oo(oi).thresholdParameter
+   end % for oi=1:conditions
+   
+   for oi=1:conditions
+       if oo(oi).measureBeta
+           % Reanalyze the data with beta as a free parameter.
+           ffprintf(ff,'%d: o.measureBeta **************************************\n',oi);
+           ffprintf(ff,'offsetToMeasureBeta %.1f to %.1f\n',min(offsetToMeasureBeta),max(offsetToMeasureBeta));
+           bestBeta=QuestBetaAnalysis(oo(oi).q);
+           qq=oo(oi).q;
+           qq.beta=bestBeta;
+           qq=QuestRecompute(qq);
+           ffprintf(ff,'thresh %.2f deg, log thresh %.2f, beta %.1f\n',10^QuestMean(qq),QuestMean(qq),qq.beta);
+           ffprintf(ff,' deg     t     P fit\n');
+           tt=QuestMean(qq);
+           for offset=sort(offsetToMeasureBeta)
                t=tt+offset;
                ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
-            end
-            if oo(oi).responseCount>1
+           end
+           if oo(oi).responseCount>1
                trials=QuestTrials(qq);
                switch oo(oi).thresholdParameter
-                  case 'spacing',
-                     ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
-                  case 'size',
-                     ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
+                   case 'spacing'
+                       ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
+                   case 'size'
+                       ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
                end
                ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^trials.intensity;QuestP(qq,trials.intensity);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
-            end
-            ffprintf(ff,'o.measureBeta done **********************************\n');
-         end
-      end
-      ListenChar(0); % flush and reenable keyboard
-      Snd('Close');
-      ShowCursor;
-      Screen('CloseAll');
-      sca;
-   end
+           end
+           ffprintf(ff,'o.measureBeta done **********************************\n');
+       end % if oo.measureBeta
+   end % for oi=1:conditions
+   Snd('Close');
+   CloseWindowsAndCleanup;
    for oi=1:conditions
-      if exist('results','var') && oo(oi).responseCount>1
-         ffprintf(ff,'%d:',oi);
-         trials=QuestTrials(oo(oi).q);
-         p=sum(trials.responses(2,:))/sum(sum(trials.responses));
-         switch oo(oi).thresholdParameter
-            case 'spacing',
-               ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. [%.1f  %.1f] deg, critical spacing %.2f deg.\n',...
-                  oo(oi).observer,100*p,oo(oi).targetDeg,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
-            case 'size',
-               ffprintf(ff,'%s: p %.0f%%, ecc. [%.2f  %.2f] deg, threshold size %.3f deg.\n',...
-                  oo(oi).observer,100*p,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
-         end
-      end
-   end
+       if exist('results','var') && oo(oi).responseCount>1
+           ffprintf(ff,'%d:',oi);
+           trials=QuestTrials(oo(oi).q);
+           p=sum(trials.responses(2,:))/sum(sum(trials.responses));
+           switch oo(oi).thresholdParameter
+               case 'spacing',
+                   ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. [%.1f  %.1f] deg, critical spacing %.2f deg.\n',...
+                       oo(oi).observer,100*p,oo(oi).targetDeg,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
+               case 'size',
+                   ffprintf(ff,'%s: p %.0f%%, ecc. [%.2f  %.2f] deg, threshold size %.3f deg.\n',...
+                       oo(oi).observer,100*p,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
+           end
+       end
+   end % for oi=1:conditions
    save(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']),'oo');
    if exist('dataFid','file')
-      fclose(dataFid);
-      dataFid=-1;
+       fclose(dataFid);
+       dataFid=-1;
    end
    fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
-catch
-   ListenChar(0);
-   % One or more of these functions spoils psychlasterror, so i don't use them.
-   %     Snd('Close');
-   %     ShowCursor;
-   if exist('dataFid','file') && dataFid~=-1
-      fclose(dataFid);
-      dataFid=-1;
-   end
-   sca; % Screen Close All. This cleans up without canceling the error message.
-   psychrethrow(psychlasterror);
+catch e
+    % One or more of these functions spoils psychlasterror, so i don't use them.
+    %     Snd('Close');
+    %     ShowCursor;
+    if exist('dataFid','file') && dataFid~=-1
+        fclose(dataFid);
+        dataFid=-1;
+    end
+    CloseWindowsAndCleanup;
+    rethrow(e);
 end
-end
+end % function CriticalSpacing
 
 function xyPix=XYPixOfXYDeg(o,xyDeg)
 % Convert position from deg (relative to fixation) to integet (x,y) screen
@@ -2999,7 +3001,7 @@ else
       Screen('DrawLine',window,black,x-a,y,x+a,y,a/20);
       Screen('DrawLine',window,black,x,y-a,x,y+a,a/20);
       Screen('Flip',window); % Display question.
-      if 0 && oo(oi).speakInstructions
+      if false && oo(oi).speakInstructions
          string=strrep(string,'below ','');
          string=strrep(string,'.0','');
          Speak(string);
@@ -3064,7 +3066,6 @@ function CloseWindowsAndCleanup()
 if ~isempty(Screen('Windows'))
     % Screen CloseAll is very slow, so call it only if we need to.
     Screen('CloseAll');
-    %     sca;
     if ismac
         AutoBrightness(0,1);
     end
