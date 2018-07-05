@@ -43,34 +43,19 @@ o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontall
 o.fourFlankers=0;
 o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-% o.flankingDirection='tangential'; % vertically arranged flankers for single target
-o.flankingDirection='radial'; % horizontally arranged flankers for single target
-o.repeatedTargets=1; % Repeat targets for immunity to fixation errors.
-o.maxFixationErrorXYDeg=[3 3]; % Repeat enough to cope with this.
+% o.flankingDirection='vertical'; % vertically arranged flankers for single target
+o.flankingDirection='horizontal'; % horizontally arranged flankers for single target
+o.repeatedTargets=true; % Repeat targets for immunity to fixation errors.
+o.maxFixationErrorXYDeg=[3 3]; % Repeat target letters enough to cope with this.
 o.practicePresentations=3;
-o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
+o.setTargetHeightOverWidth=false; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
 
 % TARGET FONT
-% o.targetFont='Sloan';
-% o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-% o.borderLetter='X';
-% o.alphabet='HOTVX'; % alphabet of Cambridge Crowding Cards
-% o.borderLetter='$';
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
-% o.targetFont='ClearviewText';
-% o.targetFont='Gotham Cond SSm XLight';
-% o.targetFont='Gotham Cond SSm Light';
-% o.targetFont='Gotham Cond SSm Medium';
-% o.targetFont='Gotham Cond SSm Book';
-% o.targetFont='Gotham Cond SSm Bold';
-% o.targetFont='Gotham Cond SSm Black';
-% o.targetFont='Arouet';
-% o.targetFont='Pelli';
-% o.targetFont='Retina Micro';
 
 % FIXATION
 o.fixationCrossBlankedNearTarget=1;
@@ -108,26 +93,25 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
-o.useFractionOfScreen=0;
+o.useFractionOfScreen=0.3;
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
-o.repeatedTargets=0;
+% o.repeatedTargets=false;
 o.thresholdParameter='spacing';
-o.flankingDirection='tangential'; % horizontally arranged flankers for single target
+o.flankingDirection='horizontal'; % horizontally arranged flankers for single target
 o.eccentricityXYDeg=[30 0];
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
-% o.useFractionOfScreen=0.2;
 
 % TEST FOVEA
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
-o.flankingDirection='radial'; % horizontally arranged flankers for single target
+o.flankingDirection='horizontal'; % horizontally arranged flankers for single target
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.fixationCrossBlankedNearTarget=1;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.

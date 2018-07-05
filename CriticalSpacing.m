@@ -558,7 +558,7 @@ o.useFractionOfScreen=false;
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
 % o.speakEncouragement=true; % true to say "good," "very good," or "nice" after every trial.
-% o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==1. 
+% o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==true. 
                         % Provides easy practice presentations, ramping up
                         % the number of targets after each correct report
                         % of both letters in a presentation, until the
@@ -580,7 +580,7 @@ o.useFractionOfScreen=false;
 % of the screen.
 %
 % o.practicePresentations=3 only affects the repeated-targets condition,
-% i.e. when o.repeatedTargets=1. This new options adds 3 practice
+% i.e. when o.repeatedTargets=true. This new options adds 3 practice
 % presentations at the beginning of every repeatedTargets run. The first
 % presentation has only a few target letters (two unique) in a single row.
 % Subsequent presentations are similar, until the observer gets both
@@ -1461,15 +1461,19 @@ try
          oo(oi).presentations=oo(oi).trials;
       end
       ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-      eccentricityPolarDeg=atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
+      if isempty(oo(oi).flankingPolarDeg) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
+          error('At o.eccentricityXYDeg==0, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
+              oo(oi).flankingDirection);
+      end
+      oo(oi).eccentricityPolarDeg=atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
       % We consult the o.flankingDirection string only if the user has not
       % provided the o.flankingPolarDeg number.
       if isempty(oo(oi).flankingPolarDeg)
           switch oo(oi).flankingDirection
               case 'radial'
-                  oo(oi).flankingPolarDeg=eccentricityPolarDeg;
+                  oo(oi).flankingPolarDeg=oo(oi).eccentricityPolarDeg;
               case 'tangential'
-                  oo(oi).flankingPolarDeg=eccentricityPolarDeg+90;
+                  oo(oi).flankingPolarDeg=oo(oi).eccentricityPolarDeg+90;
               case 'horizontal'
                   oo(oi).flankingPolarDeg=0;
               case 'vertical'
@@ -1500,7 +1504,7 @@ try
                   oo(oi).flankingDirection='vertical';
           end
       else
-          switch round(abs(oo(oi).flankingPolarDeg-eccentricityPolarDeg)/90)
+          switch round(abs(oo(oi).flankingPolarDeg-oo(oi).eccentricityPolarDeg)/90)
               case [0 2]
                   oo(oi).flankingDirection='radial';
               case 1
@@ -1710,9 +1714,9 @@ try
          ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
       else
          switch oo(oi).thresholdParameter
-            case 'size',
+            case 'size'
                ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(oi).spacingPix,oo(oi).spacingDeg);
-            case 'spacing',
+            case 'spacing'
                ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',oo(oi).targetPix,oo(oi).targetDeg);
          end
       end
@@ -2076,7 +2080,7 @@ try
       spacingPix=round(spacingPix);
       xF=[];
       yF=[];
-      if streq(oo(oi).flankingDirection,'tangential') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
+      if ismember(oo(oi).flankingDirection,{'horizontal' 'tangential'}) || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
          % Flankers must fit on screen. Compute where tangent line
          % intersects stimulusRect. The tangent line goes through target
          % xyT and is orthogonal to the line from fixation.
@@ -2312,7 +2316,7 @@ try
          GetClicks;
       end
       
-      % Create textures for 3 lines. The rest are the copies.
+      % Create textures for 3 lines. The rest are copies.
       textureIndex=1;
       spacingPix=floor(spacingPix);
       if oo(oi).targetSizeIsHeight
@@ -2328,6 +2332,9 @@ try
       end
       if oo(oi).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',oi,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
       if ~oo(oi).repeatedTargets
+          if isempty(xF)
+              error('xF is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
+          end
          xStimulus=[xF(1) xyT(1) xF(2:end)];
          yStimulus=[yF(1) xyT(2) yF(2:end)];
          if oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing')
