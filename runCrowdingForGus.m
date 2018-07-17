@@ -201,7 +201,7 @@ for i=1:length(oo)
    oo(i).row=i;
 end
 t=struct2table(oo);
-t
+t % Print the conditions in the Command Window.
 for i=1:length(oo)
    o=oo(i);
 % o.useFractionOfScreen=0.5;
