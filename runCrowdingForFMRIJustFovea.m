@@ -196,13 +196,13 @@ disp(t(:,{'condition','eccentricityXYDeg','flankingDirection','viewingDistanceCm
 oOld.observer='';
 for i=1:length(oo)
    o=oo(i);
-    % o.useFractionOfScreen=0.5;
+%    o.useFractionOfScreen=0.5;
    o.fixationLineWeightDeg=0.04;
    o.fixationCrossDeg=3; % 0, 3, and inf are typical values.
    o.trials=30;
    o.practicePresentations=0;
    o.experimenter='Jing';
-    o.observer=oOld.observer;
+   o.observer=oOld.observer;
    o.durationSec=0.2; % duration of display of target and flankers
    o.repeatedTargets=0;
    o.thresholdParameter='spacing';
