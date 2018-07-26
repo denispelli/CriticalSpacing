@@ -105,7 +105,7 @@ function oo=CriticalSpacing(oIn)
 % measure the width and height of your screen's filled rectangle of glowing
 % pixels.
 %
-% MAC OS X: PERMIT MATLAB TO CONTROL YOUR COMPUTER. Open the System
+% macOS: PERMIT MATLAB TO CONTROL YOUR COMPUTER. Open the System
 % Preferences: Security and Privacy: Privacy tab. Select Accessibility.
 % Click to open the lock in lower left, providing your computer password.
 % Click to select MATLAB, allowing it to control your computer. Click the
@@ -1795,6 +1795,8 @@ try
       % video projector, Screen gave a fatal error. How can my program know
       % when it's safe to use Screen ConfigureDisplay?
       % Bug reported to Psychtoolbox forum June 2017.
+      % The work around, not yet implemented here, is to wrap the call in a
+      % try-catch block.
       if computer.osx || computer.macintosh
          Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
       end
