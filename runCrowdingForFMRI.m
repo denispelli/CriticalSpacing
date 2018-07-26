@@ -1,8 +1,8 @@
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2015,2016,2017,2018 Denis G. Pelli, denis.pelli@nyu.edu
 
-% July 17, 2018
-% Minor edit to reuse observer name from previous block.
+% July 17, 2018 Minor edit to reuse observer name from previous block.
+% July 25, 2018 Use 'horizontal' at ecc [0 0].
 
 % We recommend leaving the boilerplate header alone, and customizing by
 % copying lines from the boilerplate to your customized section at the
@@ -175,7 +175,7 @@ o.alphabet='123456789';
 o.borderLetter='$';
 for rep=1:2
     o.eccentricityXYDeg=[0 0];
-    o.flankingDirection='tangential';
+    o.flankingDirection='horizontal';
     oo(end+1)=o;
 end
 
