@@ -24,12 +24,10 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % feature is manually enabled/disabled by the"Automatically adjust
 % brightness"checkbox in theSystem Preferences: Displays panel. While the
 % feature is enabled, your Mac slowly adjusts the screen luminance of your
-% Apple liquid crystal display, depending the the luminance of the room.
-% That's bad for screen calibration, and perhaps also bad for your
+% Apple liquid crystal display, tracking the luminance of the room.
+% That instability is bad for screen calibration, and may also be bad for your
 % experiments. My AutoBrightness routines allow your programs to read the
-% on/off setting of that feature, and enable or disable it. For use in
-% MATLAB, please put both files anywhere in MATLAB's path. I hope they will
-% be added to the Psychtoolbox.
+% on/off setting of that feature, and set it on or off.
 %
 % Written by denis.pelli@nyu.edu for the Psychtoolbox, May 21, 2015.
 %
