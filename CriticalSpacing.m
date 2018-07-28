@@ -465,6 +465,7 @@ o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 o.measureViewingDistanceToTargetNotFixation=true;
+o.condition=[]; % Integer count of the condition, starting at 1.
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
