@@ -94,7 +94,7 @@ function oo=CriticalSpacing(oIn)
 % universites have site licences. Psychtoolbox is free.
 % https://www.mathworks.com/
 % http://psychtoolbox.org/
-% 
+%
 % OPTIONAL: MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically
 % reads your display screen's resolution in pixels and size in cm, and
 % reports them in every data file. Alas, the reported size in cm is
@@ -274,7 +274,7 @@ function oo=CriticalSpacing(oIn)
 % end, which acts as your fixation mark. For a positive eccentricity, bring
 % your display forward to the edge of your table, and clamp the bottom edge
 % of the display. You need just the gooseneck clamp and a meter stick.
-% 
+%
 % NAME THE EXPERIMENTER & OBSERVER. If it doesn't already know,
 % CriticalSpacing asks for the name of the experimenter and observer. These
 % names are included in the data files, and incorporated into the data file
@@ -431,10 +431,10 @@ function oo=CriticalSpacing(oIn)
 
 [~,v]=PsychtoolboxVersion;
 if v.major*10000 + v.minor*100 + v.point < 30012
-   error('CriticalSpacing: Your Psychtoolbox is too old. Please run "UpdatePsychtoolbox".');
+    error('CriticalSpacing: Your Psychtoolbox is too old. Please run "UpdatePsychtoolbox".');
 end
 if nargin<1 || ~exist('oIn','var')
-   oIn.script=[];
+    oIn.script=[];
 end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
@@ -560,13 +560,13 @@ o.useFractionOfScreen=false;
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
 % o.speakEncouragement=true; % true to say "good," "very good," or "nice" after every trial.
-% o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==true. 
-                        % Provides easy practice presentations, ramping up
-                        % the number of targets after each correct report
-                        % of both letters in a presentation, until the
-                        % observer gets three presentations right. Then we
-                        % seamlessly begin the official run.
-                        
+% o.practicePresentations=3;   % 0 for none. Ignored unless repeatedTargets==true.
+% Provides easy practice presentations, ramping up
+% the number of targets after each correct report
+% of both letters in a presentation, until the
+% observer gets three presentations right. Then we
+% seamlessly begin the official run.
+
 % PRACTICE PRESENTATIONS.
 % In several instances, very young children (4 years old) refused to even
 % try to guess the letters when the screen is covered by letters in the
@@ -591,11 +591,11 @@ o.useFractionOfScreen=false;
 % targets. After 3 successful practice presentations, the official run
 % begins. The practice presentation responses are discarded and not passed
 % to Quest.
-% 
+%
 % You can restore the old behavior by setting o.practicePresentations=0.
 % After the practice, the run estimates threshold by the same procedure
 % whether o.practicePresentation is 0 or 3.
-                        
+
 % NOT SET BY USER
 o.deviceIndex=-3; % all keyboard and keypad devices
 o.easyCount=0; % Number of easy presentations
@@ -622,45 +622,45 @@ clear o; % Thus MATLAB will flag an error if we accidentally try to use "o".
 % it's a known output field. It might be a typo for an input fields, or an
 % obsolete parameter.
 outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
-   'dataFolder' 'eccentricityXYPix' 'fix' 'functionNames' ...
-   'keyboardNameAndTransport' 'minimumSizeDeg' 'minimumSpacingDeg' ...
-   'minimumViewingDistanceCm' 'normalAcuityDeg' ...
-   'normalCriticalSpacingDeg' 'presentations' 'q' 'responseCount' ...
-   'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
-   'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
-   'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
-   'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
-   'minimumScreenSizeXYDeg' 'typicalThesholdSizeDeg' ...
-   'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
-   'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
-   'targetSizeIsHeight'  ...
-   'maxRepetition' 'practiceCountdown' 'flankerLetter' 'row' ...
-   'fixationOnScreen' 'fixationXYPix' 'nearPointXYDeg' 'nearPointXYPix' ... 
-   'pixPerCm' 'pixPerDeg' 'stimulusRect' 'targetXYPix' 'textLineLength' ...
-   'speakInstructions' 'fixationOnScreen' 'fixationIsOffscreen' ...
-};
+    'dataFolder' 'eccentricityXYPix' 'fix' 'functionNames' ...
+    'keyboardNameAndTransport' 'minimumSizeDeg' 'minimumSpacingDeg' ...
+    'minimumViewingDistanceCm' 'normalAcuityDeg' ...
+    'normalCriticalSpacingDeg' 'presentations' 'q' 'responseCount' ...
+    'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
+    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
+    'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
+    'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
+    'minimumScreenSizeXYDeg' 'typicalThesholdSizeDeg' ...
+    'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
+    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
+    'targetSizeIsHeight'  ...
+    'maxRepetition' 'practiceCountdown' 'flankerLetter' 'row' ...
+    'fixationOnScreen' 'fixationXYPix' 'nearPointXYDeg' 'nearPointXYPix' ...
+    'pixPerCm' 'pixPerDeg' 'stimulusRect' 'targetXYPix' 'textLineLength' ...
+    'speakInstructions' 'fixationOnScreen' 'fixationIsOffscreen' ...
+    };
 unknownFields=cell(0);
 for oi=1:conditions
-   fields=fieldnames(oIn(oi));
-   oo(oi).unknownFields=cell(0);
-   for i=1:length(fields)
-      if ismember(fields{i},inputFields)
-         oo(oi).(fields{i})=oIn(oi).(fields{i});
-      elseif ~ismember(fields{i},outputFields)
-         unknownFields{end+1}=fields{i};
-         oo(oi).unknownFields{end+1}=fields{i};
-      end
-   end
-   oo(oi).unknownFields=unique(oo(oi).unknownFields);
+    fields=fieldnames(oIn(oi));
+    oo(oi).unknownFields=cell(0);
+    for i=1:length(fields)
+        if ismember(fields{i},inputFields)
+            oo(oi).(fields{i})=oIn(oi).(fields{i});
+        elseif ~ismember(fields{i},outputFields)
+            unknownFields{end+1}=fields{i};
+            oo(oi).unknownFields{end+1}=fields{i};
+        end
+    end
+    oo(oi).unknownFields=unique(oo(oi).unknownFields);
 end % for oi=1:conditions
 unknownFields=unique(unknownFields);
 if ~isempty(unknownFields)
-   warning off backtrace
-   warning(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
-   warning on backtrace
+    warning off backtrace
+    warning(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
+    warning on backtrace
 end
 if oo(1).quitSession
-   return
+    return
 end
 % clear Screen % might help get appropriate restore after using Screen('Resolution');
 Screen('Preference','SuppressAllWarnings',1);
@@ -670,27 +670,27 @@ Screen('Preference','SkipSyncTests',1);
 
 % Set up defaults. Clumsy.
 for oi=1:conditions
-   if ~isfinite(oo(oi).targetSizeIsHeight)
-      switch oo(oi).thresholdParameter
-         case 'size',
-            oo(oi).targetSizeIsHeight=true;
-         case 'spacing',
-            oo(oi).targetSizeIsHeight=false;
-      end
-   end
+    if ~isfinite(oo(oi).targetSizeIsHeight)
+        switch oo(oi).thresholdParameter
+            case 'size',
+                oo(oi).targetSizeIsHeight=true;
+            case 'spacing',
+                oo(oi).targetSizeIsHeight=false;
+        end
+    end
 end % for oi=1:conditions
 for oi=1:conditions
-   if oo(oi).practicePresentations
-      if oo(oi).repeatedTargets
-         oo(oi).maxRepetition=1;
-      else
-         oo(oi).maxRepetition=0;
-      end
-      oo(oi).practiceCountdown=oo(oi).practicePresentations;
-   else
-      oo(oi).practiceCountdown=false;
-      oo(oi).maxRepetition=inf;
-   end
+    if oo(oi).practicePresentations
+        if oo(oi).repeatedTargets
+            oo(oi).maxRepetition=1;
+        else
+            oo(oi).maxRepetition=0;
+        end
+        oo(oi).practiceCountdown=oo(oi).practicePresentations;
+    else
+        oo(oi).practiceCountdown=false;
+        oo(oi).maxRepetition=inf;
+    end
 end % for oi=1:conditions
 Screen('Preference','TextAntiAliasing',1);
 % Set up for KbCheck. Calling ListenChar(2) tells the MATLAB console/editor
@@ -709,10 +709,10 @@ graveAccentKeyCode=KbName('`~');
 escapeChar=char(27);
 graveAccentChar='`';
 for oi=1:conditions
-   oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).alphabet);
-   for i=1:length(oo(oi).validKeyNames)
-      oo(oi).responseKeyCodes(i)=KbName(oo(oi).validKeyNames{i}); % this returns keyCode as integer
-   end
+    oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).alphabet);
+    for i=1:length(oo(oi).validKeyNames)
+        oo(oi).responseKeyCodes(i)=KbName(oo(oi).validKeyNames{i}); % this returns keyCode as integer
+    end
 end % for oi=1:conditions
 
 % Set up for Screen
@@ -724,31 +724,31 @@ oo(1).screen=max(Screen('Screens'));
 % o.measuredScreenWidthCm and o.measuredScreenWidthCm.
 [screenWidthMm,screenHeightMm]=Screen('DisplaySize',oo(1).screen);
 if isfinite(oo(1).measuredScreenWidthCm)
-   screenWidthCm=oo(1).measuredScreenWidthCm;
+    screenWidthCm=oo(1).measuredScreenWidthCm;
 else
-   screenWidthCm=screenWidthMm/10;
+    screenWidthCm=screenWidthMm/10;
 end
 if isfinite(oo(1).measuredScreenWidthCm)
-   screenHeightCm=oo(1).measuredScreenHeightCm;
+    screenHeightCm=oo(1).measuredScreenHeightCm;
 else
-   screenHeightCm=screenHeightMm/10;
+    screenHeightCm=screenHeightMm/10;
 end
 screenRect=Screen('Rect',oo(1).screen);
 if oo(1).useFractionOfScreen
-   % We want to simulate the full screen, and what we would normally see in
-   % it, shrunken into a tiny fraction. So we use a reduced number of
-   % pixels, but we pretend to retain the same screen size in cm, and
-   % angular subtense.
-   screenRect=round(oo(oi).useFractionOfScreen*screenRect);
+    % We want to simulate the full screen, and what we would normally see in
+    % it, shrunken into a tiny fraction. So we use a reduced number of
+    % pixels, but we pretend to retain the same screen size in cm, and
+    % angular subtense.
+    screenRect=round(oo(oi).useFractionOfScreen*screenRect);
 end
 
 for oi=1:conditions
-   if ismember(oo(oi).borderLetter,oo(oi).alphabet)
-      ListenChar(0);
-      error('The o.borderLetter "%c" should not be included in the o.alphabet "%s".',oo(oi).borderLetter,oo(oi).alphabet);
-   end
-   assert(oo(oi).viewingDistanceCm==oo(1).viewingDistanceCm);
-   assert(oo(oi).useFractionOfScreen==oo(1).useFractionOfScreen);
+    if ismember(oo(oi).borderLetter,oo(oi).alphabet)
+        ListenChar(0);
+        error('The o.borderLetter "%c" should not be included in the o.alphabet "%s".',oo(oi).borderLetter,oo(oi).alphabet);
+    end
+    assert(oo(oi).viewingDistanceCm==oo(1).viewingDistanceCm);
+    assert(oo(oi).useFractionOfScreen==oo(1).useFractionOfScreen);
 end % for oi=1:conditions
 
 % Are we using the screen at its maximum native resolution?
@@ -757,2142 +757,2142 @@ res=Screen('Resolutions',oo(1).screen);
 oo(1).nativeWidth=0;
 oo(1).nativeHeight=0;
 for i=1:length(res)
-   if res(i).width>oo(1).nativeWidth
-      oo(1).nativeWidth=res(i).width;
-      oo(1).nativeHeight=res(i).height;
-   end
+    if res(i).width>oo(1).nativeWidth
+        oo(1).nativeWidth=res(i).width;
+        oo(1).nativeHeight=res(i).height;
+    end
 end
 actualScreenRect=Screen('Rect',oo(1).screen,1);
 if oo(1).nativeWidth==RectWidth(actualScreenRect)
-   ffprintf(ff,'%d: Your screen resolution is at its native maximum %d x %d. Excellent!\n',1,oo(1).nativeWidth,oo(1).nativeHeight);
+    ffprintf(ff,'%d: Your screen resolution is at its native maximum %d x %d. Excellent!\n',1,oo(1).nativeWidth,oo(1).nativeHeight);
 else
-   warning backtrace off
-   if oo(1).permissionToChangeResolution
-      fprintf('WARNING: Trying to change your screen resolution to be optimal for this test. ...');
-      oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
-      res=Screen('Resolution',oo(1).screen);
-      if res.width==oo(1).nativeWidth
-         fprintf('SUCCESS!\n');
-      else
-         warning('FAILED.');
-         res
-      end
-      actualScreenRect=Screen('Rect',oo(1).screen,1);
-   end
-   if oo(1).nativeWidth==RectWidth(actualScreenRect)
-      ffprintf(ff,'1: Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
-   else
-      if RectWidth(actualScreenRect)<oo(1).nativeWidth
-         ffprintf(ff,'WARNING: Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
-         warning(['You could reduce the minimum viewing distance ' ...
-            '%.1f-fold by increasing the screen resolution to native maximum ("Default"). '],...
-            oo(1).nativeWidth/RectWidth(actualScreenRect));
-      else
-         ffprintf(ff,'WARNING: Your screen resolution %d x %d exceeds its maximum native resolution %d x %d.\n',...
-            RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
-         warning(['Your screen resolution %d x %d exceeds its maximum native resolution %d x %d. '...
-            'Small letters may be impossible to read.'],...
-            RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
-            oo(1).nativeWidth,oo(1).nativeHeight);
-      end
-      ffprintf(ff,['(To use native resolution, set o.permissionToChangeResolution=1 in your script, \n'...
-         'or use System Preferences:Displays to select "Default" resolution.)\n']);
-      warning backtrace on
-   end
+    warning backtrace off
+    if oo(1).permissionToChangeResolution
+        fprintf('WARNING: Trying to change your screen resolution to be optimal for this test. ...');
+        oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+        res=Screen('Resolution',oo(1).screen);
+        if res.width==oo(1).nativeWidth
+            fprintf('SUCCESS!\n');
+        else
+            warning('FAILED.');
+            res
+        end
+        actualScreenRect=Screen('Rect',oo(1).screen,1);
+    end
+    if oo(1).nativeWidth==RectWidth(actualScreenRect)
+        ffprintf(ff,'1: Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
+    else
+        if RectWidth(actualScreenRect)<oo(1).nativeWidth
+            ffprintf(ff,'WARNING: Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+            warning(['You could reduce the minimum viewing distance ' ...
+                '%.1f-fold by increasing the screen resolution to native maximum ("Default"). '],...
+                oo(1).nativeWidth/RectWidth(actualScreenRect));
+        else
+            ffprintf(ff,'WARNING: Your screen resolution %d x %d exceeds its maximum native resolution %d x %d.\n',...
+                RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+            warning(['Your screen resolution %d x %d exceeds its maximum native resolution %d x %d. '...
+                'Small letters may be impossible to read.'],...
+                RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+                oo(1).nativeWidth,oo(1).nativeHeight);
+        end
+        ffprintf(ff,['(To use native resolution, set o.permissionToChangeResolution=1 in your script, \n'...
+            'or use System Preferences:Displays to select "Default" resolution.)\n']);
+        warning backtrace on
+    end
 end
 oo(1).resolution=Screen('Resolution',oo(1).screen);
 
 try
-   oo(1).screen=max(Screen('Screens'));
-   computer=Screen('Computer');
-   oo(1).computer=computer;
-   if computer.osx || computer.macintosh
-      AutoBrightness(oo(1).screen,0); % Do this BEFORE opening the window, so user can see any alerts.
-   end
-   screenBufferRect=Screen('Rect',oo(1).screen);
-   screenRect=Screen('Rect',oo(1).screen,1);
-   Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
-   window=OpenWindow(oo(1));
-   white=WhiteIndex(window);
-   black=BlackIndex(window);
-   if oo(1).printScreenResolution
-      % Just to print them.
-      screenBufferRect=Screen('Rect',oo(1).screen)
-      screenRect=Screen('Rect',oo(1).screen,1)
-      resolution=Screen('Resolution',oo(1).screen)
-   end
-   screenRect=Screen('Rect',window,1);
-   % Are we using the FGTL DrawText plugin?
-   Screen('TextFont',window,oo(1).textFont);
-   % Ignore possible warning: "PTB-WARNING: DrawText: Failed to load
-   % external drawtext plugin".
-   Screen('Preference','SuppressAllWarnings',0);
-   Screen('Preference','Verbosity',2); % Print WARNINGs
-   oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
-   drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
-   if ~exist(oo(1).dataFolder,'dir')
-      [success,msg]=mkdir(oo(1).dataFolder);
-      if ~success
-         error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
-      end
-   end
-   delete(drawTextWarningFileName);
-   diary(drawTextWarningFileName);
-   Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
-   diary off
-   Screen('Preference','SuppressAllWarnings',1);
-   Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
-   oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);
-   if oo(1).standardDrawTextPlugin
-      oo(1).drawTextPluginWarning='';
-   else
-      fileId=fopen(drawTextWarningFileName);
-      oo(1).drawTextPluginWarning= char(fread(fileId)');
-      fclose(fileId);
-      if oo(oi).readAlphabetFromDisk
-         warning backtrace off
-         warning('Please ignore any warnings above about DrawText. You aren''t using it.');
-         warning backtrace on
-      end
-   end
-   for oi=1:conditions
-      oo(oi).stimulusRect=screenRect;
-      if oo(oi).showProgressBar
-         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
-         oo(oi).stimulusRect(3)=progressBarRect(1);
-      end
-      clearRect=oo(oi).stimulusRect;
-      if oo(oi).stimulusMarginFraction>0
-         s=oo(oi).stimulusMarginFraction*oo(oi).stimulusRect;
-         s=round(s);
-         oo(oi).stimulusRect=InsetRect(oo(oi).stimulusRect,RectWidth(s),RectHeight(s));
-      end
-      if ~oo(oi).readAlphabetFromDisk
-         if ~oo(1).standardDrawTextPlugin
-            error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
-               'Hopefully there''s an explanatory PTB-WARNING above. ' ...
-               'Unless you fix that, you must set o.readAlphabetFromDisk=1 in your script.']);
-         end
-         % Check availability of fonts.
-         if IsOSX
-            fontInfo=FontInfo('Fonts');
-            % Match full name, including style.
-            hits=streq({fontInfo.name},oo(oi).targetFont);
-            if sum(hits)<1
-               % Match family name, omitting style.
-               hits=streq({fontInfo.familyName},oo(oi).targetFont);
+    oo(1).screen=max(Screen('Screens'));
+    computer=Screen('Computer');
+    oo(1).computer=computer;
+    if computer.osx || computer.macintosh
+        AutoBrightness(oo(1).screen,0); % Do this BEFORE opening the window, so user can see any alerts.
+    end
+    screenBufferRect=Screen('Rect',oo(1).screen);
+    screenRect=Screen('Rect',oo(1).screen,1);
+    Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
+    window=OpenWindow(oo(1));
+    white=WhiteIndex(window);
+    black=BlackIndex(window);
+    if oo(1).printScreenResolution
+        % Just to print them.
+        screenBufferRect=Screen('Rect',oo(1).screen)
+        screenRect=Screen('Rect',oo(1).screen,1)
+        resolution=Screen('Resolution',oo(1).screen)
+    end
+    screenRect=Screen('Rect',window,1);
+    % Are we using the FGTL DrawText plugin?
+    Screen('TextFont',window,oo(1).textFont);
+    % Ignore possible warning: "PTB-WARNING: DrawText: Failed to load
+    % external drawtext plugin".
+    Screen('Preference','SuppressAllWarnings',0);
+    Screen('Preference','Verbosity',2); % Print WARNINGs
+    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+    drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
+    if ~exist(oo(1).dataFolder,'dir')
+        [success,msg]=mkdir(oo(1).dataFolder);
+        if ~success
+            error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
+        end
+    end
+    delete(drawTextWarningFileName);
+    diary(drawTextWarningFileName);
+    Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
+    diary off
+    Screen('Preference','SuppressAllWarnings',1);
+    Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
+    oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);
+    if oo(1).standardDrawTextPlugin
+        oo(1).drawTextPluginWarning='';
+    else
+        fileId=fopen(drawTextWarningFileName);
+        oo(1).drawTextPluginWarning= char(fread(fileId)');
+        fclose(fileId);
+        if oo(oi).readAlphabetFromDisk
+            warning backtrace off
+            warning('Please ignore any warnings above about DrawText. You aren''t using it.');
+            warning backtrace on
+        end
+    end
+    for oi=1:conditions
+        oo(oi).stimulusRect=screenRect;
+        if oo(oi).showProgressBar
+            progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
+            oo(oi).stimulusRect(3)=progressBarRect(1);
+        end
+        clearRect=oo(oi).stimulusRect;
+        if oo(oi).stimulusMarginFraction>0
+            s=oo(oi).stimulusMarginFraction*oo(oi).stimulusRect;
+            s=round(s);
+            oo(oi).stimulusRect=InsetRect(oo(oi).stimulusRect,RectWidth(s),RectHeight(s));
+        end
+        if ~oo(oi).readAlphabetFromDisk
+            if ~oo(1).standardDrawTextPlugin
+                error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
+                    'Hopefully there''s an explanatory PTB-WARNING above. ' ...
+                    'Unless you fix that, you must set o.readAlphabetFromDisk=1 in your script.']);
             end
-            if sum(hits)==0
-               error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+            % Check availability of fonts.
+            if IsOSX
+                fontInfo=FontInfo('Fonts');
+                % Match full name, including style.
+                hits=streq({fontInfo.name},oo(oi).targetFont);
+                if sum(hits)<1
+                    % Match family name, omitting style.
+                    hits=streq({fontInfo.familyName},oo(oi).targetFont);
+                end
+                if sum(hits)==0
+                    error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+                end
+                if sum(hits)>1
+                    error('Multiple fonts with name "%s".',oo(oi).targetFont);
+                end
+                oo(oi).targetFontNumber=fontInfo(hits).number;
+                Screen('TextFont',window,oo(oi).targetFontNumber);
+                [~,number]=Screen('TextFont',window);
+                if ~(number==oo(oi).targetFontNumber)
+                    error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+                end
+            else
+                oo(oi).targetFontNumber=[];
+                Screen('TextFont',window,oo(oi).targetFont);
+                font=Screen('TextFont',window);
+                if ~streq(font,oo(oi).targetFont)
+                    error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+                end
             end
-            if sum(hits)>1
-               error('Multiple fonts with name "%s".',oo(oi).targetFont);
-            end
-            oo(oi).targetFontNumber=fontInfo(hits).number;
-            Screen('TextFont',window,oo(oi).targetFontNumber);
-            [~,number]=Screen('TextFont',window);
-            if ~(number==oo(oi).targetFontNumber)
-               error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
-            end
-         else
-            oo(oi).targetFontNumber=[];
-            Screen('TextFont',window,oo(oi).targetFont);
+            % Due to a bug in Screen TextFont (in December 2015), it is
+            % imperative to specify a style number of zero in the next call
+            % after calling it with a fontNumber, as we did above.
+            Screen('TextFont',window,oo(oi).textFont,0);
             font=Screen('TextFont',window);
-            if ~streq(font,oo(oi).targetFont)
-               error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+            if ~streq(font,oo(oi).textFont)
+                warning off backtrace
+                warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
+                warning on backtrace
             end
-         end
-         % Due to a bug in Screen TextFont (in December 2015), it is
-         % imperative to specify a style number of zero in the next call
-         % after calling it with a fontNumber, as we did above.
-         Screen('TextFont',window,oo(oi).textFont,0);
-         font=Screen('TextFont',window);
-         if ~streq(font,oo(oi).textFont)
-            warning off backtrace
-            warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
-            warning on backtrace
-         end
-      end % if ~oo(1).readAlphabetFromDisk
-   end % for oi=1:conditions
-   if ~oo(1).standardDrawTextPlugin
-      warning off backtrace
-      warning('The FGTL DrawText plugin failed to load. ');
-      warning on backtrace
-      ffprintf(ff,['WARNING: The FGTL DrawText plugin failed to load.\n' ...
-         'Hopefully there''s an explanatory PTB-WARNING above, hinting how to fix it.\n' ...
-         'This won''t affect the experimental stimuli, but small print in the instructions may be ugly.\n']);
-   end
-   
-   % Ask about viewing distance
-   while true
-      screenRect=Screen('Rect',window);
-      screenWidthPix=RectWidth(screenRect);
-      screenHeightPix=RectHeight(screenRect);
-      pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
-      pixPerCm=screenWidthPix/screenWidthCm;
-      for oi=1:conditions
-         % Adjust textSize so our string fits on screen.
-         instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
-         oo(oi).textSize=40; % Rough guess.
-         Screen('TextSize',window,oo(oi).textSize);
-         Screen('TextFont',window,oo(oi).textFont,0);
-         font=Screen('TextFont',window);
-         if ~streq(font,oo(oi).textFont)
-            warning off backtrace
-            warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
-            warning on backtrace
-         end
-         instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
-         boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
-         fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMarginPix);
-         % Adjust textSize so our line fits perfectly.
-         oo(oi).textSize=round(oo(oi).textSize/fraction);
-      end
-%       fprintf('1: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
-      pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
-      for oi=1:conditions
-         oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
-         oo(oi).pixPerDeg=pixPerDeg;
-         oo(oi).pixPerCm=pixPerCm;
-         ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-         oo(oi).normalAcuityDeg=0.029*(ecc+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-         if ismember(oo(oi).targetFont,{'Pelli'})
-            oo(oi).normalAcuityDeg=oo(oi).normalAcuityDeg/5; % For Pelli font.
-         end
-         oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % Adjusted.
-         oo(oi).typicalThesholdSizeDeg=oo(oi).normalAcuityDeg;
-         if oo(oi).fixedSpacingOverSize && streq(oo(oi).thresholdParameter,'spacing')
-            oo(oi).typicalThesholdSizeDeg=max(oo(oi).typicalThesholdSizeDeg,oo(oi).normalCriticalSpacingDeg/oo(oi).fixedSpacingOverSize);
-         end
-         minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
-         % Distance so minimum size is half the typical threshold (size or
-         % spacing, whichever is higher).
-         oo(oi).minimumViewingDistanceCm=10*ceil(0.1*oo(oi).viewingDistanceCm*2*minimumSizeDeg/oo(oi).typicalThesholdSizeDeg);
-      end
-      minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
-      if oo(1).speakViewingDistance && oo(1).useSpeech
-         Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
-      end
-      minimumScreenSizeXYDeg=[0 0];
-      for oi=1:conditions
-         % Compute fixation location, given target eccentricity and
-         % location.
-         
-         % PLACE TARGET AT NEAR POINT
-         oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
-
-         %% COPIED FROM SET UP NEAR POINT
-         white=WhiteIndex(window);
-         black=BlackIndex(window);
-         
-         % SELECT NEAR POINT
-         % The user specifies the target eccentricity o.eccentricityXYDeg,
-         % which specifies its offset from fixation. Currently, we always
-         % place the target and the near point together. We take
-         % o.nearPointXYInUnitSquare as the user's designation of a point
-         % on the screen and the desire that the target (and near point) be
-         % placed as close to there as possible, while still achieving the
-         % specified eccentricity by shifting target and fixation together
-         % enough to get the fixation mark to fit on screen. If the
-         % eccentricity is too large to allow both the target and fixation
-         % to be on-screen, then the fixation mark is placed off-screen and
-         % we place the target and near point at o.nearPointXYInUnitSquare.
-         % Thus o.eccentricityXYDeg is a requirement, and we'll error-exit
-         % if it cannot be achieved, while o.nearPointXYInUnitSquare is
-         % merely a preference for where to place the target.
-         %
-         % To achieve this we first imagine the target at the desired spot
-         % (typically the center of the screen) and note where fixation
-         % would land, given the specified eccentricity. If it's on-screen
-         % then we're done. If it's off-screen then we push the target just
-         % enough in the direction of the eccentricity vector to allow the
-         % fixation mark to just fit on-screen. If we can do that without
-         % pushing the target off-screen, then we're done. 
-         %
-         % If we can't get both fixation and target on-screen, then the
-         % fixation goes off-screen and the target springs back to the
-         % desired spot.
-         %
-         % We don't mind partially clipping the fixation mark 0.5 deg from
-         % its center, but the target must not be clipped by the screen
-         % edge, and, further more, since this is a crowding test, there
-         % should be enough room to place a radial flanker beyond the
-         % target and not clip it. To test a diverse population we should
-         % allow twice the normal crowding distance beyond the target
-         % center, plus half the flanker size. We typically use equal
-         % target and flanker size.
-         %
-         % These requirements extend the eccentricity vector's length,
-         % first by adding 0.5 deg for the fixation mark. If necessary to
-         % keep fixation on-screen, we shift the target away from the
-         % desired location (in the direction of the eccentricity vector)
-         % just enough to get fixation on-screen. Then we have
-         % to decide whether it's acceptable. If we're measuring acuity, we
-         % just need room, radially (i.e. from fixation), beyond the target
-         % center for half the target. If we're measuring crowding, we need
-         % room radially, beyond the target center, for 2/3 the
-         % eccentricity, plus half the target size.
-         
-         %% SANITY CHECK OF ECCENTRICITY AND DESIRED NEAR POINT
-        if ~all(isfinite(oo(oi).eccentricityXYDeg))
-            error('o.eccentricityXYDeg (%.1f %.1f) must be finite. o.useFixation=%d is optional.',...
-               oo(oi).eccentricityXYDeg,oo(oi).useFixation);
-         end
-         if ~IsXYInRect(oo(oi).nearPointXYInUnitSquare,[0 0 1 1])
-            error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',oo(oi).nearPointXYInUnitSquare);
-         end
-         % Provide default target size if not already provided.
-         if ~isfinite(oo(oi).targetDeg)
-            ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-            oo(oi).targetDeg=0.3*(ecc+0.15)/oo(oi).fixedSpacingOverSize;
-         end
-         
-         %% IS SCREEN BIG ENOUGH TO HOLD TARGET AND FIXATION?
-         % We protect fixationCoreSizeDeg diameter from clipping by screen
-         % edge.
-         if oo(oi).isolatedTarget
-            % In the screen, include the target itself, plus a fraction
-            % o.targetMargin of the target size.
-            totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg*(0.5+oo(oi).targetMargin);
-         else
-            totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + 1.66*abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg/2;
-         end
-         % Compute angular subtense of stimulusRect, assuming the near
-         % point is at center.
-         xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
-         rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
-         fprintf('%d: screen %.0f %.0f, rectSizeDeg %.1f %.1f, pixPerCm %.1f, viewingDistance %.1f cm, xy %.0f %.0f\n',...
-             oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
-         if all(totalSizeXYDeg <= rectSizeDeg);
-            oo(oi).fixationOnScreen=true;
-            verb='fits within';
-         else
-            oo(oi).fixationOnScreen=false;
-            verb='exceeds';
-         end
-         if oo(oi).forceFixationOffScreen
-            if oo(oi).fixationOnScreen
-               ffprintf(ff,'Fixation would fit on-screen, but was forced off by o.forceFixationOffScreen=%d.\n',...
-                  oo(oi).forceFixationOffScreen);
-            end
-            oo(oi).fixationOnScreen=false;
-         end
-         fitsOnScreenString=sprintf('The combined size of target and fixation %.1f x %.1f deg %s the screen %.1f x %.1f deg.',...
-            totalSizeXYDeg,verb,rectSizeDeg);
-         ffprintf(ff,'%d: %s\n',oi,fitsOnScreenString);
-         if streq(verb,'exceeds') && ~oo(oi).forceFixationOffScreen
-            ffprintf(ff,'%d: This forces the fixation off-screen. Consider reducing the viewing distance or eccentricity.\n',oi);
-         end
-       
-         %% SET NEAR POINT AS NEAR AS WE CAN TO DESIRED LOCATION
-         xy=oo(oi).nearPointXYInUnitSquare;
-         xy(2)=1-xy(2); % Move origin from lower left to upper left.
-         oo(oi).nearPointXYPix=xy.*[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
-         oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+oo(oi).stimulusRect(1:2);
-         % oo(oi).nearPointXYPix is a screen coordinate.
-         oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
-         if oo(oi).fixationOnScreen
-            % If necessary, shift nearPointXYPix just enought to get
-            % fixation on screen.
-            xy=XYPixOfXYDeg(oo(oi),[0 0]);
-            pix=oo(oi).pixPerDeg*oo(oi).fixationCoreSizeDeg/2;
-            r=InsetRect(oo(1).stimulusRect,pix,pix);
-            if ~IsXYInRect(xy,r)
-               xyNew=ClipLineSegment2(xy,oo(oi).nearPointXYPix,r);
-               % Apply the needed shift of fixation, from xy to xyNew, to the nearPointXYPix
-               ffprintf(ff,'%d: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to get fixation onto the screen.\n',...
-                  1,oo(oi).nearPointXYPix,oo(oi).nearPointXYPix+xyNew-xy);
-               oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
-            end
-         end
-         % XYPixOfXYDeg results depend on o.nearPointXYDeg and
-         % o.nearPointXYPix.
-         % fix.xy is a screen coordinate.
-         oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
-         % eccentricityXYPix is a vector from fixation to target.
-         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
-
-         % Compute minimumScreenSizeXYDeg and maximumViewingDistanceCm required for on-screen fixation.
-         if oi==1
-            minimumScreenSizeXYDeg=totalSizeXYDeg;
-         else
-            minimumScreenSizeXYDeg=max(minimumScreenSizeXYDeg,totalSizeXYDeg);
-         end
-      end % for oi=1:conditions
-      stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
-      maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
-      
-      % Look for wireless keyboard.
-
-      clear PsychHID; % Force new enumeration of devices to detect external keyboard.
-      clear KbCheck; % Clear cache of keyboard devices.
-      [~,~,devices]=GetKeyboardIndices;
-      for i=1:length(devices)
-         oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
-      end
-      oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
-         && length(GetKeyboardIndices)<2 ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Wireless')) ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth')) ...
-         && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Bluetooth'));
-      if oo(1).needWirelessKeyboard
-         warning backtrace off
-         warning('The long viewing distance may demand an external keyboard,');
-         warning('yet your only keyboard is not "wireless" or "bluetooth".');
-         warning backtrace on
-      end
-      
-      % BIG TEXT
-      % Say hello, and get viewing distance.
-      Screen('FillRect',window,white);
-      cmString=sprintf('%.0f cm',oo(1).viewingDistanceCm);
-      string=sprintf(['Welcome to CriticalSpacing. ' ...
-         'If you want a viewing distance of %.0f cm, ' ...
-         'please move me to that distance from your eye, and hit RETURN. ' ...
-         'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
-         oo(1).viewingDistanceCm);
-      Screen('TextSize',window,oo(1).textSize);
-      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3-2*length(cmString),[],[],1.1);
-      Screen('TextSize',window,2*oo(1).textSize);
-      bounds=Screen('TextBounds',window,cmString,[],[],1);
-      x=screenRect(3)-bounds(3)-bounds(3)/length(cmString);
-      Screen('DrawText',window,cmString,x,y,black,white,1);
-      Screen('TextSize',window,oo(1).textSize);
-      
-      % SIZE LIMITS
-      string='';
-      for oi=1:conditions
-         oo(oi).minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
-         if oo(oi).fixedSpacingOverSize
-            oo(oi).minimumSpacingDeg=oo(oi).fixedSpacingOverSize*oo(oi).minimumSizeDeg;
-         else
-            oo(oi).minimumSpacingDeg=1.1*oo(oi).minimumTargetPix/pixPerDeg;
-         end
-      end
-      sizeDeg=max([oo.minimumSizeDeg]);
-      spacingDeg=max([oo.minimumSpacingDeg]);
-
-      string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
-         'the screen is %.0fx%.0f deg, and can display characters'...
-         ' as small as %.2f deg with spacing as small as %.2f deg. '],...
-         string,oo(1).viewingDistanceCm,rectSizeDeg,...
-         sizeDeg,spacingDeg);
-     if any([oo(:).eccentricityXYDeg]~=0)
-         string=sprintf(['%s The combined size of the target and fixation %.1f x %.1f deg '...
-             '%s the screen %.1f x %.1f deg. ',...
-             'To allow on-screen fixation, view me from at most %.0f cm. '],...
-             string,minimumScreenSizeXYDeg,verb,rectSizeDeg,floor(maximumViewingDistanceCm));
-     end
-     smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
-     string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
-         'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
-         string,smallestDeg,minimumViewingDistanceCm);
-     
-      % RESOLUTION
-      if oo(1).nativeWidth==RectWidth(actualScreenRect)
-         string=sprintf('%sRESOLUTION  %.0fx%.0f: Your screen resolution is optimal.\n\n',string,RectWidth(actualScreenRect),RectHeight(actualScreenRect));
-      else
-         if RectWidth(actualScreenRect)<oo(1).nativeWidth
-            string=sprintf(['%sRESOLUTION %.0fx%.0f: You could reduce the minimum viewing distance ' ...
-               '%.1f-fold by increasing the screen resolution to native resolution %.0fx%.0f. '],...
-               string,RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth/RectWidth(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
-         else
-            string=sprintf(['%sRESOLUTION: Your screen resolution exceeds its maximum native resolution, ' ...
-               'and may fail to render small characters. '],string);
-         end
-         string=sprintf(['%sFor native resolution, ' ...
-            'set o.permissionToChangeResolution=1 in your script, ' ...
-            'or use System Preferences:Displays to ' ...
-            'select "Default" resolution, or type "r" below, ' ...
-            'followed by RETURN.\n\n'],string);
-      end
-      
-      % MIRROR
-      if oo(1).flipScreenHorizontally
-         string=sprintf(['%sMIRROR: To turn off mirroring, ' ...
-            'set o.flipScreenHorizontally=0 in your script, ' ...
-            'or type "m" below, followed by RETURN.\n\n'],...
-            string);
-      else
-         string=sprintf(['%sMIRROR: To work with a mirror, ' ...
-            'set o.flipScreenHorizontally=1 in your script, ' ...
-            'or type "m" below, followed by RETURN.\n\n'],...
-            string);
-      end
-      
-      % KEYBOARD
-      if oo(1).needWirelessKeyboard
-         string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
-            'but I can''t detect any. After connecting a new keyboard, ' ...
-            'use your old keyboard to type "k" below, followed by RETURN, ' ...
-            'and I''ll recreate the keyboard list.'],string);
-      end
-      
+        end % if ~oo(1).readAlphabetFromDisk
+    end % for oi=1:conditions
+    if ~oo(1).standardDrawTextPlugin
+        warning off backtrace
+        warning('The FGTL DrawText plugin failed to load. ');
+        warning on backtrace
+        ffprintf(ff,['WARNING: The FGTL DrawText plugin failed to load.\n' ...
+            'Hopefully there''s an explanatory PTB-WARNING above, hinting how to fix it.\n' ...
+            'This won''t affect the experimental stimuli, but small print in the instructions may be ugly.\n']);
+    end
     
-      % Draw all the small text on screen.
-      Screen('TextSize',window,round(oo(1).textSize*0.6));
-      [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+1.5*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
-      
-      % COPYRIGHT
-      Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
-      
-      % Get typed response
-      Screen('TextSize',window,oo(1).textSize);
-      if IsWindows
-         background=[];
-      else
-         background=WhiteIndex(window);
-      end
-      Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',...
-          instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*(0.5-1.1));
-      [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
-          ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
-      if ismember(terminatorChar,[escapeChar graveAccentChar]) 
-         oo(1).quitRun=true;
-         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-         if oo(1).quitSession
-             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
-         else
-             ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-         end
-         CloseWindowsAndCleanup;
-         return
-      end
-      if ~isempty(d)
-         inputDistanceCm=str2num(d);
-         if ~isempty(inputDistanceCm) && inputDistanceCm>0
-            oo(1).viewingDistanceCm=inputDistanceCm;
-         else
-            switch d
-               case 'm'
-                  oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
-                  oo(1).flipScreenHorizontally=~oo(1).flipScreenHorizontally;
-                  if oo(1).useSpeech
-                     Speak('Now flipping the display.');
-                  end
-                  Screen('Close',window);
-                  window=OpenWindow(oo(1));
-               case 'r'
-                  if oo(1).permissionToChangeResolution
-                     Speak('Resolution is already optimal.');
-                  else
-                     if oo(1).useSpeech
-                        Speak('Optimizing resolution.');
-                     end
-                     Screen('Close',window);
-                     warning backtrace off
-                     warning('Trying to change your screen resolution to be optimal for this test.');
-                     warning backtrace on
-                     oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
-                     res=Screen('Resolution',oo(1).screen);
-                     if res.width==oo(1).nativeWidth
-                        oo(1).permissionToChangeResolution=true;
-                        fprintf('SUCCESS!\n');
-                     else
-                        warning('FAILED.');
-                        res
-                     end
-                     actualScreenRect=Screen('Rect',oo(1).screen,1);
-                     window=OpenWindow(oo(1));
-                     oo(1).resolution=Screen('Resolution',oo(1).screen);
-                     screenBufferRect=Screen('Rect',oo(1).screen);
-                     screenRect=Screen('Rect',oo(1).screen,1);
-%                      fprintf('%d: NEW RES: actualScreenRect %.0f, screenBufferRect %.0f, screenRect %.0f\n',...
-%                          oi,actualScreenRect(3),screenBufferRect(3),screenRect(3));
-
-                  for ii=1:conditions
-                     oo(ii).stimulusRect=screenRect;
-                     if oo(ii).showProgressBar
-                         progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
-                         oo(ii).stimulusRect(3)=progressBarRect(1);
-                     end
-                     clearRect=oo(ii).stimulusRect;
-                     if oo(ii).stimulusMarginFraction>0
-                         s=oo(ii).stimulusMarginFraction*oo(ii).stimulusRect;
-                         s=round(s);
-                         oo(ii).stimulusRect=InsetRect(oo(ii).stimulusRect,RectWidth(s),RectHeight(s));
-                     end
-                  end
-      
-                  end
-                case 'k'
-                  if oo(1).useSpeech
-                     Speak('Recreating list of keyboards.');
-                  end
-                otherwise
-                  Speak(sprintf('Illegal entry "%s". Try again.',d));
+    % Ask about viewing distance
+    while true
+        screenRect=Screen('Rect',window);
+        screenWidthPix=RectWidth(screenRect);
+        screenHeightPix=RectHeight(screenRect);
+        pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
+        pixPerCm=screenWidthPix/screenWidthCm;
+        for oi=1:conditions
+            % Adjust textSize so our string fits on screen.
+            instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
+            oo(oi).textSize=40; % Rough guess.
+            Screen('TextSize',window,oo(oi).textSize);
+            Screen('TextFont',window,oo(oi).textFont,0);
+            font=Screen('TextFont',window);
+            if ~streq(font,oo(oi).textFont)
+                warning off backtrace
+                warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
+                warning on backtrace
             end
-         end
-      else
-         break;
-      end
-   end
-   ListenChar(0); % flush
-   ListenChar(2); % no echo
-   
-   % Ask experimenter name
-   if isempty(oo(1).experimenter)
-      Screen('FillRect',window);
-      Screen('TextFont',window,oo(1).textFont,0);
-      Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
-      Screen('TextSize',window,round(0.6*oo(1).textSize));
-      Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
-      Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
-      Screen('TextSize',window,oo(1).textSize);
-      if IsWindows
-         background=[];
-      else
-          background=WhiteIndex(window);
-      end
-      [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if ismember(terminatorChar,[escapeChar graveAccentChar])
-          oo(1).quitRun=true;
-          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-          if oo(1).quitSession
-              ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-          else
-              ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-          end
-          for i=1:conditions
-              oo(i).experimenter=name;
-          end
-          Screen('FillRect',window);
-          CloseWindowsAndCleanup;
-      end
-   end % if isempty(oo(1).experimenter)
-       
-   % Ask observer name
-   if isempty(oo(1).observer)
-      Screen('FillRect',window);
-      Screen('TextSize',window,oo(1).textSize);
-      Screen('TextFont',window,oo(1).textFont,0);
-      Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-      Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
-      Screen('TextSize',window,round(oo(1).textSize*0.35));
-      Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
-      Screen('TextSize',window,oo(1).textSize);
-      if IsWindows
-         background=[];
-      else
-         background=WhiteIndex(window);
-      end
-      [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
-      if ismember(terminatorChar,[escapeChar graveAccentChar])
-          oo(1).quitRun=true;
-          oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-          if oo(1).quitSession
-              ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-          else
-              ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-          end
-          CloseWindowsAndCleanup;
-          return
-      end
-      for i=1:conditions
-         oo(i).observer=name;
-      end
-      Screen('FillRect',window);
-   end % if isempty(oo(1).observer)
-   
-   oo(1).beginSecs=GetSecs;
-   oo(1).beginningTime=now;
-   timeVector=datevec(oo(1).beginningTime);
-   stack=dbstack;
-   assert(~isempty(stack));
-   if length(stack)==1
-      oo(1).scriptName=[];
-      oo(1).functionNames=stack.name;
-   else
-      oo(1).scriptName=[stack(2).name '.m'];
-      oo(1).functionNames=[stack(2).name '-' stack(1).name];
-   end
-   if ~isempty(oo(1).scriptName)
-      oo(1).scriptFullFileName=which(oo(1).scriptName);
-      oo(1).script=fileread(oo(1).scriptFullFileName);
-      assert(~isempty(oo(1).script));
-   else
-      oo(1).script=[];
-   end
-   oo(1).snapshotsFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
-   if ~exist(oo(1).snapshotsFolder,'dir')
-      [success,msg]=mkdir(oo(1).snapshotsFolder);
-      if ~success
-         error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotsFolder);
-      end
-   end
-   oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
-   oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
-   if ~exist(oo(1).dataFolder,'dir')
-      [success,msg]=mkdir(oo(1).dataFolder);
-      if ~success
-         error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
-      end
-   end
-   dataFid=fopen(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.txt']),'rt');
-   if dataFid~=-1
-      error('Oops. There''s already a file called "%s.txt". Try again.',oo(1).dataFilename);
-   end
-   [dataFid,msg]=fopen(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.txt']),'wt');
-   if dataFid==-1
-      error('%s. Could not create data file: %s',msg,[oo(1).dataFilename '.txt']);
-   end
-   assert(dataFid>-1);
-   ff=[1 dataFid];
-   ffError=[2 dataFid];
-   ffprintf(ff,'%s %s. ',oo(1).functionNames,datestr(now));
-   ffprintf(ff,'Saving results in:\n');
-   ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
-   ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
-   for oi=1:conditions
-      if ~isempty(oo(oi).unknownFields)
-         ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
-      end
-   end
-   ffprintf(ff,'1: %s: %s\n',oo(1).experimenter,oo(1).observer);
-   for oi=1:conditions
-       if oo(oi).repeatedTargets
-         oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
-         oo(oi).trials=2*oo(oi).presentations;
-      else
-         oo(oi).presentations=oo(oi).trials;
-      end
-      ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-      if isempty(oo(oi).flankingPolarDeg) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
-          error('At o.eccentricityXYDeg==0, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
-              oo(oi).flankingDirection);
-      end
-      oo(oi).eccentricityPolarDeg=atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
-      % We consult the o.flankingDirection string only if the user has not
-      % provided the o.flankingPolarDeg number.
-      if isempty(oo(oi).flankingPolarDeg)
-          switch oo(oi).flankingDirection
-              case 'radial'
-                  oo(oi).flankingPolarDeg=oo(oi).eccentricityPolarDeg;
-              case 'tangential'
-                  oo(oi).flankingPolarDeg=oo(oi).eccentricityPolarDeg+90;
-              case 'horizontal'
-                  oo(oi).flankingPolarDeg=0;
-              case 'vertical'
-                  oo(oi).flankingPolarDeg=90;
-              otherwise
-                  error('Unknown o.flankingDirection ''%s''.',oo(oi).flankingDirection);
-          end
-      end
-      if oo(oi).repeatedTargets
-          if oo(oi).targetSizeIsHeight
-              oo(oi).flankingPolarDeg=90;
-          else
-              oo(oi).flankingPolarDeg=0;
-          end
-      end
-      if isempty(oo(oi).flankingPolarDeg)
-          error('o.flankingPolarDeg is empty.');
-      end
-      % From here on we consider o.flankingPolarDeg primary, and derive a
-      % rough o.flankingDirection. I need the rough o.flankingDirection for
-      % print outs and to keep old code that I don't have time to update
-      % right now.
-      if ecc==0
-          switch round(abs(oo(oi).flankingPolarDeg/90))
-              case [0 2]
-                  oo(oi).flankingDirection='horizontal';
-              case 1
-                  oo(oi).flankingDirection='vertical';
-          end
-      else
-          switch round(abs(oo(oi).flankingPolarDeg-oo(oi).eccentricityPolarDeg)/90)
-              case [0 2]
-                  oo(oi).flankingDirection='radial';
-              case 1
-                  oo(oi).flankingDirection='tangential';
-          end
-      end % if ecc==0
-      % Prepare to draw fixation cross.
-      fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
-%       fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
-      fixationLineWeightPix=round(oo(oi).fixationLineWeightDeg*pixPerDeg);
-      fixationLineWeightPix=max(1,fixationLineWeightPix);
-      fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
-      oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
-      oo(oi).fix.clipRect=oo(oi).stimulusRect;
-      oo(oi).fix.fixationCrossPix=fixationCrossPix;
-   
-      oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]); 
-      oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
-      oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
-      
-      oo(oi).responseCount=1; % When we have two targets we get two responses for each display.
-      if streq(oo(oi).thresholdParameter,'size')
-         if isfield(oo(oi),'targetDegGuess') && isfinite(oo(oi).targetDegGuess)
-            oo(oi).targetDeg=oo(oi).targetDegGuess;
-         else
-            oo(oi).targetDeg=2*oo(oi).normalAcuityDeg; % initial guess for threshold size.
-         end
-      end
-
-      for ii=1:conditions
-         if oo(ii).repeatedTargets
-            oo(ii).useFixation=false;
-         end
-         oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
-         oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
-         oo(ii).speakInstructions=oo(ii).useSpeech;
-      end
-      
-      oo=SetUpFixation(window,oo,oi,ff);
-      
-      addonDeg=0.15;
-      addonPix=pixPerDeg*addonDeg;
-      oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
-      % If flanking direction is orthogonal to eccentricity direction, then
-      % halve the expected crowding distance. A better model would deal
-      % with all possible differences in orientation.
-      if ecc>0 && abs(abs(oo(oi).flankingPolarDeg-oo(oi).eccentricityPolarDeg)-90)<20
-         oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
-      end
-      if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
-         oo(oi).spacingDeg=oo(oi).spacingGuessDeg;
-      else
-         oo(oi).spacingDeg=oo(oi).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
-      end
-      oo(oi).spacings=oo(oi).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
-      oo(oi).spacingsSequence=repmat(oo(oi).spacings,1,...
-         ceil(oo(oi).presentations/length(oo(oi).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
-      switch oo(oi).thresholdParameter
-         case 'size'
-            if oo(oi).targetSizeIsHeight
-               ori='vertical';
+            instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
+            boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
+            fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMarginPix);
+            % Adjust textSize so our line fits perfectly.
+            oo(oi).textSize=round(oo(oi).textSize/fraction);
+        end
+        %       fprintf('1: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
+        pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
+        for oi=1:conditions
+            oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
+            oo(oi).pixPerDeg=pixPerDeg;
+            oo(oi).pixPerCm=pixPerCm;
+            ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+            oo(oi).normalAcuityDeg=0.029*(ecc+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
+            if ismember(oo(oi).targetFont,{'Pelli'})
+                oo(oi).normalAcuityDeg=oo(oi).normalAcuityDeg/5; % For Pelli font.
+            end
+            oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % Adjusted.
+            oo(oi).typicalThesholdSizeDeg=oo(oi).normalAcuityDeg;
+            if oo(oi).fixedSpacingOverSize && streq(oo(oi).thresholdParameter,'spacing')
+                oo(oi).typicalThesholdSizeDeg=max(oo(oi).typicalThesholdSizeDeg,oo(oi).normalCriticalSpacingDeg/oo(oi).fixedSpacingOverSize);
+            end
+            minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
+            % Distance so minimum size is half the typical threshold (size or
+            % spacing, whichever is higher).
+            oo(oi).minimumViewingDistanceCm=10*ceil(0.1*oo(oi).viewingDistanceCm*2*minimumSizeDeg/oo(oi).typicalThesholdSizeDeg);
+        end
+        minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
+        if oo(1).speakViewingDistance && oo(1).useSpeech
+            Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
+        end
+        minimumScreenSizeXYDeg=[0 0];
+        for oi=1:conditions
+            % Compute fixation location, given target eccentricity and
+            % location.
+            
+            % PLACE TARGET AT NEAR POINT
+            oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
+            
+            %% COPIED FROM SET UP NEAR POINT
+            white=WhiteIndex(window);
+            black=BlackIndex(window);
+            
+            % SELECT NEAR POINT
+            % The user specifies the target eccentricity o.eccentricityXYDeg,
+            % which specifies its offset from fixation. Currently, we always
+            % place the target and the near point together. We take
+            % o.nearPointXYInUnitSquare as the user's designation of a point
+            % on the screen and the desire that the target (and near point) be
+            % placed as close to there as possible, while still achieving the
+            % specified eccentricity by shifting target and fixation together
+            % enough to get the fixation mark to fit on screen. If the
+            % eccentricity is too large to allow both the target and fixation
+            % to be on-screen, then the fixation mark is placed off-screen and
+            % we place the target and near point at o.nearPointXYInUnitSquare.
+            % Thus o.eccentricityXYDeg is a requirement, and we'll error-exit
+            % if it cannot be achieved, while o.nearPointXYInUnitSquare is
+            % merely a preference for where to place the target.
+            %
+            % To achieve this we first imagine the target at the desired spot
+            % (typically the center of the screen) and note where fixation
+            % would land, given the specified eccentricity. If it's on-screen
+            % then we're done. If it's off-screen then we push the target just
+            % enough in the direction of the eccentricity vector to allow the
+            % fixation mark to just fit on-screen. If we can do that without
+            % pushing the target off-screen, then we're done.
+            %
+            % If we can't get both fixation and target on-screen, then the
+            % fixation goes off-screen and the target springs back to the
+            % desired spot.
+            %
+            % We don't mind partially clipping the fixation mark 0.5 deg from
+            % its center, but the target must not be clipped by the screen
+            % edge, and, further more, since this is a crowding test, there
+            % should be enough room to place a radial flanker beyond the
+            % target and not clip it. To test a diverse population we should
+            % allow twice the normal crowding distance beyond the target
+            % center, plus half the flanker size. We typically use equal
+            % target and flanker size.
+            %
+            % These requirements extend the eccentricity vector's length,
+            % first by adding 0.5 deg for the fixation mark. If necessary to
+            % keep fixation on-screen, we shift the target away from the
+            % desired location (in the direction of the eccentricity vector)
+            % just enough to get fixation on-screen. Then we have
+            % to decide whether it's acceptable. If we're measuring acuity, we
+            % just need room, radially (i.e. from fixation), beyond the target
+            % center for half the target. If we're measuring crowding, we need
+            % room radially, beyond the target center, for 2/3 the
+            % eccentricity, plus half the target size.
+            
+            %% SANITY CHECK OF ECCENTRICITY AND DESIRED NEAR POINT
+            if ~all(isfinite(oo(oi).eccentricityXYDeg))
+                error('o.eccentricityXYDeg (%.1f %.1f) must be finite. o.useFixation=%d is optional.',...
+                    oo(oi).eccentricityXYDeg,oo(oi).useFixation);
+            end
+            if ~IsXYInRect(oo(oi).nearPointXYInUnitSquare,[0 0 1 1])
+                error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',oo(oi).nearPointXYInUnitSquare);
+            end
+            % Provide default target size if not already provided.
+            if ~isfinite(oo(oi).targetDeg)
+                ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+                oo(oi).targetDeg=0.3*(ecc+0.15)/oo(oi).fixedSpacingOverSize;
+            end
+            
+            %% IS SCREEN BIG ENOUGH TO HOLD TARGET AND FIXATION?
+            % We protect fixationCoreSizeDeg diameter from clipping by screen
+            % edge.
+            if oo(oi).isolatedTarget
+                % In the screen, include the target itself, plus a fraction
+                % o.targetMargin of the target size.
+                totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg*(0.5+oo(oi).targetMargin);
             else
-               ori='horizontal';
+                totalSizeXYDeg=oo(oi).fixationCoreSizeDeg/2 + 1.66*abs(oo(oi).eccentricityXYDeg) + oo(oi).targetDeg/2;
             end
-         case 'spacing'
-            if ~oo(oi).repeatedTargets
-               ori=oo(oi).flankingDirection;
+            % Compute angular subtense of stimulusRect, assuming the near
+            % point is at center.
+            xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
+            rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+            fprintf('%d: screen %.0f %.0f, rectSizeDeg %.1f %.1f, pixPerCm %.1f, viewingDistance %.1f cm, xy %.0f %.0f\n',...
+                oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
+            if all(totalSizeXYDeg <= rectSizeDeg);
+                oo(oi).fixationOnScreen=true;
+                verb='fits within';
             else
-               if oo(oi).targetSizeIsHeight
-                  ori='vertical';
-               else
-                  ori='horizontal';
-               end
+                oo(oi).fixationOnScreen=false;
+                verb='exceeds';
             end
-      end % switch oo(oi).thresholdParameter
-      if oo(oi).useQuest
-         ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',oi,oo(oi).trials,ori,oo(oi).thresholdParameter);
-      else
-         ffprintf(ff,'%d: %.0f trials of "method of constant stimuli" with fixed list of %s spacings [',oi,oo(oi).trials,ori);
-         ffprintf(ff,'%.1f ',oo(oi).spacings);
-         ffprintf(ff,'] deg\n');
-      end
-      
-      % Measure targetHeightOverWidth
-      oo(oi).targetFontHeightOverNominalPtSize=nan;
-      oo(oi).targetPix=200;
-      % Get bounds.
-      [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
-      DestroyLetterTextures(letterStruct);
-      oo(oi).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
-      if ~oo(oi).readAlphabetFromDisk
-         oo(oi).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(oi).targetPix;
-      end
-      oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
-      
-      for cd=1:conditions
-         for i=1:length(oo(cd).validKeyNames)
-            oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
-         end
-      end
-      
-      % Set o.targetHeightOverWidth
-      if oo(oi).setTargetHeightOverWidth
-         oo(oi).targetHeightOverWidth=oo(oi).setTargetHeightOverWidth;
-      end
-      
-      % Prepare to draw fixation cross
-      oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
-      assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
-      oo(oi).fix.clipRect=screenRect;
-      oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
-      if oo(oi).markTargetLocation;
-         oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
-      else
-         oo(oi).fix.markTargetLocationPix=false;
-      end
-      if oo(oi).fixationCrossBlankedNearTarget
-         % Blanking of marks to prevent masking and crowding of the target
-         % by the marks. Blanking radius (centered at target) is max of
-         % target diameter and half eccentricity.
-         diameter=oo(oi).targetDeg*pixPerDeg;
-         if ~oo(oi).targetSizeIsHeight
-            diameter=diameter*oo(oi).targetHeightOverWidth;
-         end
-         eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
-         oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
-         if oo(oi).fix.blankingRadiusPix >= eccentricityPix
-            % Make sure we can see fixation. Extend the lines.
-            oo(oi).fix.fixationCrossPix=inf;
-         end
-      else
-         oo(oi).fix.blankingRadiusPix=0;
-      end
-      fixationLines=ComputeFixationLines2(oo(oi).fix);
-      
-      oo(1).quitRun=false;
-      
-      switch oo(oi).thresholdParameter
-         case 'spacing'
-            assert(oo(oi).spacingDeg>0);
-            oo(oi).tGuess=log10(oo(oi).spacingDeg);
-         case 'size'
-            assert(oo(oi).targetDeg>0);
-            oo(oi).tGuess=log10(oo(oi).targetDeg);
-      end
-      oo(oi).tGuessSd=2;
-      oo(oi).pThreshold=0.7;
-      oo(oi).beta=3;
-      delta=0.01;
-      gamma=1/length(oo(oi).alphabet);
-      grain=0.01;
-      range=6;
-   end % for oi=1:conditions
-   
-   cal.screen=max(Screen('Screens'));
-   if cal.screen>0
-      ffprintf(ff,'Using external monitor.\n');
-   end
-   for oi=1:conditions
-      ffprintf(ff,'%d: ',oi);
-      if oo(oi).repeatedTargets
-         numberTargets='two targets (repeated many times)';
-      else
-         numberTargets='one target';
-      end
-      string=sprintf('%s %s, alternatives %d,  beta %.1f\n',oo(oi).task,numberTargets,length(oo(oi).alphabet),oo(oi).beta);
-      string(1)=upper(string(1));
-      ffprintf(ff,'%s',string);
-   end
-   for oi=1:conditions
-      if oo(oi).fixedSpacingOverSize
-         ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',oi,oo(oi).fixedSpacingOverSize);
-      else
-         switch oo(oi).thresholdParameter
-            case 'size',
-               ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',oi);
-            case 'spacing'
-               ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',oi,oo(oi).targetDeg,oo(oi).targetDeg*pixPerDeg);
-               if ~isfinite(oo(oi).targetDeg)
-                  error('To measure spacing threshold you must define either o.fixedSpacingOverSize or o.targetDeg.');
-               end
-         end
-      end
-   end
-   for oi=1:conditions
-      ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
-         oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalAcuityDeg/2);
-   end
-   s=sprintf(['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
-       'you should view from at most'],oi,minimumScreenSizeXYDeg);
-   if maximumViewingDistanceCm<100
-       s=sprintf('%s %.0f cm.\n',s,maximumViewingDistanceCm);
-   else
-       s=sprintf('%s %.1f m.\n',s,maximumViewingDistanceCm/100);
-   end
-   ffprintf(ff,'%s',s);
-   ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
-   for i=1:length(oo(1).keyboardNameAndTransport)
-      ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{i});
-   end
-   ffprintf(ff,'\n');
-   for oi=1:conditions
-      sizesPix=oo(oi).minimumTargetPix*[oo(oi).targetHeightOverWidth 1];
-      ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pix, %.3fx%.3f deg. ',oi,sizesPix,sizesPix/pixPerDeg);
-      if oo(oi).fixedSpacingOverSize
-         spacingPix=round(oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
-         ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
-      else
-         switch oo(oi).thresholdParameter
-            case 'size'
-               ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(oi).spacingPix,oo(oi).spacingDeg);
-            case 'spacing'
-               ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',oo(oi).targetPix,oo(oi).targetDeg);
-         end
-      end
-   end
-   for oi=1:conditions
-      if oo(oi).readAlphabetFromDisk
-         ffprintf(ff,'%d: "%s" font from disk. ',oi,oo(oi).targetFont);
-      else
-         ffprintf(ff,'%d: "%s" font, live. ',oi,oo(oi).targetFont);
-      end
-      ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(oi).alphabet,oo(oi).borderLetter);
-   end
-   for oi=1:conditions
-      ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',oi,oo(oi).targetHeightOverWidth,oo(oi).targetFontHeightOverNominalPtSize);
-   end
-   for oi=1:conditions
-      ffprintf(ff,'%d: durationSec %.2f, eccentricityXYDeg [%.1f %.1f]\n',...
-         oi,oo(oi).durationSec,oo(oi).eccentricityXYDeg);
-   end
-   
-   % Identify the computer
-   cal.screen=0;
-   computer=Screen('Computer');
-   [cal.screenWidthMm,cal.screenHeightMm]=Screen('DisplaySize',cal.screen);
-   if computer.windows
-      cal.processUserLongName=getenv('USERNAME');
-      cal.localHostName=getenv('USERDOMAIN');
-      cal.macModelName=[];
-   elseif computer.linux
-      cal.processUserLongName=getenv('USER');
-      cal.localHostName=computer.localHostName;
-      cal.machineName=computer.machineName;
-      cal.osversion=computer.kern.version;
-      cal.macModelName=[];
-   elseif computer.osx || computer.macintosh
-      cal.processUserLongName=computer.processUserLongName;
-      cal.machineName=strrep(computer.machineName,'éˆ??',''''); % work around bug in Screen('Computer')
-      if streq(cal.machineName,'UNKNOWN! QUERY FAILED DUE TO EMPTY OR PROBLEMATIC NAME.')
-         cal.machineName='';
-      end
-      cal.localHostName=computer.localHostName;
-      cal.macModelName=MacModelName;
-   end
-   cal.screenOutput=[]; % only for Linux
-   cal.ScreenConfigureDisplayBrightnessWorks=true; % default value
-   cal.brightnessSetting=1.00; % default value
-   cal.brightnessRMSError=0; % default value
-   [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
-   cal.screenWidthCm=screenWidthMm/10;
-   actualScreenRect=Screen('Rect',cal.screen,1);
-   %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
-   %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
-   if oo(1).flipScreenHorizontally
-      ffprintf(ff,'Using mirror. ');
-   end
-   ffprintf(ff,'%d: Viewing distance %.0f cm,',1,oo(1).viewingDistanceCm);
-   xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
-   xyDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
-   ffprintf(ff,' %.0f pixPerDeg, %.0f pix/cm.\n',...
-      pixPerDeg,RectWidth(actualScreenRect)/(screenWidthMm/10));
-   ffprintf(ff,'%d: Screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.1fx%.1f deg.\n',...
-      1,cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
-      oo(1).nativeWidth,oo(1).nativeHeight,...
-      screenWidthMm/10,screenHeightMm/10,xyDeg);
-   ffprintf(ff,'1: %s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
-   oo(1).matlab=version;
-   [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
-   v=oo(1).psychtoolbox;
-   ffprintf(ff,'1: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
-   assert(cal.screenWidthCm==screenWidthMm/10);
-   cal.ScreenConfigureDisplayBrightnessWorks=true;
-   if cal.ScreenConfigureDisplayBrightnessWorks
-      cal.brightnessSetting=1;
-      % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
-      % silently do nothing if not supported. But when I used it on my
-      % video projector, Screen gave a fatal error. How can my program know
-      % when it's safe to use Screen ConfigureDisplay?
-      % Bug reported to Psychtoolbox forum June 2017.
-      % The work around, not yet implemented here, is to wrap the call in a
-      % try-catch block.
-      if computer.osx || computer.macintosh
-         Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
-      end
-   end
-   for oi=1:conditions
-      oo(oi).cal=cal;
-   end
-   
-   rightBeep=0.05*MakeBeep(2000,0.05,44100);
-   rightBeep(end)=0;
-   wrongBeep=0.05*MakeBeep(500,0.5,44100);
-   wrongBeep(end)=0;
-   purr=MakeBeep(140,1.0,44100);
-   purr(end)=0;
-   Snd('Open');
-   
-   % Instructions
-   usingDigits=false;
-   usingLetters=false;
-   for conditions=1:conditions
-      usingDigits=usingDigits || all(ismember(oo(oi).alphabet,'0123456789'));
-      usingLetters=usingLetters || any(~ismember(oo(oi).alphabet,'0123456789'));
-   end
-   if usingDigits && usingLetters
-      symbolName='character';
-   elseif usingDigits && ~usingLetters
-      symbolName='digit';
-   elseif ~usingDigits && usingLetters
-      symbolName='letter';
-   elseif  ~usingDigits && ~usingLetters
-      error('Targets are neither digits nor letters');
-   end
-   Screen('FillRect',window,white);
-   if length(oo(oi).observer)>0
-      string=[sprintf('Hello %s. ',oo(oi).observer)];
-   else
-      string='Hello. ';
-   end
-   string=[string 'Please turn on this computer''s sound. '];
-   string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
-   string=[string 'You might also have the alphabet on a piece of paper. '];
-   string=[string 'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
-   for oi=1:conditions
-      if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'size')
-         string=[string 'When you see a letter, please report it. '];
-         break;
-      end
-   end
-   for oi=1:conditions
-      if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
-         string=[string 'When you see three letters, please report just the middle letter. '];
-         break;
-      end
-   end
-   if any([oo.repeatedTargets])
-      string=[string 'When you see many letters, they are all repetitions of just two different letters. Please report both. '];
-      string=[string 'The two kinds of letter can be mixed together all over the display, or separated into left and right sides. '];
-   end
-   string=[string 'Sometimes the letters will be easy to identify. Sometimes they will be nearly impossible. '];
-   string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, ' ...
-      'and just get as many as you can. '];
-   string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.) '];
-   if ~any([oo.useFixation])
-      string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
-   end
-   string=[string 'To continue, please hit RETURN. '];
-   Screen('TextFont',window,oo(oi).textFont,0);
-   Screen('TextSize',window,round(oo(oi).textSize*0.35));
-   Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
-   Screen('TextSize',window,oo(oi).textSize);
-   string=strrep(string,'letter',symbolName);
-   DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
-   Screen('Flip',window,[],1);
-   if false && oo(oi).useSpeech
-      string=strrep(string,'\n','');
-      string=strrep(string,'eye(s)','eyes');
-      Speak(string);
-   end
-   SetMouse(screenRect(3),screenRect(4),window);
-   answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],...
-       oo(oi),window,oo(oi).stimulusRect);
-   
-   Screen('FillRect',window);
-   if ismember(answer,[escapeChar graveAccentChar])
-       oo(1).quitRun=true;
-       oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-       if oo(1).quitSession
-           ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-       else
-           ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-       end
-       CloseWindowsAndCleanup;
-       return
-   end
-   fixationClipRect=oo(oi).stimulusRect;
-   if oo(oi).showProgressBar
-      string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the run. ';
-   else
-      string='';
-   end
-   if any([oo.useFixation])
-      string=[string 'On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. '];
-      if oo(1).fixationOnScreen
-         where='below';
-      else
-         polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
-         quadrant=round(polarDeg/90);
-         quadrant=mod(quadrant,4);
-         switch quadrant
-            case 0
-               where='to the right';
-            case 1
-               where='above';
-            case 2
-               where='to the left';
-            case 3
-               where='below';
-         end
-      end
-      string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACEBAR. ',...
-         string,where);
-      string=strrep(string,'letter',symbolName);
-      fixationClipRect(2)=5*oo(oi).textSize;
-      x=instructionalMarginPix;
-      y=1.3*oo(1).textSize;
-      Screen('TextSize',window,oo(oi).textSize);
-      DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
-      Screen('Flip',window,[],1); % Don't clear.
-      beginAfterKeypress=true;
-   else
-      beginAfterKeypress=false;
-      % In this case, we ought to do something to print the string about the
-      % progress bar, if there is a progress bar. Right now I'm focused on
-      % testing with fixation.
-   end
-   easeRequest=0; % Positive to request easier trials.
-   easyCount=0; % Number of easy presentations
-   guessCount=0; % Number of artificial guess responses
-   skipCount=0;
-   skipping=false;
-   condList=[];
-   for oi=1:conditions
-      % Run the specified number of presentations of each condition, in
-      % random order
-      condList = [condList repmat(oi,1,oo(oi).presentations)];
-      oo(oi).spacingsSequence=Shuffle(oo(oi).spacingsSequence);
-      oo(oi).q=QuestCreate(oo(oi).tGuess,oo(oi).tGuessSd,oo(oi).pThreshold,oo(oi).beta,delta,gamma,grain,range);
-      oo(oi).trialData=struct([]);
-   end % for oi=1:conditions
-   condList=Shuffle(condList);
-   presentation=0;
-   while presentation<length(condList)
-      presentation=presentation+1;
-      oi=condList(presentation);
-      easyModulus=ceil(1/oo(oi).fractionEasyTrials-1);
-      easyPresentation= easeRequest>0 || mod(presentation-1,easyModulus)==0;
-      if oo(oi).useQuest
-         intensity=QuestQuantile(oo(oi).q);
-         if oo(oi).measureBeta
-            offsetToMeasureBeta=Shuffle(offsetToMeasureBeta);
-            intensity=intensity+offsetToMeasureBeta(1);
-         end
-         if easyPresentation
-            easyCount=easyCount+1;
-            oo(oi).easyCount=oo(oi).easyCount+1;
-            intensity=intensity+oo(oi).easyBoost;
-            if easeRequest>1
-               intensity=intensity+(easeRequest-1)*oo(oi).easyBoost;
+            if oo(oi).forceFixationOffScreen
+                if oo(oi).fixationOnScreen
+                    ffprintf(ff,'Fixation would fit on-screen, but was forced off by o.forceFixationOffScreen=%d.\n',...
+                        oo(oi).forceFixationOffScreen);
+                end
+                oo(oi).fixationOnScreen=false;
             end
-         end
-         switch oo(oi).thresholdParameter
-            case 'spacing',
-               oo(oi).spacingDeg=10^intensity;
-               if oo(oi).fixedSpacingOverSize
-                  oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
-               else
-                  oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
-               end
-            case 'size',
-               oo(oi).targetDeg=10^intensity;
-         end
-      else
-         oo(oi).spacingDeg=oo(oi).spacingsSequence(ceil(oo(oi).responseCount/2));
-      end
-      oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
-      oo(oi).targetPix=max(oo(oi).targetPix,oo(oi).minimumTargetPix);
-      if oo(oi).targetSizeIsHeight
-         oo(oi).targetPix=max(oo(oi).targetPix,oo(oi).minimumTargetPix*oo(oi).targetHeightOverWidth);
-      end
-      oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-      if streq(oo(oi).thresholdParameter,'size') && oo(oi).fixedSpacingOverSize
-         oo(oi).spacingDeg=oo(oi).targetDeg*oo(oi).fixedSpacingOverSize;
-      end
-      spacingPix=oo(oi).spacingDeg*pixPerDeg;
-      if oo(oi).fixedSpacingOverSize
-         spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
-      end
-      if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
-      if oo(oi).repeatedTargets
-         if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth;
-            minSpacesY=3+1; 
-            minSpacesX=0;
-         else
-            minSpacesY=0;
-            minSpacesX=3+1; % Layout code currently assumes a centered target, so minSpaces must be even.
-         end
-      else
-         % Just one target
-         % minSpacesX is the in tangential direction
-         % minSpacesY is in the radial direction
-         switch oo(oi).thresholdParameter
-            case 'spacing',
-               if oo(oi).fourFlankers
-                  minSpacesY=2;
-                  minSpacesX=2;
-               else
-                  if oo(oi).targetSizeIsHeight
-                     minSpacesY=2;
-                     minSpacesX=0;
-                  else
-                     minSpacesY=0;
-                     minSpacesX=2;
-                  end
-               end
-            case 'size',
-               minSpacesY=0;
-               minSpacesX=0;
-         end
-      end
-      if oo(oi).practiceCountdown>=3
-         if oo(oi).repeatedTargets
-            if minSpacesX
-               minSpacesX=1;
+            fitsOnScreenString=sprintf('The combined size of target and fixation %.1f x %.1f deg %s the screen %.1f x %.1f deg.',...
+                totalSizeXYDeg,verb,rectSizeDeg);
+            ffprintf(ff,'%d: %s\n',oi,fitsOnScreenString);
+            if streq(verb,'exceeds') && ~oo(oi).forceFixationOffScreen
+                ffprintf(ff,'%d: This forces the fixation off-screen. Consider reducing the viewing distance or eccentricity.\n',oi);
             end
-            if minSpacesY
-               minSpacesY=1;
+            
+            %% SET NEAR POINT AS NEAR AS WE CAN TO DESIRED LOCATION
+            xy=oo(oi).nearPointXYInUnitSquare;
+            xy(2)=1-xy(2); % Move origin from lower left to upper left.
+            oo(oi).nearPointXYPix=xy.*[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
+            oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+oo(oi).stimulusRect(1:2);
+            % oo(oi).nearPointXYPix is a screen coordinate.
+            oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
+            if oo(oi).fixationOnScreen
+                % If necessary, shift nearPointXYPix just enought to get
+                % fixation on screen.
+                xy=XYPixOfXYDeg(oo(oi),[0 0]);
+                pix=oo(oi).pixPerDeg*oo(oi).fixationCoreSizeDeg/2;
+                r=InsetRect(oo(1).stimulusRect,pix,pix);
+                if ~IsXYInRect(xy,r)
+                    xyNew=ClipLineSegment2(xy,oo(oi).nearPointXYPix,r);
+                    % Apply the needed shift of fixation, from xy to xyNew, to the nearPointXYPix
+                    ffprintf(ff,'%d: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to get fixation onto the screen.\n',...
+                        1,oo(oi).nearPointXYPix,oo(oi).nearPointXYPix+xyNew-xy);
+                    oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
+                end
             end
-            if minSpacesX && minSpacesY
-               minSpacesY=0;
+            % XYPixOfXYDeg results depend on o.nearPointXYDeg and
+            % o.nearPointXYPix.
+            % fix.xy is a screen coordinate.
+            oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
+            % eccentricityXYPix is a vector from fixation to target.
+            oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
+            
+            % Compute minimumScreenSizeXYDeg and maximumViewingDistanceCm required for on-screen fixation.
+            if oi==1
+                minimumScreenSizeXYDeg=totalSizeXYDeg;
+            else
+                minimumScreenSizeXYDeg=max(minimumScreenSizeXYDeg,totalSizeXYDeg);
             end
-         else
-            minSpacesX=0;
-            minSpacesY=0;
-         end
-      end
-      if oo(oi).printSizeAndSpacing; fprintf('%d: %d: minSpacesX %d, minSpacesY %d, \n',oi,MFileLineNr,minSpacesX,minSpacesY); end;
-      % The spacings are center to center, so we'll fill the screen when we
-      % have the prescribed minSpacesX or minSpacesY plus a half letter at
-      % each border. We impose an upper bound on spacingPix to guarantee
-      % that we have the requested number of spaces horizontally
-      % (minSpacesX) and vertically (minSpacesY).
-      if ~oo(oi).targetSizeIsHeight
-         % spacingPix is vertical. It is scaled by
-         % heightOverWidth in the orthogonal direction.
-         if oo(oi).fixedSpacingOverSize
-            spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
-            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
-            oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
-         else
-            spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesY));
-            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
-         end
-      else
-         % spacingPix is horizontal. It is scaled by
-         % heightOverWidth in the orthogonal direction.
-         if oo(oi).fixedSpacingOverSize
-            spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
-            spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
-            oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
-         else
-            spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX));
-            spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetHeightOverWidth*oo(oi).targetPix)/4));
-         end
-      end
-      oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-      oo(oi).spacingDeg=spacingPix/pixPerDeg;
-      xyT=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
-      if oo(oi).printSizeAndSpacing;
-         fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xyT %d, %d\n',...
-            oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,...
-            spacingPix,oo(oi).spacingDeg,xyT);
-      end
-      spacingPix=round(spacingPix);
-      xF=[];
-      yF=[];
-      if ismember(oo(oi).flankingDirection,{'horizontal' 'tangential'}) || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
-         % Flankers must fit on screen. Compute where tangent line
-         % intersects stimulusRect. The tangent line goes through target
-         % xyT and is orthogonal to the line from fixation.
-         % NOTE: I think it would be easy to generalize this code to use
-         % the arbitrary direction of o.flankingPolarDeg instead of
-         % "orientation". When dealing with o.fourFlankers, we could
-         % analyze only with one pair of flankers or iterate to analyze
-         % both pairs.
-         %
-         % I think the two arguments to atan2d should be exchanged:
-         orientation=90+atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
-         if ~IsXYInRect(xyT,oo(oi).stimulusRect)
-            ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
-            stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
-            ffprintf(ff,'o.stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
-               stimulusSize,stimulusSize/pixPerDeg,...
-               oo(oi).fix.x/pixPerDeg,oo(oi).fix.y/pixPerDeg,...
-               oo(oi).eccentricityXYDeg,...
-               xyT/pixPerDeg);
-            error('Sorry, the target (eccentricity [%.0f %.0f] deg) is falling off the screen. Please reduce the viewing distance.',oo(oi).eccentricityXYDeg);
-         end
-         assert(length(spacingPix)==1);
-         if oo(oi).fixedSpacingOverSize
-            xF=xyT(1)+[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*sind(orientation);
-            yF=xyT(2)-[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*cosd(orientation);
-            [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
-            spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))/(1+0.5*oo(oi).fixedSpacingOverSize);
-         else
-            xF=xyT(1)+[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*sind(orientation);
-            yF=xyT(2)-[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*cosd(orientation);
-            [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
-            spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))-0.5*oo(oi).targetPix;
-         end
-         assert(length(spacingPix)==1);
-         spacingPix=max(0,spacingPix);
-         assert(length(spacingPix)==1);
-         xF=xyT(1)+[-1 1]*spacingPix*sind(orientation);
-         yF=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
-         % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
-         outerSpacingPix=0;
-      end
-      if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
-          % I think the two arguments to atan2d should be exchanged:
-          orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
-          eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
-          if eccentricityPix==0
-            % Flanker must fit on screen, horizontally
+        end % for oi=1:conditions
+        stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
+        maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
+        
+        % Look for wireless keyboard.
+        
+        clear PsychHID; % Force new enumeration of devices to detect external keyboard.
+        clear KbCheck; % Clear cache of keyboard devices.
+        [~,~,devices]=GetKeyboardIndices;
+        for i=1:length(devices)
+            oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
+        end
+        oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
+            && length(GetKeyboardIndices)<2 ...
+            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
+            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Wireless')) ...
+            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth')) ...
+            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Bluetooth'));
+        if oo(1).needWirelessKeyboard
+            warning backtrace off
+            warning('The long viewing distance may demand an external keyboard,');
+            warning('yet your only keyboard is not "wireless" or "bluetooth".');
+            warning backtrace on
+        end
+        
+        % BIG TEXT
+        % Say hello, and get viewing distance.
+        Screen('FillRect',window,white);
+        cmString=sprintf('%.0f cm',oo(1).viewingDistanceCm);
+        string=sprintf(['Welcome to CriticalSpacing. ' ...
+            'If you want a viewing distance of %.0f cm, ' ...
+            'please move me to that distance from your eye, and hit RETURN. ' ...
+            'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
+            oo(1).viewingDistanceCm);
+        Screen('TextSize',window,oo(1).textSize);
+        [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3-2*length(cmString),[],[],1.1);
+        Screen('TextSize',window,2*oo(1).textSize);
+        bounds=Screen('TextBounds',window,cmString,[],[],1);
+        x=screenRect(3)-bounds(3)-bounds(3)/length(cmString);
+        Screen('DrawText',window,cmString,x,y,black,white,1);
+        Screen('TextSize',window,oo(1).textSize);
+        
+        % SIZE LIMITS
+        string='';
+        for oi=1:conditions
+            oo(oi).minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
             if oo(oi).fixedSpacingOverSize
-               spacingPix=min(spacingPix,RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
+                oo(oi).minimumSpacingDeg=oo(oi).fixedSpacingOverSize*oo(oi).minimumSizeDeg;
             else
-               spacingPix=min(spacingPix,(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX);
+                oo(oi).minimumSpacingDeg=1.1*oo(oi).minimumTargetPix/pixPerDeg;
             end
-            assert(spacingPix>=0);
-            xF(end+1:end+2)=xyT(1)+[-1 1]*spacingPix*sind(orientation);
-            yF(end+1:end+2)=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
+        end
+        sizeDeg=max([oo.minimumSizeDeg]);
+        spacingDeg=max([oo.minimumSpacingDeg]);
+        
+        string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
+            'the screen is %.0fx%.0f deg, and can display characters'...
+            ' as small as %.2f deg with spacing as small as %.2f deg. '],...
+            string,oo(1).viewingDistanceCm,rectSizeDeg,...
+            sizeDeg,spacingDeg);
+        if any([oo(:).eccentricityXYDeg]~=0)
+            string=sprintf(['%s The combined size of the target and fixation %.1f x %.1f deg '...
+                '%s the screen %.1f x %.1f deg. ',...
+                'To allow on-screen fixation, view me from at most %.0f cm. '],...
+                string,minimumScreenSizeXYDeg,verb,rectSizeDeg,floor(maximumViewingDistanceCm));
+        end
+        smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
+        string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
+            'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
+            string,smallestDeg,minimumViewingDistanceCm);
+        
+        % RESOLUTION
+        if oo(1).nativeWidth==RectWidth(actualScreenRect)
+            string=sprintf('%sRESOLUTION  %.0fx%.0f: Your screen resolution is optimal.\n\n',string,RectWidth(actualScreenRect),RectHeight(actualScreenRect));
+        else
+            if RectWidth(actualScreenRect)<oo(1).nativeWidth
+                string=sprintf(['%sRESOLUTION %.0fx%.0f: You could reduce the minimum viewing distance ' ...
+                    '%.1f-fold by increasing the screen resolution to native resolution %.0fx%.0f. '],...
+                    string,RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth/RectWidth(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
+            else
+                string=sprintf(['%sRESOLUTION: Your screen resolution exceeds its maximum native resolution, ' ...
+                    'and may fail to render small characters. '],string);
+            end
+            string=sprintf(['%sFor native resolution, ' ...
+                'set o.permissionToChangeResolution=1 in your script, ' ...
+                'or use System Preferences:Displays to ' ...
+                'select "Default" resolution, or type "r" below, ' ...
+                'followed by RETURN.\n\n'],string);
+        end
+        
+        % MIRROR
+        if oo(1).flipScreenHorizontally
+            string=sprintf(['%sMIRROR: To turn off mirroring, ' ...
+                'set o.flipScreenHorizontally=0 in your script, ' ...
+                'or type "m" below, followed by RETURN.\n\n'],...
+                string);
+        else
+            string=sprintf(['%sMIRROR: To work with a mirror, ' ...
+                'set o.flipScreenHorizontally=1 in your script, ' ...
+                'or type "m" below, followed by RETURN.\n\n'],...
+                string);
+        end
+        
+        % KEYBOARD
+        if oo(1).needWirelessKeyboard
+            string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
+                'but I can''t detect any. After connecting a new keyboard, ' ...
+                'use your old keyboard to type "k" below, followed by RETURN, ' ...
+                'and I''ll recreate the keyboard list.'],string);
+        end
+        
+        
+        % Draw all the small text on screen.
+        Screen('TextSize',window,round(oo(1).textSize*0.6));
+        [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+1.5*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
+        
+        % COPYRIGHT
+        Screen('TextSize',window,round(oo(1).textSize*0.35));
+        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        
+        % Get typed response
+        Screen('TextSize',window,oo(1).textSize);
+        if IsWindows
+            background=[];
+        else
+            background=WhiteIndex(window);
+        end
+        Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',...
+            instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*(0.5-1.1));
+        [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
+            ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
+        if ismember(terminatorChar,[escapeChar graveAccentChar])
+            oo(1).quitRun=true;
+            oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+            if oo(1).quitSession
+                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
+            else
+                ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+            end
+            CloseWindowsAndCleanup;
+            return
+        end
+        if ~isempty(d)
+            inputDistanceCm=str2num(d);
+            if ~isempty(inputDistanceCm) && inputDistanceCm>0
+                oo(1).viewingDistanceCm=inputDistanceCm;
+            else
+                switch d
+                    case 'm'
+                        oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
+                        oo(1).flipScreenHorizontally=~oo(1).flipScreenHorizontally;
+                        if oo(1).useSpeech
+                            Speak('Now flipping the display.');
+                        end
+                        Screen('Close',window);
+                        window=OpenWindow(oo(1));
+                    case 'r'
+                        if oo(1).permissionToChangeResolution
+                            Speak('Resolution is already optimal.');
+                        else
+                            if oo(1).useSpeech
+                                Speak('Optimizing resolution.');
+                            end
+                            Screen('Close',window);
+                            warning backtrace off
+                            warning('Trying to change your screen resolution to be optimal for this test.');
+                            warning backtrace on
+                            oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+                            res=Screen('Resolution',oo(1).screen);
+                            if res.width==oo(1).nativeWidth
+                                oo(1).permissionToChangeResolution=true;
+                                fprintf('SUCCESS!\n');
+                            else
+                                warning('FAILED.');
+                                res
+                            end
+                            actualScreenRect=Screen('Rect',oo(1).screen,1);
+                            window=OpenWindow(oo(1));
+                            oo(1).resolution=Screen('Resolution',oo(1).screen);
+                            screenBufferRect=Screen('Rect',oo(1).screen);
+                            screenRect=Screen('Rect',oo(1).screen,1);
+                            %                      fprintf('%d: NEW RES: actualScreenRect %.0f, screenBufferRect %.0f, screenRect %.0f\n',...
+                            %                          oi,actualScreenRect(3),screenBufferRect(3),screenRect(3));
+                            
+                            for ii=1:conditions
+                                oo(ii).stimulusRect=screenRect;
+                                if oo(ii).showProgressBar
+                                    progressBarRect=[round(screenRect(3)*0.98) 0 screenRect(3) screenRect(4)]; % 2% of screen width.
+                                    oo(ii).stimulusRect(3)=progressBarRect(1);
+                                end
+                                clearRect=oo(ii).stimulusRect;
+                                if oo(ii).stimulusMarginFraction>0
+                                    s=oo(ii).stimulusMarginFraction*oo(ii).stimulusRect;
+                                    s=round(s);
+                                    oo(ii).stimulusRect=InsetRect(oo(ii).stimulusRect,RectWidth(s),RectHeight(s));
+                                end
+                            end
+                            
+                        end
+                    case 'k'
+                        if oo(1).useSpeech
+                            Speak('Recreating list of keyboards.');
+                        end
+                    otherwise
+                        Speak(sprintf('Illegal entry "%s". Try again.',d));
+                end
+            end
+        else
+            break;
+        end
+    end
+    ListenChar(0); % flush
+    ListenChar(2); % no echo
+    
+    % Ask experimenter name
+    if isempty(oo(1).experimenter)
+        Screen('FillRect',window);
+        Screen('TextFont',window,oo(1).textFont,0);
+        Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(0.6*oo(1).textSize));
+        Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(oo(1).textSize*0.35));
+        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('TextSize',window,oo(1).textSize);
+        if IsWindows
+            background=[];
+        else
+            background=WhiteIndex(window);
+        end
+        [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+        if ismember(terminatorChar,[escapeChar graveAccentChar])
+            oo(1).quitRun=true;
+            oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+            if oo(1).quitSession
+                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+            else
+                ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+            end
+            for i=1:conditions
+                oo(i).experimenter=name;
+            end
+            Screen('FillRect',window);
+            CloseWindowsAndCleanup;
+        end
+    end % if isempty(oo(1).experimenter)
+    
+    % Ask observer name
+    if isempty(oo(1).observer)
+        Screen('FillRect',window);
+        Screen('TextSize',window,oo(1).textSize);
+        Screen('TextFont',window,oo(1).textFont,0);
+        Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(oo(1).textSize*0.35));
+        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('TextSize',window,oo(1).textSize);
+        if IsWindows
+            background=[];
+        else
+            background=WhiteIndex(window);
+        end
+        [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+        if ismember(terminatorChar,[escapeChar graveAccentChar])
+            oo(1).quitRun=true;
+            oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+            if oo(1).quitSession
+                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+            else
+                ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+            end
+            CloseWindowsAndCleanup;
+            return
+        end
+        for i=1:conditions
+            oo(i).observer=name;
+        end
+        Screen('FillRect',window);
+    end % if isempty(oo(1).observer)
+    
+    oo(1).beginSecs=GetSecs;
+    oo(1).beginningTime=now;
+    timeVector=datevec(oo(1).beginningTime);
+    stack=dbstack;
+    assert(~isempty(stack));
+    if length(stack)==1
+        oo(1).scriptName=[];
+        oo(1).functionNames=stack.name;
+    else
+        oo(1).scriptName=[stack(2).name '.m'];
+        oo(1).functionNames=[stack(2).name '-' stack(1).name];
+    end
+    if ~isempty(oo(1).scriptName)
+        oo(1).scriptFullFileName=which(oo(1).scriptName);
+        oo(1).script=fileread(oo(1).scriptFullFileName);
+        assert(~isempty(oo(1).script));
+    else
+        oo(1).script=[];
+    end
+    oo(1).snapshotsFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
+    if ~exist(oo(1).snapshotsFolder,'dir')
+        [success,msg]=mkdir(oo(1).snapshotsFolder);
+        if ~success
+            error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotsFolder);
+        end
+    end
+    oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
+    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+    if ~exist(oo(1).dataFolder,'dir')
+        [success,msg]=mkdir(oo(1).dataFolder);
+        if ~success
+            error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
+        end
+    end
+    dataFid=fopen(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.txt']),'rt');
+    if dataFid~=-1
+        error('Oops. There''s already a file called "%s.txt". Try again.',oo(1).dataFilename);
+    end
+    [dataFid,msg]=fopen(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.txt']),'wt');
+    if dataFid==-1
+        error('%s. Could not create data file: %s',msg,[oo(1).dataFilename '.txt']);
+    end
+    assert(dataFid>-1);
+    ff=[1 dataFid];
+    ffError=[2 dataFid];
+    ffprintf(ff,'%s %s. ',oo(1).functionNames,datestr(now));
+    ffprintf(ff,'Saving results in:\n');
+    ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
+    ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
+    for oi=1:conditions
+        if ~isempty(oo(oi).unknownFields)
+            ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
+        end
+    end
+    ffprintf(ff,'1: %s: %s\n',oo(1).experimenter,oo(1).observer);
+    for oi=1:conditions
+        if oo(oi).repeatedTargets
+            oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
+            oo(oi).trials=2*oo(oi).presentations;
+        else
+            oo(oi).presentations=oo(oi).trials;
+        end
+        ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+        if isempty(oo(oi).flankingPolarDeg) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
+            error('At o.eccentricityXYDeg==0, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
+                oo(oi).flankingDirection);
+        end
+        oo(oi).eccentricityPolarDeg=atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
+        % We consult the o.flankingDirection string only if the user has not
+        % provided the o.flankingPolarDeg number.
+        if isempty(oo(oi).flankingPolarDeg)
+            switch oo(oi).flankingDirection
+                case 'radial'
+                    oo(oi).flankingPolarDeg=oo(oi).eccentricityPolarDeg;
+                case 'tangential'
+                    oo(oi).flankingPolarDeg=oo(oi).eccentricityPolarDeg+90;
+                case 'horizontal'
+                    oo(oi).flankingPolarDeg=0;
+                case 'vertical'
+                    oo(oi).flankingPolarDeg=90;
+                otherwise
+                    error('Unknown o.flankingDirection ''%s''.',oo(oi).flankingDirection);
+            end
+        end
+        if oo(oi).repeatedTargets
+            if oo(oi).targetSizeIsHeight
+                oo(oi).flankingPolarDeg=90;
+            else
+                oo(oi).flankingPolarDeg=0;
+            end
+        end
+        if isempty(oo(oi).flankingPolarDeg)
+            error('o.flankingPolarDeg is empty.');
+        end
+        % From here on we consider o.flankingPolarDeg primary, and derive a
+        % rough o.flankingDirection. I need the rough o.flankingDirection for
+        % print outs and to keep old code that I don't have time to update
+        % right now.
+        if ecc==0
+            switch round(abs(oo(oi).flankingPolarDeg/90))
+                case [0 2]
+                    oo(oi).flankingDirection='horizontal';
+                case 1
+                    oo(oi).flankingDirection='vertical';
+            end
+        else
+            switch round(abs(oo(oi).flankingPolarDeg-oo(oi).eccentricityPolarDeg)/90)
+                case [0 2]
+                    oo(oi).flankingDirection='radial';
+                case 1
+                    oo(oi).flankingDirection='tangential';
+            end
+        end % if ecc==0
+        % Prepare to draw fixation cross.
+        fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
+        %       fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
+        fixationLineWeightPix=round(oo(oi).fixationLineWeightDeg*pixPerDeg);
+        fixationLineWeightPix=max(1,fixationLineWeightPix);
+        fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
+        oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
+        oo(oi).fix.clipRect=oo(oi).stimulusRect;
+        oo(oi).fix.fixationCrossPix=fixationCrossPix;
+        
+        oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
+        oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
+        oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
+        
+        oo(oi).responseCount=1; % When we have two targets we get two responses for each display.
+        if streq(oo(oi).thresholdParameter,'size')
+            if isfield(oo(oi),'targetDegGuess') && isfinite(oo(oi).targetDegGuess)
+                oo(oi).targetDeg=oo(oi).targetDegGuess;
+            else
+                oo(oi).targetDeg=2*oo(oi).normalAcuityDeg; % initial guess for threshold size.
+            end
+        end
+        
+        for ii=1:conditions
+            if oo(ii).repeatedTargets
+                oo(ii).useFixation=false;
+            end
+            oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
+            oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
+            oo(ii).speakInstructions=oo(ii).useSpeech;
+        end
+        
+        oo=SetUpFixation(window,oo,oi,ff);
+        
+        addonDeg=0.15;
+        addonPix=pixPerDeg*addonDeg;
+        oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
+        % If flanking direction is orthogonal to eccentricity direction, then
+        % halve the expected crowding distance. A better model would deal
+        % with all possible differences in orientation.
+        if ecc>0 && abs(abs(oo(oi).flankingPolarDeg-oo(oi).eccentricityPolarDeg)-90)<20
+            oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
+        end
+        if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
+            oo(oi).spacingDeg=oo(oi).spacingGuessDeg;
+        else
+            oo(oi).spacingDeg=oo(oi).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+        end
+        oo(oi).spacings=oo(oi).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
+        oo(oi).spacingsSequence=repmat(oo(oi).spacings,1,...
+            ceil(oo(oi).presentations/length(oo(oi).spacings))); % make a random list, repeating the set of spacingsSequence enough to achieve the desired number of presentations.
+        switch oo(oi).thresholdParameter
+            case 'size'
+                if oo(oi).targetSizeIsHeight
+                    ori='vertical';
+                else
+                    ori='horizontal';
+                end
+            case 'spacing'
+                if ~oo(oi).repeatedTargets
+                    ori=oo(oi).flankingDirection;
+                else
+                    if oo(oi).targetSizeIsHeight
+                        ori='vertical';
+                    else
+                        ori='horizontal';
+                    end
+                end
+        end % switch oo(oi).thresholdParameter
+        if oo(oi).useQuest
+            ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',oi,oo(oi).trials,ori,oo(oi).thresholdParameter);
+        else
+            ffprintf(ff,'%d: %.0f trials of "method of constant stimuli" with fixed list of %s spacings [',oi,oo(oi).trials,ori);
+            ffprintf(ff,'%.1f ',oo(oi).spacings);
+            ffprintf(ff,'] deg\n');
+        end
+        
+        % Measure targetHeightOverWidth
+        oo(oi).targetFontHeightOverNominalPtSize=nan;
+        oo(oi).targetPix=200;
+        % Get bounds.
+        [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
+        DestroyLetterTextures(letterStruct);
+        oo(oi).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
+        if ~oo(oi).readAlphabetFromDisk
+            oo(oi).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(oi).targetPix;
+        end
+        oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
+        
+        for cd=1:conditions
+            for i=1:length(oo(cd).validKeyNames)
+                oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
+            end
+        end
+        
+        % Set o.targetHeightOverWidth
+        if oo(oi).setTargetHeightOverWidth
+            oo(oi).targetHeightOverWidth=oo(oi).setTargetHeightOverWidth;
+        end
+        
+        % Prepare to draw fixation cross
+        oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
+        assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
+        oo(oi).fix.clipRect=screenRect;
+        oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
+        if oo(oi).markTargetLocation;
+            oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
+        else
+            oo(oi).fix.markTargetLocationPix=false;
+        end
+        if oo(oi).fixationCrossBlankedNearTarget
+            % Blanking of marks to prevent masking and crowding of the target
+            % by the marks. Blanking radius (centered at target) is max of
+            % target diameter and half eccentricity.
+            diameter=oo(oi).targetDeg*pixPerDeg;
+            if ~oo(oi).targetSizeIsHeight
+                diameter=diameter*oo(oi).targetHeightOverWidth;
+            end
+            eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+            oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
+            if oo(oi).fix.blankingRadiusPix >= eccentricityPix
+                % Make sure we can see fixation. Extend the lines.
+                oo(oi).fix.fixationCrossPix=inf;
+            end
+        else
+            oo(oi).fix.blankingRadiusPix=0;
+        end
+        fixationLines=ComputeFixationLines2(oo(oi).fix);
+        
+        oo(1).quitRun=false;
+        
+        switch oo(oi).thresholdParameter
+            case 'spacing'
+                assert(oo(oi).spacingDeg>0);
+                oo(oi).tGuess=log10(oo(oi).spacingDeg);
+            case 'size'
+                assert(oo(oi).targetDeg>0);
+                oo(oi).tGuess=log10(oo(oi).targetDeg);
+        end
+        oo(oi).tGuessSd=2;
+        oo(oi).pThreshold=0.7;
+        oo(oi).beta=3;
+        delta=0.01;
+        gamma=1/length(oo(oi).alphabet);
+        grain=0.01;
+        range=6;
+    end % for oi=1:conditions
+    
+    cal.screen=max(Screen('Screens'));
+    if cal.screen>0
+        ffprintf(ff,'Using external monitor.\n');
+    end
+    for oi=1:conditions
+        ffprintf(ff,'%d: ',oi);
+        if oo(oi).repeatedTargets
+            numberTargets='two targets (repeated many times)';
+        else
+            numberTargets='one target';
+        end
+        string=sprintf('%s %s, alternatives %d,  beta %.1f\n',oo(oi).task,numberTargets,length(oo(oi).alphabet),oo(oi).beta);
+        string(1)=upper(string(1));
+        ffprintf(ff,'%s',string);
+    end
+    for oi=1:conditions
+        if oo(oi).fixedSpacingOverSize
+            ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',oi,oo(oi).fixedSpacingOverSize);
+        else
+            switch oo(oi).thresholdParameter
+                case 'size',
+                    ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',oi);
+                case 'spacing'
+                    ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',oi,oo(oi).targetDeg,oo(oi).targetDeg*pixPerDeg);
+                    if ~isfinite(oo(oi).targetDeg)
+                        error('To measure spacing threshold you must define either o.fixedSpacingOverSize or o.targetDeg.');
+                    end
+            end
+        end
+    end
+    for oi=1:conditions
+        ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
+            oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalAcuityDeg/2);
+    end
+    s=sprintf(['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
+        'you should view from at most'],oi,minimumScreenSizeXYDeg);
+    if maximumViewingDistanceCm<100
+        s=sprintf('%s %.0f cm.\n',s,maximumViewingDistanceCm);
+    else
+        s=sprintf('%s %.1f m.\n',s,maximumViewingDistanceCm/100);
+    end
+    ffprintf(ff,'%s',s);
+    ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
+    for i=1:length(oo(1).keyboardNameAndTransport)
+        ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{i});
+    end
+    ffprintf(ff,'\n');
+    for oi=1:conditions
+        sizesPix=oo(oi).minimumTargetPix*[oo(oi).targetHeightOverWidth 1];
+        ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pix, %.3fx%.3f deg. ',oi,sizesPix,sizesPix/pixPerDeg);
+        if oo(oi).fixedSpacingOverSize
+            spacingPix=round(oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
+            ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
+        else
+            switch oo(oi).thresholdParameter
+                case 'size'
+                    ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(oi).spacingPix,oo(oi).spacingDeg);
+                case 'spacing'
+                    ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',oo(oi).targetPix,oo(oi).targetDeg);
+            end
+        end
+    end
+    for oi=1:conditions
+        if oo(oi).readAlphabetFromDisk
+            ffprintf(ff,'%d: "%s" font from disk. ',oi,oo(oi).targetFont);
+        else
+            ffprintf(ff,'%d: "%s" font, live. ',oi,oo(oi).targetFont);
+        end
+        ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(oi).alphabet,oo(oi).borderLetter);
+    end
+    for oi=1:conditions
+        ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',oi,oo(oi).targetHeightOverWidth,oo(oi).targetFontHeightOverNominalPtSize);
+    end
+    for oi=1:conditions
+        ffprintf(ff,'%d: durationSec %.2f, eccentricityXYDeg [%.1f %.1f]\n',...
+            oi,oo(oi).durationSec,oo(oi).eccentricityXYDeg);
+    end
+    
+    % Identify the computer
+    cal.screen=0;
+    computer=Screen('Computer');
+    [cal.screenWidthMm,cal.screenHeightMm]=Screen('DisplaySize',cal.screen);
+    if computer.windows
+        cal.processUserLongName=getenv('USERNAME');
+        cal.localHostName=getenv('USERDOMAIN');
+        cal.macModelName=[];
+    elseif computer.linux
+        cal.processUserLongName=getenv('USER');
+        cal.localHostName=computer.localHostName;
+        cal.machineName=computer.machineName;
+        cal.osversion=computer.kern.version;
+        cal.macModelName=[];
+    elseif computer.osx || computer.macintosh
+        cal.processUserLongName=computer.processUserLongName;
+        cal.machineName=strrep(computer.machineName,'éˆ??',''''); % work around bug in Screen('Computer')
+        if streq(cal.machineName,'UNKNOWN! QUERY FAILED DUE TO EMPTY OR PROBLEMATIC NAME.')
+            cal.machineName='';
+        end
+        cal.localHostName=computer.localHostName;
+        cal.macModelName=MacModelName;
+    end
+    cal.screenOutput=[]; % only for Linux
+    cal.ScreenConfigureDisplayBrightnessWorks=true; % default value
+    cal.brightnessSetting=1.00; % default value
+    cal.brightnessRMSError=0; % default value
+    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
+    cal.screenWidthCm=screenWidthMm/10;
+    actualScreenRect=Screen('Rect',cal.screen,1);
+    %    ffprintf(ff,'Screen width buffer %d, display %d. ',RectWidth(Screen('Rect',cal.screen)),RectWidth(Screen('Rect',cal.screen,1)));
+    %    ffprintf(ff,'Window width buffer %d, display %d.\n',RectWidth(Screen('Rect',window)),RectWidth(Screen('Rect',window,1)));
+    if oo(1).flipScreenHorizontally
+        ffprintf(ff,'Using mirror. ');
+    end
+    ffprintf(ff,'%d: Viewing distance %.0f cm,',1,oo(1).viewingDistanceCm);
+    xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
+    xyDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
+    ffprintf(ff,' %.0f pixPerDeg, %.0f pix/cm.\n',...
+        pixPerDeg,RectWidth(actualScreenRect)/(screenWidthMm/10));
+    ffprintf(ff,'%d: Screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.1fx%.1f deg.\n',...
+        1,cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+        oo(1).nativeWidth,oo(1).nativeHeight,...
+        screenWidthMm/10,screenHeightMm/10,xyDeg);
+    ffprintf(ff,'1: %s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
+    oo(1).matlab=version;
+    [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
+    v=oo(1).psychtoolbox;
+    ffprintf(ff,'1: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
+    assert(cal.screenWidthCm==screenWidthMm/10);
+    cal.ScreenConfigureDisplayBrightnessWorks=true;
+    if cal.ScreenConfigureDisplayBrightnessWorks
+        cal.brightnessSetting=1;
+        % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
+        % silently do nothing if not supported. But when I used it on my
+        % video projector, Screen gave a fatal error. How can my program know
+        % when it's safe to use Screen ConfigureDisplay?
+        % Bug reported to Psychtoolbox forum June 2017.
+        % The work around, not yet implemented here, is to wrap the call in a
+        % try-catch block.
+        if computer.osx || computer.macintosh
+            Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+        end
+    end
+    for oi=1:conditions
+        oo(oi).cal=cal;
+    end
+    
+    rightBeep=0.05*MakeBeep(2000,0.05,44100);
+    rightBeep(end)=0;
+    wrongBeep=0.05*MakeBeep(500,0.5,44100);
+    wrongBeep(end)=0;
+    purr=MakeBeep(140,1.0,44100);
+    purr(end)=0;
+    Snd('Open');
+    
+    % Instructions
+    usingDigits=false;
+    usingLetters=false;
+    for conditions=1:conditions
+        usingDigits=usingDigits || all(ismember(oo(oi).alphabet,'0123456789'));
+        usingLetters=usingLetters || any(~ismember(oo(oi).alphabet,'0123456789'));
+    end
+    if usingDigits && usingLetters
+        symbolName='character';
+    elseif usingDigits && ~usingLetters
+        symbolName='digit';
+    elseif ~usingDigits && usingLetters
+        symbolName='letter';
+    elseif  ~usingDigits && ~usingLetters
+        error('Targets are neither digits nor letters');
+    end
+    Screen('FillRect',window,white);
+    if length(oo(oi).observer)>0
+        string=[sprintf('Hello %s. ',oo(oi).observer)];
+    else
+        string='Hello. ';
+    end
+    string=[string 'Please turn on this computer''s sound. '];
+    string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
+    string=[string 'You might also have the alphabet on a piece of paper. '];
+    string=[string 'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
+    for oi=1:conditions
+        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'size')
+            string=[string 'When you see a letter, please report it. '];
+            break;
+        end
+    end
+    for oi=1:conditions
+        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
+            string=[string 'When you see three letters, please report just the middle letter. '];
+            break;
+        end
+    end
+    if any([oo.repeatedTargets])
+        string=[string 'When you see many letters, they are all repetitions of just two different letters. Please report both. '];
+        string=[string 'The two kinds of letter can be mixed together all over the display, or separated into left and right sides. '];
+    end
+    string=[string 'Sometimes the letters will be easy to identify. Sometimes they will be nearly impossible. '];
+    string=[string 'You can''t get much more than half right, so relax. Think of it as a guessing game, ' ...
+        'and just get as many as you can. '];
+    string=[string 'Type slowly. (Quit anytime by pressing ESCAPE.) '];
+    if ~any([oo.useFixation])
+        string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
+    end
+    string=[string 'To continue, please hit RETURN. '];
+    Screen('TextFont',window,oo(oi).textFont,0);
+    Screen('TextSize',window,round(oo(oi).textSize*0.35));
+    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+    Screen('TextSize',window,oo(oi).textSize);
+    string=strrep(string,'letter',symbolName);
+    DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+    Screen('Flip',window,[],1);
+    if false && oo(oi).useSpeech
+        string=strrep(string,'\n','');
+        string=strrep(string,'eye(s)','eyes');
+        Speak(string);
+    end
+    SetMouse(screenRect(3),screenRect(4),window);
+    answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],...
+        oo(oi),window,oo(oi).stimulusRect);
+    
+    Screen('FillRect',window);
+    if ismember(answer,[escapeChar graveAccentChar])
+        oo(1).quitRun=true;
+        oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+        if oo(1).quitSession
+            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+        else
+            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+        end
+        CloseWindowsAndCleanup;
+        return
+    end
+    fixationClipRect=oo(oi).stimulusRect;
+    if oo(oi).showProgressBar
+        string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the run. ';
+    else
+        string='';
+    end
+    if any([oo.useFixation])
+        string=[string 'On each trial, try to identify the target letter by typing that key. Please use the crosshairs on every trial. '];
+        if oo(1).fixationOnScreen
+            where='below';
+        else
+            polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
+            quadrant=round(polarDeg/90);
+            quadrant=mod(quadrant,4);
+            switch quadrant
+                case 0
+                    where='to the right';
+                case 1
+                    where='above';
+                case 2
+                    where='to the left';
+                case 3
+                    where='below';
+            end
+        end
+        string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACEBAR. ',...
+            string,where);
+        string=strrep(string,'letter',symbolName);
+        fixationClipRect(2)=5*oo(oi).textSize;
+        x=instructionalMarginPix;
+        y=1.3*oo(1).textSize;
+        Screen('TextSize',window,oo(oi).textSize);
+        DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+        Screen('Flip',window,[],1); % Don't clear.
+        beginAfterKeypress=true;
+    else
+        beginAfterKeypress=false;
+        % In this case, we ought to do something to print the string about the
+        % progress bar, if there is a progress bar. Right now I'm focused on
+        % testing with fixation.
+    end
+    easeRequest=0; % Positive to request easier trials.
+    easyCount=0; % Number of easy presentations
+    guessCount=0; % Number of artificial guess responses
+    skipCount=0;
+    skipping=false;
+    condList=[];
+    for oi=1:conditions
+        % Run the specified number of presentations of each condition, in
+        % random order
+        condList = [condList repmat(oi,1,oo(oi).presentations)];
+        oo(oi).spacingsSequence=Shuffle(oo(oi).spacingsSequence);
+        oo(oi).q=QuestCreate(oo(oi).tGuess,oo(oi).tGuessSd,oo(oi).pThreshold,oo(oi).beta,delta,gamma,grain,range);
+        oo(oi).trialData=struct([]);
+    end % for oi=1:conditions
+    condList=Shuffle(condList);
+    presentation=0;
+    while presentation<length(condList)
+        presentation=presentation+1;
+        oi=condList(presentation);
+        easyModulus=ceil(1/oo(oi).fractionEasyTrials-1);
+        easyPresentation= easeRequest>0 || mod(presentation-1,easyModulus)==0;
+        if oo(oi).useQuest
+            intensity=QuestQuantile(oo(oi).q);
+            if oo(oi).measureBeta
+                offsetToMeasureBeta=Shuffle(offsetToMeasureBeta);
+                intensity=intensity+offsetToMeasureBeta(1);
+            end
+            if easyPresentation
+                easyCount=easyCount+1;
+                oo(oi).easyCount=oo(oi).easyCount+1;
+                intensity=intensity+oo(oi).easyBoost;
+                if easeRequest>1
+                    intensity=intensity+(easeRequest-1)*oo(oi).easyBoost;
+                end
+            end
+            switch oo(oi).thresholdParameter
+                case 'spacing',
+                    oo(oi).spacingDeg=10^intensity;
+                    if oo(oi).fixedSpacingOverSize
+                        oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
+                    else
+                        oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
+                    end
+                case 'size',
+                    oo(oi).targetDeg=10^intensity;
+            end
+        else
+            oo(oi).spacingDeg=oo(oi).spacingsSequence(ceil(oo(oi).responseCount/2));
+        end
+        oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
+        oo(oi).targetPix=max(oo(oi).targetPix,oo(oi).minimumTargetPix);
+        if oo(oi).targetSizeIsHeight
+            oo(oi).targetPix=max(oo(oi).targetPix,oo(oi).minimumTargetPix*oo(oi).targetHeightOverWidth);
+        end
+        oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
+        if streq(oo(oi).thresholdParameter,'size') && oo(oi).fixedSpacingOverSize
+            oo(oi).spacingDeg=oo(oi).targetDeg*oo(oi).fixedSpacingOverSize;
+        end
+        spacingPix=oo(oi).spacingDeg*pixPerDeg;
+        if oo(oi).fixedSpacingOverSize
+            spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
+        end
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+        if oo(oi).repeatedTargets
+            if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth;
+                minSpacesY=3+1;
+                minSpacesX=0;
+            else
+                minSpacesY=0;
+                minSpacesX=3+1; % Layout code currently assumes a centered target, so minSpaces must be even.
+            end
+        else
+            % Just one target
+            % minSpacesX is the in tangential direction
+            % minSpacesY is in the radial direction
+            switch oo(oi).thresholdParameter
+                case 'spacing',
+                    if oo(oi).fourFlankers
+                        minSpacesY=2;
+                        minSpacesX=2;
+                    else
+                        if oo(oi).targetSizeIsHeight
+                            minSpacesY=2;
+                            minSpacesX=0;
+                        else
+                            minSpacesY=0;
+                            minSpacesX=2;
+                        end
+                    end
+                case 'size',
+                    minSpacesY=0;
+                    minSpacesX=0;
+            end
+        end
+        if oo(oi).practiceCountdown>=3
+            if oo(oi).repeatedTargets
+                if minSpacesX
+                    minSpacesX=1;
+                end
+                if minSpacesY
+                    minSpacesY=1;
+                end
+                if minSpacesX && minSpacesY
+                    minSpacesY=0;
+                end
+            else
+                minSpacesX=0;
+                minSpacesY=0;
+            end
+        end
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: minSpacesX %d, minSpacesY %d, \n',oi,MFileLineNr,minSpacesX,minSpacesY); end;
+        % The spacings are center to center, so we'll fill the screen when we
+        % have the prescribed minSpacesX or minSpacesY plus a half letter at
+        % each border. We impose an upper bound on spacingPix to guarantee
+        % that we have the requested number of spaces horizontally
+        % (minSpacesX) and vertically (minSpacesY).
+        if ~oo(oi).targetSizeIsHeight
+            % spacingPix is vertical. It is scaled by
+            % heightOverWidth in the orthogonal direction.
+            if oo(oi).fixedSpacingOverSize
+                spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
+                spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
+                oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
+            else
+                spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesY));
+                spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
+            end
+        else
+            % spacingPix is horizontal. It is scaled by
+            % heightOverWidth in the orthogonal direction.
+            if oo(oi).fixedSpacingOverSize
+                spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
+                spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
+                oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
+            else
+                spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX));
+                spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetHeightOverWidth*oo(oi).targetPix)/4));
+            end
+        end
+        oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
+        oo(oi).spacingDeg=spacingPix/pixPerDeg;
+        xyT=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
+        if oo(oi).printSizeAndSpacing;
+            fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xyT %d, %d\n',...
+                oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,...
+                spacingPix,oo(oi).spacingDeg,xyT);
+        end
+        spacingPix=round(spacingPix);
+        xF=[];
+        yF=[];
+        if ismember(oo(oi).flankingDirection,{'horizontal' 'tangential'}) || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
+            % Flankers must fit on screen. Compute where tangent line
+            % intersects stimulusRect. The tangent line goes through target
+            % xyT and is orthogonal to the line from fixation.
+            % NOTE: I think it would be easy to generalize this code to use
+            % the arbitrary direction of o.flankingPolarDeg instead of
+            % "orientation". When dealing with o.fourFlankers, we could
+            % analyze only with one pair of flankers or iterate to analyze
+            % both pairs.
+            %
+            % I think the two arguments to atan2d should be exchanged:
+            orientation=90+atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
+            if ~IsXYInRect(xyT,oo(oi).stimulusRect)
+                ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
+                stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
+                ffprintf(ff,'o.stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
+                    stimulusSize,stimulusSize/pixPerDeg,...
+                    oo(oi).fix.x/pixPerDeg,oo(oi).fix.y/pixPerDeg,...
+                    oo(oi).eccentricityXYDeg,...
+                    xyT/pixPerDeg);
+                error('Sorry, the target (eccentricity [%.0f %.0f] deg) is falling off the screen. Please reduce the viewing distance.',oo(oi).eccentricityXYDeg);
+            end
+            assert(length(spacingPix)==1);
+            if oo(oi).fixedSpacingOverSize
+                xF=xyT(1)+[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*sind(orientation);
+                yF=xyT(2)-[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*cosd(orientation);
+                [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
+                spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))/(1+0.5*oo(oi).fixedSpacingOverSize);
+            else
+                xF=xyT(1)+[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*sind(orientation);
+                yF=xyT(2)-[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*cosd(orientation);
+                [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
+                spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))-0.5*oo(oi).targetPix;
+            end
+            assert(length(spacingPix)==1);
+            spacingPix=max(0,spacingPix);
+            assert(length(spacingPix)==1);
+            xF=xyT(1)+[-1 1]*spacingPix*sind(orientation);
+            yF=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
             % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
             outerSpacingPix=0;
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
-         else % eccentricity not zero
-            assert(spacingPix>=0);
-            spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
-            assert(spacingPix>=0);
-            if oo(oi).fixedSpacingOverSize
-               spacingPix=min(spacingPix,xyT(1)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
-               assert(spacingPix>=0);
-               for i=1:100
-                  outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
-                  assert(outerSpacingPix>=0);
-                  if outerSpacingPix<=RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2; % Outer flanker is on screen.
-                     break;
-                  else
-                     spacingPix=0.9*spacingPix;
-                  end
-               end
-               if i==100
-                  ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
-                  error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
-               end
-            else
-               spacingPix=min(spacingPix,xyT(1)-oo(oi).targetPix/2); % inner flanker on screen
-               outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
-               outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-oo(oi).targetPix/2); % outer flanker on screen
+        end
+        if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
+            % I think the two arguments to atan2d should be exchanged:
+            orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
+            eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+            if eccentricityPix==0
+                % Flanker must fit on screen, horizontally
+                if oo(oi).fixedSpacingOverSize
+                    spacingPix=min(spacingPix,RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
+                else
+                    spacingPix=min(spacingPix,(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX);
+                end
+                assert(spacingPix>=0);
+                xF(end+1:end+2)=xyT(1)+[-1 1]*spacingPix*sind(orientation);
+                yF(end+1:end+2)=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
+                % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
+                outerSpacingPix=0;
+                if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+            else % eccentricity not zero
+                assert(spacingPix>=0);
+                spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
+                assert(spacingPix>=0);
+                if oo(oi).fixedSpacingOverSize
+                    spacingPix=min(spacingPix,xyT(1)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
+                    assert(spacingPix>=0);
+                    for i=1:100
+                        outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
+                        assert(outerSpacingPix>=0);
+                        if outerSpacingPix<=RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2; % Outer flanker is on screen.
+                            break;
+                        else
+                            spacingPix=0.9*spacingPix;
+                        end
+                    end
+                    if i==100
+                        ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
+                        error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
+                    end
+                else
+                    spacingPix=min(spacingPix,xyT(1)-oo(oi).targetPix/2); % inner flanker on screen
+                    outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
+                    outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-oo(oi).targetPix/2); % outer flanker on screen
+                end
+                assert(outerSpacingPix>=0);
+                spacingPix=eccentricityPix+addonPix-(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix+outerSpacingPix);
+                assert(spacingPix>=0);
+                spacingPix=round(spacingPix);
+                assert(spacingPix>=0);
+                xF(end+1:end+2)=xyT(1)+[-spacingPix outerSpacingPix]*sind(orientation);
+                yF(end+1:end+2)=xyT(2)-[-spacingPix outerSpacingPix]*cosd(orientation);
             end
-            assert(outerSpacingPix>=0);
-            spacingPix=eccentricityPix+addonPix-(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix+outerSpacingPix);
-            assert(spacingPix>=0);
-            spacingPix=round(spacingPix);
-            assert(spacingPix>=0);
-            xF(end+1:end+2)=xyT(1)+[-spacingPix outerSpacingPix]*sind(orientation);
-            yF(end+1:end+2)=xyT(2)-[-spacingPix outerSpacingPix]*cosd(orientation);
-         end
-      end
-      oo(oi).spacingDeg=spacingPix/pixPerDeg;
-      if streq(oo(oi).thresholdParameter,'spacing') && oo(oi).fixedSpacingOverSize
-         oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
-      end
-      oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
-      if oo(oi).targetSizeIsHeight
-         oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect));
-         oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(oo(oi).stimulusRect)*oo(oi).targetHeightOverWidth);
-      else
-         oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(oo(oi).stimulusRect));
-         oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
-      end
-      oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-      if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
-      % Prepare to draw fixation cross.
-      if oo(oi).fixationCrossBlankedNearTarget
-         % Blanking of marks to prevent masking and crowding of the target
-         % by the marks. Blanking radius (centered at target) is max of
-         % target diameter and half eccentricity.
-         diameter=oo(oi).targetDeg*pixPerDeg;
-         if ~oo(oi).targetSizeIsHeight
-            diameter=diameter*oo(oi).targetHeightOverWidth;
-         end
-         eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
-         oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
-         if oo(oi).fix.blankingRadiusPix >= eccentricityPix
-            % Make sure we can see fixation. Extend the lines.
-            oo(oi).fix.fixationCrossPix=inf;
-         end
-      else
-         oo(oi).fix.blankingRadiusPix=0;
-      end
-      fixationLines=ComputeFixationLines2(oo(oi).fix);
-      % Set up fixation.
-      if ~oo(oi).repeatedTargets && oo(oi).useFixation
-         % Draw fixation.
-         fl=ClipLines(fixationLines,fixationClipRect);
-         if ~isempty(fl)
-            Screen('DrawLines',window,fl,fixationLineWeightPix,black);
-         end
-      end
-      if oo(oi).showProgressBar
-         Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-         r=progressBarRect;
-         r(4)=round(r(4)*(1-presentation/length(condList)));
-         Screen('FillRect',window,[220 220 220],r); % grey background
-      end
-      Screen('Flip',window,[],1); % Display instructions and fixation.
-      if oo(oi).useFixation
-         if beginAfterKeypress
-            SetMouse(screenRect(3),screenRect(4),window);
-            answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
-            if ismember(answer,[escapeChar graveAccentChar])
-               oo(1).quitRun=true;
-               oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-               if oo(1).quitSession
-                  ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-               else
-                  ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-               end
-               CloseWindowsAndCleanup;
-               return
+        end
+        oo(oi).spacingDeg=spacingPix/pixPerDeg;
+        if streq(oo(oi).thresholdParameter,'spacing') && oo(oi).fixedSpacingOverSize
+            oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
+        end
+        oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
+        if oo(oi).targetSizeIsHeight
+            oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect));
+            oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(oo(oi).stimulusRect)*oo(oi).targetHeightOverWidth);
+        else
+            oo(oi).targetPix=min(oo(oi).targetPix,RectWidth(oo(oi).stimulusRect));
+            oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
+        end
+        oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+        % Prepare to draw fixation cross.
+        if oo(oi).fixationCrossBlankedNearTarget
+            % Blanking of marks to prevent masking and crowding of the target
+            % by the marks. Blanking radius (centered at target) is max of
+            % target diameter and half eccentricity.
+            diameter=oo(oi).targetDeg*pixPerDeg;
+            if ~oo(oi).targetSizeIsHeight
+                diameter=diameter*oo(oi).targetHeightOverWidth;
             end
-            beginAfterKeypress=false;
-         end
-         Screen('FillRect',window,white,oo(oi).stimulusRect);
-         Screen('FillRect',window,white,clearRect);
-         % Define fixation bounds midway through first trial, for rest of
-         % trials.
-%          fixationClipRect=InsetRect(oo(oi).stimulusRect,0,1.6*oo(oi).textSize);
-         fixationClipRect=oo(oi).stimulusRect;
-         if ~oo(oi).repeatedTargets && oo(oi).useFixation
+            eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+            oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
+            if oo(oi).fix.blankingRadiusPix >= eccentricityPix
+                % Make sure we can see fixation. Extend the lines.
+                oo(oi).fix.fixationCrossPix=inf;
+            end
+        else
+            oo(oi).fix.blankingRadiusPix=0;
+        end
+        fixationLines=ComputeFixationLines2(oo(oi).fix);
+        % Set up fixation.
+        if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
             fl=ClipLines(fixationLines,fixationClipRect);
             if ~isempty(fl)
-               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                Screen('DrawLines',window,fl,fixationLineWeightPix,black);
             end
-         end
-         Screen('Flip',window,[],1); % Display fixation.
-         WaitSecs(1); % Duration of fixation display, before stimulus appears.
-         Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
-         Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
-         if ~oo(oi).repeatedTargets && oo(oi).useFixation
-            % Draw fixation.
-            fl=ClipLines(fixationLines,fixationClipRect);
-            if ~isempty(fl)
-               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+        end
+        if oo(oi).showProgressBar
+            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+            r=progressBarRect;
+            r(4)=round(r(4)*(1-presentation/length(condList)));
+            Screen('FillRect',window,[220 220 220],r); % grey background
+        end
+        Screen('Flip',window,[],1); % Display instructions and fixation.
+        if oo(oi).useFixation
+            if beginAfterKeypress
+                SetMouse(screenRect(3),screenRect(4),window);
+                answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
+                if ismember(answer,[escapeChar graveAccentChar])
+                    oo(1).quitRun=true;
+                    oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+                    if oo(1).quitSession
+                        ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+                    else
+                        ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+                    end
+                    CloseWindowsAndCleanup;
+                    return
+                end
+                beginAfterKeypress=false;
             end
-         end
-      else
-         Screen('FillRect',window); % Clear screen.
-      end
-      stimulus=Shuffle(oo(oi).alphabet);
-      if length(stimulus)>=3
-      stimulus=stimulus(1:3); % three random letters, all different.
-      else
-         % three random letters, independent samples, with replacement.
-         b=Shuffle(stimulus);
-         c=Shuffle(stimulus);
-         stimulus(2)=b(1);
-         stimulus(3)=c(1);
-      end
-      if isfield(oo(oi),'flankerLetter') && length(oo(oi).flankerLetter)==1
-         stimulus(1)=oo(oi).flankerLetter;
-         stimulus(3)=oo(oi).flankerLetter;
-         while stimulus(2)==oo(oi).flankerLetter
-            stimulus(2)=oo(oi).alphabet(randi(length(oo(oi).alphabet)));
-         end
-      end
-      if isfinite(oo(oi).targetFontHeightOverNominalPtSize)
-         if oo(oi).targetSizeIsHeight
-            sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominalPtSize);
-            oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominalPtSize;
-         else
-            sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominalPtSize*oo(oi).targetHeightOverWidth);
-            oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominalPtSize/oo(oi).targetHeightOverWidth;
-         end
-      end
-      oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-      
-      % Create letter textures, using font or from disk.
-      letterStruct=CreateLetterTextures(oi,oo(oi),window);
-      letters=[oo(oi).alphabet oo(oi).borderLetter];
-      
-      if oo(oi).showAlphabet
-         % This is for debugging. We also display the alphabet any time the
-         % caps lock key is pressed. That's standard behavior to allow the
-         % observer to familiarize herself with the alphabet.
-         for i=1:length(letters)
-            r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
-            s=RectWidth(oo(oi).stimulusRect)/(1.5*length(letters))/RectWidth(r);
-            r=round(s*r);
-            r=OffsetRect(r,(0.5+1.5*(i-1))*RectWidth(r),RectHeight(r));
-            Screen('DrawTexture',window,letterStruct(i).texture,[],r);
-            Screen('FrameRect',window,0,r);
-         end
-         Screen('Flip',window);
-         Speak('Alphabet. Click.');
-         GetClicks;
-      end
-      
-      % Create textures for 3 lines. The rest are copies.
-      textureIndex=1;
-      spacingPix=floor(spacingPix);
-      if oo(oi).targetSizeIsHeight
-         ySpacing=spacingPix;
-         xSpacing=spacingPix/oo(oi).targetHeightOverWidth;
-         yPix=oo(oi).targetPix;
-         xPix=oo(oi).targetPix/oo(oi).targetHeightOverWidth;
-      else
-         xPix=oo(oi).targetPix;
-         yPix=oo(oi).targetPix*oo(oi).targetHeightOverWidth;
-         xSpacing=spacingPix;
-         ySpacing=spacingPix*oo(oi).targetHeightOverWidth;
-      end
-      if oo(oi).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',oi,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
-      if ~oo(oi).repeatedTargets
-          if isempty(xF)
-              error('xF is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
-          end
-         xStimulus=[xF(1) xyT(1) xF(2:end)];
-         yStimulus=[yF(1) xyT(2) yF(2:end)];
-         if oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing')
-            newFlankers=Shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
-            stimulus(end+1:end+2)=newFlankers(1:2);
-         end
-         clear textures dstRects
-         for textureIndex=1:length(xStimulus)
-            whichLetter=strfind(letters,stimulus(textureIndex)); % finds stimulus letter in "letters".
-            assert(length(whichLetter)==1)
-            textures(textureIndex)=letterStruct(whichLetter).texture;
-            r=round(letterStruct(whichLetter).rect);
-            oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-            if oo(oi).setTargetHeightOverWidth
-               r=round(ScaleRect(letterStruct(whichLetter).rect,oo(oi).targetHeightOverWidth/oo(oi).setTargetHeightOverWidth,1));
-               oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-               %                      dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
+            Screen('FillRect',window,white,oo(oi).stimulusRect);
+            Screen('FillRect',window,white,clearRect);
+            % Define fixation bounds midway through first trial, for rest of
+            % trials.
+            %          fixationClipRect=InsetRect(oo(oi).stimulusRect,0,1.6*oo(oi).textSize);
+            fixationClipRect=oo(oi).stimulusRect;
+            if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                % Draw fixation.
+                fl=ClipLines(fixationLines,fixationClipRect);
+                if ~isempty(fl)
+                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                end
             end
+            Screen('Flip',window,[],1); % Display fixation.
+            WaitSecs(1); % Duration of fixation display, before stimulus appears.
+            Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
+            Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
+            if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                % Draw fixation.
+                fl=ClipLines(fixationLines,fixationClipRect);
+                if ~isempty(fl)
+                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                end
+            end
+        else
+            Screen('FillRect',window); % Clear screen.
+        end
+        stimulus=Shuffle(oo(oi).alphabet);
+        if length(stimulus)>=3
+            stimulus=stimulus(1:3); % three random letters, all different.
+        else
+            % three random letters, independent samples, with replacement.
+            b=Shuffle(stimulus);
+            c=Shuffle(stimulus);
+            stimulus(2)=b(1);
+            stimulus(3)=c(1);
+        end
+        if isfield(oo(oi),'flankerLetter') && length(oo(oi).flankerLetter)==1
+            stimulus(1)=oo(oi).flankerLetter;
+            stimulus(3)=oo(oi).flankerLetter;
+            while stimulus(2)==oo(oi).flankerLetter
+                stimulus(2)=oo(oi).alphabet(randi(length(oo(oi).alphabet)));
+            end
+        end
+        if isfinite(oo(oi).targetFontHeightOverNominalPtSize)
             if oo(oi).targetSizeIsHeight
-               heightPix=oo(oi).targetPix;
+                sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominalPtSize);
+                oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominalPtSize;
             else
-               heightPix=oo(oi).targetHeightOverWidth*oo(oi).targetPix;
+                sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominalPtSize*oo(oi).targetHeightOverWidth);
+                oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominalPtSize/oo(oi).targetHeightOverWidth;
             end
-            r=round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect);
-            dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
-            if oo(oi).printSizeAndSpacing
-               fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
+        end
+        oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
+        
+        % Create letter textures, using font or from disk.
+        letterStruct=CreateLetterTextures(oi,oo(oi),window);
+        letters=[oo(oi).alphabet oo(oi).borderLetter];
+        
+        if oo(oi).showAlphabet
+            % This is for debugging. We also display the alphabet any time the
+            % caps lock key is pressed. That's standard behavior to allow the
+            % observer to familiarize herself with the alphabet.
+            for i=1:length(letters)
+                r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
+                s=RectWidth(oo(oi).stimulusRect)/(1.5*length(letters))/RectWidth(r);
+                r=round(s*r);
+                r=OffsetRect(r,(0.5+1.5*(i-1))*RectWidth(r),RectHeight(r));
+                Screen('DrawTexture',window,letterStruct(i).texture,[],r);
+                Screen('FrameRect',window,0,r);
             end
-         end
-         if ~streq(oo(oi).thresholdParameter,'spacing') || oo(oi).practiceCountdown
-            % Show only the target, omitting all flankers.
-            textures=textures(2);
-            dstRects=dstRects(1:4,2);
-         end
-         if oo(oi).oneFlanker
-            % Show target with only one of the two flankers.
-            textures=textures(1:2);
-            dstRects=dstRects(1:4,1:2);
-         end
-      else
-         % repeatedTargets
-         % Screen bounds on letter array.
-         xMin=xyT(1)-xSpacing*floor((xyT(1)-oo(oi).stimulusRect(1)-0.5*xPix)/xSpacing);
-         xMax=xyT(1)+xSpacing*floor((oo(oi).stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
-         yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
-         yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
-         % Show only as many letters as we need so that, despite a fixation
-         % error (in any direction) as large as roughly +/-
-         % maxFixationErrorXYDeg, at least one of the many target letters
-         % will land at an eccentricity at which critical spacing (in
-         % normal adult) is less than half the actual spacing.
-         % criticalSpacing=0.3*(ecc+0.15);
-         % ecc=criticalSpacing/0.3-0.15;
-         criticalSpacingDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
-         % Zero, or greatest ecc whose normal adult critical spacing is
-         % half the test spacing.
-         eccDeg=max(0,criticalSpacingDeg/0.3-0.15);
-         % Compute needed extent of the repetition to put some target
-         % within that ecc radius.
-         xR=max(0,oo(oi).maxFixationErrorXYDeg(1)-eccDeg)*pixPerDeg;
-         yR=max(0,oo(oi).maxFixationErrorXYDeg(2)-eccDeg)*pixPerDeg;
-         % Round the radius to an integer number of spacings.
-         xR=xSpacing*round(xR/xSpacing);
-         yR=ySpacing*round(yR/ySpacing);
-         if oo(oi).practiceCountdown
-            xR=xSpacing*min(xR/xSpacing,oo(oi).maxRepetition);
-            yR=ySpacing*min(yR/ySpacing,floor(oo(oi).maxRepetition/4));
-         else
-            % If nonzero, add a spacing for margin character.
-            % But no margin during practice.
-            if xR>0
-               xR=xR+xSpacing;
+            Screen('Flip',window);
+            Speak('Alphabet. Click.');
+            GetClicks;
+        end
+        
+        % Create textures for 3 lines. The rest are copies.
+        textureIndex=1;
+        spacingPix=floor(spacingPix);
+        if oo(oi).targetSizeIsHeight
+            ySpacing=spacingPix;
+            xSpacing=spacingPix/oo(oi).targetHeightOverWidth;
+            yPix=oo(oi).targetPix;
+            xPix=oo(oi).targetPix/oo(oi).targetHeightOverWidth;
+        else
+            xPix=oo(oi).targetPix;
+            yPix=oo(oi).targetPix*oo(oi).targetHeightOverWidth;
+            xSpacing=spacingPix;
+            ySpacing=spacingPix*oo(oi).targetHeightOverWidth;
+        end
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',oi,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
+        if ~oo(oi).repeatedTargets
+            if isempty(xF)
+                error('xF is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
             end
-            if yR>0
-               yR=yR+ySpacing;
+            xStimulus=[xF(1) xyT(1) xF(2:end)];
+            yStimulus=[yF(1) xyT(2) yF(2:end)];
+            if oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing')
+                newFlankers=Shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
+                stimulus(end+1:end+2)=newFlankers(1:2);
             end
-         end
-         % Enforce minSpacesX and minSpacesY
-         xR=max(xSpacing*minSpacesX/2,xR);
-         yR=max(ySpacing*minSpacesY/2,yR);
-         xR=round(xR);
-         yR=round(yR);
-         xMin=xyT(1)-min(xR,xyT(1)-xMin);
-         xMax=xyT(1)+min(xR,xMax-xyT(1));
-         yMin=xyT(2)-min(yR,xyT(2)-yMin);
-         yMax=xyT(2)+min(yR,yMax-xyT(2));
-         if oo(oi).practiceCountdown>=3
-            % Quick hack to reduce 3 letters to two.
-            xMin=xyT(1)-min(xR/2,xyT(1)-xMin);
-            xMax=xyT(1)+min(xR/2,xMax-xyT(1));
-            yMin=xyT(2)-min(yR/2,xyT(2)-yMin);
-            yMax=xyT(2)+min(yR/2,yMax-xyT(2));
-         end
-         if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
-         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end;
-         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
-         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end;
-         clear textures dstRects
-         n=length(xMin:xSpacing:xMax);
-         textures=zeros(1,n);
-         dstRects=zeros(4,n);
-         for lineIndex=1:3
-            whichTarget=mod(lineIndex,2);
-            for x=xMin:xSpacing:xMax
-               switch oo(oi).thresholdParameter
-                  case 'spacing',
-                     whichTarget=mod(whichTarget+1,2);
-                  case 'size',
-                     whichTarget=x>mean([xMin xMax]);
-               end
-               if ~oo(oi).practiceCountdown && (ismember(x,[xMin xMax]) || lineIndex==1)
-                  letter=oo(oi).borderLetter;
-               else
-                  letter=stimulus(1+whichTarget);
-               end
-               whichLetter=strfind(letters,letter);
-               assert(length(whichLetter)==1)
-               textures(textureIndex)=letterStruct(whichLetter).texture;
-               if oo(oi).showLineOfLetters
-                  fprintf('%d: %d: textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',...
-                     oi,MFileLineNr,textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
-               end
-               xPos=round(x-xPix/2);
-               
-               % Compute o.targetHeightOverWidth, and, if requested,
-               % o.setTargetHeightOverWidth
-               r=round(letterStruct(whichLetter).rect);
-               oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-               if oo(oi).setTargetHeightOverWidth
-                  r=round(ScaleRect(letterStruct(whichLetter).rect,oo(oi).targetHeightOverWidth/oo(oi).setTargetHeightOverWidth,1));
-                  oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
-                  dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
-               else
-                  if oo(oi).targetSizeIsHeight
-                     heightPix=oo(oi).targetPix;
-                  else
-                     heightPix=oo(oi).targetHeightOverWidth*oo(oi).targetPix;
-                  end
-                  dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect),xPos,0);
-               end
-               % One dst rect for each letter in the line.
-               if oo(oi).showLineOfLetters
-                  r=Screen('Rect',textures(textureIndex));
-                  Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
-                  Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
-                  fprintf('%d: %d: showLineOfLetters width %d, height %d, x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',oi,MFileLineNr,RectWidth(dstRects(1:4,textureIndex)'),RectHeight(dstRects(1:4,textureIndex)'),x,xPos,textureIndex,dstRects(1:4,textureIndex));
-               end
-               textureIndex=textureIndex+1;
+            clear textures dstRects
+            for textureIndex=1:length(xStimulus)
+                whichLetter=strfind(letters,stimulus(textureIndex)); % finds stimulus letter in "letters".
+                assert(length(whichLetter)==1)
+                textures(textureIndex)=letterStruct(whichLetter).texture;
+                r=round(letterStruct(whichLetter).rect);
+                oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+                if oo(oi).setTargetHeightOverWidth
+                    r=round(ScaleRect(letterStruct(whichLetter).rect,oo(oi).targetHeightOverWidth/oo(oi).setTargetHeightOverWidth,1));
+                    oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+                    %                      dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
+                end
+                if oo(oi).targetSizeIsHeight
+                    heightPix=oo(oi).targetPix;
+                else
+                    heightPix=oo(oi).targetHeightOverWidth*oo(oi).targetPix;
+                end
+                r=round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect);
+                dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
+                if oo(oi).printSizeAndSpacing
+                    fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
+                end
             end
-            if oo(oi).showLineOfLetters
-               Screen('Flip',window);
-               Speak(sprintf('Line %d. Click.',lineIndex));
-               GetClicks;
+            if ~streq(oo(oi).thresholdParameter,'spacing') || oo(oi).practiceCountdown
+                % Show only the target, omitting all flankers.
+                textures=textures(2);
+                dstRects=dstRects(1:4,2);
             end
-            % Create a texture holding one line of letters.
-            [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 oo(oi).stimulusRect(3) heightPix],8,0);
-            Screen('FillRect',lineTexture(lineIndex),white);
-            r=Screen('Rect',textures(1));
-            Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
-         end
-         clear textures dstRects
-         lineIndex=1;
-         for y=yMin:ySpacing:yMax
-            if minSpacesY>2 && ismember(y,[yMin yMax])
-               whichLetter=1; % Horizontal row of border letters.
+            if oo(oi).oneFlanker
+                % Show target with only one of the two flankers.
+                textures=textures(1:2);
+                dstRects=dstRects(1:4,1:2);
+            end
+        else
+            % repeatedTargets
+            % Screen bounds on letter array.
+            xMin=xyT(1)-xSpacing*floor((xyT(1)-oo(oi).stimulusRect(1)-0.5*xPix)/xSpacing);
+            xMax=xyT(1)+xSpacing*floor((oo(oi).stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
+            yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
+            yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
+            % Show only as many letters as we need so that, despite a fixation
+            % error (in any direction) as large as roughly +/-
+            % maxFixationErrorXYDeg, at least one of the many target letters
+            % will land at an eccentricity at which critical spacing (in
+            % normal adult) is less than half the actual spacing.
+            % criticalSpacing=0.3*(ecc+0.15);
+            % ecc=criticalSpacing/0.3-0.15;
+            criticalSpacingDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
+            % Zero, or greatest ecc whose normal adult critical spacing is
+            % half the test spacing.
+            eccDeg=max(0,criticalSpacingDeg/0.3-0.15);
+            % Compute needed extent of the repetition to put some target
+            % within that ecc radius.
+            xR=max(0,oo(oi).maxFixationErrorXYDeg(1)-eccDeg)*pixPerDeg;
+            yR=max(0,oo(oi).maxFixationErrorXYDeg(2)-eccDeg)*pixPerDeg;
+            % Round the radius to an integer number of spacings.
+            xR=xSpacing*round(xR/xSpacing);
+            yR=ySpacing*round(yR/ySpacing);
+            if oo(oi).practiceCountdown
+                xR=xSpacing*min(xR/xSpacing,oo(oi).maxRepetition);
+                yR=ySpacing*min(yR/ySpacing,floor(oo(oi).maxRepetition/4));
             else
-               whichLetter=2+mod(lineIndex,2); % Horizontal row of targets.
+                % If nonzero, add a spacing for margin character.
+                % But no margin during practice.
+                if xR>0
+                    xR=xR+xSpacing;
+                end
+                if yR>0
+                    yR=yR+ySpacing;
+                end
             end
-            textures(lineIndex)=lineTexture(whichLetter);
-            dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
-%             fprintf('%d: %d: line %d, whichLetter %d, texture %d, dstRect %.0f %.0f %.0f %.0f\n',...
-%                oi,MFileLineNr,lineIndex,whichLetter,lineTexture(whichLetter),dstRects(1:4,lineIndex));
-            lineIndex=lineIndex+1;
-         end
-      end
-      Screen('DrawTextures',window,textures,[],dstRects);
-      if oo(oi).frameTheTarget
-         fprintf('%d: %d: line heights',oi,MFileLineNr);
-         for ii=1:size(dstRects,2)
-            y=RectHeight(dstRects(:,ii)');
-            fprintf(' %.0f',y);
-         end
-         fprintf('\n');
-         fprintf('%d: %d: line dstRects centered at',oi,MFileLineNr);
-         for ii=1:size(dstRects,2)
-            [x,y]=RectCenter(dstRects(:,ii));
-            fprintf(' (%.0f,%.0f)',x,y);
-            Screen('FrameRect',window,[255 0 0],dstRects(:,ii),4);
-         end
-         fprintf('. Target center (%d,%d)\n',xyT);
-         letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xyT(1),xyT(2));
-         Screen('FrameRect',window,[255 0 0],letterRect);
-         fprintf('%d: %d: screenHeightPix %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',...
-            oi,MFileLineNr,RectHeight(oo(oi).stimulusRect),RectHeight(letterRect),oo(oi).targetPix,Screen('TextSize',window),xPix,yPix);
-      end
-      Screen('TextFont',window,oo(oi).textFont,0);
-      if oo(oi).showProgressBar
-         Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-         r=progressBarRect;
-         r(4)=round(r(4)*(1-presentation/length(condList)));
-         Screen('FillRect',window,[220 220 220],r); % grey background
-      end
-      if oo(oi).usePurring
-         Snd('Play',purr);
-      end
-      Screen('Flip',window,[],1); % Display stimulus & fixation.
-      trialTimeSecs=GetSecs;
-      % Discard the line textures, to free graphics memory.
-      if exist('lineTexture','var')
-         for i=1:length(lineTexture)
-            Screen('Close',lineTexture(i));
-         end
-         clear lineTexture
-      end
-      if oo(oi).repeatedTargets
-         targets=stimulus(1:2);
-      else
-         targets=stimulus(2);
-      end
-      if isfinite(oo(oi).durationSec)
-         WaitSecs(oo(oi).durationSec); % Display letters.
-         Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
-         if ~oo(oi).repeatedTargets && oo(oi).useFixation
-            fl=ClipLines(fixationLines,fixationClipRect);
-            if ~isempty(fl)
-               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            % Enforce minSpacesX and minSpacesY
+            xR=max(xSpacing*minSpacesX/2,xR);
+            yR=max(ySpacing*minSpacesY/2,yR);
+            xR=round(xR);
+            yR=round(yR);
+            xMin=xyT(1)-min(xR,xyT(1)-xMin);
+            xMax=xyT(1)+min(xR,xMax-xyT(1));
+            yMin=xyT(2)-min(yR,xyT(2)-yMin);
+            yMax=xyT(2)+min(yR,yMax-xyT(2));
+            if oo(oi).practiceCountdown>=3
+                % Quick hack to reduce 3 letters to two.
+                xMin=xyT(1)-min(xR/2,xyT(1)-xMin);
+                xMax=xyT(1)+min(xR/2,xMax-xyT(1));
+                yMin=xyT(2)-min(yR/2,xyT(2)-yMin);
+                yMax=xyT(2)+min(yR/2,yMax-xyT(2));
             end
-         end
-         Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
-         Screen('FillRect',window,white,oo(oi).stimulusRect);
-         WaitSecs(0.2); % pause before response screen
-         Screen('TextFont',window,oo(oi).textFont,0);
-         Screen('TextSize',window,oo(oi).textSize);
-         if oo(oi).useFixation
-            string='Look at the cross as you type your response. Or ESCAPE to quit.   ';
-         else
-            string='Type your response, or ESCAPE to quit.   ';
-         end
-         if oo(oi).repeatedTargets
-            string=strrep(string,'response','two responses');
-         end
-         % Clear space for text.
-         texture=Screen('OpenOffscreenWindow',window);
-         Screen('TextFont',texture,oo(oi).textFont,0);
-         Screen('TextSize',texture,oo(oi).textSize);
-         bounds=TextBounds(texture,string,1);
-         Screen('Close',texture);
-         x=instructionalMarginPix;
-         y=-bounds(2)+0.3*oo(oi).textSize;
-         %          fixationClipRect=oo(oi).stimulusRect;
-         %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
-         % Draw text.
-         Screen('DrawText',window,string,x,y,black,white,1);
-         Screen('TextSize',window,oo(oi).textSize);
-         [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
-         alphabetBounds=round(alphabetBounds*oo(oi).textSize/RectHeight(alphabetBounds));
-         x=instructionalMarginPix;
-         y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
-         %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
-         for i=1:length(oo(oi).alphabet)
-            dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
-            for j=1:length(letterStruct)
-               if oo(oi).alphabet(i)==letterStruct(j).letter
-                  Screen('DrawTexture',window,letterStruct(i).texture,[],dstRect);
-               end
+            if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end;
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end;
+            clear textures dstRects
+            n=length(xMin:xSpacing:xMax);
+            textures=zeros(1,n);
+            dstRects=zeros(4,n);
+            for lineIndex=1:3
+                whichTarget=mod(lineIndex,2);
+                for x=xMin:xSpacing:xMax
+                    switch oo(oi).thresholdParameter
+                        case 'spacing',
+                            whichTarget=mod(whichTarget+1,2);
+                        case 'size',
+                            whichTarget=x>mean([xMin xMax]);
+                    end
+                    if ~oo(oi).practiceCountdown && (ismember(x,[xMin xMax]) || lineIndex==1)
+                        letter=oo(oi).borderLetter;
+                    else
+                        letter=stimulus(1+whichTarget);
+                    end
+                    whichLetter=strfind(letters,letter);
+                    assert(length(whichLetter)==1)
+                    textures(textureIndex)=letterStruct(whichLetter).texture;
+                    if oo(oi).showLineOfLetters
+                        fprintf('%d: %d: textureIndex %d,x %d, whichTarget %d, letter %c, whichLetter %d, texture %d\n',...
+                            oi,MFileLineNr,textureIndex,x,whichTarget,letter,whichLetter,textures(textureIndex));
+                    end
+                    xPos=round(x-xPix/2);
+                    
+                    % Compute o.targetHeightOverWidth, and, if requested,
+                    % o.setTargetHeightOverWidth
+                    r=round(letterStruct(whichLetter).rect);
+                    oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+                    if oo(oi).setTargetHeightOverWidth
+                        r=round(ScaleRect(letterStruct(whichLetter).rect,oo(oi).targetHeightOverWidth/oo(oi).setTargetHeightOverWidth,1));
+                        oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
+                        dstRects(1:4,textureIndex)=OffsetRect(round(r),xPos,0);
+                    else
+                        if oo(oi).targetSizeIsHeight
+                            heightPix=oo(oi).targetPix;
+                        else
+                            heightPix=oo(oi).targetHeightOverWidth*oo(oi).targetPix;
+                        end
+                        dstRects(1:4,textureIndex)=OffsetRect(round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect),xPos,0);
+                    end
+                    % One dst rect for each letter in the line.
+                    if oo(oi).showLineOfLetters
+                        r=Screen('Rect',textures(textureIndex));
+                        Screen('DrawTexture',window,textures(textureIndex),r,dstRects(1:4,textureIndex));
+                        Screen('FrameRect',window,0,dstRects(1:4,textureIndex));
+                        fprintf('%d: %d: showLineOfLetters width %d, height %d, x %.0f, xPos %.0f, dstRects(1:4,%d) %.0f %.0f %.0f %.0f\n',oi,MFileLineNr,RectWidth(dstRects(1:4,textureIndex)'),RectHeight(dstRects(1:4,textureIndex)'),x,xPos,textureIndex,dstRects(1:4,textureIndex));
+                    end
+                    textureIndex=textureIndex+1;
+                end
+                if oo(oi).showLineOfLetters
+                    Screen('Flip',window);
+                    Speak(sprintf('Line %d. Click.',lineIndex));
+                    GetClicks;
+                end
+                % Create a texture holding one line of letters.
+                [lineTexture(lineIndex),lineRect{lineIndex}]=Screen('OpenOffscreenWindow',window,[],[0 0 oo(oi).stimulusRect(3) heightPix],8,0);
+                Screen('FillRect',lineTexture(lineIndex),white);
+                r=Screen('Rect',textures(1));
+                Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
             end
-            x=x+1.5*RectWidth(dstRect);
-         end
-         Screen('TextFont',window,oo(oi).textFont,0);
-         if ~oo(oi).repeatedTargets && oo(oi).useFixation
-            fl=ClipLines(fixationLines,fixationClipRect);
-            if ~isempty(fl)
-               Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-               Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            clear textures dstRects
+            lineIndex=1;
+            for y=yMin:ySpacing:yMax
+                if minSpacesY>2 && ismember(y,[yMin yMax])
+                    whichLetter=1; % Horizontal row of border letters.
+                else
+                    whichLetter=2+mod(lineIndex,2); % Horizontal row of targets.
+                end
+                textures(lineIndex)=lineTexture(whichLetter);
+                dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
+                %             fprintf('%d: %d: line %d, whichLetter %d, texture %d, dstRect %.0f %.0f %.0f %.0f\n',...
+                %                oi,MFileLineNr,lineIndex,whichLetter,lineTexture(whichLetter),dstRects(1:4,lineIndex));
+                lineIndex=lineIndex+1;
             end
-         end
-         Screen('Flip',window,[],1); % Display fixation & response instructions.
-         Screen('FillRect',window,white,oo(oi).stimulusRect);
-      end
-      
-      if oo(oi).takeSnapshot
-         mypath=oo(1).snapshotsFolder;
-         filename=oo(1).dataFilename;
-         saveSnapshotFid=fopen(fullfile(mypath,[filename '.png']),'rt');
-         if saveSnapshotFid~=-1
-            for suffix='a':'z'
-               saveSnapshotFid=fopen(fullfile(mypath,[filename suffix '.png']),'rt');
-               if saveSnapshotFid==-1
-                  filename=[filename suffix];
-                  break
-               end
+        end
+        Screen('DrawTextures',window,textures,[],dstRects);
+        if oo(oi).frameTheTarget
+            fprintf('%d: %d: line heights',oi,MFileLineNr);
+            for ii=1:size(dstRects,2)
+                y=RectHeight(dstRects(:,ii)');
+                fprintf(' %.0f',y);
             end
+            fprintf('\n');
+            fprintf('%d: %d: line dstRects centered at',oi,MFileLineNr);
+            for ii=1:size(dstRects,2)
+                [x,y]=RectCenter(dstRects(:,ii));
+                fprintf(' (%.0f,%.0f)',x,y);
+                Screen('FrameRect',window,[255 0 0],dstRects(:,ii),4);
+            end
+            fprintf('. Target center (%d,%d)\n',xyT);
+            letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xyT(1),xyT(2));
+            Screen('FrameRect',window,[255 0 0],letterRect);
+            fprintf('%d: %d: screenHeightPix %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',...
+                oi,MFileLineNr,RectHeight(oo(oi).stimulusRect),RectHeight(letterRect),oo(oi).targetPix,Screen('TextSize',window),xPix,yPix);
+        end
+        Screen('TextFont',window,oo(oi).textFont,0);
+        if oo(oi).showProgressBar
+            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+            r=progressBarRect;
+            r(4)=round(r(4)*(1-presentation/length(condList)));
+            Screen('FillRect',window,[220 220 220],r); % grey background
+        end
+        if oo(oi).usePurring
+            Snd('Play',purr);
+        end
+        Screen('Flip',window,[],1); % Display stimulus & fixation.
+        trialTimeSecs=GetSecs;
+        % Discard the line textures, to free graphics memory.
+        if exist('lineTexture','var')
+            for i=1:length(lineTexture)
+                Screen('Close',lineTexture(i));
+            end
+            clear lineTexture
+        end
+        if oo(oi).repeatedTargets
+            targets=stimulus(1:2);
+        else
+            targets=stimulus(2);
+        end
+        if isfinite(oo(oi).durationSec)
+            WaitSecs(oo(oi).durationSec); % Display letters.
+            Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
+            if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                fl=ClipLines(fixationLines,fixationClipRect);
+                if ~isempty(fl)
+                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                end
+            end
+            Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
+            Screen('FillRect',window,white,oo(oi).stimulusRect);
+            WaitSecs(0.2); % pause before response screen
+            Screen('TextFont',window,oo(oi).textFont,0);
+            Screen('TextSize',window,oo(oi).textSize);
+            if oo(oi).useFixation
+                string='Look at the cross as you type your response. Or ESCAPE to quit.   ';
+            else
+                string='Type your response, or ESCAPE to quit.   ';
+            end
+            if oo(oi).repeatedTargets
+                string=strrep(string,'response','two responses');
+            end
+            % Clear space for text.
+            texture=Screen('OpenOffscreenWindow',window);
+            Screen('TextFont',texture,oo(oi).textFont,0);
+            Screen('TextSize',texture,oo(oi).textSize);
+            bounds=TextBounds(texture,string,1);
+            Screen('Close',texture);
+            x=instructionalMarginPix;
+            y=-bounds(2)+0.3*oo(oi).textSize;
+            %          fixationClipRect=oo(oi).stimulusRect;
+            %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
+            % Draw text.
+            Screen('DrawText',window,string,x,y,black,white,1);
+            Screen('TextSize',window,oo(oi).textSize);
+            [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
+            alphabetBounds=round(alphabetBounds*oo(oi).textSize/RectHeight(alphabetBounds));
+            x=instructionalMarginPix;
+            y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
+            %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
+            for i=1:length(oo(oi).alphabet)
+                dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
+                for j=1:length(letterStruct)
+                    if oo(oi).alphabet(i)==letterStruct(j).letter
+                        Screen('DrawTexture',window,letterStruct(i).texture,[],dstRect);
+                    end
+                end
+                x=x+1.5*RectWidth(dstRect);
+            end
+            Screen('TextFont',window,oo(oi).textFont,0);
+            if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                fl=ClipLines(fixationLines,fixationClipRect);
+                if ~isempty(fl)
+                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                end
+            end
+            Screen('Flip',window,[],1); % Display fixation & response instructions.
+            Screen('FillRect',window,white,oo(oi).stimulusRect);
+        end
+        
+        if oo(oi).takeSnapshot
+            mypath=oo(1).snapshotsFolder;
+            filename=oo(1).dataFilename;
+            saveSnapshotFid=fopen(fullfile(mypath,[filename '.png']),'rt');
             if saveSnapshotFid~=-1
-               error('Can''t save file. Already 26 files with that name plus a-z');
+                for suffix='a':'z'
+                    saveSnapshotFid=fopen(fullfile(mypath,[filename suffix '.png']),'rt');
+                    if saveSnapshotFid==-1
+                        filename=[filename suffix];
+                        break
+                    end
+                end
+                if saveSnapshotFid~=-1
+                    error('Can''t save file. Already 26 files with that name plus a-z');
+                end
             end
-         end
-         filename=[filename '.png'];
-         img=Screen('GetImage',window);
-         imwrite(img,fullfile(mypath,filename),'png');
-         ffprintf(ff,'Saving image to file "%s".\n',filename);
-      end
-      
-      responseString='';
-      skipping=false;
-      flipSecs=GetSecs;
-      for i=1:length(targets)
-         [answer,secs]=GetKeypressWithHelp( ...
-            [spaceKeyCode escapeKeyCode graveAccentKeyCode oo(oi).responseKeyCodes], ...
-            oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
-         trialData.reactionTimes(i)=secs-flipSecs;
-         
-         if ismember(answer,[escapeChar graveAccentChar]);
-            oo(1).quitRun=true;
-            break;
-         end
-         if streq(upper(answer),' ')
-            responsesNumber=length(responseString);
-            if GetSecs-trialTimeSecs>oo(oi).secsBeforeSkipCausesGuess
-               if oo(oi).speakEachLetter && oo(oi).useSpeech
-                  Speak('space');
-               end
-               guesses=0;
-               while length(responseString)<length(targets)
-                  reportedTarget=randsample(oo(oi).alphabet,1); % Guess.
-                  responseString=[responseString reportedTarget];
-                  guesses=guesses+1;
-               end
-               guessCount=guessCount+guesses;
-               oo(oi).guessCount=oo(oi).guessCount+guesses;
+            filename=[filename '.png'];
+            img=Screen('GetImage',window);
+            imwrite(img,fullfile(mypath,filename),'png');
+            ffprintf(ff,'Saving image to file "%s".\n',filename);
+        end
+        
+        responseString='';
+        skipping=false;
+        flipSecs=GetSecs;
+        for i=1:length(targets)
+            [answer,secs]=GetKeypressWithHelp( ...
+                [spaceKeyCode escapeKeyCode graveAccentKeyCode oo(oi).responseKeyCodes], ...
+                oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
+            trialData.reactionTimes(i)=secs-flipSecs;
+            
+            if ismember(answer,[escapeChar graveAccentChar]);
+                oo(1).quitRun=true;
+                break;
+            end
+            if streq(upper(answer),' ')
+                responsesNumber=length(responseString);
+                if GetSecs-trialTimeSecs>oo(oi).secsBeforeSkipCausesGuess
+                    if oo(oi).speakEachLetter && oo(oi).useSpeech
+                        Speak('space');
+                    end
+                    guesses=0;
+                    while length(responseString)<length(targets)
+                        reportedTarget=randsample(oo(oi).alphabet,1); % Guess.
+                        responseString=[responseString reportedTarget];
+                        guesses=guesses+1;
+                    end
+                    guessCount=guessCount+guesses;
+                    oo(oi).guessCount=oo(oi).guessCount+guesses;
+                else
+                    if oo(oi).speakEachLetter && oo(oi).useSpeech
+                        Speak('skip');
+                    end
+                    guesses=0;
+                    presentation=presentation-floor(1-length(responseString)/length(targets));
+                end
+                skipping=true;
+                skipCount=skipCount+1;
+                easeRequest=easeRequest+1;
+                ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
+                break;
+            end
+            % GetKeypressWithHelp now returns only one character. OBSOLETE:
+            % GetKeypress returns, in answer, both key labels when there are
+            % two, e.g. "3#". We score the response as whichever target letter
+            % is included in the "answer" string.
+            reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).alphabet),upper(answer)));
+            if oo(oi).speakEachLetter && oo(oi).useSpeech
+                % Speak the target that the observer saw, e.g '1', not the keyCode '1!'
+                Speak(reportedTarget);
+            end
+            if ismember(upper(reportedTarget),upper(targets))
+                if oo(oi).beepPositiveFeedback
+                    Snd('Play',rightBeep);
+                end
             else
-               if oo(oi).speakEachLetter && oo(oi).useSpeech
-                  Speak('skip');
-               end
-               guesses=0;
-               presentation=presentation-floor(1-length(responseString)/length(targets));
+                if oo(oi).beepNegativeFeedback
+                    Snd('Play',wrongBeep);
+                end
             end
-            skipping=true;
-            skipCount=skipCount+1;
-            easeRequest=easeRequest+1;
-            ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
+            responseString=[responseString reportedTarget];
+        end
+        DestroyLetterTextures(letterStruct);
+        if ~skipping
+            easeRequest=0;
+        end
+        if oo(oi).speakEncouragement && oo(oi).useSpeech && ~oo(1).quitRun && ~skipping
+            switch randi(3);
+                case 1
+                    Speak('Good!');
+                case 2
+                    Speak('Nice');
+                case 3
+                    Speak('Very good');
+            end
+        end
+        if oo(1).quitRun
             break;
-         end
-         % GetKeypressWithHelp now returns only one character. OBSOLETE:
-         % GetKeypress returns, in answer, both key labels when there are
-         % two, e.g. "3#". We score the response as whichever target letter
-         % is included in the "answer" string.
-         reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).alphabet),upper(answer)));
-         if oo(oi).speakEachLetter && oo(oi).useSpeech
-            % Speak the target that the observer saw, e.g '1', not the keyCode '1!'
-            Speak(reportedTarget);
-         end
-         if ismember(upper(reportedTarget),upper(targets))
-            if oo(oi).beepPositiveFeedback
-               Snd('Play',rightBeep);
+        end
+        responseScores=ismember(responseString,targets);
+        oo(oi).spacingDeg=spacingPix/pixPerDeg;
+        
+        trialData.targetDeg=oo(oi).targetDeg;
+        trialData.spacingDeg=oo(oi).spacingDeg;
+        trialData.targets=targets;
+        trialData.targetScores=ismember(targets,responseString);
+        trialData.responses=responseString;
+        trialData.responseScores=responseScores;
+        % trialData.reactionTimes is computed above.
+        if ~oo(oi).practiceCountdown
+            if isempty(oo(oi).trialData)
+                oo(oi).trialData=trialData;
+            else
+                oo(oi).trialData(end+1)=trialData;
             end
-         else
-            if oo(oi).beepNegativeFeedback
-               Snd('Play',wrongBeep);
+        end
+        for responseScore=responseScores
+            switch oo(oi).thresholdParameter
+                case 'spacing',
+                    intensity=log10(oo(oi).spacingDeg);
+                case 'size'
+                    intensity=log10(oo(oi).targetDeg);
             end
-         end
-         responseString=[responseString reportedTarget];
-      end
-      DestroyLetterTextures(letterStruct);
-      if ~skipping
-         easeRequest=0;
-      end
-      if oo(oi).speakEncouragement && oo(oi).useSpeech && ~oo(1).quitRun && ~skipping
-         switch randi(3);
-            case 1
-               Speak('Good!');
-            case 2
-               Speak('Nice');
-            case 3
-               Speak('Very good');
-         end
-      end
-      if oo(1).quitRun
-         break;
-      end
-      responseScores=ismember(responseString,targets);
-      oo(oi).spacingDeg=spacingPix/pixPerDeg;
-      
-      trialData.targetDeg=oo(oi).targetDeg;
-      trialData.spacingDeg=oo(oi).spacingDeg;
-      trialData.targets=targets;
-      trialData.targetScores=ismember(targets,responseString);
-      trialData.responses=responseString;
-      trialData.responseScores=responseScores;
-      % trialData.reactionTimes is computed above.
-      if ~oo(oi).practiceCountdown
-         if isempty(oo(oi).trialData)
-            oo(oi).trialData=trialData;
-         else
-            oo(oi).trialData(end+1)=trialData;
-         end
-      end
-      for responseScore=responseScores
-         switch oo(oi).thresholdParameter
-            case 'spacing',
-               intensity=log10(oo(oi).spacingDeg);
+            if ~oo(oi).practiceCountdown
+                oo(oi).responseCount=oo(oi).responseCount+1;
+                oo(oi).q=QuestUpdate(oo(oi).q,intensity,responseScore);
+            end
+        end
+        %       if oo(oi).practiceCountdown
+        %          fprintf('%d: %d: practiceCountdown %d, maxRepetitions %d\n',...
+        %             oi,MFileLineNr,oo(oi).practiceCountdown,oo(oi).maxRepetition);
+        %       end
+        if oo(oi).practiceCountdown && all(responseScores)
+            oo(oi).practiceCountdown=oo(oi).practiceCountdown-1;
+            if oo(oi).practiceCountdown
+                oo(oi).maxRepetition=2*oo(oi).maxRepetition;
+            else
+                oo(oi).maxRepetition=inf;
+            end
+        end
+        if oo(1).quitRun
+            break;
+        end
+    end % for presentation=1:length(condList)
+    % Quitting just this run or whole session?
+    if oo(1).quitRun
+        oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+        if oo(1).quitSession
+            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+        else
+            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+        end
+    end
+    Screen('FillRect',window);
+    Screen('Flip',window);
+    if oo(1).useSpeech
+        if ~oo(1).quitRun
+            Speak('Congratulations.  This run is done.');
+        end
+    end
+    trials=0;
+    oo(1).totalSecs=GetSecs-oo(1).beginSecs;
+    for oi=1:conditions
+        trials=trials+oo(oi).responseCount;
+    end
+    ffprintf(ff,'Took %.0f s for %.0f trials, or %.0f s/trial.\n',oo(1).totalSecs,trials,oo(1).totalSecs/trials);
+    ffprintf(ff,'%d skips, %d easy presentations, %d artificial guesses. \n',skipCount,easyCount,guessCount);
+    for oi=1:conditions
+        ffprintf(ff,'CONDITION %d **********\n',oi);
+        % Ask Quest for the final estimate of threshold.
+        t=QuestMean(oo(oi).q);
+        sd=QuestSd(oo(oi).q);
+        switch oo(oi).thresholdParameter
+            case 'spacing'
+                ori=oo(oi).flankingDirection;
+                ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+                if ~oo(oi).repeatedTargets && ecc>0
+                    switch(oo(oi).flankingDirection)
+                        case 'radial'
+                            ffprintf(ff,'Radial spacing of far flanker from target.\n');
+                        case 'tangential'
+                            ffprintf(ff,'Tangential spacing of flankers.\n');
+                        case 'horizontal'
+                            ffprintf(ff,'Horizontal spacing of flankers.\n');
+                        case 'vertical'
+                            ffprintf(ff,'Vertical spacing of flankers.\n');
+                        otherwise
+                            warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
+                    end
+                end
+                ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',...
+                    ori,t,sd,10^t);
+                if 10^t<oo(oi).minimumSpacingDeg
+                    ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
+                end
+                if oo(oi).responseCount>1
+                    trials=QuestTrials(oo(oi).q);
+                    if any(~isreal([trials.intensity]))
+                        error('trials.intensity returned by Quest should be real, but is complex.');
+                    end
+                    ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
+                    ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+                end
             case 'size'
-               intensity=log10(oo(oi).targetDeg);
-         end
-         if ~oo(oi).practiceCountdown
-            oo(oi).responseCount=oo(oi).responseCount+1;
-            oo(oi).q=QuestUpdate(oo(oi).q,intensity,responseScore);
-         end
-      end
-%       if oo(oi).practiceCountdown
-%          fprintf('%d: %d: practiceCountdown %d, maxRepetitions %d\n',...
-%             oi,MFileLineNr,oo(oi).practiceCountdown,oo(oi).maxRepetition);
-%       end
-      if oo(oi).practiceCountdown && all(responseScores)
-         oo(oi).practiceCountdown=oo(oi).practiceCountdown-1;
-         if oo(oi).practiceCountdown
-            oo(oi).maxRepetition=2*oo(oi).maxRepetition;
-         else
-            oo(oi).maxRepetition=inf;
-         end
-      end
-      if oo(1).quitRun
-         break;
-      end
-   end % for presentation=1:length(condList)
-   % Quitting just this run or whole session?
-   if oo(1).quitRun
-      oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-      if oo(1).quitSession
-         ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-      else
-         ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
-      end
-   end
-   Screen('FillRect',window);
-   Screen('Flip',window);
-   if oo(1).useSpeech
-      if ~oo(1).quitRun
-         Speak('Congratulations.  This run is done.');
-      end
-   end
-   trials=0;
-   oo(1).totalSecs=GetSecs-oo(1).beginSecs;
-   for oi=1:conditions
-      trials=trials+oo(oi).responseCount;
-   end
-   ffprintf(ff,'Took %.0f s for %.0f trials, or %.0f s/trial.\n',oo(1).totalSecs,trials,oo(1).totalSecs/trials);
-   ffprintf(ff,'%d skips, %d easy presentations, %d artificial guesses. \n',skipCount,easyCount,guessCount);
-   for oi=1:conditions
-       ffprintf(ff,'CONDITION %d **********\n',oi);
-       % Ask Quest for the final estimate of threshold.
-       t=QuestMean(oo(oi).q);
-       sd=QuestSd(oo(oi).q);
-       switch oo(oi).thresholdParameter
-           case 'spacing'
-               ori=oo(oi).flankingDirection;
-               ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
-               if ~oo(oi).repeatedTargets && ecc>0
-                   switch(oo(oi).flankingDirection)
-                       case 'radial'
-                           ffprintf(ff,'Radial spacing of far flanker from target.\n');
-                       case 'tangential'
-                           ffprintf(ff,'Tangential spacing of flankers.\n');
-                       case 'horizontal'
-                           ffprintf(ff,'Horizontal spacing of flankers.\n');
-                       case 'vertical'
-                           ffprintf(ff,'Vertical spacing of flankers.\n');
-                       otherwise
-                           warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
-                   end
-               end
-               ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',...
-                   ori,t,sd,10^t);
-               if 10^t<oo(oi).minimumSpacingDeg
-                   ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
-               end
-               if oo(oi).responseCount>1
-                   trials=QuestTrials(oo(oi).q);
-                   if any(~isreal([trials.intensity]))
-                       error('trials.intensity returned by Quest should be real, but is complex.');
-                   end
-                   ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
-                   ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
-               end
-           case 'size'
-               if oo(oi).targetSizeIsHeight
-                   ori='vertical';
-               else
-                   ori='horizontal';
-               end
-               ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
-               if 10^t<oo(oi).minimumSizeDeg
-                   ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSizeDeg);
-               end
-               if oo(oi).responseCount>1
-                   trials=QuestTrials(oo(oi).q);
-                   ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
-                   ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
-               end
-       end % switch oo(oi).thresholdParameter
-   end % for oi=1:conditions
-   
-   for oi=1:conditions
-       if oo(oi).measureBeta
-           % Reanalyze the data with beta as a free parameter.
-           ffprintf(ff,'%d: o.measureBeta **************************************\n',oi);
-           ffprintf(ff,'offsetToMeasureBeta %.1f to %.1f\n',min(offsetToMeasureBeta),max(offsetToMeasureBeta));
-           bestBeta=QuestBetaAnalysis(oo(oi).q);
-           qq=oo(oi).q;
-           qq.beta=bestBeta;
-           qq=QuestRecompute(qq);
-           ffprintf(ff,'thresh %.2f deg, log thresh %.2f, beta %.1f\n',10^QuestMean(qq),QuestMean(qq),qq.beta);
-           ffprintf(ff,' deg     t     P fit\n');
-           tt=QuestMean(qq);
-           for offset=sort(offsetToMeasureBeta)
-               t=tt+offset;
-               ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
-           end
-           if oo(oi).responseCount>1
-               trials=QuestTrials(qq);
-               switch oo(oi).thresholdParameter
-                   case 'spacing'
-                       ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
-                   case 'size'
-                       ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
-               end
-               ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^trials.intensity;QuestP(qq,trials.intensity);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
-           end
-           ffprintf(ff,'o.measureBeta done **********************************\n');
-       end % if oo.measureBeta
-   end % for oi=1:conditions
-   Snd('Close');
-   CloseWindowsAndCleanup;
-   for oi=1:conditions
-       if exist('results','var') && oo(oi).responseCount>1
-           ffprintf(ff,'%d:',oi);
-           trials=QuestTrials(oo(oi).q);
-           p=sum(trials.responses(2,:))/sum(sum(trials.responses));
-           switch oo(oi).thresholdParameter
-               case 'spacing',
-                   ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. [%.1f  %.1f] deg, critical spacing %.2f deg.\n',...
-                       oo(oi).observer,100*p,oo(oi).targetDeg,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
-               case 'size',
-                   ffprintf(ff,'%s: p %.0f%%, ecc. [%.2f  %.2f] deg, threshold size %.3f deg.\n',...
-                       oo(oi).observer,100*p,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
-           end
-       end
-   end % for oi=1:conditions
-   save(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']),'oo');
-   if exist('dataFid','file')
-       fclose(dataFid);
-       dataFid=-1;
-   end
-   fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
+                if oo(oi).targetSizeIsHeight
+                    ori='vertical';
+                else
+                    ori='horizontal';
+                end
+                ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
+                if 10^t<oo(oi).minimumSizeDeg
+                    ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSizeDeg);
+                end
+                if oo(oi).responseCount>1
+                    trials=QuestTrials(oo(oi).q);
+                    ffprintf(ff,'Size(deg)	P fit	P       Trials\n');
+                    ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+                end
+        end % switch oo(oi).thresholdParameter
+    end % for oi=1:conditions
+    
+    for oi=1:conditions
+        if oo(oi).measureBeta
+            % Reanalyze the data with beta as a free parameter.
+            ffprintf(ff,'%d: o.measureBeta **************************************\n',oi);
+            ffprintf(ff,'offsetToMeasureBeta %.1f to %.1f\n',min(offsetToMeasureBeta),max(offsetToMeasureBeta));
+            bestBeta=QuestBetaAnalysis(oo(oi).q);
+            qq=oo(oi).q;
+            qq.beta=bestBeta;
+            qq=QuestRecompute(qq);
+            ffprintf(ff,'thresh %.2f deg, log thresh %.2f, beta %.1f\n',10^QuestMean(qq),QuestMean(qq),qq.beta);
+            ffprintf(ff,' deg     t     P fit\n');
+            tt=QuestMean(qq);
+            for offset=sort(offsetToMeasureBeta)
+                t=tt+offset;
+                ffprintf(ff,'%5.2f   %5.2f  %4.2f\n',10^t,t,QuestP(qq,t));
+            end
+            if oo(oi).responseCount>1
+                trials=QuestTrials(qq);
+                switch oo(oi).thresholdParameter
+                    case 'spacing'
+                        ffprintf(ff,'\n Spacing(deg)   P fit	P actual Trials\n');
+                    case 'size'
+                        ffprintf(ff,'\n Size(deg)   P fit	P actual Trials\n');
+                end
+                ffprintf(ff,'%5.2f           %4.2f    %4.2f     %d\n',[10.^trials.intensity;QuestP(qq,trials.intensity);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+            end
+            ffprintf(ff,'o.measureBeta done **********************************\n');
+        end % if oo.measureBeta
+    end % for oi=1:conditions
+    Snd('Close');
+    CloseWindowsAndCleanup;
+    for oi=1:conditions
+        if exist('results','var') && oo(oi).responseCount>1
+            ffprintf(ff,'%d:',oi);
+            trials=QuestTrials(oo(oi).q);
+            p=sum(trials.responses(2,:))/sum(sum(trials.responses));
+            switch oo(oi).thresholdParameter
+                case 'spacing',
+                    ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. [%.1f  %.1f] deg, critical spacing %.2f deg.\n',...
+                        oo(oi).observer,100*p,oo(oi).targetDeg,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
+                case 'size',
+                    ffprintf(ff,'%s: p %.0f%%, ecc. [%.2f  %.2f] deg, threshold size %.3f deg.\n',...
+                        oo(oi).observer,100*p,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
+            end
+        end
+    end % for oi=1:conditions
+    save(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']),'oo');
+    if exist('dataFid','file')
+        fclose(dataFid);
+        dataFid=-1;
+    end
+    fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
 catch e
     % One or more of these functions spoils psychlasterror, so i don't use them.
     %     Snd('Close');
@@ -2917,10 +2917,10 @@ xyDeg=xyDeg-o.nearPointXYDeg;
 rDeg=sqrt(sum(xyDeg.^2));
 rPix=o.pixPerCm*o.viewingDistanceCm*tand(rDeg);
 if rDeg>0
-   xyPix=xyDeg*rPix/rDeg;
-   xyPix(2)=-xyPix(2); % Apple y goes down.
+    xyPix=xyDeg*rPix/rDeg;
+    xyPix(2)=-xyPix(2); % Apple y goes down.
 else
-   xyPix=[0 0];
+    xyPix=[0 0];
 end
 xyPix=xyPix+o.nearPointXYPix;
 xyPix=round(xyPix);
@@ -2928,10 +2928,10 @@ end
 
 function isTrue=IsXYInRect(xy,rect)
 if nargin~=2
-   error('Need two args for function isTrue=IsXYInRect(xy,rect)');
+    error('Need two args for function isTrue=IsXYInRect(xy,rect)');
 end
 if size(xy)~=[1 2]
-   error('First arg to IsXYInRect(xy,rect) must be [x y] pair.');
+    error('First arg to IsXYInRect(xy,rect) must be [x y] pair.');
 end
 isTrue=IsInRect(xy(1),xy(2),rect);
 end
@@ -2956,97 +2956,97 @@ graveAccentChar='`';
 returnChar=char(13);
 oo(oi).fixationXYPix=XYPixOfXYDeg(oo(oi),[0 0]);
 if ~oo(oi).useFixation
-   oo(oi).fixationIsOffscreen = 0;
+    oo(oi).fixationIsOffscreen = 0;
 else
-   oo(oi).fixationIsOffscreen = ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
-   if oo(oi).fixationIsOffscreen
-      fprintf('%d: Fixation is off screen. fixationXYPix %.0f %.0f, o.stimulusRect [%d %d %d %d]\n',...
-         oi,oo(oi).fixationXYPix,oo(oi).stimulusRect);
-      % oo(oi).fixationXYPix is in plane of display. Off-screen fixation is
-      % not! Instead it is the same distance from the eye as the near point.
-      % fixationOffsetXYCm is vector from near point to fixation.
-      rDeg=sqrt(sum(oo(oi).nearPointXYDeg.^2));
-      ori=atan2d(-oo(oi).nearPointXYDeg(2),-oo(oi).nearPointXYDeg(1));
-      rCm=2*sind(0.5*rDeg)*oo(oi).viewingDistanceCm;
-      fixationOffsetXYCm=[cosd(ori) sind(ori)]*rCm;
-      if 0
-         % Check the geometry.
-         oriCheck=atan2d(fixationOffsetXYCm(2),fixationOffsetXYCm(1));
-         rCmCheck=sqrt(sum(fixationOffsetXYCm.^2));
-         rDegCheck=2*asind(0.5*rCm/oo(oi).viewingDistanceCm);
-         xyDegCheck=-[cosd(ori) sind(ori)]*rDeg;
-         fprintf('CHECK NEAR-POINT GEOMETRY: ori %.1f %.1f; rCm %.1f %.1f; rDeg %.1f %.1f; xyDeg [%.1f %.1f] [%.1f %.1f]\n',...
-            ori,oriCheck,rCm,rCmCheck,rDeg,rDegCheck,oo(oi).nearPointXYDeg,xyDegCheck);
-      end
-      fixationOffsetXYCm(2)=-fixationOffsetXYCm(2); % Make y increase upward.
-      string='';
-      if fixationOffsetXYCm(1)~=0
-         if fixationOffsetXYCm(1) < 0
-            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm to the left of the cross. ',string,-fixationOffsetXYCm(1));
-            ffprintf(ff,'%d: Requesting fixation mark %.1f cm to the left of the cross.\n',oi,-fixationOffsetXYCm(1));
-         else
-            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm to the right of the cross. ',string,fixationOffsetXYCm(1));
-            ffprintf(ff,'%d: Requesting fixation mark %.1f cm to the right of the cross.\n',oi,fixationOffsetXYCm(1));
-         end
-      end
-      if fixationOffsetXYCm(2)~=0
-         if fixationOffsetXYCm(2) < 0
-            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm higher than the cross below. ',string,-fixationOffsetXYCm(2));
-            ffprintf(ff,'%d: Requesting fixation mark %.1f cm above the cross.\n',oi,-fixationOffsetXYCm(2));
-         else
-            string = sprintf('%sPlease create an off-screen fixation mark %.1f cm lower than the cross. ',string,fixationOffsetXYCm(2));
-            ffprintf(ff,'%d: Requesting fixation mark %.1f cm below the cross.\n',oi,fixationOffsetXYCm(2));
-         end
-      end
-      string = sprintf('%sAdjust the viewing distances so both your fixation mark and the cross below are %.1f cm from the observer''s eye. ',...
-         string,oo(oi).viewingDistanceCm);
-      string = [string 'Tilt and swivel the display so that the cross is orthogonal to the observer''s line of sight. '...
-         'Once the fixation is properly arranged, hit RETURN to proceed. Otherwise hit ESCAPE to quit. '];
-      Screen('TextSize',window,oo(oi).textSize);
-      Screen('TextFont',window,'Verdana');
-      Screen('FillRect',window,white);
-      DrawFormattedText(window,string,oo(oi).textSize,1.5*oo(oi).textSize,black,oo(oi).textLineLength,[],[],1.3);
-      x=oo(oi).nearPointXYPix(1);
-      y=oo(oi).nearPointXYPix(2);
-      a=0.1*RectHeight(oo(oi).stimulusRect);
-      Screen('DrawLine',window,black,x-a,y,x+a,y,a/20);
-      Screen('DrawLine',window,black,x,y-a,x,y+a,a/20);
-      Screen('Flip',window); % Display question.
-      if false && oo(oi).speakInstructions
-         string=strrep(string,'below ','');
-         string=strrep(string,'.0','');
-         Speak(string);
-      end
-      response=GetKeypress([escapeKeyCode,returnKeyCode,graveAccentKeyCode]);
-      answer=[];
-      if ismember(response,[escapeChar graveAccentChar])
-         answer=0;
-      end
-      if ismember(response,[returnChar])
-         answer=1;
-      end
-      Screen('FillRect',window,white);
-      Screen('Flip',window); % Blank the screen, to acknowledge response.
-      if answer
-         oo(oi).fixationIsOffscreen = 1;
-         ffprintf(ff,'%d: Offscreen fixation mark (%.1f,%.1f) cm from near point of display.\n',oi,fixationOffsetXYCm);
-      else
-         oo(oi).fixationIsOffscreen = 0;
-         ffprintf(ff,['\n\n' WrapString(string) '\n'...
-            'ERROR: User declined to set up off-screen fixation.\n'...
-            'Consider reducing viewing distance (%.1f cm) or o.eccentricityXYDeg (%.1f %.1f).\n'],...
-            oo(oi).viewingDistanceCm,oo(oi).eccentricityXYDeg);
-         error('User declined to set up off-screen fixation.');
-      end
-   else
-      oo(oi).fixationIsOffscreen = 0;
-   end
+    oo(oi).fixationIsOffscreen = ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
+    if oo(oi).fixationIsOffscreen
+        fprintf('%d: Fixation is off screen. fixationXYPix %.0f %.0f, o.stimulusRect [%d %d %d %d]\n',...
+            oi,oo(oi).fixationXYPix,oo(oi).stimulusRect);
+        % oo(oi).fixationXYPix is in plane of display. Off-screen fixation is
+        % not! Instead it is the same distance from the eye as the near point.
+        % fixationOffsetXYCm is vector from near point to fixation.
+        rDeg=sqrt(sum(oo(oi).nearPointXYDeg.^2));
+        ori=atan2d(-oo(oi).nearPointXYDeg(2),-oo(oi).nearPointXYDeg(1));
+        rCm=2*sind(0.5*rDeg)*oo(oi).viewingDistanceCm;
+        fixationOffsetXYCm=[cosd(ori) sind(ori)]*rCm;
+        if 0
+            % Check the geometry.
+            oriCheck=atan2d(fixationOffsetXYCm(2),fixationOffsetXYCm(1));
+            rCmCheck=sqrt(sum(fixationOffsetXYCm.^2));
+            rDegCheck=2*asind(0.5*rCm/oo(oi).viewingDistanceCm);
+            xyDegCheck=-[cosd(ori) sind(ori)]*rDeg;
+            fprintf('CHECK NEAR-POINT GEOMETRY: ori %.1f %.1f; rCm %.1f %.1f; rDeg %.1f %.1f; xyDeg [%.1f %.1f] [%.1f %.1f]\n',...
+                ori,oriCheck,rCm,rCmCheck,rDeg,rDegCheck,oo(oi).nearPointXYDeg,xyDegCheck);
+        end
+        fixationOffsetXYCm(2)=-fixationOffsetXYCm(2); % Make y increase upward.
+        string='';
+        if fixationOffsetXYCm(1)~=0
+            if fixationOffsetXYCm(1) < 0
+                string = sprintf('%sPlease create an off-screen fixation mark %.1f cm to the left of the cross. ',string,-fixationOffsetXYCm(1));
+                ffprintf(ff,'%d: Requesting fixation mark %.1f cm to the left of the cross.\n',oi,-fixationOffsetXYCm(1));
+            else
+                string = sprintf('%sPlease create an off-screen fixation mark %.1f cm to the right of the cross. ',string,fixationOffsetXYCm(1));
+                ffprintf(ff,'%d: Requesting fixation mark %.1f cm to the right of the cross.\n',oi,fixationOffsetXYCm(1));
+            end
+        end
+        if fixationOffsetXYCm(2)~=0
+            if fixationOffsetXYCm(2) < 0
+                string = sprintf('%sPlease create an off-screen fixation mark %.1f cm higher than the cross below. ',string,-fixationOffsetXYCm(2));
+                ffprintf(ff,'%d: Requesting fixation mark %.1f cm above the cross.\n',oi,-fixationOffsetXYCm(2));
+            else
+                string = sprintf('%sPlease create an off-screen fixation mark %.1f cm lower than the cross. ',string,fixationOffsetXYCm(2));
+                ffprintf(ff,'%d: Requesting fixation mark %.1f cm below the cross.\n',oi,fixationOffsetXYCm(2));
+            end
+        end
+        string = sprintf('%sAdjust the viewing distances so both your fixation mark and the cross below are %.1f cm from the observer''s eye. ',...
+            string,oo(oi).viewingDistanceCm);
+        string = [string 'Tilt and swivel the display so that the cross is orthogonal to the observer''s line of sight. '...
+            'Once the fixation is properly arranged, hit RETURN to proceed. Otherwise hit ESCAPE to quit. '];
+        Screen('TextSize',window,oo(oi).textSize);
+        Screen('TextFont',window,'Verdana');
+        Screen('FillRect',window,white);
+        DrawFormattedText(window,string,oo(oi).textSize,1.5*oo(oi).textSize,black,oo(oi).textLineLength,[],[],1.3);
+        x=oo(oi).nearPointXYPix(1);
+        y=oo(oi).nearPointXYPix(2);
+        a=0.1*RectHeight(oo(oi).stimulusRect);
+        Screen('DrawLine',window,black,x-a,y,x+a,y,a/20);
+        Screen('DrawLine',window,black,x,y-a,x,y+a,a/20);
+        Screen('Flip',window); % Display question.
+        if false && oo(oi).speakInstructions
+            string=strrep(string,'below ','');
+            string=strrep(string,'.0','');
+            Speak(string);
+        end
+        response=GetKeypress([escapeKeyCode,returnKeyCode,graveAccentKeyCode]);
+        answer=[];
+        if ismember(response,[escapeChar graveAccentChar])
+            answer=0;
+        end
+        if ismember(response,[returnChar])
+            answer=1;
+        end
+        Screen('FillRect',window,white);
+        Screen('Flip',window); % Blank the screen, to acknowledge response.
+        if answer
+            oo(oi).fixationIsOffscreen = 1;
+            ffprintf(ff,'%d: Offscreen fixation mark (%.1f,%.1f) cm from near point of display.\n',oi,fixationOffsetXYCm);
+        else
+            oo(oi).fixationIsOffscreen = 0;
+            ffprintf(ff,['\n\n' WrapString(string) '\n'...
+                'ERROR: User declined to set up off-screen fixation.\n'...
+                'Consider reducing viewing distance (%.1f cm) or o.eccentricityXYDeg (%.1f %.1f).\n'],...
+                oo(oi).viewingDistanceCm,oo(oi).eccentricityXYDeg);
+            error('User declined to set up off-screen fixation.');
+        end
+    else
+        oo(oi).fixationIsOffscreen = 0;
+    end
 end
 oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
 if oo(oi).fixationCrossBlankedNearTarget
-   ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
+    ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
-   ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
+    ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
 end
 end
 
@@ -3055,17 +3055,17 @@ function xyDeg=XYDegOfXYPix(o,xyPix)
 % to fixation). Deg increase right and up. Pix are in Apple screen
 % coordinates which increase down and right. The perspective transformation
 % is relative to location of near point, which is orthogonal to line of
-% sight. THe near-point location is specified by o.nearPointXYPix and 
+% sight. THe near-point location is specified by o.nearPointXYPix and
 % o.nearPointXYDeg. We typically put the target at the near point, but that
 % is not assumed in this routine.
 xyPix=xyPix-o.nearPointXYPix;
 rPix=sqrt(sum(xyPix.^2));
 rDeg=atan2d(rPix/o.pixPerCm,o.viewingDistanceCm);
 if rPix>0
-   xyPix(2)=-xyPix(2); % Apple y goes down.
-   xyDeg=xyPix*rDeg/rPix;
+    xyPix(2)=-xyPix(2); % Apple y goes down.
+    xyDeg=xyPix*rDeg/rPix;
 else
-   xyDeg=[0 0];
+    xyDeg=[0 0];
 end
 xyDeg=xyDeg+o.nearPointXYDeg;
 end
