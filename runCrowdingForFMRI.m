@@ -118,53 +118,57 @@ o.useFractionOfScreen=0;
 % * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
 % * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
 % * (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
-
 % * (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
+% * Measure foveal crowding twice.
+% * Measure foveal acuity twice.
 clear o oo
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
-oo=struct('targetFont',{},'alphabet',{},'borderLetter',{},'eccentricityXYDeg',{},'flankingDirection',{});
-for ecc=[-25 -5 -1 1 5 25]
-    for rep=1:2
-        for radial=0:1
-            o.eccentricityXYDeg=[ecc 0];
-            if radial
-                o.flankingDirection='radial';
-            else
-                o.flankingDirection='tangential';
+o.thresholdParameter='spacing'; % 'spacing' or 'size'
+oo=struct('targetFont',{},'alphabet',{},'borderLetter',{},'eccentricityXYDeg',{},'flankingDirection',{},'thresholdParameter',{});
+if 1
+    for ecc=[-25 -5 -1 1 5 25]
+        for rep=1:2
+            for radial=0:1
+                o.eccentricityXYDeg=[ecc 0];
+                if radial
+                    o.flankingDirection='radial';
+                else
+                    o.flankingDirection='tangential';
+                end
+                oo(end+1)=o;
             end
-            oo(end+1)=o;
         end
     end
-end
-
-% * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
-for meridianDeg=45:90:315
-    for rep=1:2
-        for radial=0:1
-            o.eccentricityXYDeg=5*[sind(meridianDeg) cosd(meridianDeg)];
-            if radial
-                o.flankingDirection='radial';
-            else
-                o.flankingDirection='tangential';
+    
+    % * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
+    for meridianDeg=45:90:315
+        for rep=1:2
+            for radial=0:1
+                o.eccentricityXYDeg=5*[sind(meridianDeg) cosd(meridianDeg)];
+                if radial
+                    o.flankingDirection='radial';
+                else
+                    o.flankingDirection='tangential';
+                end
+                oo(end+1)=o;
             end
-            oo(end+1)=o;
         end
     end
-end
-
-% * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
-for ecc=[-5 5]
-    for rep=1:2
-        for radial=0:1
-            o.eccentricityXYDeg=[0 ecc];
-            if radial
-                o.flankingDirection='radial';
-            else
-                o.flankingDirection='tangential';
+    
+    % * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
+    for ecc=[-5 5]
+        for rep=1:2
+            for radial=0:1
+                o.eccentricityXYDeg=[0 ecc];
+                if radial
+                    o.flankingDirection='radial';
+                else
+                    o.flankingDirection='tangential';
+                end
+                oo(end+1)=o;
             end
-            oo(end+1)=o;
         end
     end
 end
@@ -173,9 +177,20 @@ end
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
+o.thresholdParameter='spacing'; % 'spacing' or 'size'
 for rep=1:2
     o.eccentricityXYDeg=[0 0];
     o.flankingDirection='horizontal';
+    oo(end+1)=o;
+end
+
+% * (1 threshold) Fovea: Sloan acuity.
+o.targetFont='Sloan';
+o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+o.borderLetter='X';
+o.thresholdParameter='size'; % 'spacing' or 'size'
+for rep=1:2
+    o.eccentricityXYDeg=[0 0];
     oo(end+1)=o;
 end
 
