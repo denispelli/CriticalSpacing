@@ -2084,7 +2084,8 @@ try
         spacingPix=round(spacingPix);
         xF=[];
         yF=[];
-        if ismember(oo(oi).flankingDirection,{'horizontal' 'tangential'}) || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
+        if ismember(oo(oi).flankingDirection,{'horizontal' 'tangential'}) ...
+                || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
             % Flankers must fit on screen. Compute where tangent line
             % intersects stimulusRect. The tangent line goes through target
             % xyT and is orthogonal to the line from fixation.
@@ -2345,6 +2346,11 @@ try
                 newFlankers=Shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
                 stimulus(end+1:end+2)=newFlankers(1:2);
             end
+%             if oo(oi).isolatedTarget
+%                 xStimulus=xStimulus(2);
+%                 yStimulus=yStimulus(2);
+%                 stimulus=stimulus(2);
+%             end
             clear textures dstRects
             for textureIndex=1:length(xStimulus)
                 whichLetter=strfind(letters,stimulus(textureIndex)); % finds stimulus letter in "letters".
