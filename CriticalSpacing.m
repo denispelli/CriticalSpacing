@@ -466,6 +466,7 @@ o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 o.measureViewingDistanceToTargetNotFixation=true;
 o.condition=[]; % Integer count of the condition, starting at 1.
+o.conditionName='';
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
@@ -1265,7 +1266,7 @@ try
             oo(1).viewingDistanceCm=inputDistanceCm;
          else
             switch d
-               case 'm',
+               case 'm'
                   oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
                   oo(1).flipScreenHorizontally=~oo(1).flipScreenHorizontally;
                   if oo(1).useSpeech
@@ -1273,7 +1274,7 @@ try
                   end
                   Screen('Close',window);
                   window=OpenWindow(oo(1));
-               case 'r',
+               case 'r'
                   if oo(1).permissionToChangeResolution
                      Speak('Resolution is already optimal.');
                   else
@@ -1316,11 +1317,11 @@ try
                   end
       
                   end
-               case 'k',
+                case 'k'
                   if oo(1).useSpeech
                      Speak('Recreating list of keyboards.');
                   end
-               otherwise,
+                otherwise
                   Speak(sprintf('Illegal entry "%s". Try again.',d));
             end
          end
