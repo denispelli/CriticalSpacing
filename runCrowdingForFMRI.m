@@ -118,15 +118,19 @@ o.useFractionOfScreen=0;
 % * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
 % * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
 % * (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
-% * (12 thresholds). Horizontal meridian: 6 ecc. (±1, ±5, ±25 deg) X 2 orientations (0, 90 deg)
-% * Measure foveal crowding twice.
-% * Measure foveal acuity twice.
+% * (1 threshold) Fovea: Sloan acuity.
 clear o oo
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
-oo=struct('targetFont',{},'alphabet',{},'borderLetter',{},'eccentricityXYDeg',{},'flankingDirection',{},'thresholdParameter',{});
+o.isolatedTarget=false; 
+o.flankingDirection='radial';
+o.conditionName='crowding';
+oo=struct('targetFont',{},'alphabet',{},'borderLetter',{},...
+    'eccentricityXYDeg',{},'flankingDirection',{},...
+    'thresholdParameter',{},'isolatedTarget',{},...
+    'conditionName',{});
 if 1
     for ecc=[-25 -5 -1 1 5 25]
         for rep=1:2
@@ -185,10 +189,13 @@ for rep=1:2
 end
 
 % * (1 threshold) Fovea: Sloan acuity.
+o.conditionName='acuity';
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.thresholdParameter='size'; % 'spacing' or 'size'
+o.flankingDirection='horizontal'; % Required, even though no flankers.
+o.isolatedTarget=true; % May not be necessary
 for rep=1:2
     o.eccentricityXYDeg=[0 0];
     oo(end+1)=o;
@@ -203,7 +210,7 @@ end
 
 %% PRINT TABLE OF CONDITIONS.
 t=struct2table(oo);
-disp(t(:,{'condition','eccentricityXYDeg','flankingDirection','viewingDistanceCm','targetFont'}));
+disp(t(:,{'condition','thresholdParameter','eccentricityXYDeg','flankingDirection','viewingDistanceCm','targetFont'}));
 
 %% RUN THE EXPERIMENT
 oOld.observer='';
@@ -218,7 +225,6 @@ for i=1:length(oo)
     o.observer=oOld.observer;
     o.durationSec=0.2; % duration of display of target and flankers
     o.repeatedTargets=0;
-    o.thresholdParameter='spacing';
     o=CriticalSpacing(o);
     if ~o.quitRun
         fprintf('Finished condition %d.\n',i);
