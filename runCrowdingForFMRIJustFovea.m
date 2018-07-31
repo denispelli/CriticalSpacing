@@ -3,7 +3,8 @@
 
 % July 17, 2018 Minor edit to reuse observer name from previous block.
 % July 25, 2018 Use 'horizontal' at ecc [0 0].
-% July 30, 2018 Remove boilerplate. To see the default values, try printing "o" or looking %				at early part of NoiseDiscrimination2.m.
+% July 30, 2018 Remove boilerplate. To see the default values, try printing
+%				 "o" or looking at early part of NoiseDiscrimination2.m.
 
 %% PREPARE THE CONDITIONS
 % Crowding distance at 25 combinations of location and orientation:
@@ -17,19 +18,22 @@ o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
-o.isolatedTarget=false; 
+o.isolatedTarget=false;
 o.flankingDirection='radial';
 o.conditionName='crowding';
-oo=struct('targetFont',{},'alphabet',{},'borderLetter',{},...
-    'eccentricityXYDeg',{},'flankingDirection',{},...
-    'thresholdParameter',{},'isolatedTarget',{},...
-    'conditionName',{});
-    
+o.fixationLineWeightDeg=0.04;
+o.fixationCrossDeg=3; % 0, 3, and inf are typical values.
+o.eccentricityXYDeg=[0 0];
+oo=o; % Include all the fields that we need.
+oo(1)=[]; % oo is now empty with the fields that we need.
+
 % * (1 threshold) Fovea: Horizontal crowding distance X 1 orientation.
 o.targetFont='Pelli';
 o.alphabet='123456789';
 o.borderLetter='$';
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
+o.fixationLineWeightDeg=0.02;
+o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
 for rep=1:2
     o.eccentricityXYDeg=[0 0];
     o.flankingDirection='horizontal';
@@ -44,6 +48,8 @@ o.borderLetter='X';
 o.thresholdParameter='size'; % 'spacing' or 'size'
 o.flankingDirection='horizontal'; % Required, even though no flankers.
 o.isolatedTarget=true; % May not be necessary.
+o.fixationLineWeightDeg=0.02;
+o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
 for rep=1:2
     o.eccentricityXYDeg=[0 0];
     oo(end+1)=o;
@@ -65,8 +71,6 @@ oOld.observer='';
 for i=1:length(oo)
     o=oo(i);
     % o.useFractionOfScreen=0.5;
-    o.fixationLineWeightDeg=0.04;
-    o.fixationCrossDeg=3; % 0, 3, and inf are typical values.
     o.trials=30;
     o.practicePresentations=0;
     o.experimenter='Jing';
