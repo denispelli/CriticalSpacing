@@ -533,6 +533,7 @@ o.markTargetLocation=false; % true to mark target location
 o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
+
 % QUEST threshold estimation
 o.beta=nan;
 o.measureBeta=false;
@@ -1236,7 +1237,7 @@ try
         
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         
         % Get typed response
         Screen('TextSize',window,oo(1).textSize);
@@ -1342,7 +1343,7 @@ try
         Screen('TextSize',window,round(0.6*oo(1).textSize));
         Screen('DrawText',window,'You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1375,7 +1376,7 @@ try
         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1624,9 +1625,9 @@ try
             oo(oi).fix.markTargetLocationPix=false;
         end
         if oo(oi).fixationCrossBlankedNearTarget
-            % Blanking of marks to prevent masking and crowding of the target
-            % by the marks. Blanking radius (centered at target) is max of
-            % target diameter and half eccentricity.
+            % Blanking of marks to prevent masking and crowding of the
+            % target by the marks. Blanking radius (centered at target) is
+            % max of target diameter and half eccentricity.
             diameter=oo(oi).targetDeg*pixPerDeg;
             if ~oo(oi).targetSizeIsHeight
                 diameter=diameter*oo(oi).targetHeightOverWidth;
@@ -1867,7 +1868,7 @@ try
     string=[string 'To continue, please hit RETURN. '];
     Screen('TextFont',window,oo(oi).textFont,0);
     Screen('TextSize',window,round(oo(oi).textSize*0.35));
-    Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+    Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
     Screen('TextSize',window,oo(oi).textSize);
     string=strrep(string,'letter',symbolName);
     DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
