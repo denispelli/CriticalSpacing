@@ -45,6 +45,9 @@ o.targetSizeIsHeight=nan; % depends on parameter
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 % o.flankingDirection='vertical'; % vertically arranged flankers for single target
 o.flankingDirection='horizontal'; % horizontally arranged flankers for single target
+% At nonzero eccentricty, choose a flankingDirection that is either
+% "radial" or "tangential". At zero eccentricity, the flankingDirection
+% must be "horizontal" or "vertical".
 o.repeatedTargets=true; % Repeat targets for immunity to fixation errors.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat target letters enough to cope with this.
 o.practicePresentations=3;
@@ -101,6 +104,9 @@ o.borderLetter='X';
 % o.repeatedTargets=false;
 o.thresholdParameter='spacing';
 o.flankingDirection='horizontal'; % horizontally arranged flankers for single target
+% At nonzero eccentricty, choose a flankingDirection that is either
+% 'radial' or 'tangential'. At zero eccentricity, the flankingDirection
+% must be 'horizontal' or 'vertical'.
 o.eccentricityXYDeg=[30 0];
 o.durationSec=0.2;
 o.fourFlankers=0;
