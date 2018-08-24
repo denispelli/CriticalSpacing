@@ -2012,18 +2012,23 @@ try
         % sure the required minSpacesX and minSpacesY are satisfied.
         if oo(oi).repeatedTargets
             % Repeated targets.
+            % The block of alternating targets is surrounded by margin
+            % characters. We must show at least two target characters,
+            % because we have two targets.
             if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth
                 % Aspect ratio of screen exceeds aspect ratio of target.
-                % So tightest acceptable case is three letters vertically.
-                % We add 1 to make 4 because our code assumes a centered
-                % target.
-                minSpacesY=3+1;
+                % Tightest case three letters, with one target sandwiched
+                % between two margin characters. We need four letters to
+                % show 2 targets.
+                minSpacesY=4;
                 minSpacesX=3;
             else
                 % Aspect ratio of target exceeds aspect ratio of screen.
-                % So use horizontal spacing.
+                % Tightest case three letters, with one target sandwiched
+                % between two margin characters. We need four letters to
+                % show 2 targets.
                 minSpacesY=3;
-                minSpacesX=3+1; % Layout code currently assumes a centered target, so minSpaces must be even.
+                minSpacesX=4;
             end
         else
             % Just one target.
