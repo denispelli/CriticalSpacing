@@ -2018,11 +2018,11 @@ try
                 % We add 1 to make 4 because our code assumes a centered
                 % target.
                 minSpacesY=3+1;
-                minSpacesX=0;
+                minSpacesX=3;
             else
                 % Aspect ratio of target exceeds aspect ratio of screen.
                 % So use horizontal spacing.
-                minSpacesY=0;
+                minSpacesY=3;
                 minSpacesX=3+1; % Layout code currently assumes a centered target, so minSpaces must be even.
             end
         else
@@ -2412,19 +2412,29 @@ try
             yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
             yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
             % Show only as many letters as we need so that, despite a
-            % fixation error (in any direction) as large as roughly +/-
-            % maxFixationErrorXYDeg, at least one of the many target
-            % letters will land at an eccentricity at which critical
-            % spacing (in normal adult) is less than half the actual
-            % spacing.
-            % criticalSpacing=0.3*(ecc+0.15);
-            % ecc=criticalSpacing/0.3-0.15;
-            criticalSpacingDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
-            % Zero, or greatest ecc whose normal adult critical spacing is
-            % half the test spacing.
-            eccDeg=max(0,criticalSpacingDeg/0.3-0.15);
-            % Compute needed extent of the repetition to put some target
-            % within that ecc radius.
+            % fixation error (in any direction) as large as  
+            % +/-maxFixationErrorXYDeg, at least one of the many target
+            % letters will escape crowding by landing at a small enough
+            % eccentricity at which the (normal adult) observer's crowding 
+            % distance is less than half the actual spacing. This is the
+            % standard formula for crowding distance, as a function of
+            % radial eccentricity.
+            % crowdingDistance=0.3*(ecc+0.15);
+            % We solve it for eccentricity.
+            % ecc=crowdingDistance/0.3-0.15;
+            % The target will be easily visible if the crowding distance
+            % is less than half the actual spacing.
+            crowdingDistanceDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
+            % We solve for eccentricity to get this crowding distance. 
+            eccDeg=crowdingDistanceDeg/0.3-0.15;
+            % If positive, this is the greatest ecc whose normal adult
+            % critical spacing is half the test spacing. The radial
+            % eccentricity must be at least zero.
+            eccDeg=max(0,eccDeg);
+            % Assume observer tries to fixate center of target text block,
+            % and actually fixates within a distance maxFixationErrorXYDeg
+            % of that center. Compute needed horizontal and vertical extent
+            % of the repetition to put some target within that ecc radius.
             xR=max(0,oo(oi).maxFixationErrorXYDeg(1)-eccDeg)*pixPerDeg;
             yR=max(0,oo(oi).maxFixationErrorXYDeg(2)-eccDeg)*pixPerDeg;
             % Round the radius to an integer number of spacings.
@@ -2448,16 +2458,16 @@ try
             yR=max(ySpacing*minSpacesY/2,yR); % Min vertical radius of letter block. Pixels.
             xR=round(xR); % Integer pixels.
             yR=round(yR);
-            xMin=xyT(1)-max(xR,xyT(1)-xMin); % DGP 8/24/18 changed min to max.
-            xMax=xyT(1)+max(xR,xMax-xyT(1));
-            yMin=xyT(2)-max(yR,xyT(2)-yMin);
-            yMax=xyT(2)+max(yR,yMax-xyT(2));
+            % Clip the desired radius by the limits of actual screen.
+            xMin=xyT(1)-min(xR,xyT(1)-xMin); 
+            xMax=xyT(1)+min(xR,xMax-xyT(1));
+            yMin=xyT(2)-min(yR,xyT(2)-yMin);
+            yMax=xyT(2)+min(yR,yMax-xyT(2));
             if oo(oi).repeatedTargets && (yMax-yMin)/ySpacing>oo(oi).maxLines
                 % Restrict to show just o.maxLines.
-                yMid=(yMin+yMax)/2;
                 s=(oo(oi).maxLines-1)*ySpacing;
-                yMin=yMid-s/2;
-                yMax=yMid+s/2;
+                yMin=xyT(2)-s/2;
+                yMax=xyT(2)+s/2;
             end
             if oo(oi).practiceCountdown>=3
                 % Quick hack to reduce 3 letters to 2.
@@ -2466,6 +2476,18 @@ try
                 yMin=xyT(2)-min(yR/2,xyT(2)-yMin);
                 yMax=xyT(2)+min(yR/2,yMax-xyT(2));
             end
+            % Round (yMax-yMin)/ySpacing and (xMax-xMin)/xSpacing. This is
+            % important because we use a for loops, with steps of xSpacing
+            % and ySpacing to get from xMin and yMin to get to xMax and
+            % yMax. The rows at yMin and yMax or margins, and the columins
+            % at xMin and xMax are margins.
+            n=round((xMax-xMin)/xSpacing);
+            xMax=xyT(1)+xSpacing*n/2;
+            xMin=xyT(1)-xSpacing*n/2;
+            n=round((yMax-yMin)/ySpacing);
+            yMax=xyT(2)+ySpacing*n/2;
+            yMin=xyT(2)-ySpacing*n/2;
+            
             if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
             if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end
             if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
