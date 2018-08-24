@@ -489,9 +489,10 @@ o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-o.flankingDirection='radial'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
+o.flankingDirection='horizontal'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
 o.flankingPolarDeg=[]; % Specify angle here (0 is right, 90 is up), or specify o.flankingDirection.
 o.repeatedTargets=true;
+o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 3 or more.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
 o.practicePresentations=3;
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
@@ -693,6 +694,11 @@ for oi=1:conditions
         oo(oi).maxRepetition=inf;
     end
 end % for oi=1:conditions
+for oi=1:conditions
+    if ~(oo(oi).maxLines>=3 && round(oo(oi).maxLines)==oo(oi).maxLines)
+        error('%d: o.maxLines==%.1f, but should be an integer greater than or equal to 3. Ask denis.pelli@nyu.edu if you need lower values.',oi,oo(oi).maxLines);
+    end
+end
 Screen('Preference','TextAntiAliasing',1);
 % Set up for KbCheck. Calling ListenChar(2) tells the MATLAB console/editor
 % to ignore what we type, so we don't inadvertently echo observer responses
@@ -1669,7 +1675,7 @@ try
     for oi=1:conditions
         ffprintf(ff,'%d: ',oi);
         if oo(oi).repeatedTargets
-            numberTargets='two targets (repeated many times)';
+            numberTargets=sprintf('two targets (repeated many times over %.0f lines)',oo(oi).maxLines);
         else
             numberTargets='one target';
         end
@@ -1682,7 +1688,7 @@ try
             ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',oi,oo(oi).fixedSpacingOverSize);
         else
             switch oo(oi).thresholdParameter
-                case 'size',
+                case 'size'
                     ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',oi);
                 case 'spacing'
                     ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',oi,oo(oi).targetDeg,oo(oi).targetDeg*pixPerDeg);
@@ -1998,20 +2004,33 @@ try
             spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
         end
         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+        % Screen and letter size vary hugely. For the trial to make sense,
+        % we need to guarantee a certain minimum number of characters. We
+        % achieve this by specifying the required number of spaces (plus
+        % half at each side of screen) using minSpacesX or minSpacesY. If
+        % necessary, the software places an upperbound on spacing to make
+        % sure the required minSpacesX and minSpacesY are satisfied.
         if oo(oi).repeatedTargets
-            if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth;
+            % Repeated targets.
+            if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth
+                % Aspect ratio of screen exceeds aspect ratio of target.
+                % So tightest acceptable case is three letters vertically.
+                % We add 1 to make 4 because our code assumes a centered
+                % target.
                 minSpacesY=3+1;
                 minSpacesX=0;
             else
+                % Aspect ratio of target exceeds aspect ratio of screen.
+                % So use horizontal spacing.
                 minSpacesY=0;
                 minSpacesX=3+1; % Layout code currently assumes a centered target, so minSpaces must be even.
             end
         else
-            % Just one target
-            % minSpacesX is the in tangential direction
-            % minSpacesY is in the radial direction
+            % Just one target.
+            % minSpacesX is the in tangential direction.
+            % minSpacesY is in the radial direction.
             switch oo(oi).thresholdParameter
-                case 'spacing',
+                case 'spacing'
                     if oo(oi).fourFlankers
                         minSpacesY=2;
                         minSpacesX=2;
@@ -2024,20 +2043,20 @@ try
                             minSpacesX=2;
                         end
                     end
-                case 'size',
+                case 'size'
                     minSpacesY=0;
                     minSpacesX=0;
             end
         end
         if oo(oi).practiceCountdown>=3
             if oo(oi).repeatedTargets
-                if minSpacesX
+                if minSpacesX>0
                     minSpacesX=1;
                 end
-                if minSpacesY
+                if minSpacesY>0
                     minSpacesY=1;
                 end
-                if minSpacesX && minSpacesY
+                if minSpacesX>0 && minSpacesY>0
                     minSpacesY=0;
                 end
             else
@@ -2045,15 +2064,15 @@ try
                 minSpacesY=0;
             end
         end
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: minSpacesX %d, minSpacesY %d, \n',oi,MFileLineNr,minSpacesX,minSpacesY); end;
-        % The spacings are center to center, so we'll fill the screen when we
-        % have the prescribed minSpacesX or minSpacesY plus a half letter at
-        % each border. We impose an upper bound on spacingPix to guarantee
-        % that we have the requested number of spaces horizontally
-        % (minSpacesX) and vertically (minSpacesY).
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: minSpacesX %d, minSpacesY %d, \n',oi,MFileLineNr,minSpacesX,minSpacesY); end
+        % The spacings are center to center, so we'll fill the screen when
+        % we have the prescribed minSpacesX or minSpacesY plus a half
+        % letter at each border. We impose an upper bound on spacingPix to
+        % guarantee that we have the requested number of spaces
+        % horizontally (minSpacesX) and vertically (minSpacesY).
         if ~oo(oi).targetSizeIsHeight
-            % spacingPix is vertical. It is scaled by
-            % heightOverWidth in the orthogonal direction.
+            % spacingPix is vertical. It is scaled by heightOverWidth in
+            % the orthogonal direction.
             if oo(oi).fixedSpacingOverSize
                 spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
                 spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
@@ -2063,8 +2082,8 @@ try
                 spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
             end
         else
-            % spacingPix is horizontal. It is scaled by
-            % heightOverWidth in the orthogonal direction.
+            % spacingPix is horizontal. It is scaled by heightOverWidth in
+            % the orthogonal direction.
             if oo(oi).fixedSpacingOverSize
                 spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
                 spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
@@ -2077,7 +2096,7 @@ try
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
         oo(oi).spacingDeg=spacingPix/pixPerDeg;
         xyT=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
-        if oo(oi).printSizeAndSpacing;
+        if oo(oi).printSizeAndSpacing
             fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xyT %d, %d\n',...
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,...
                 spacingPix,oo(oi).spacingDeg,xyT);
@@ -2392,11 +2411,12 @@ try
             xMax=xyT(1)+xSpacing*floor((oo(oi).stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
             yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
             yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
-            % Show only as many letters as we need so that, despite a fixation
-            % error (in any direction) as large as roughly +/-
-            % maxFixationErrorXYDeg, at least one of the many target letters
-            % will land at an eccentricity at which critical spacing (in
-            % normal adult) is less than half the actual spacing.
+            % Show only as many letters as we need so that, despite a
+            % fixation error (in any direction) as large as roughly +/-
+            % maxFixationErrorXYDeg, at least one of the many target
+            % letters will land at an eccentricity at which critical
+            % spacing (in normal adult) is less than half the actual
+            % spacing.
             % criticalSpacing=0.3*(ecc+0.15);
             % ecc=criticalSpacing/0.3-0.15;
             criticalSpacingDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
@@ -2414,7 +2434,7 @@ try
                 xR=xSpacing*min(xR/xSpacing,oo(oi).maxRepetition);
                 yR=ySpacing*min(yR/ySpacing,floor(oo(oi).maxRepetition/4));
             else
-                % If nonzero, add a spacing for margin character.
+                % If radius is nonzero, add a spacing for margin character.
                 % But no margin during practice.
                 if xR>0
                     xR=xR+xSpacing;
@@ -2424,39 +2444,47 @@ try
                 end
             end
             % Enforce minSpacesX and minSpacesY
-            xR=max(xSpacing*minSpacesX/2,xR);
-            yR=max(ySpacing*minSpacesY/2,yR);
-            xR=round(xR);
+            xR=max(xSpacing*minSpacesX/2,xR); % Min horizontal radius of letter block. Pixels.
+            yR=max(ySpacing*minSpacesY/2,yR); % Min vertical radius of letter block. Pixels.
+            xR=round(xR); % Integer pixels.
             yR=round(yR);
-            xMin=xyT(1)-min(xR,xyT(1)-xMin);
-            xMax=xyT(1)+min(xR,xMax-xyT(1));
-            yMin=xyT(2)-min(yR,xyT(2)-yMin);
-            yMax=xyT(2)+min(yR,yMax-xyT(2));
+            xMin=xyT(1)-max(xR,xyT(1)-xMin); % DGP 8/24/18 changed min to max.
+            xMax=xyT(1)+max(xR,xMax-xyT(1));
+            yMin=xyT(2)-max(yR,xyT(2)-yMin);
+            yMax=xyT(2)+max(yR,yMax-xyT(2));
+            if oo(oi).repeatedTargets && (yMax-yMin)/ySpacing>oo(oi).maxLines
+                % Restrict to show just o.maxLines.
+                yMid=(yMin+yMax)/2;
+                s=(oo(oi).maxLines-1)*ySpacing;
+                yMin=yMid-s/2;
+                yMax=yMid+s/2;
+            end
             if oo(oi).practiceCountdown>=3
-                % Quick hack to reduce 3 letters to two.
+                % Quick hack to reduce 3 letters to 2.
                 xMin=xyT(1)-min(xR/2,xyT(1)-xMin);
                 xMax=xyT(1)+min(xR/2,xMax-xyT(1));
                 yMin=xyT(2)-min(yR/2,xyT(2)-yMin);
                 yMax=xyT(2)+min(yR/2,yMax-xyT(2));
             end
             if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end;
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end;
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end
             clear textures dstRects
             n=length(xMin:xSpacing:xMax);
             textures=zeros(1,n);
             dstRects=zeros(4,n);
+            % Create three lines. 1. border, 2. target , 3. alt target.
             for lineIndex=1:3
                 whichTarget=mod(lineIndex,2);
                 for x=xMin:xSpacing:xMax
                     switch oo(oi).thresholdParameter
-                        case 'spacing',
+                        case 'spacing'
                             whichTarget=mod(whichTarget+1,2);
-                        case 'size',
+                        case 'size'
                             whichTarget=x>mean([xMin xMax]);
                     end
-                    if ~oo(oi).practiceCountdown && (ismember(x,[xMin xMax]) || lineIndex==1)
+                    if ~oo(oi).practiceCountdown && (any(abs(x-[xMin xMax])<1e-9) || lineIndex==1)
                         letter=oo(oi).borderLetter;
                     else
                         letter=stimulus(1+whichTarget);
@@ -2507,17 +2535,23 @@ try
                 Screen('DrawTextures',lineTexture(lineIndex),textures,r,dstRects);
             end
             clear textures dstRects
+            % Paint screen with desired number of lines. Top and bottom
+            % lines are border. The rest alternate between target and alt
+            % target lines.
             lineIndex=1;
             for y=yMin:ySpacing:yMax
-                if minSpacesY>2 && ismember(y,[yMin yMax])
-                    whichLetter=1; % Horizontal row of border letters.
+                %                 if minSpacesY>2 && ismember(y,[yMin yMax]) % DGP 8/32/18.
+                if any(abs(y-[yMin yMax])<1e-9) % ismember(y,[yMin yMax])
+                    % Border row
+                    whichMasterLine=1; % Horizontal row of border letters.
                 else
-                    whichLetter=2+mod(lineIndex,2); % Horizontal row of targets.
+                    % Target row
+                    whichMasterLine=2+mod(lineIndex,2); % Horizontal row of targets.
                 end
-                textures(lineIndex)=lineTexture(whichLetter);
+                textures(lineIndex)=lineTexture(whichMasterLine);
                 dstRects(1:4,lineIndex)=OffsetRect(lineRect{1},0,round(y-RectHeight(lineRect{1})/2));
-                %             fprintf('%d: %d: line %d, whichLetter %d, texture %d, dstRect %.0f %.0f %.0f %.0f\n',...
-                %                oi,MFileLineNr,lineIndex,whichLetter,lineTexture(whichLetter),dstRects(1:4,lineIndex));
+                %             fprintf('%d: %d: line %d, whichMasterLine %d, texture %d, dstRect %.0f %.0f %.0f %.0f\n',...
+                %                oi,MFileLineNr,lineIndex,whichMasterLine,lineTexture(whichMasterLine),dstRects(1:4,lineIndex));
                 lineIndex=lineIndex+1;
             end
         end
