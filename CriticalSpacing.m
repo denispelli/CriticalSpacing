@@ -492,7 +492,7 @@ o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerC
 o.flankingDirection='horizontal'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
 o.flankingPolarDeg=[]; % Specify angle here (0 is right, 90 is up), or specify o.flankingDirection.
 o.repeatedTargets=true;
-o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 3 or more.
+o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 1,3,4,... inf.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
 o.practicePresentations=3; % 0 for none. Adds easy trials at the beginning that are not recorded.
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
@@ -695,8 +695,8 @@ for oi=1:conditions
     end
 end % for oi=1:conditions
 for oi=1:conditions
-    if ~(oo(oi).maxLines>=3 && round(oo(oi).maxLines)==oo(oi).maxLines)
-        error('%d: o.maxLines==%.1f, but should be an integer greater than or equal to 3. Ask denis.pelli@nyu.edu if you need lower values.',oi,oo(oi).maxLines);
+    if ~(oo(oi).maxLines>=1 && round(oo(oi).maxLines)==oo(oi).maxLines && oo(oi).maxLines~=2 )
+        error('%d: o.maxLines==%.1f, but should be an integer 1,3,4,... inf.',oi,oo(oi).maxLines);
     end
 end
 Screen('Preference','TextAntiAliasing',1);
@@ -2518,7 +2518,7 @@ try
                         case 'size'
                             whichTarget=x>mean([xMin xMax]);
                     end
-                    if oo(oi).practiceCountdown==0 && (any(abs(x-[xMin xMax])<1e-9) || lineIndex==1)
+                    if oo(oi).practiceCountdown==0 && xMax>xMin && (any(abs(x-[xMin xMax])<1e-9) || lineIndex==1)
                         letter=oo(oi).borderLetter;
                     else
                         letter=stimulus(1+whichTarget);
@@ -2574,8 +2574,8 @@ try
             % target lines.
             lineIndex=1;
             for y=yMin:ySpacing:yMax
-                %                 if minSpacesY>2 && ismember(y,[yMin yMax]) % DGP 8/32/18.
-                if any(abs(y-[yMin yMax])<1e-9) % ismember(y,[yMin yMax])
+                % If there is only one row, then show no borders.
+                if yMax>yMin && any(abs(y-[yMin yMax])<1e-9) % ismember(y,[yMin yMax])
                     % Border row
                     whichMasterLine=1; % Horizontal row of border letters.
                 else
