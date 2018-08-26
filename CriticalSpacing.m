@@ -494,7 +494,7 @@ o.flankingPolarDeg=[]; % Specify angle here (0 is right, 90 is up), or specify o
 o.repeatedTargets=true;
 o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 3 or more.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
-o.practicePresentations=3;
+o.practicePresentations=3; % 0 for none. Adds easy trials at the beginning that are not recorded.
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.targetDeg=nan;
@@ -682,7 +682,7 @@ for oi=1:conditions
     end
 end % for oi=1:conditions
 for oi=1:conditions
-    if oo(oi).practicePresentations
+    if oo(oi).practicePresentations>0
         if oo(oi).repeatedTargets
             oo(oi).maxRepetition=1;
         else
@@ -690,7 +690,7 @@ for oi=1:conditions
         end
         oo(oi).practiceCountdown=oo(oi).practicePresentations;
     else
-        oo(oi).practiceCountdown=false;
+        oo(oi).practiceCountdown=0;
         oo(oi).maxRepetition=inf;
     end
 end % for oi=1:conditions
@@ -1977,14 +1977,14 @@ try
                 end
             end
             switch oo(oi).thresholdParameter
-                case 'spacing',
+                case 'spacing'
                     oo(oi).spacingDeg=10^intensity;
                     if oo(oi).fixedSpacingOverSize
                         oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
                     else
                         oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
                     end
-                case 'size',
+                case 'size'
                     oo(oi).targetDeg=10^intensity;
             end
         else
@@ -2017,14 +2017,14 @@ try
             % because we have two targets.
             if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth
                 % Aspect ratio of screen exceeds aspect ratio of target.
-                % Tightest case three letters, with one target sandwiched
-                % between two margin characters. We need four letters to
-                % show 2 targets.
+                % Tightest case is three letters, with one target
+                % sandwiched between two margin characters. We need four
+                % letters to show 2 targets.
                 minSpacesY=4;
                 minSpacesX=3;
             else
                 % Aspect ratio of target exceeds aspect ratio of screen.
-                % Tightest case three letters, with one target sandwiched
+                % Tightest case is three letters, with one target sandwiched
                 % between two margin characters. We need four letters to
                 % show 2 targets.
                 minSpacesY=3;
@@ -2075,7 +2075,7 @@ try
         % letter at each border. We impose an upper bound on spacingPix to
         % guarantee that we have the requested number of spaces
         % horizontally (minSpacesX) and vertically (minSpacesY).
-        if ~oo(oi).targetSizeIsHeight
+        if oo(oi).targetSizeIsHeight
             % spacingPix is vertical. It is scaled by heightOverWidth in
             % the orthogonal direction.
             if oo(oi).fixedSpacingOverSize
@@ -2219,9 +2219,9 @@ try
         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
         % Prepare to draw fixation cross.
         if oo(oi).fixationCrossBlankedNearTarget
-            % Blanking of marks to prevent masking and crowding of the target
-            % by the marks. Blanking radius (centered at target) is max of
-            % target diameter and half eccentricity.
+            % Blanking of marks to prevent masking and crowding of the
+            % target by the marks. Blanking radius (centered at target) is
+            % max of target diameter and half eccentricity.
             diameter=oo(oi).targetDeg*pixPerDeg;
             if ~oo(oi).targetSizeIsHeight
                 diameter=diameter*oo(oi).targetHeightOverWidth;
@@ -2399,7 +2399,7 @@ try
                     fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
                 end
             end
-            if ~streq(oo(oi).thresholdParameter,'spacing') || oo(oi).practiceCountdown
+            if ~streq(oo(oi).thresholdParameter,'spacing') || oo(oi).practiceCountdown>0
                 % Show only the target, omitting all flankers.
                 textures=textures(2);
                 dstRects=dstRects(1:4,2);
@@ -2411,11 +2411,16 @@ try
             end
         else
             % repeatedTargets
-            % Screen bounds on letter array.
+            % Compute screen bounds for letter array.
             xMin=xyT(1)-xSpacing*floor((xyT(1)-oo(oi).stimulusRect(1)-0.5*xPix)/xSpacing);
             xMax=xyT(1)+xSpacing*floor((oo(oi).stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
             yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
             yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
+            % Enforce the required minimum number of rows.
+            if (yMax-yMin)/ySpacing<minSpacesY
+                yMin=xyT(2)-ySpacing*minSpacesY/2;
+                yMax=xyT(2)+ySpacing*minSpacesY/2;
+            end
             % Show only as many letters as we need so that, despite a
             % fixation error (in any direction) as large as  
             % +/-maxFixationErrorXYDeg, at least one of the many target
@@ -2445,12 +2450,12 @@ try
             % Round the radius to an integer number of spacings.
             xR=xSpacing*round(xR/xSpacing);
             yR=ySpacing*round(yR/ySpacing);
-            if oo(oi).practiceCountdown
+            if oo(oi).practiceCountdown>0
+                % No margin during practice.
                 xR=xSpacing*min(xR/xSpacing,oo(oi).maxRepetition);
                 yR=ySpacing*min(yR/ySpacing,floor(oo(oi).maxRepetition/4));
             else
                 % If radius is nonzero, add a spacing for margin character.
-                % But no margin during practice.
                 if xR>0
                     xR=xR+xSpacing;
                 end
@@ -2468,24 +2473,26 @@ try
             xMax=xyT(1)+min(xR,xMax-xyT(1));
             yMin=xyT(2)-min(yR,xyT(2)-yMin);
             yMax=xyT(2)+min(yR,yMax-xyT(2));
-            if oo(oi).repeatedTargets && (yMax-yMin)/ySpacing>oo(oi).maxLines
-                % Restrict to show just o.maxLines.
+%             fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
+            if oo(oi).repeatedTargets && 1+(yMax-yMin)/ySpacing>oo(oi).maxLines
+                % Restrict to show no more than o.maxLines.
                 s=(oo(oi).maxLines-1)*ySpacing;
                 yMin=xyT(2)-s/2;
                 yMax=xyT(2)+s/2;
+%                 fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
             end
             if oo(oi).practiceCountdown>=3
-                % Quick hack to reduce 3 letters to 2.
+                % Enforce half xR and yR as upper bound on radius.
                 xMin=xyT(1)-min(xR/2,xyT(1)-xMin);
                 xMax=xyT(1)+min(xR/2,xMax-xyT(1));
                 yMin=xyT(2)-min(yR/2,xyT(2)-yMin);
                 yMax=xyT(2)+min(yR/2,yMax-xyT(2));
             end
             % Round (yMax-yMin)/ySpacing and (xMax-xMin)/xSpacing. This is
-            % important because we use a for loops, with steps of xSpacing
-            % and ySpacing to get from xMin and yMin to get to xMax and
-            % yMax. The rows at yMin and yMax or margins, and the columins
-            % at xMin and xMax are margins.
+            % important because we use for loops, with steps of xSpacing
+            % and ySpacing, to get from xMin and yMin to xMax and yMax. We
+            % need to arrive precisely at xMax. The rows at yMin and yMax
+            % are margins, as are the columins at xMin and xMax.
             n=round((xMax-xMin)/xSpacing);
             xMax=xyT(1)+xSpacing*n/2;
             xMin=xyT(1)-xSpacing*n/2;
@@ -2511,7 +2518,7 @@ try
                         case 'size'
                             whichTarget=x>mean([xMin xMax]);
                     end
-                    if ~oo(oi).practiceCountdown && (any(abs(x-[xMin xMax])<1e-9) || lineIndex==1)
+                    if oo(oi).practiceCountdown==0 && (any(abs(x-[xMin xMax])<1e-9) || lineIndex==1)
                         letter=oo(oi).borderLetter;
                     else
                         letter=stimulus(1+whichTarget);
@@ -2797,7 +2804,7 @@ try
         trialData.responses=responseString;
         trialData.responseScores=responseScores;
         % trialData.reactionTimes is computed above.
-        if ~oo(oi).practiceCountdown
+        if oo(oi).practiceCountdown==0
             if isempty(oo(oi).trialData)
                 oo(oi).trialData=trialData;
             else
@@ -2811,7 +2818,7 @@ try
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
             end
-            if ~oo(oi).practiceCountdown
+            if oo(oi).practiceCountdown==0
                 oo(oi).responseCount=oo(oi).responseCount+1;
                 oo(oi).q=QuestUpdate(oo(oi).q,intensity,responseScore);
             end
@@ -2820,7 +2827,11 @@ try
         %          fprintf('%d: %d: practiceCountdown %d, maxRepetitions %d\n',...
         %             oi,MFileLineNr,oo(oi).practiceCountdown,oo(oi).maxRepetition);
         %       end
-        if oo(oi).practiceCountdown && all(responseScores)
+        if oo(oi).practiceCountdown>0 && all(responseScores)
+            % Decrement the practice counter. practiceCountdown was
+            % initially set to o.practicePresentations. We do that many
+            % easy practice trials, whose results are discarded, before
+            % beginning the block of trials that we record.
             oo(oi).practiceCountdown=oo(oi).practiceCountdown-1;
             if oo(oi).practiceCountdown
                 oo(oi).maxRepetition=2*oo(oi).maxRepetition;
