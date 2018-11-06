@@ -30,5 +30,7 @@ o.repeatedTargets=true;
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with fixation errors up to this size.
 o.maxLines=1; % Must be 1,3,4,...inf
 % o.maxLines=inf;
+% o.useFractionOfScreen=0.5; 
+% o.printSizeAndSpacing=true;
 o=CriticalSpacing(o);
 
