@@ -823,7 +823,7 @@ try
     white=WhiteIndex(window);
     black=BlackIndex(window);
     if oo(1).printScreenResolution
-        % Just to print them.
+        % Print in Command Window.
         screenBufferRect=Screen('Rect',oo(1).screen)
         screenRect=Screen('Rect',oo(1).screen,1)
         resolution=Screen('Resolution',oo(1).screen)
@@ -2013,22 +2013,28 @@ try
         if oo(oi).repeatedTargets
             % Repeated targets.
             % The block of alternating targets is surrounded by margin
-            % characters. We must show at least two target characters,
-            % because we have two targets.
+            % characters at left and right. If o.maxLines>1 then it is also
+            % surrounded by margin characters at top and bottom. We must
+            % show at least two target characters, because we have two
+            % targets.
             if RectHeight(oo(oi).stimulusRect)/RectWidth(oo(oi).stimulusRect) > oo(oi).targetHeightOverWidth
-                % Aspect ratio of screen exceeds aspect ratio of target.
+                % Height/width ratio of screen exceeds that of target.
                 % Tightest case is three letters, with one target
                 % sandwiched between two margin characters. We need four
                 % letters to show 2 targets.
-                minSpacesY=4;
-                minSpacesX=3;
+                minSpacesY=3;
+                minSpacesX=2;
             else
-                % Aspect ratio of target exceeds aspect ratio of screen.
+                % Height/width ratio of target exceeds that of screen.
                 % Tightest case is three letters, with one target sandwiched
                 % between two margin characters. We need four letters to
                 % show 2 targets.
-                minSpacesY=3;
-                minSpacesX=4;
+                minSpacesY=2;
+                minSpacesX=3;
+            end
+            if oo(oi).maxLines<4
+                minSpacesX=3;
+                minSpacesY=oo(oi).maxLines-1;
             end
         else
             % Just one target.
