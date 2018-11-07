@@ -129,6 +129,17 @@ o.targetDeg=2;
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 % o(2)=o(1); % Copy the condition
+% o=CriticalSpacing(o); 
+
+o.thresholdParameter='size';
+% o(2)=o(1); % Copy the condition
+o.readAlphabetFromDisk=false; % true makes the program more portable.
+% o.targetFont='Songti TC Light';
+% o.targetFont='Kuenstler Script Bold'; 
+o.targetFont='SabbathBlackRegular';
+o.minimumTargetPix=12; % Complex fonts need more than the default 6 pix.
+o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWYZ'; 
+% o.printSizeAndSpacing=true;
 o=CriticalSpacing(o); 
 
 % Results are printed in MATLAB's Command Window and saved in the
