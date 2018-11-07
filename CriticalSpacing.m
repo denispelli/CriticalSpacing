@@ -500,7 +500,7 @@ o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerC
 o.flankingDirection='horizontal'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
 o.flankingPolarDeg=[]; % Specify angle here (0 is right, 90 is up), or specify o.flankingDirection.
 o.repeatedTargets=true;
-o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 1,3,4,... inf.
+o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 1,3,4, ... inf.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
 o.practicePresentations=3; % 0 for none. Adds easy trials at the beginning that are not recorded.
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
