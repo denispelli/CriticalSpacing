@@ -377,6 +377,14 @@ function oo=CriticalSpacing(oIn)
 
 %% PLANS
 %
+% When the alphabet is large (eg. 26) it currently falls off the right
+% edge when we display it at the end of a trial. I think we should break it
+% into two lines.
+%
+% The user currently types the response. For non-Roman letters (eg
+% Checkers) we should display the roman equivalent next to each possible
+% target letter.
+%
 % I'd like the viewing-distance page to respond to a new command: "o" to
 % set up offscreen fixation.
 %
