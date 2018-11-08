@@ -682,9 +682,9 @@ Screen('Preference','SkipSyncTests',1);
 for oi=1:conditions
     if ~isfinite(oo(oi).targetSizeIsHeight)
         switch oo(oi).thresholdParameter
-            case 'size',
+            case 'size'
                 oo(oi).targetSizeIsHeight=true;
-            case 'spacing',
+            case 'spacing'
                 oo(oi).targetSizeIsHeight=false;
         end
     end
@@ -822,7 +822,8 @@ try
     computer=Screen('Computer');
     oo(1).computer=computer;
     if computer.osx || computer.macintosh
-        AutoBrightness(oo(1).screen,0); % Do this BEFORE opening the window, so user can see any alerts.
+        % Do this BEFORE opening the window, so user can see any alerts.
+        AutoBrightness(oo(1).screen,0); % Takes 26 s.
     end
     screenBufferRect=Screen('Rect',oo(1).screen);
     screenRect=Screen('Rect',oo(1).screen,1);
@@ -1078,7 +1079,7 @@ try
             rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
             fprintf('%d: screen %.0f %.0f, rectSizeDeg %.1f %.1f, pixPerCm %.1f, viewingDistance %.1f cm, xy %.0f %.0f\n',...
                 oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
-            if all(totalSizeXYDeg <= rectSizeDeg);
+            if all(totalSizeXYDeg <= rectSizeDeg)
                 oo(oi).fixationOnScreen=true;
                 verb='fits within';
             else
@@ -1633,7 +1634,7 @@ try
         assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
         oo(oi).fix.clipRect=screenRect;
         oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
-        if oo(oi).markTargetLocation;
+        if oo(oi).markTargetLocation
             oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
         else
             oo(oi).fix.markTargetLocationPix=false;
@@ -2011,7 +2012,7 @@ try
         if oo(oi).fixedSpacingOverSize
             spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
         end
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Screen and letter size vary hugely. For the trial to make sense,
         % we need to guarantee a certain minimum number of characters. We
         % achieve this by specifying the required number of spaces (plus
@@ -2182,7 +2183,7 @@ try
                 yF(end+1:end+2)=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
                 % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
                 outerSpacingPix=0;
-                if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+                if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
             else % eccentricity not zero
                 assert(spacingPix>=0);
                 spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
@@ -2230,7 +2231,7 @@ try
             oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end;
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Prepare to draw fixation cross.
         if oo(oi).fixationCrossBlankedNearTarget
             % Blanking of marks to prevent masking and crowding of the
@@ -2340,7 +2341,7 @@ try
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
         
         % Create letter textures, using font or from disk.
-        letterStruct=CreateLetterTextures(oi,oo(oi),window);
+        letterStruct=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
         letters=[oo(oi).alphabet oo(oi).borderLetter];
         
         if oo(oi).showAlphabet
@@ -2374,7 +2375,7 @@ try
             xSpacing=spacingPix;
             ySpacing=spacingPix*oo(oi).targetHeightOverWidth;
         end
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',oi,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end;
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: xSpacing %.0f, ySpacing %.0f, ratio %.2f\n',oi,MFileLineNr,xSpacing,ySpacing,ySpacing/xSpacing); end
         if ~oo(oi).repeatedTargets
             if isempty(xF)
                 error('xF is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
@@ -2683,7 +2684,7 @@ try
             % Draw text.
             Screen('DrawText',window,string,x,y,black,white,1);
             Screen('TextSize',window,oo(oi).textSize);
-            [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
+            [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
             alphabetBounds=round(alphabetBounds*oo(oi).textSize/RectHeight(alphabetBounds));
             x=instructionalMarginPix;
             y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
@@ -2964,7 +2965,7 @@ try
         end % if oo.measureBeta
     end % for oi=1:conditions
     Snd('Close');
-    CloseWindowsAndCleanup;
+    CloseWindowsAndCleanup; % Takes 4 s.
     for oi=1:conditions
         if exist('results','var') && oo(oi).responseCount>1
             ffprintf(ff,'%d:',oi);
