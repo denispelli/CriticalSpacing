@@ -138,8 +138,12 @@ o.readAlphabetFromDisk=false; % true makes the program more portable.
 % o.targetFont='Kuenstler Script Bold'; 
 % o.targetFont='SabbathBlackRegular';
 o.targetFont='SabbathBlack OT';
+o.labelAnswers=false;
+% o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWYZ'; 
+o.targetFont='Checkers';
+o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
+o.labelAnswers=true;
 o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
-o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWYZ'; 
 % o.printSizeAndSpacing=true;
 o=CriticalSpacing(o); 
 
