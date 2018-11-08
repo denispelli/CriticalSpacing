@@ -543,6 +543,9 @@ o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 
+% RESPONSE SCREEN
+o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
+
 % QUEST threshold estimation
 o.beta=nan;
 o.measureBeta=false;
@@ -2683,21 +2686,39 @@ try
             %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
             % Draw text.
             Screen('DrawText',window,string,x,y,black,white,1);
-            Screen('TextSize',window,oo(oi).textSize);
+            n=length(letterStruct); % Number of letters to display.
+            w=RectWidth(screenRect)-2*instructionalMarginPix; % Usable width of display.
+            oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
+            oo(oi).responseTextWidth=min(oo(oi).responseTextWidth,oo(oi).textSize); % But no bigger than our information text.
+            Screen('TextSize',window,oo(oi).responseTextWidth);
             [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
-            alphabetBounds=round(alphabetBounds*oo(oi).textSize/RectHeight(alphabetBounds));
+            % It won't be exactly the right size, so we scale it to exactly
+            % what we want.
+            alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
             x=instructionalMarginPix;
             y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
+            if oo(oi).labelAnswers
+                labelTextSize=oo(oi).textSize;
+                Screen('TextSize',window,labelTextSize);
+            end
             %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
             for i=1:length(oo(oi).alphabet)
                 dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
                 for j=1:length(letterStruct)
                     if oo(oi).alphabet(i)==letterStruct(j).letter
-                        Screen('DrawTexture',window,letterStruct(i).texture,[],dstRect);
+                        Screen('DrawTexture',window,letterStruct(j).texture,[],dstRect);
                     end
+                end
+                if oo(oi).labelAnswers
+                    % We center each label above the corresponding answer.
+                    % We estimate that label width is about
+                    % labelTextSize/2.
+                    labelRect=OffsetRect(dstRect,RectWidth(dstRect)/2-0.25*labelTextSize,-RectHeight(dstRect)-0.2*labelTextSize);
+                    Screen('DrawText',window,oo(oi).alphabet(i),labelRect(1),labelRect(4),black,white,1);
                 end
                 x=x+1.5*RectWidth(dstRect);
             end
+            Screen('TextSize',window,oo(oi).textSize);
             Screen('TextFont',window,oo(oi).textFont,0);
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 fl=ClipLines(fixationLines,fixationClipRect);
