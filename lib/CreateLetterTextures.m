@@ -204,9 +204,9 @@ else % if o.readAlphabetFromDisk
       Screen('TextSize',letterStruct(i).texture,sizePix);
       Screen('FillRect',letterStruct(i).texture,white);
       if o.contrast==1
-         Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2),black,white,1);
+         Screen('DrawText',letterStruct(i).texture,double(letters(i)),-bounds(1)+letterStruct(i).dx,-bounds(2),black,white,1);
       else
-         Screen('DrawText',letterStruct(i).texture,letters(i),-bounds(1)+letterStruct(i).dx,-bounds(2),uint8(white+(double(black)-white)*o.contrast),white,1);
+         Screen('DrawText',letterStruct(i).texture,double(letters(i)),-bounds(1)+letterStruct(i).dx,-bounds(2),uint8(white+(double(black)-white)*o.contrast),white,1);
       end
    end
    Screen('Preference','TextAntiAliasing',1);
