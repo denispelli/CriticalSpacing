@@ -35,7 +35,13 @@ if nargin<1
    o.targetFont='Pelli';
    o.alphabet='1234567890';
    o.borderLetter='$';
-   o.useMATLABFontRendering=0;
+    o.targetFont='Checkers';
+   o.alphabet='abcdefghijklmnopqrstuvwxy';
+   o.borderLetter='z';
+   o.targetFont='Hiragino Mincho ProN W3';
+   o.alphabet=[26085 26412 35486 12391 12354 12426 12364 12392 12358 12372 12374 12356 12414 12375];
+   o.borderLetter=12383;
+  o.useMATLABFontRendering=0;
    showProgress=1;
    useWindow=1;
 end
@@ -217,9 +223,25 @@ if useWindow
    Screen('Close',window);
 end
 for i=1:length(savedAlphabet.images)
-   filename=fullfile(folder,urlencode(savedAlphabet.letters(i)));
-   filename=[filename '.png'];
-   imwrite(savedAlphabet.images{i},filename,'png');
+    % MacOS and Windows use unicode filenames, so they can handle
+    % nearly everything, except some punctuation characters that are not
+    % allowed in filenames. For them we represents the
+    % special character as a code, e.g. %20 for space. This is like
+    % urlencode. There isn't a standard way to encode unicode in a
+    % filename, so we don't intercept the twenty or so unicodes for
+    % whitespace.
+    name=savedAlphabet.letters(i);
+    if length(name)~=1
+        error('savedAlphabet.letters(%d) "%s" should be one letter',i,savedAlphabet.letters(i));
+    end
+    if isspace(double(name)) && double(name)>255
+        warning('Using a unicode whitespace as a filename. It will work, but will be invisible.');
+    end
+    if ismember(name,'% !*''();:@&=+$,/?#[]')
+        name=sprintf('%%%2x',name);
+    end
+    filename=fullfile(folder,[name '.png']);
+    imwrite(savedAlphabet.images{i},filename,'png');
 end
 fprintf('Images of the "%s" alphabet "%s" have been saved in the CriticalSpacing%slib%salphabets%s%s%s folder.\n',o.targetFont,letters,filesep,filesep,filesep,urlencode(o.targetFont),filesep);
 sca
