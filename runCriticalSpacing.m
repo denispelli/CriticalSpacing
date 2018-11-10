@@ -134,17 +134,32 @@ o.thresholdParameter='spacing';
 o.thresholdParameter='size';
 % o(2)=o(1); % Copy the condition
 o.readAlphabetFromDisk=false; % true makes the program more portable.
+
+% Japanese
+o.targetFont='Hiragino Mincho ProN W3';
+o.alphabet=[26085 26412 35486 12391 12354 12426 12364 12392 12358 12372 12374 12356 12414 12375 12383 12290];
+o.labelAnswers=true;
+
+% Chinese
 % o.targetFont='Songti TC Light';
+% o.labelAnswers=true;
+% o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
+
+% Difficult Roman fonts
 % o.targetFont='Kuenstler Script Bold'; 
 % o.targetFont='SabbathBlackRegular';
-o.targetFont='SabbathBlack OT';
-o.labelAnswers=false;
+% o.targetFont='SabbathBlack OT';
+% o.labelAnswers=false;
 % o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWYZ'; 
+% o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
+
+% o.targetFont='Sans Forgetica';
+% o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
+
 o.targetFont='Checkers';
 o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
 o.labelAnswers=true;
-o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
-% o.printSizeAndSpacing=true;
+
 o=CriticalSpacing(o); 
 
 % Results are printed in MATLAB's Command Window and saved in the
