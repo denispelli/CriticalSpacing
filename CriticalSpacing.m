@@ -545,6 +545,7 @@ o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
+o.responseLabels='abcdefghijklmnopqrstivwxyz123456789';
 
 % QUEST threshold estimation
 o.beta=nan;
@@ -727,9 +728,20 @@ graveAccentKeyCode=KbName('`~');
 escapeChar=char(27);
 graveAccentChar='`';
 for oi=1:conditions
-    oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).alphabet);
+    if oo(oi).labelAnswers
+        if length(oo(oi).alphabet)>length(oo(oi).responseLabels)
+            error('o.labelAnswers is true, but o.alphabet is longer than o.responseLabels: %d > %d.',length(oo(oi).alphabet),length(oo(oi).responseLabels));
+        end
+        oo(oi).validResponseLabels=oo(oi).responseLabels(1:length(oo(oi).alphabet));
+        oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).validResponseLabels);
+    else
+        oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).alphabet);
+    end
     for i=1:length(oo(oi).validKeyNames)
-        oo(oi).responseKeyCodes(i)=KbName(oo(oi).validKeyNames{i}); % this returns keyCode as integer
+        oo(oi).responseKeyCodes(i)=KbName(oo(oi).validKeyNames{i}); % This returns keyCode as integer.
+    end
+    if isempty(oo(oi).responseKeyCodes)
+        error('No valid o.responseKeyCodes for responding.');
     end
 end % for oi=1:conditions
 
@@ -905,6 +917,11 @@ try
                     error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
                 end
                 if sum(hits)>1
+                    for i=1:length(fontInfo)
+                        if streq({fontInfo(i).familyName},oo(oi).targetFont)
+                            fprintf('%s\n',fontInfo(i).name);
+                        end
+                    end
                     error('Multiple fonts with name "%s".',oo(oi).targetFont);
                 end
                 oo(oi).targetFontNumber=fontInfo(hits).number;
@@ -2685,7 +2702,7 @@ try
             %          fixationClipRect=oo(oi).stimulusRect;
             %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
             % Draw text.
-            Screen('DrawText',window,string,x,y,black,white,1);
+            Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
             w=RectWidth(screenRect)-2*instructionalMarginPix; % Usable width of display.
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
@@ -2704,6 +2721,7 @@ try
             %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
             for i=1:length(oo(oi).alphabet)
                 dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
+                % Draw the i-th letter in o.alphabet.
                 for j=1:length(letterStruct)
                     if oo(oi).alphabet(i)==letterStruct(j).letter
                         Screen('DrawTexture',window,letterStruct(j).texture,[],dstRect);
@@ -2711,10 +2729,11 @@ try
                 end
                 if oo(oi).labelAnswers
                     % We center each label above the corresponding answer.
-                    % We estimate that label width is about
-                    % labelTextSize/2.
-                    labelRect=OffsetRect(dstRect,RectWidth(dstRect)/2-0.25*labelTextSize,-RectHeight(dstRect)-0.2*labelTextSize);
-                    Screen('DrawText',window,oo(oi).alphabet(i),labelRect(1),labelRect(4),black,white,1);
+                    % We roughly estimate label width to be about
+                    % 0.5*labelTextSize, so horizontal midpoint is roughly
+                    % 0.25*labelTextSize.
+                    labelRect=OffsetRect(dstRect,RectWidth(dstRect)/2-0.25*labelTextSize,-RectHeight(dstRect)-0.4*labelTextSize);
+                    Screen('DrawText',window,double(oo(oi).validResponseLabels(i)),labelRect(1),labelRect(4),black,white,1);
                 end
                 x=x+1.5*RectWidth(dstRect);
             end
@@ -2762,7 +2781,7 @@ try
                 oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
             trialData.reactionTimes(i)=secs-flipSecs;
             
-            if ismember(answer,[escapeChar graveAccentChar]);
+            if ismember(answer,[escapeChar graveAccentChar])
                 oo(1).quitRun=true;
                 break;
             end
@@ -2793,14 +2812,15 @@ try
                 ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
                 break;
             end
-            % GetKeypressWithHelp now returns only one character. OBSOLETE:
-            % GetKeypress returns, in answer, both key labels when there are
-            % two, e.g. "3#". We score the response as whichever target letter
-            % is included in the "answer" string.
-            reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).alphabet),upper(answer)));
+            % GetKeypressWithHelp returns only one character.
+            if oo(oi).labelAnswers
+                reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).validResponseLabels),upper(answer)));
+            else
+                reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).alphabet),upper(answer)));
+            end
             if oo(oi).speakEachLetter && oo(oi).useSpeech
-                % Speak the target that the observer saw, e.g '1', not the keyCode '1!'
-                Speak(reportedTarget);
+                % Speak the answer that the observer gave, e.g 'a'.
+                Speak(answer);
             end
             if ismember(upper(reportedTarget),upper(targets))
                 if oo(oi).beepPositiveFeedback
