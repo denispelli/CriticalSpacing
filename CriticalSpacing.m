@@ -914,7 +914,17 @@ try
                     hits=streq({fontInfo.familyName},oo(oi).targetFont);
                 end
                 if sum(hits)==0
-                    error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+                    fprintf('Similarly named fonts:\n');
+                    begin=o.targetFont(1:min(4,length(o.targetFont)));
+                    fprintf('(Reporting all font names that match the "%s" beginning of the given name, up to four characters.)\n',begin);
+                    for i=1:length(fontInfo)
+                        % Print names of any fonts that have the right first four
+                        % letters, ignoring capitalization.
+                        if strncmpi({fontInfo(i).familyName},o.targetFont,min(4,length(o.targetFont)))
+                            fprintf('%s\n',fontInfo(i).name);
+                        end
+                    end
+                    error('The o.targetFont "%s" is not available. Please install it, or use another font. Similar names appear above.',o.targetFont);
                 end
                 if sum(hits)>1
                     for i=1:length(fontInfo)
@@ -922,13 +932,13 @@ try
                             fprintf('%s\n',fontInfo(i).name);
                         end
                     end
-                    error('Multiple fonts with name "%s".',oo(oi).targetFont);
+                    error('Multiple fonts, above, have family name "%s". Pick one.',oo(oi).targetFont);
                 end
                 oo(oi).targetFontNumber=fontInfo(hits).number;
                 Screen('TextFont',window,oo(oi).targetFontNumber);
                 [~,number]=Screen('TextFont',window);
                 if ~(number==oo(oi).targetFontNumber)
-                    error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
+                    error('Unable to select o.targetFont "%s" by its font number %d.',oo(oi).targetFont,oo(oi).targetFontNumber);
                 end
             else
                 oo(oi).targetFontNumber=[];
