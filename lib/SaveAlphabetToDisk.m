@@ -18,32 +18,86 @@ function SaveAlphabetToDisk(o)
 % December 29, 2015. Rewritten to save as a folder of images instead of a
 % MAT file. This allows the image files to be created outside of MATLAB,
 % e.g. in any graphic editing app, like GraphicConverter.
+% November 11, 2018. Enhanced to support unicode.
 if nargin<1
-   sca
-   o.targetFont='Sloan';
-   o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-   o.borderLetter='X';
-   o.generateAlphabetPage=1;
-%    o.targetFont='Gotham Cond SSm XLight';
-%    o.targetFont='Gotham Cond SSm Light';
-%    o.targetFont='Gotham Cond SSm Book';
-%    o.targetFont='Gotham Cond SSm Medium';
-%    o.targetFont='Gotham Cond SSm Bold';
-%    o.targetFont='Gotham Cond SSm Black';
-%    o.alphabet='123456789';
-%    o.borderLetter='$';
-   o.targetFont='Pelli';
-   o.alphabet='1234567890';
-   o.borderLetter='$';
-    o.targetFont='Checkers';
-   o.alphabet='abcdefghijklmnopqrstuvwxy';
-   o.borderLetter='z';
-   o.targetFont='Hiragino Mincho ProN W3';
-   o.alphabet=[26085 26412 35486 12391 12354 12426 12364 12392 12358 12372 12374 12356 12414 12375];
-   o.borderLetter=12383;
-  o.useMATLABFontRendering=0;
-   showProgress=1;
-   useWindow=1;
+    sca
+    o.generateAlphabetPage=1;
+    o.showBorderLetterInAlphabetPage=0;
+    if 0
+        o.targetFont='Gotham Cond SSm XLight';
+        o.targetFont='Gotham Cond SSm Light';
+        o.targetFont='Gotham Cond SSm Book';
+        o.targetFont='Gotham Cond SSm Medium';
+        o.targetFont='Gotham Cond SSm Bold';
+        o.targetFont='Gotham Cond SSm Black';
+        o.alphabet='123456789';
+        o.borderLetter='$';
+    end
+    if 0
+        o.targetFont='Sloan';
+        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+        o.borderLetter='X';
+    end
+    if 1
+        o.targetFont='Pelli';
+        o.alphabet='1234567890';
+        o.borderLetter='$';
+    end
+    if 0
+        % Checkers alphabet
+        o.targetFont='Checkers';
+        o.alphabet='abcdefghijklmnopqrstuvwxy';
+        o.borderLetter='z';
+    end
+   if 1
+        % Sans Forgetica
+        o.targetFont='Sans Forgetica';
+        o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        o.borderLetter='$';
+    end
+   if 0
+        % Kuenstler
+        o.targetFont='Kuenstler Script LT Medium';
+        o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        o.borderLetter='$';
+    end
+   if 0
+        % Black Sabbath
+        o.targetFont='SabbathBlackRegular';
+        o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        o.borderLetter='$';
+    end
+   if 0
+        % Chinese from Qihan
+        o.targetFont='Songti TC Regular';
+        % o.alphabet='????????????????????'; % Chinese from Qihan.
+        o.alphabet=[20687 30524 38590 33310 28982 23627 29245 27169 32032 21338 26222 ...
+            31661 28246 36891 24808 38065 22251 23500 39119 40517];
+        % o.borderLetter='?';
+        o.borderLetter=40517;
+    end
+    if 0
+        % Japanese: Katakan, Hiragani, and Kanji
+        % from Ayaka
+        o.targetFont='Hiragino Mincho ProN W3';
+        %     double('??????????????????????????????????????????????') % Katakana from Ayaka
+        %     '??????????????????????????????????????????????'; % Hiragan from Ayako
+        %     double('???????????????????'); % Hiragana from Ayako
+        %     double('????????????????????') % Kanji from Ayaka
+        o.alphabet=[12450 12452 12454 12456 12458 12459 12461 12463 12465 12467 12469 ... % Katakana from Ayaka
+            12471 12473 12475 12477 12479 12481 12484 12486 12488 12490 12491 ... % Katakana from Ayaka
+            12492 12493 12494 12495 12498 12501 12408 12507 12510 12511 12512 ... % Katakana from Ayaka
+            12513 12514 12516 12518 12520 12521 12522 12523 12524 12525 12527 ... % Katakana from Ayaka
+            12530 12531 ...                                                       % Katakana from Ayaka
+            12354 12362 12363 12365 12379 12383 12394 12395 12396 12397 12399 ... % Hiragana from Ayako
+            12405 12411 12414 12415 12416 12417 12420 12422 12434 ...             % Hiragana from Ayako
+            25010 35009 33016 23041 22654 24149 36605 32302 21213 21127 35069 ... % Kanji from Ayaka
+            37806 32190 26286 37707 38525 34276 38360 38627 28187];               % Kanji from Ayaka
+        o.borderLetter='';
+    end
+    o.useMATLABFontRendering=0;
+    showProgress=1;
+    useWindow=1;
 end
 Screen('Preference','VisualDebugLevel',0);
 Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
@@ -74,17 +128,21 @@ savedAlphabet.dx=[];
 savedAlphabet.width=[];
 savedAlphabet.meanOverMaxTargetWidth=[];
 letters=[o.alphabet o.borderLetter];
+if length(letters)>unique(length(letters))
+    fprintf('"%s"\n',letters);
+    warning('You have at least one duplicated letter.');
+end
 letterPix=512;
 savedAlphabet.targetFont=o.targetFont;
 savedAlphabet.letters=letters;
 if useWindow
    black=0;
    white=255;
-   [window,windowRect]=Screen('OpenWindow',0,255,[0 0 512 512]);
+   window=Screen('OpenWindow',0,255,[0 0 512 512]);
    % Screen('preference','ConserveVRAM',2);
    Screen('FillRect',window);
    Screen('Flip',window);
-   [scratchWindow,scratchRect]=Screen('OpenOffscreenWindow',window,[],2*[0 0 letterPix letterPix]);
+   scratchWindow=Screen('OpenOffscreenWindow',window,[],2*[0 0 letterPix letterPix]);
 end
 % Set font.
 if IsOSX
@@ -100,17 +158,32 @@ if IsOSX
       hits=streq({fontInfo.familyName},o.targetFont);
    end
    if sum(hits)==0
-      error('The o.targetFont "%s" is not available. Please install it.',o.targetFont);
+       fprintf('Similarly named fonts:\n');
+       begin=o.targetFont(1:min(4,length(o.targetFont)));
+       fprintf('(Reporting all font names that match the "%s" beginning of the given name, up to four characters.)\n',begin);
+       for i=1:length(fontInfo)
+           % Print names of any fonts that have the right first four
+           % letters.
+           if strncmpi({fontInfo(i).familyName},o.targetFont,min(4,length(o.targetFont)))
+               fprintf('%s\n',fontInfo(i).name);
+           end
+       end
+       error('The o.targetFont "%s" is not available. Please install it, or use another font. Any similar names appear above.',o.targetFont);
    end
    if sum(hits)>1
-      error('Multiple fonts with name "%s".',o.targetFont);
+       for i=1:length(fontInfo)
+           if streq({fontInfo(i).familyName},o.targetFont)
+               fprintf('%s\n',fontInfo(i).name);
+           end
+       end
+       error('Multiple fonts, above, have family name "%s". Pick one.',oo(oi).targetFont);
    end
    o.targetFontNumber=fontInfo(hits).number;
    if useWindow
       Screen('TextFont',window,o.targetFontNumber);
       [~,number]=Screen('TextFont',window);
       if ~(number==o.targetFontNumber)
-         error('The o.targetFont "%s" is not available. Please install it.',o.targetFont);
+          error('Unable to select o.targetFont "%s" by its font number %d.',oo(oi).targetFont,oo(oi).targetFontNumber);
       end
    end
 else
@@ -143,6 +216,7 @@ if useWindow
       end
    end
    bounds=alphabetBounds;
+   heightOverWidth=RectHeight(bounds)/RectWidth(bounds);
    savedAlphabet.rect=OffsetRect(bounds,-bounds(1),-bounds(2));
    for i=1:length(letters)
       letterBounds=TextBounds(scratchWindow,letters(i),1);
@@ -169,7 +243,7 @@ for i=1:length(letters)
    else
       if useWindow
          Screen('FillRect',scratchWindow,white);
-         Screen('DrawText',scratchWindow,letters(i),-bounds(1)+savedAlphabet.dx(i),-bounds(2),black,white,1);
+         Screen('DrawText',scratchWindow,double(letters(i)),-bounds(1)+savedAlphabet.dx(i),-bounds(2),black,white,1);
          letterImage=Screen('GetImage',scratchWindow,OffsetRect(bounds,-bounds(1),-bounds(2)),'drawBuffer');
          savedAlphabet.images{i}=letterImage;
       end
@@ -223,7 +297,7 @@ if useWindow
    Screen('Close',window);
 end
 for i=1:length(savedAlphabet.images)
-    % MacOS and Windows use unicode filenames, so they can handle
+    % macOS and Windows use unicode filenames, so they can handle
     % nearly everything, except some punctuation characters that are not
     % allowed in filenames. For them we represents the
     % special character as a code, e.g. %20 for space. This is like
@@ -248,9 +322,13 @@ sca
 % show Alphabet Page
 if o.generateAlphabetPage
    figure('PaperType','usletter');
-   for i=1:length(savedAlphabet.images)-1 % skip border letter, which is last
-      subplot(ceil(numel(savedAlphabet.images)/3),3,i);
-      imshow(savedAlphabet.images{i});
+   for i=1:length(savedAlphabet.images)
+       if o.borderLetter==savedAlphabet.letters(i)
+           continue
+       end
+       columns=round(heightOverWidth*1.2*sqrt(length(savedAlphabet.images)));
+       subplot(ceil(length(savedAlphabet.images)/columns),columns,i);
+       imshow(savedAlphabet.images{i});
    end
    suptitle(sprintf('%s alphabet',o.targetFont));
    saveas(gcf,fullfile(pdfFolder,['screenshot of ' urlencode(o.targetFont) ' alphabet.png']));
