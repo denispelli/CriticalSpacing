@@ -213,16 +213,16 @@ function oo=CriticalSpacing(oIn)
 % CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
 % o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
 % viewing distance (or declare that you're using a mirror) at the beginning
-% of each run. You need long distance to display tiny letters, and you need
+% of each block. You need long distance to display tiny letters, and you need
 % short viewing distance to display peripheral letters, if fixation is
 % on-screen. (We plan to add support for off-screen fixation.) When viewing
 % foveally, please err on the side of making the viewing distance longer
 % than necessary. If you use too short a viewing distance then the minimum
 % size and spacing may be bigger than the threshold you want to measure. At
-% the end of the run, CriticalSpacing.m warns you if the estimated
+% the end of the block, CriticalSpacing.m warns you if the estimated
 % threshold is smaller than the minimum possible size or spacing at the
 % current distance, and suggests that you increase the viewing distance in
-% subsequent runs. The minimum viewing distance depends on the smallest
+% subsequent blocks. The minimum viewing distance depends on the smallest
 % letter size you want to show with 8 pixels and the resolution (pixels per
 % centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
 % paper cited at the beginning,
@@ -232,7 +232,7 @@ function oo=CriticalSpacing(oIn)
 % where minimumTargetPix=8 and letterDeg=0.02 for the healthy adult fovea.
 %
 % PERSPECTIVE DISTORTION IS MINIMIZED BY PLACING THE TARGET AT THE NEAR
-% POINT (new in June 2017). At the beginning of each run, the
+% POINT (new in June 2017). At the beginning of each block, the
 % CriticalSpacing program gives directions to arrange the display so that
 % its "near point" (i.e. point closest to the observer's eye) is orthogonal
 % to the observer's line of sight. This guarantees minimal effects of
@@ -290,17 +290,17 @@ function oo=CriticalSpacing(oIn)
 % hidden behind the CriticalSpacing window, so you'll be stuck. The caps
 % lock key is always safe.)
 %
-% ESCAPE KEY: QUIT. You can always terminate the current run by hitting the
+% ESCAPE KEY: QUIT. You can always terminate the current block by hitting the
 % escape key on your keyboard (typically in upper left, labeled "esc").
 % Because at least one computer (e.g. the 2017 MacBook Pro with track bar)
 % lacks an ESCAPE key, we always accept the GRAVE ACCENT key (also in upper
 % left of keyboard) as equivalent. CriticalSpacing will then print out (and
 % save to disk) results so far, and ask whether you're quitting the whole
-% session or proceeding to the next run. Quitting this run sets the flag
-% o.quitRun, and quitting the whole session also sets the flag
+% session or proceeding to the next block. Quitting this block sets the flag
+% o.quitBlock, and quitting the whole session also sets the flag
 % o.quitSession. If o.quitSession is already set when you call
 % CriticalSpacing, the CriticalSpacing returns immediately after processing
-% arguments. (CriticalSpacing ignores o.quitRun on input.)
+% arguments. (CriticalSpacing ignores o.quitBlock on input.)
 %
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
@@ -579,7 +579,7 @@ o.useFractionOfScreen=false;
 % the number of targets after each correct report
 % of both letters in a presentation, until the
 % observer gets three presentations right. Then we
-% seamlessly begin the official run.
+% seamlessly begin the official block.
 
 % PRACTICE PRESENTATIONS.
 % In several instances, very young children (4 years old) refused to even
@@ -597,24 +597,24 @@ o.useFractionOfScreen=false;
 %
 % o.practicePresentations=3 only affects the repeated-targets condition,
 % i.e. when o.repeatedTargets=true. This new options adds 3 practice
-% presentations at the beginning of every repeatedTargets run. The first
+% presentations at the beginning of every repeatedTargets block. The first
 % presentation has only a few target letters (two unique) in a single row.
 % Subsequent presentations are similar, until the observer gets both
 % targets right. Then it doubles the number of targets. Again it waits for
 % the observer to get both targets right, and then doubles the number of
-% targets. After 3 successful practice presentations, the official run
+% targets. After 3 successful practice presentations, the official block
 % begins. The practice presentation responses are discarded and not passed
 % to Quest.
 %
 % You can restore the old behavior by setting o.practicePresentations=0.
-% After the practice, the run estimates threshold by the same procedure
+% After the practice, the block estimates threshold by the same procedure
 % whether o.practicePresentation is 0 or 3.
 
 % NOT SET BY USER
 o.deviceIndex=-3; % all keyboard and keypad devices
 o.easyCount=0; % Number of easy presentations
 o.guessCount=0; % Number of artificial guess responses
-o.quitRun=false;
+o.quitBlock=false;
 o.quitSession=false;
 o.script='';
 o.scriptFullFileName='';
@@ -1296,12 +1296,12 @@ try
         [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
             ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo(1).quitRun=true;
+            oo(1).quitBlock=true;
             oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
             if oo(1).quitSession
-                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining runs.\n');
+                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining blocks.\n');
             else
-                ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+                ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
             end
             CloseWindowsAndCleanup;
             return
@@ -1397,12 +1397,12 @@ try
         end
         [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo(1).quitRun=true;
+            oo(1).quitBlock=true;
             oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
             if oo(1).quitSession
                 ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
             else
-                ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+                ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
             end
             for i=1:conditions
                 oo(i).experimenter=name;
@@ -1430,12 +1430,12 @@ try
         end
         [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo(1).quitRun=true;
+            oo(1).quitBlock=true;
             oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
             if oo(1).quitSession
                 ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
             else
-                ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+                ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
             end
             CloseWindowsAndCleanup;
             return
@@ -1688,7 +1688,7 @@ try
         end
         fixationLines=ComputeFixationLines2(oo(oi).fix);
         
-        oo(1).quitRun=false;
+        oo(1).quitBlock=false;
         
         switch oo(oi).thresholdParameter
             case 'spacing'
@@ -1929,19 +1929,19 @@ try
     
     Screen('FillRect',window);
     if ismember(answer,[escapeChar graveAccentChar])
-        oo(1).quitRun=true;
+        oo(1).quitBlock=true;
         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
         if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
         else
-            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+            ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
         end
         CloseWindowsAndCleanup;
         return
     end
     fixationClipRect=oo(oi).stimulusRect;
     if oo(oi).showProgressBar
-        string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the run. ';
+        string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the block. ';
     else
         string='';
     end
@@ -2301,12 +2301,12 @@ try
                 SetMouse(screenRect(3),screenRect(4),window);
                 answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
                 if ismember(answer,[escapeChar graveAccentChar])
-                    oo(1).quitRun=true;
+                    oo(1).quitBlock=true;
                     oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
                     if oo(1).quitSession
                         ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
                     else
-                        ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+                        ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
                     end
                     CloseWindowsAndCleanup;
                     return
@@ -2792,7 +2792,7 @@ try
             trialData.reactionTimes(i)=secs-flipSecs;
             
             if ismember(answer,[escapeChar graveAccentChar])
-                oo(1).quitRun=true;
+                oo(1).quitBlock=true;
                 break;
             end
             if streq(upper(answer),' ')
@@ -2847,7 +2847,7 @@ try
         if ~skipping
             easeRequest=0;
         end
-        if oo(oi).speakEncouragement && oo(oi).useSpeech && ~oo(1).quitRun && ~skipping
+        if oo(oi).speakEncouragement && oo(oi).useSpeech && ~oo(1).quitBlock && ~skipping
             switch randi(3);
                 case 1
                     Speak('Good!');
@@ -2857,7 +2857,7 @@ try
                     Speak('Very good');
             end
         end
-        if oo(1).quitRun
+        if oo(1).quitBlock
             break;
         end
         responseScores=ismember(responseString,targets);
@@ -2905,24 +2905,24 @@ try
                 oo(oi).maxRepetition=inf;
             end
         end
-        if oo(1).quitRun
+        if oo(1).quitBlock
             break;
         end
     end % for presentation=1:length(condList)
-    % Quitting just this run or whole session?
-    if oo(1).quitRun
+    % Quitting just this block or whole session?
+    if oo(1).quitBlock
         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
         if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
         else
-            ffprintf(ff,'*** User typed ESCAPE. Run terminated.\n');
+            ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
         end
     end
     Screen('FillRect',window);
     Screen('Flip',window);
     if oo(1).useSpeech
-        if ~oo(1).quitRun
-            Speak('Congratulations.  This run is done.');
+        if ~oo(1).quitBlock
+            Speak('Congratulations.  This block is done.');
         end
     end
     trials=0;
