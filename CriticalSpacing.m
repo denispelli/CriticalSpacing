@@ -3220,8 +3220,13 @@ function CloseWindowsAndCleanup()
 % Close any windows opened by the Psychtoolbox Screen command, and
 % re-enable keyboard.
 if ~isempty(Screen('Windows'))
-    % Screen CloseAll is very slow, so call it only if we need to.
+    % Screen CloseAll is very slow, so we call it only if we need to.
     Screen('CloseAll');
+    % Equivalent to calling CloseAll.
+    %     while ~isempty(Screen('Windows'))
+    %         ww=Screen('Windows');
+    %         Screen('Close',ww(1));
+    %     end
     if ismac
         AutoBrightness(0,1);
     end
