@@ -138,7 +138,7 @@ for oi=1:length(oo)
 end
 tt=struct2table(oo);
 if sum(tt.trials<25)>0
-    warning('Discarding %d threshold(s) with fewer than 25 trials:\n',sum(tt.trials<25));
+    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than 25 trials:\n',sum(tt.trials<25));
     disp(tt(tt.trials<25,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trials'})) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
