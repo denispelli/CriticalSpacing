@@ -156,8 +156,11 @@ o.labelAnswers=true;
 % o.targetFont='Sans Forgetica';
 % o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
 
+o.readAlphabetFromDisk=true; % true makes the program more portable.
 o.targetFont='Checkers';
 o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
+o.borderLetter='';
+
 o.labelAnswers=true;
 
 o=CriticalSpacing(o); 
