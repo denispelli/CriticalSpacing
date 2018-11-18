@@ -924,7 +924,7 @@ try
                             fprintf('%s\n',fontInfo(i).name);
                         end
                     end
-                    error('The o.targetFont "%s" is not available. Please install it, or use another font. Similar names appear above.',oo(oi).targetFont);
+                    error('The o.targetFont "%s" is not installed in your computer''s OS. \nIf you think it might be in CriticalSpacing''s "alphabet" folder \nthen try setting "o.readAlphabetFromDisk=true;". Otherwise please install the font, or use another font. Similar names appear above.',oo(oi).targetFont);
                 end
                 if sum(hits)>1
                     for i=1:length(fontInfo)
@@ -3046,7 +3046,7 @@ catch e
         fclose(dataFid);
         dataFid=-1;
     end
-    CloseWindowsAndCleanup;
+    CloseWindowsAndCleanup; % Takes 120 s.
     rethrow(e);
 end
 end % function CriticalSpacing
@@ -3216,6 +3216,7 @@ xyDeg=xyDeg+o.nearPointXYDeg;
 end
 
 %% Clean up whenever CriticalSpacing terminates, even by control-c.
+% Takes 120 s.
 function CloseWindowsAndCleanup()
 % Close any windows opened by the Psychtoolbox Screen command, and
 % re-enable keyboard.
@@ -3227,8 +3228,8 @@ if ~isempty(Screen('Windows'))
     %         ww=Screen('Windows');
     %         Screen('Close',ww(1));
     %     end
-    if ismac
-        AutoBrightness(0,1);
+    if ismac % Takes 120 s.
+%         AutoBrightness(0,1);
     end
 end
 ListenChar; % May already be done by sca.
