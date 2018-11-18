@@ -1,6 +1,7 @@
 %% Analyze the data collected by EvsNRun.
 
 experiment='runCrowdingSurvey';
+printFilenames=true;
 makePlotLinear=false;
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(fullfile(myPath,'lib')); % Folder in same directory as this M file.
