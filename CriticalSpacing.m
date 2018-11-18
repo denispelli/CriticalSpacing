@@ -915,16 +915,16 @@ try
                 end
                 if sum(hits)==0
                     fprintf('Similarly named fonts:\n');
-                    begin=o.targetFont(1:min(4,length(o.targetFont)));
+                    begin=oo(oi).targetFont(1:min(4,length(oo(oi).targetFont)));
                     fprintf('(Reporting all font names that match the "%s" beginning of the given name, up to four characters.)\n',begin);
                     for i=1:length(fontInfo)
                         % Print names of any fonts that have the right first four
                         % letters, ignoring capitalization.
-                        if strncmpi({fontInfo(i).familyName},o.targetFont,min(4,length(o.targetFont)))
+                        if strncmpi({fontInfo(i).familyName},oo(oi).targetFont,min(4,length(oo(oi).targetFont)))
                             fprintf('%s\n',fontInfo(i).name);
                         end
                     end
-                    error('The o.targetFont "%s" is not available. Please install it, or use another font. Similar names appear above.',o.targetFont);
+                    error('The o.targetFont "%s" is not available. Please install it, or use another font. Similar names appear above.',oo(oi).targetFont);
                 end
                 if sum(hits)>1
                     for i=1:length(fontInfo)
