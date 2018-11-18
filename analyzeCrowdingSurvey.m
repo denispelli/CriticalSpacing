@@ -70,7 +70,7 @@ end
 t=tmean;
 
 %% PLOT HISTOGRAMS (ACROSS OBSERVERS & HEMISPHERES) OF THREE KINDS OF THRESHOLD. AT ±5,0 DEG.
-for type=1:3
+for type=1:5
     switch type
         case 1
             ok=streq(t.thresholdParameter,'size');
@@ -84,29 +84,50 @@ for type=1:3
             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
             x=t{ok,'spacingDeg'};
             name='Tangential crowding distance (deg)';
+        case 4
+            ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'radial');
+            x=t{ok,'spacingDeg'};
+            ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
+            y=t{ok,'spacingDeg'};
+            x=x./y;
+            name='Radial:Tangential ratio';
+        case 5
+            ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
+            x=t{ok,'spacingDeg'};
+            ok=streq(t.thresholdParameter,'size');
+            y=t(ok,:).targetDeg;
+            x=x./y;
+            name='Tangential crowding:Acuity ratio';
     end
     if sum(ok)==0
         continue
     end
     i=find(ok);
     parameter=name;
-    subplot(3,2,(type-1)*2+1)
-    histogram(x);
+    subplot(5,2,(type-1)*2+1)
+    histogram(x,8);
     ylabel('Count');
     xlabel(parameter);
-    title(sprintf('Histogram at (%.0f,%.0f) deg',t{i(1),'eccentricityXYDeg'}));
+    plusMinus=177;
+    title(sprintf('Histogram at (%c%.0f,%.0f) deg',plusMinus,abs(t{i(1),'eccentricityXYDeg'})));
     ax=gca;
     ax.FontSize=12;
     yticks(round(ax.YLim(1)):ax.YLim(2));
-    subplot(3,2,(type-1)*2+2)
-    histogram(log10(x));
+    subplot(5,2,(type-1)*2+2)
+    histogram(log10(x),'BinWidth',0.25);
     ylabel('Count');
     xlabel(['log ' parameter]);
-    title(sprintf('Histogram at (%.0f,%.0f) deg',t{i(1),'eccentricityXYDeg'}));
+    title(sprintf('Histogram at (%c%.0f,%.0f) deg',plusMinus,abs(t{i(1),'eccentricityXYDeg'})));
     ax=gca;
     ax.FontSize=12;
     yticks(round(ax.YLim(1)):ax.YLim(2));
 end
+
+x0=1;
+y0=1;
+width=25;
+height=50;
+set(gcf,'units','centimeters','position',[x0,y0,width,height])
 
 %% SAVE PLOT TO DISK
 figureTitle='Histograms';
@@ -114,7 +135,7 @@ graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.eps'])
 saveas(gcf,graphFile,'epsc')
 graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.fig']);
 saveas(gcf,graphFile)
-fprintf('Figure saved as ''%s.eps'' and ''%s.fig''\n',figureTitle);
+fprintf('Figure saved as ''%s.eps'' and ''%s.fig''\n',figureTitle,figureTitle);
 
 %% SAVE TO DISK AS CSV AND FIG FILES
 printConditions=true;
