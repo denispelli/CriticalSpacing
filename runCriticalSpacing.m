@@ -15,7 +15,7 @@ o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Put name here to skip the runtime question.
 o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
-o.readAlphabetFromDisk=1; % 1 makes the program more portable.
+o.readAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=0; % To illustrate your talk or paper.
 o.task='identify';
@@ -110,20 +110,82 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN 
 
-% o.useFractionOfScreen=0.3; 
+if 0
+    % Sans Forgetica
+    o.targetFont='Sans Forgetica';
+    o.readAlphabetFromDisk=true;
+    o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    o.borderLetter='$';
+end
+if 0
+    % Kuenstler
+    o.targetFont='Kuenstler Script LT Medium';
+    o.readAlphabetFromDisk=true;
+    o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    o.borderLetter='$';
+end
+if 0
+    % Black Sabbath
+    o.targetFont='SabbathBlackRegular';
+    o.readAlphabetFromDisk=true;
+    o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    o.borderLetter='$';
+end
+if 0
+    % Chinese from Qihan
+    o.targetFont='Songti TC Regular';
+    o.readAlphabetFromDisk=true;
+    % o.alphabet='????????????????????'; % Chinese from Qihan.
+    o.alphabet=[20687 30524 38590 33310 28982 23627 29245 27169 32032 21338 26222 ...
+        31661 28246 36891 24808 38065 22251 23500 39119 40517];
+    % o.borderLetter='?';
+    o.labelAnswers=true;
+    o.borderLetter=40517;
+end
+if 1
+    % Japanese: Katakan, Hiragani, and Kanji
+    % from Ayaka
+    o.targetFont='Hiragino Mincho ProN W3';
+    o.readAlphabetFromDisk=true;
+    %     double('??????????????????????????????????????????????') % Katakana from Ayaka
+    %     '??????????????????????????????????????????????'; % Hiragan from Ayako
+    %     double('???????????????????'); % Hiragana from Ayako
+    %     double('????????????????????') % Kanji from Ayaka
+    japaneseScript='Kanji';
+    switch japaneseScript
+        case 'Katakana'
+            o.alphabet=[12450 12452 12454 12456 12458 12459 12461 12463 12465 12467 12469 ... % Katakana from Ayaka
+                12471 12473 12475 12477 12479 12481 12484 12486 12488 12490 12491 ... % Katakana from Ayaka
+                12492 12493 12494 12495 12498 12501 12408 12507 12510 12511 12512 ... % Katakana from Ayaka
+                12513 12514 12516 12518 12520 12521 12522 12523 12524 12525 12527 ... % Katakana from Ayaka
+                12530 12531]                                                      % Katakana from Ayaka
+        case 'Hiragana'
+            o.alphabet=[12354 12362 12363 12365 12379 12383 12394 12395 12396 12397 12399 ... % Hiragana from Ayako
+                12405 12411 12414 12415 12416 12417 12420 12422 12434];            % Hiragana from Ayako
+        case 'Kanji'
+            o.alphabet=[25010 35009 33016 23041 22654 24149 36605 32302 21213 21127 35069 ... % Kanji from Ayaka
+                37806 32190 26286 37707 38525 34276 38360 38627 28187];               % Kanji from Ayaka
+    end
+    o.labelAnswers=true;
+    o.borderLetter='';
+end
+
+% o.useFractionOfScreen=0.3;
 
 o.practicePresentations=0;
-o.experimenter='Antje';
-o.observer='junk';
+o.experimenter='Darshan';
+o.observer='';
 
 o.viewingDistanceCm=50;
 o.eccentricityXYDeg=[10 0]; % Distance of target from fixation. Positive up and to right.
 o.nearPointXYInUnitSquare=[0.7 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
 
 o.durationSec=0.2; % duration of display of target and flankers
-o.targetFont='Sloan';
-o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-o.borderLetter='X';
+if 0
+    o.targetFont='Sloan';
+    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+    o.borderLetter='X';
+end
 o.targetDeg=2;
 
 o.repeatedTargets=0;
@@ -136,9 +198,9 @@ o.thresholdParameter='size';
 o.readAlphabetFromDisk=false; % true makes the program more portable.
 
 % Japanese
-o.targetFont='Hiragino Mincho ProN W3';
-o.alphabet=[26085 26412 35486 12391 12354 12426 12364 12392 12358 12372 12374 12356 12414 12375 12383 12290];
-o.labelAnswers=true;
+% o.targetFont='Hiragino Mincho ProN W3';
+% o.alphabet=[26085 26412 35486 12391 12354 12426 12364 12392 12358 12372 12374 12356 12414 12375 12383 12290];
+% o.labelAnswers=true;
 
 % Chinese
 % o.targetFont='Songti TC Light';
@@ -156,12 +218,11 @@ o.labelAnswers=true;
 % o.targetFont='Sans Forgetica';
 % o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
 
-o.readAlphabetFromDisk=true; % true makes the program more portable.
-o.targetFont='Checkers';
-o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
-o.borderLetter='';
+% o.readAlphabetFromDisk=true; % true makes the program more portable.
+% o.targetFont='Checkers';
+% o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
+% o.borderLetter='';
 
-o.labelAnswers=true;
 
 o=CriticalSpacing(o); 
 
