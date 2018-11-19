@@ -1,4 +1,4 @@
-%% Analyze the data collected by EvsNRun.
+%% Analyze the data collected by runCrowdingSurvey.
 
 experiment='runCrowdingSurvey';
 printFilenames=true;
@@ -34,12 +34,13 @@ end
 
 % Report the relevant fields of each file.
 t=struct2table(oo);
+t=sortrows(t,{'thresholdParameter' 'observer' 'eccentricityXYDeg' });
 if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
     switch experiment
         case 'runCrowdingSurvey'
-            disp(t(:,{'observer','eccentricityXYDeg', ...
-                'thresholdParameter','flankingDirection','spacingDeg','targetDeg', ...
+            disp(t(:,{'observer','thresholdParameter','eccentricityXYDeg', ...
+                'flankingDirection','spacingDeg','targetDeg', ...
                 'dataFilename' ...
                 }));
     end
@@ -50,11 +51,15 @@ end
 % The new table has the mean of each observer, at each location and
 % flankingDirection.
 t=sortrows(t,{'eccentricityXYDeg','thresholdParameter','observer'});
-i=1;
 tmean=table();
-t(:,'n')={1}; % Number of observers represented by this row.
+t(:,'n')={1}; % Number of thresholds represented by each row.
+i=1;
 while ~isempty(t)
-    tmean(i,:)=t(1,:);
+    if i>1
+        tmean(i,:)=tmean(1,:); % Add a row.
+    end
+    tmean(i,t.Properties.VariableNames)=t(1,:);
+    tmean(:,{'spacingDeg' 'targetDeg'})=[];
     match=ismember(t{:,'observer'},t{1,'observer'}) ...
         & ismember(t.eccentricityXYDeg(:,1),t(1,:).eccentricityXYDeg(:,1)) ...
         & ismember(t.flankingDirection,t(1,:).flankingDirection);
@@ -62,72 +67,108 @@ while ~isempty(t)
     if sum(match)==0
         error('No match.');
     end
-    tmean(i,'spacingDeg')={mean(t{match,'spacingDeg'})};
-    tmean(i,'targetDeg')={mean(t{match,'targetDeg'})};
+    tmean(i,'logSpacingDegMean')={mean(log10(t{match,'spacingDeg'}))};
+    tmean(i,'logSpacingDegSD')={std(log10(t{match,'spacingDeg'}))};
+    tmean(i,'logSpacingDegN')={length(log10(t{match,'spacingDeg'}))};
+    tmean(i,'logAcuityDegMean')={mean(log10(t{match,'targetDeg'}))};
+    tmean(i,'logAcuityDegSD')={std(log10(t{match,'targetDeg'}))};
+    tmean(i,'logAcuityDegN')={length(log10(t{match,'targetDeg'}))};
     t(match,:)=[];
     i=i+1;
 end
 t=tmean;
 
 %% PLOT HISTOGRAMS (ACROSS OBSERVERS & HEMISPHERES) OF THREE KINDS OF THRESHOLD. AT ±5,0 DEG.
-for type=1:5
+figure
+x0=1;
+y0=1;
+width=25;
+height=50;
+set(gcf,'units','centimeters','position',[x0,y0,width,height])
+for type=1:3
     switch type
         case 1
             ok=streq(t.thresholdParameter,'size');
-            x=t(ok,:).targetDeg;
+            x=t(ok,:).logAcuityDegMean;
             name='Acuity (deg)';
+            m=mean(x);
+            sd=std(x);
+            se=sqrt(sum(t(ok,:).logAcuityDegSD.^2)/length(x));
+            name=sprintf('%s, mean %.1f%c%.1f, Observer SE %.2f',name,m,plusMinus,sd,se);
         case 2
             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'radial');
-            x=t{ok,'spacingDeg'};
-            name='Radial crowding distance (deg)';
+            x=t{ok,'logSpacingDegMean'};
+            name='log Radial crowding distance (deg)';
+            m=mean(x);
+            sd=std(x);
+            se=sqrt(sum(t(ok,:).logSpacingDegSD.^2)/length(x));
+            name=sprintf('%s, mean %.1f%c%.1f, Observer SE %.2f',name,m,plusMinus,sd,se);
         case 3
             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
-            x=t{ok,'spacingDeg'};
-            name='Tangential crowding distance (deg)';
-        case 4
-            ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'radial');
-            x=t{ok,'spacingDeg'};
-            ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
-            y=t{ok,'spacingDeg'};
-            x=x./y;
-            name='Radial:Tangential ratio';
-        case 5
-            ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
-            x=t{ok,'spacingDeg'};
-            ok=streq(t.thresholdParameter,'size');
-            y=t(ok,:).targetDeg;
-            x=x./y;
-            name='Tangential crowding:Acuity ratio';
+            x=t{ok,'logSpacingDegMean'};
+            name='log Tangential crowding distance (deg)';
+            m=mean(x);
+            sd=std(x);
+            se=sqrt(sum(t(ok,:).logSpacingDegSD.^2)/length(x));
+            name=sprintf('%s, mean %.1f%c%.1f, Observer SE %.1f',name,m,plusMinus,sd,se);
+%         case 4
+%             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'radial');
+%             x=t{ok,'logSpacingDegMean'};
+%             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
+%             y=t{ok,'logSpacingDegMean'};
+%             x=x-y;
+%             name='log Radial:Tangential ratio';
+%             m=mean(x);
+%             sd=std(x);
+%             name=sprintf('%s, mean %.1f%c%.1f',name,m,plusMinus,sd);
+%        case 5
+%             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
+%             x=t{ok,'logSpacingDegMean'};
+%             ok=streq(t.thresholdParameter,'size');
+%             y=t(ok,:).logAcuityDegMean;
+%             x=x-y;
+%             name='log Tangential crowding:Acuity ratio';
+%             m=mean(x);
+%             sd=std(x);
+%             name=sprintf('%s, mean %.1f%c%.1f',name,m,plusMinus,sd);
     end
     if sum(ok)==0
         continue
     end
     i=find(ok);
     parameter=name;
-    subplot(5,2,(type-1)*2+1)
-    histogram(x,8);
+    subplot(5,1,type)
+    histogram(x,'BinWidth',0.1);
     ylabel('Count');
-    xlabel(parameter);
-    plusMinus=177;
-    title(sprintf('Histogram at (%c%.0f,%.0f) deg',plusMinus,abs(t{i(1),'eccentricityXYDeg'})));
+    xlabel([parameter]);
+    title(sprintf('Histogram of %d hemispheres at (%c%.0f,%.0f) deg',length(x),plusMinus,abs(t{i(1),'eccentricityXYDeg'})));
     ax=gca;
     ax.FontSize=12;
-    yticks(round(ax.YLim(1)):ax.YLim(2));
-    subplot(5,2,(type-1)*2+2)
-    histogram(log10(x),'BinWidth',0.25);
-    ylabel('Count');
-    xlabel(['log ' parameter]);
-    title(sprintf('Histogram at (%c%.0f,%.0f) deg',plusMinus,abs(t{i(1),'eccentricityXYDeg'})));
-    ax=gca;
-    ax.FontSize=12;
-    yticks(round(ax.YLim(1)):ax.YLim(2));
+    yticks(unique(round(ax.YTick)));
+    if ax.YLim(2)>4
+        ax.YMinorTick='on';
+    end
+    if type==3
+        
+        ax.XLim=oldXLim;
+    end
+    oldXLim=ax.XLim;
 end
-
-x0=1;
-y0=1;
-width=25;
-height=50;
-set(gcf,'units','centimeters','position',[x0,y0,width,height])
+if true
+    % Align x axis of radial and tangential histograms.
+    subplot(5,1,2)
+    ax=gca;
+    radialXLim=ax.XLim;
+    subplot(5,1,3)
+    ax=gca;
+    tangentialXLim=ax.XLim;
+    ax.XLim(1)=min([radialXLim(1) tangentialXLim(1)]);
+    ax.XLim(2)=max([radialXLim(2) tangentialXLim(2)]);
+    subplot(5,1,2)
+    ax=gca;
+    ax.XLim(1)=min([radialXLim(1) tangentialXLim(1)]);
+    ax.XLim(2)=max([radialXLim(2) tangentialXLim(2)]);
+end
 
 %% SAVE PLOT TO DISK
 figureTitle='Histograms';
