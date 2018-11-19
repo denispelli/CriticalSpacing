@@ -176,10 +176,9 @@ graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.eps'])
 saveas(gcf,graphFile,'epsc')
 graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.fig']);
 saveas(gcf,graphFile)
-fprintf('Figure saved as ''%s.eps'' and ''%s.fig''\n',figureTitle,figureTitle);
+fprintf('Figure saved as ''/data/%s.eps'' and ''/data/%s.fig''\n',figureTitle,figureTitle);
 
 %% SAVE TO DISK AS CSV AND FIG FILES
-% fprintf('Spreadsheet saved as ''%s.csv''\n',figureTitle);
 printConditions=true;
 saveSpreadsheet=true;
 vars={'thresholdParameter'  'observer' 'eccentricityXYDeg' 'flankingDirection' ...
