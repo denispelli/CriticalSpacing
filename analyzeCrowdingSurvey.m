@@ -39,8 +39,8 @@ if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
     switch experiment
         case 'runCrowdingSurvey'
-            disp(t(:,{'observer','thresholdParameter','eccentricityXYDeg', ...
-                'flankingDirection','spacingDeg','targetDeg', ...
+            disp(t(:,{'thresholdParameter' 'observer' 'eccentricityXYDeg' ...
+                'flankingDirection' 'spacingDeg' 'targetDeg' ...
                 'dataFilename' ...
                 }));
     end
@@ -50,7 +50,7 @@ end
 % Replace repeated measures by their mean.
 % The new table has the mean of each observer, at each location and
 % flankingDirection.
-t=sortrows(t,{'eccentricityXYDeg','thresholdParameter','observer'});
+% t=sortrows(t,{'eccentricityXYDeg','thresholdParameter','observer'});
 tmean=table();
 t(:,'n')={1}; % Number of thresholds represented by each row.
 i=1;
@@ -77,14 +77,18 @@ while ~isempty(t)
     i=i+1;
 end
 t=tmean;
+clear height
+fprintf('Repeated measures have been replaced by their means. %d thresholds over %d conditions.\n',sum(t.n),height(t));
+disp(t(:,{'thresholdParameter','observer','n','eccentricityXYDeg', ...
+                'flankingDirection'}));
 
 %% PLOT HISTOGRAMS (ACROSS OBSERVERS & HEMISPHERES) OF THREE KINDS OF THRESHOLD. AT ±5,0 DEG.
-figure
-x0=1;
-y0=1;
+figure;
 width=25;
 height=50;
-set(gcf,'units','centimeters','position',[x0,y0,width,height])
+set(0,'units','centimeters');
+screenSize=get(groot,'Screensize');
+set(gcf,'units','centimeters','position',[screenSize(3)-width,0,width,height])
 for type=1:3
     switch type
         case 1
@@ -93,24 +97,25 @@ for type=1:3
             name='Acuity (deg)';
             m=mean(x);
             sd=std(x);
-            se=sqrt(sum(t(ok,:).logAcuityDegSD.^2)/length(x));
-            name=sprintf('%s, mean %.1f%c%.1f, Observer SE %.2f',name,m,plusMinus,sd,se);
+            se=mean(t(ok,:).logAcuityDegSD./sqrt(t(ok,:).logAcuityDegN))/sqrt(length(x));
+            name=sprintf('%s, mean %.1f%c%.1f, Retest SE %.2f',name,m,plusMinus,sd,se);
         case 2
             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'radial');
             x=t{ok,'logSpacingDegMean'};
             name='log Radial crowding distance (deg)';
             m=mean(x);
             sd=std(x);
-            se=sqrt(sum(t(ok,:).logSpacingDegSD.^2)/length(x));
-            name=sprintf('%s, mean %.1f%c%.1f, Observer SE %.2f',name,m,plusMinus,sd,se);
+            se=mean(t(ok,:).logSpacingDegSD./sqrt(t(ok,:).logSpacingDegN))/sqrt(length(x));
+            name=sprintf('%s, mean %.1f%c%.1f, Retest SE %.2f',name,m,plusMinus,sd,se);
         case 3
             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
             x=t{ok,'logSpacingDegMean'};
             name='log Tangential crowding distance (deg)';
             m=mean(x);
             sd=std(x);
-            se=sqrt(sum(t(ok,:).logSpacingDegSD.^2)/length(x));
-            name=sprintf('%s, mean %.1f%c%.1f, Observer SE %.1f',name,m,plusMinus,sd,se);
+            okPositive=ok & t.logSpacingDegSD>0;
+            se=mean(t(okPositive,:).logSpacingDegSD./sqrt(t(okPositive,:).logSpacingDegN))/sqrt(length(x));
+            name=sprintf('%s, mean %.1f%c%.1f, Retest SE %.2f',name,m,plusMinus,sd,se);
 %         case 4
 %             ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'radial');
 %             x=t{ok,'logSpacingDegMean'};
@@ -137,7 +142,7 @@ for type=1:3
     end
     i=find(ok);
     parameter=name;
-    subplot(5,1,type)
+    subplot(3,1,type)
     histogram(x,'BinWidth',0.1);
     ylabel('Count');
     xlabel([parameter]);
@@ -148,23 +153,18 @@ for type=1:3
     if ax.YLim(2)>4
         ax.YMinorTick='on';
     end
-    if type==3
-        
-        ax.XLim=oldXLim;
-    end
-    oldXLim=ax.XLim;
 end
 if true
-    % Align x axis of radial and tangential histograms.
-    subplot(5,1,2)
+    % Align x axes of radial and tangential histograms.
+    subplot(3,1,2)
     ax=gca;
     radialXLim=ax.XLim;
-    subplot(5,1,3)
+    subplot(3,1,3)
     ax=gca;
     tangentialXLim=ax.XLim;
     ax.XLim(1)=min([radialXLim(1) tangentialXLim(1)]);
     ax.XLim(2)=max([radialXLim(2) tangentialXLim(2)]);
-    subplot(5,1,2)
+    subplot(3,1,2)
     ax=gca;
     ax.XLim(1)=min([radialXLim(1) tangentialXLim(1)]);
     ax.XLim(2)=max([radialXLim(2) tangentialXLim(2)]);
@@ -179,22 +179,22 @@ saveas(gcf,graphFile)
 fprintf('Figure saved as ''%s.eps'' and ''%s.fig''\n',figureTitle,figureTitle);
 
 %% SAVE TO DISK AS CSV AND FIG FILES
+% fprintf('Spreadsheet saved as ''%s.csv''\n',figureTitle);
 printConditions=true;
 saveSpreadsheet=true;
-vars={'experiment' ...
-    'experimenter' 'observer' 'trials' 'contrast'  ...
-     'eccentricityXYDeg' 'flankingDirection' 'thresholdParameter' ...
+vars={'thresholdParameter'  'observer' 'eccentricityXYDeg' 'flankingDirection' ...
+    'experiment' 'experimenter' 'trials' 'contrast'  ...
     'targetDeg' 'spacingDeg' 'durationSec' ...
     'viewingDistanceCm'  ...
      'dataFilename'};
 t=struct2table(oo,'AsArray',true);
+t=sortrows(t,{'thresholdParameter' 'observer' 'eccentricityXYDeg' });
 dataFilename=[experiment '.csv'];
-if printConditions
-    disp(t(:,vars));
-end
 if saveSpreadsheet
     spreadsheet=fullfile(fileparts(mfilename('fullpath')),'data',dataFilename);
     writetable(t,spreadsheet);
-    fprintf('All selected fields have been saved in spreadsheet: /data/%s\n',dataFilename);
+    fprintf('Spreadsheet saved as: /data/%s\n',dataFilename);
 end
-
+if printConditions
+    disp(t(:,vars));
+end
