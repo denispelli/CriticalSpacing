@@ -5,7 +5,7 @@ function SaveAlphabetToDisk(o)
 % subsequent work, on every platform, with the saved rendering. Saves a
 % rendered font as image files, one per letter, in a folder with the name
 % of the font inside the CriticalSpacing/lib/alphabets/ folder. Both the
-% letter and the font name are url encoded (urlencode).
+% letter and the font name pass through EncodeFilename.
 
 % When you save a new font to the CriticalSpacing/lib/alphabets/ folder,
 % SaveAlphabetToDisk first looks for such a folder already there. If it
@@ -49,13 +49,13 @@ if nargin<1
         o.alphabet='abcdefghijklmnopqrstuvwxy';
         o.borderLetter='z';
     end
-   if 1
+   if 0
         % Sans Forgetica
         o.targetFont='Sans Forgetica';
         o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         o.borderLetter='$';
     end
-   if 0
+   if 1
         % Kuenstler
         o.targetFont='Kuenstler Script LT Medium';
         o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -114,7 +114,7 @@ pdfFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'pdf');% Critical
 if ~exist(pdfFolder,'dir')
    mkdir(pdfFolder);
 end
-folder=fullfile(alphabetsFolder,urlencode(o.targetFont));
+folder=fullfile(alphabetsFolder,EncodeFilename(o.targetFont));
 if exist(folder,'dir')
    rmdir(folder,'s');
 end
@@ -297,11 +297,10 @@ if useWindow
    Screen('Close',window);
 end
 for i=1:length(savedAlphabet.images)
-    % macOS and Windows use unicode filenames, so they can handle
-    % nearly everything, except some punctuation characters that are not
-    % allowed in filenames. For them we represents the
-    % special character as a code, e.g. %20 for space. This is like
-    % urlencode. There isn't a standard way to encode unicode in a
+    % macOS and Windows use unicode filenames, so they can handle nearly
+    % everything, except some punctuation characters that are not allowed
+    % in filenames. For them we represents the special character as a code,
+    % e.g. %2C for comma. There isn't a standard way to encode unicode in a
     % filename, so we don't intercept the twenty or so unicodes for
     % whitespace.
     name=savedAlphabet.letters(i);
@@ -317,7 +316,7 @@ for i=1:length(savedAlphabet.images)
     filename=fullfile(folder,[name '.png']);
     imwrite(savedAlphabet.images{i},filename,'png');
 end
-fprintf('Images of the "%s" alphabet "%s" have been saved in the CriticalSpacing%slib%salphabets%s%s%s folder.\n',o.targetFont,letters,filesep,filesep,filesep,urlencode(o.targetFont),filesep);
+fprintf('Images of the "%s" alphabet "%s" have been saved in the CriticalSpacing%slib%salphabets%s%s%s folder.\n',o.targetFont,letters,filesep,filesep,filesep,EncodeFilename(o.targetFont),filesep);
 sca
 % show Alphabet Page
 if o.generateAlphabetPage
@@ -331,7 +330,7 @@ if o.generateAlphabetPage
        imshow(savedAlphabet.images{i});
    end
    suptitle(sprintf('%s alphabet',o.targetFont));
-   saveas(gcf,fullfile(pdfFolder,['screenshot of ' urlencode(o.targetFont) ' alphabet.png']));
+   saveas(gcf,fullfile(pdfFolder,['screenshot of ' EncodeFilename(o.targetFont) ' alphabet.png']));
    fprintf('A screenshot of the whole "%s" alphabet has been saved in the CriticalSpacing%spdf%s folder.\n',o.targetFont,filesep,filesep);
 end
 fprintf('Done.\n');
