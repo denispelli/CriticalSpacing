@@ -147,10 +147,6 @@ if 1
     % from Ayaka
     o.targetFont='Hiragino Mincho ProN W3';
     o.readAlphabetFromDisk=true;
-    %     double('??????????????????????????????????????????????') % Katakana from Ayaka
-    %     '??????????????????????????????????????????????'; % Hiragan from Ayako
-    %     double('???????????????????'); % Hiragana from Ayako
-    %     double('????????????????????') % Kanji from Ayaka
     japaneseScript='Kanji';
     switch japaneseScript
         case 'Katakana'
@@ -158,7 +154,7 @@ if 1
                 12471 12473 12475 12477 12479 12481 12484 12486 12488 12490 12491 ... % Katakana from Ayaka
                 12492 12493 12494 12495 12498 12501 12408 12507 12510 12511 12512 ... % Katakana from Ayaka
                 12513 12514 12516 12518 12520 12521 12522 12523 12524 12525 12527 ... % Katakana from Ayaka
-                12530 12531]                                                      % Katakana from Ayaka
+                12530 12531];                                                      % Katakana from Ayaka
         case 'Hiragana'
             o.alphabet=[12354 12362 12363 12365 12379 12383 12394 12395 12396 12397 12399 ... % Hiragana from Ayako
                 12405 12411 12414 12415 12416 12417 12420 12422 12434];            % Hiragana from Ayako
