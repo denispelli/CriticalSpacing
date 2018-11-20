@@ -52,7 +52,7 @@ if o.readAlphabetFromDisk
    if ~exist(alphabetsFolder,'dir')
       error('Folder missing: "%s"',alphabetsFolder);
    end
-   folder=fullfile(alphabetsFolder,urlencoding(o.targetFont));
+   folder=fullfile(alphabetsFolder,EncodeFilename(o.targetFont));
    if ~exist(folder,'dir')
       error('Folder missing: "%s". Target font "%s" has not been saved.',folder,o.targetFont);
    end
@@ -84,9 +84,9 @@ if o.readAlphabetFromDisk
       if isempty(savedAlphabet.images{i})
          error('Cannot read image file "%s".',filename);
       end
-      [~,name]=fileparts(urldecoding(d(i).name));
+      [~,name]=fileparts(DecodeFilename(d(i).name));
       if length(name)~=1
-         error('Saved "%s" alphabet letter image file "%s" must have a one-character filename after urldecoding.',o.targetFont,name);
+         error('Saved "%s" alphabet letter image file "%s" must have a one-character filename after DecodeFilename.',o.targetFont,name);
       end
       savedAlphabet.letters(i)=name;
       savedAlphabet.bounds{i}=ImageBounds(savedAlphabet.images{i},255);
@@ -120,10 +120,10 @@ if o.readAlphabetFromDisk
    % Create textures, one per letter.
    for i=1:length(letters)
        which=strfind([savedAlphabet.letters],letters(i));
-      if length(which)~=1
-         error('Letter %c is not in saved "%s" alphabet "%s".',letters(i),o.targetFont,savedAlphabet.letters);
-      end
-      assert(length(which)==1);
+       if length(which)~=1
+             error('Letter %c (unicode %d) is not in saved "%s" alphabet "%s".',letters(i),letters(i),o.targetFont,char(savedAlphabet.letters));
+       end
+       assert(length(which)==1);
       r=savedAlphabet.rect;
       letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
       if o.contrast==1
@@ -213,28 +213,3 @@ else % if o.readAlphabetFromDisk
 end % if o.readAlphabetFromDisk
 end
 
-function u = urlencoding(s)
-  u = '';
-
-  for k = 1:length(s),
-    if ~isempty(regexp(s(k), '[a-zA-Z0-9]', 'once'))
-      u(end+1) = s(k);
-    else
-      u=[u,'%',dec2hex(s(k)+0)];
-    end;
-  end
-end
-
-function u = urldecoding(s)
-  u = '';
-  k = 1;
-  while k<=length(s)
-    if s(k) == '%' && k+2 <= length(s)
-      u = sprintf('%s%c', u, char(hex2dec(s((k+1):(k+2)))));
-      k = k + 3;
-    else
-      u = sprintf('%s%c', u, s(k));
-      k = k + 1;
-    end
-  end
-end
