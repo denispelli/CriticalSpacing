@@ -89,6 +89,7 @@ height=50;
 set(0,'units','centimeters');
 screenSize=get(groot,'Screensize');
 set(gcf,'units','centimeters','position',[screenSize(3)-width,0,width,height])
+plusMinus=char(177);
 for type=1:3
     switch type
         case 1
