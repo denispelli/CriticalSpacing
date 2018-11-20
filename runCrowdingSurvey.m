@@ -42,76 +42,93 @@
 % * (2 thresholds). Acuity at ±5 deg ecc.
 % Repeat all of it. Total of 12 thresholds.
 
-clear o oo
+clear o oo ooo
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.experiment='CrowdingSurvey';
-for ecc=[-5 5]
-    o.eccentricityXYDeg=[ecc 0];
-    for rep=1:2
-        for crowding=0:1
-            if crowding
-                o.conditionName='crowdingDistance';
-                o.thresholdParameter='spacing';
-                for radial=0:1
-                    if radial
-                        o.flankingDirection='radial';
-                    else
-                        o.flankingDirection='tangential';
-                    end
-                    if exist('oo','var')
-                        oo(end+1)=o;
-                    else
-                        oo=o;
-                    end
-                end
-            else % acuity
-                o.conditionName='acuity';
-                o.thresholdParameter='size';
-                o.flankingDirection='radial'; % Ignored
-                if exist('oo','var')
-                    oo(end+1)=o;
+for rep=1:2
+    for crowding=[1 0]
+        if crowding
+            o.conditionName='crowdingDistance';
+            o.thresholdParameter='spacing';
+            for radial=0:1
+                if radial
+                    o.flankingDirection='radial';
                 else
-                    oo=o;
+                    o.flankingDirection='tangential';
+                end
+                if exist('ooo','var')
+                    ooo{end+1}=o;
+                else
+                    ooo={o};
                 end
             end
-            
+        else % acuity
+            o.conditionName='acuity';
+            o.thresholdParameter='size';
+            o.flankingDirection='radial'; % Ignored
+            if exist('ooo','var')
+                ooo{end+1}=o;
+            else
+                ooo={o};
+            end
         end
+        
     end
 end
-for i=1:length(oo)
-   radialDeg=sqrt(sum(oo(i).eccentricityXYDeg.^2));
-   oo(i).viewingDistanceCm=max(30,min(400,round(9/tand(radialDeg))));
-   oo(i).viewingDistanceCm=75;
-   oo(i).row=i;
+for i=1:length(ooo)
+    o=ooo{i};
+    o.row=i;
+    o.fixationAtCenter=true; 
+    o.eccentricityXYDeg=[-5 0];
+    o.nearPointXYInUnitSquare=[0.5 0.5];
+    radialDeg=sqrt(sum(o.eccentricityXYDeg.^2));
+    o.viewingDistanceCm=max(30,min(400,round(9/tand(radialDeg))));
+    o.viewingDistanceCm=40;
+    oo(1)=o;
+    o.eccentricityXYDeg=[5 0];
+    oo(2)=o;
+    ooo{i}=oo;
+end
+oo=[];
+for i=1:length(ooo)
+    if isempty(oo)
+        oo=ooo{i};
+    else
+        oo(end+1:end+2)=ooo{i};
+    end
 end
 t=struct2table(oo);
 t % Print the conditions in the Command Window.
 % return
-for i=1:length(oo)
-   o=oo(i);
-   % o.useFractionOfScreen=0.5;
-   if i==1
-       o.experimenter='Darshan';
-       o.observer='';
-   else
-       o.experimenter=old.experimenter;
-       o.observer=old.observer;
-       o.viewingDistanceCm=old.viewingDistanceCm;
-   end
-   o.fixationLineWeightDeg=0.04;
-   o.fixationCrossDeg=3; % 0, 3, and inf are typical values.
-   o.trials=30;
-   o.practicePresentations=0;
-   o.durationSec=0.2; % duration of display of target and flankers
-   o.repeatedTargets=0;
-   o=CriticalSpacing(o);
-   if ~o.quitBlock
-      fprintf('Finished row %d.\n',i);
-   end
-   if o.quitSession
-      break
-   end
-   old=o;
+for i=1:length(ooo)
+    oo=ooo{i};
+    for oi=1:length(oo)
+        oo(oi).useFractionOfScreen=0.5;
+        if i==1
+            oo(oi).experimenter='Darshan';
+            oo(oi).observer='';
+        else
+            oo(oi).experimenter=old.experimenter;
+            oo(oi).observer=old.observer;
+            oo(oi).viewingDistanceCm=old.viewingDistanceCm;
+        end
+        oo(oi).fixationCrossBlankedNearTarget=false;
+        oo(oi).fixationLineWeightDeg=0.1;
+        oo(oi).fixationCrossDeg=1; % 0, 3, and inf are typical values.
+        oo(oi).trials=30;
+        oo(oi).practicePresentations=0;
+        oo(oi).durationSec=0.2; % duration of display of target and flankers
+        oo(oi).repeatedTargets=0;
+    end
+    oo=CriticalSpacing(oo);
+    ooo{i}=oo;
+    if ~any([oo.quitBlock])
+        fprintf('Finished block %d.\n',i);
+    end
+    if any([oo.quitSession])
+        break
+    end
+    old=oo(1); % Allow reuse of settings.
 end
