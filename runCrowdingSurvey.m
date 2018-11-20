@@ -105,7 +105,7 @@ t % Print the conditions in the Command Window.
 for i=1:length(ooo)
     oo=ooo{i};
     for oi=1:length(oo)
-        oo(oi).useFractionOfScreen=0.5;
+%         oo(oi).useFractionOfScreen=0.5;
         if i==1
             oo(oi).experimenter='Darshan';
             oo(oi).observer='';
