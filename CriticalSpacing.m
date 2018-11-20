@@ -536,12 +536,14 @@ o.flankerLetter='';
 
 % FIXATION
 o.fixationCrossBlankedNearTarget=true;
+o.fixationCrossBlankedUntilSecAfterTarget=false; % This value is reported, but not used. Haven't yet needed it.
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
 o.markTargetLocation=false; % true to mark target location
 o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
+o.fixationAtCenter=false; % Force fixation to be at center of screen.
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
@@ -1137,8 +1139,21 @@ try
             oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+oo(oi).stimulusRect(1:2);
             % oo(oi).nearPointXYPix is a screen coordinate.
             oo(oi).nearPointXYDeg=oo(oi).eccentricityXYDeg;
+            if oo(oi).fixationAtCenter
+                % If necessary, shift nearPointXYPix to put fixation at
+                % center of screen.
+                xy=XYPixOfXYDeg(oo(oi),[0 0]);
+                r=CenterRect([0 0 1 1],oo(1).stimulusRect);
+                if ~IsXYInRect(xy,r)
+                    xyNew=ClipLineSegment2(xy,oo(oi).nearPointXYPix,r);
+                    % Apply the needed shift of fixation, from xy to xyNew, to the nearPointXYPix
+                    ffprintf(ff,'%d: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to center fixation on screen.\n',...
+                        1,oo(oi).nearPointXYPix,oo(oi).nearPointXYPix+xyNew-xy);
+                    oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
+                end
+            end
             if oo(oi).fixationOnScreen
-                % If necessary, shift nearPointXYPix just enought to get
+                % If necessary, shift nearPointXYPix just enough to get
                 % fixation on screen.
                 xy=XYPixOfXYDeg(oo(oi),[0 0]);
                 pix=oo(oi).pixPerDeg*oo(oi).fixationCoreSizeDeg/2;
@@ -1151,7 +1166,7 @@ try
                     oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
                 end
             end
-            % XYPixOfXYDeg results depend on o.nearPointXYDeg and
+            % XYPixOfXYDeg result depends on o.nearPointXYDeg and
             % o.nearPointXYPix.
             % fix.xy is a screen coordinate.
             oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
@@ -2681,6 +2696,7 @@ try
         if isfinite(oo(oi).durationSec)
             WaitSecs(oo(oi).durationSec); % Display letters.
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
+%             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-trialTimeSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 fl=ClipLines(fixationLines,fixationClipRect);
                 if ~isempty(fl)
