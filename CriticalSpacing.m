@@ -393,7 +393,17 @@ function oo=CriticalSpacing(oIn)
 % In repetition mode, don't assume one centered target and an even number
 % of spaces. We might want to center between two targets to show an odd
 % number of spaces.
-
+% 
+% The software currently assumes that you want it to place fixation so as
+% to put the target close to the near point. That is fine when all
+% targets in the block have the same eccentricity, but it's weird to have a
+% different fixation on every trial, and this spoils position uncertainty.
+% I added a new flag o.fixationCenterOnScreen to lock fixation down. This
+% is fine for now, but it seems clunky, as I can imagine wanting to fix
+% fixation at some other location. I'm not sure what might be the elegant
+% way to specify that fixation should be at the same screen position for
+% all interleaved conditions.
+%
 %% HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
@@ -474,7 +484,9 @@ o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 o.measureViewingDistanceToTargetNotFixation=true;
 o.condition=[]; % Integer count of the condition, starting at 1.
-o.conditionName='';
+o.conditionName=''; 
+o.experiment=''; % Name of this experiment. Used to select files for analysis.
+o.block=[]; % Each block may contain more than one condition.
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
