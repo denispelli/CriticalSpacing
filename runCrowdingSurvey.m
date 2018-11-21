@@ -79,7 +79,7 @@ for rep=1:2
 end
 for i=1:length(ooo)
     o=ooo{i};
-    o.row=i;
+    o.block=i;
     o.fixationAtCenter=true; 
     o.eccentricityXYDeg=[-5 0];
     o.nearPointXYInUnitSquare=[0.5 0.5];
