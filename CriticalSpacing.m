@@ -660,7 +660,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
     'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
     'minimumScreenSizeXYDeg' 'typicalThesholdSizeDeg' ...
     'computer' 'matlab' 'psychtoolbox' 'trialData' 'needWirelessKeyboard' ...
-    'standardDrawTextPlugin' 'drawTextPluginWarning' 'oldResolution' ...
+    'standardDrawTextPlugin' 'drawTextWarning' 'oldResolution' ...
     'targetSizeIsHeight'  ...
     'maxRepetition' 'practiceCountdown' 'flankerLetter' 'row' ...
     'fixationOnScreen' 'fixationXYPix' 'nearPointXYDeg' 'nearPointXYPix' ...
@@ -874,32 +874,33 @@ try
     Screen('Preference','SuppressAllWarnings',0);
     Screen('Preference','Verbosity',2); % Print WARNINGs
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
-    drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
     if ~exist(oo(1).dataFolder,'dir')
         [success,msg]=mkdir(oo(1).dataFolder);
         if ~success
             error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
         end
     end
+    
+    % Record any warnings provoked by calling DrawText.
+    drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
     delete(drawTextWarningFileName);
     diary(drawTextWarningFileName);
     Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
     diary off
+    fileId=fopen(drawTextWarningFileName);
+    oo(1).drawTextWarning=char(fread(fileId)');
+    fclose(fileId);
+    if ~isempty(oo(1).drawTextWarning) && oo(oi).readAlphabetFromDisk
+        warning backtrace off
+        warning('You can ignore the warnings above about DrawText because we aren''t using it.');
+        warning backtrace on
+    end
+    delete(drawTextWarningFileName);
+    % Below we print any drawTextWarning into our log file.
+    
     Screen('Preference','SuppressAllWarnings',1);
     Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
-    oo(1).standardDrawTextPlugin = (Screen('Preference','TextRenderer')==1);
-    if oo(1).standardDrawTextPlugin
-        oo(1).drawTextPluginWarning='';
-    else
-        fileId=fopen(drawTextWarningFileName);
-        oo(1).drawTextPluginWarning= char(fread(fileId)');
-        fclose(fileId);
-        if oo(oi).readAlphabetFromDisk
-            warning backtrace off
-            warning('Please ignore any warnings above about DrawText. You aren''t using it.');
-            warning backtrace on
-        end
-    end
+    oo(1).standardDrawTextPlugin=(Screen('Preference','TextRenderer')==1);
     for oi=1:conditions
         oo(oi).stimulusRect=screenRect;
         if oo(oi).showProgressBar
@@ -1522,6 +1523,9 @@ try
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
     ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
+    if ~isempty(oo(1).drawTextWarning) && ~oo(oi).readAlphabetFromDisk
+        ffprintf(ff,'Warning from Screen(''DrawText''...):\n%s\n',oo(1).drawTextWarning);
+    end
     for oi=1:conditions
         if ~isempty(oo(oi).unknownFields)
             ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
