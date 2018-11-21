@@ -119,7 +119,7 @@ for i=1:length(ooo)
         oo(oi).fixationCrossDeg=1; % 0, 3, and inf are typical values.
         oo(oi).trials=30;
         oo(oi).practicePresentations=0;
-        oo(oi).durationSec=0.2; % duration of display of target and flankers
+        oo(oi).durationSec=0.1; % duration of display of target and flankers
         oo(oi).repeatedTargets=0;
     end
     oo=CriticalSpacing(oo);
