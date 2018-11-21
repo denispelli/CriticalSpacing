@@ -883,7 +883,9 @@ try
     
     % Record any warnings provoked by calling DrawText.
     drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
-    delete(drawTextWarningFileName);
+    if exist(drawTextWarningFileName,'file')
+        delete(drawTextWarningFileName);
+    end
     diary(drawTextWarningFileName);
     Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
     diary off
