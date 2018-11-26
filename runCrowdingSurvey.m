@@ -47,7 +47,8 @@ o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
 o.experiment='CrowdingSurvey';
-for rep=1:2
+ooo={};
+for rep=1
     for crowding=[1 0]
         if crowding
             o.conditionName='crowdingDistance';
@@ -58,36 +59,29 @@ for rep=1:2
                 else
                     o.flankingDirection='tangential';
                 end
-                if exist('ooo','var')
-                    ooo{end+1}=o;
-                else
-                    ooo={o};
-                end
+                ooo{end+1}=o;
             end
         else % acuity
             o.conditionName='acuity';
             o.thresholdParameter='size';
             o.flankingDirection='radial'; % Ignored
-            if exist('ooo','var')
-                ooo{end+1}=o;
-            else
-                ooo={o};
-            end
+            ooo{end+1}=o;
         end
         
     end
 end
+% Test each condition at two symmetric locations, randomly interleaved.
 for i=1:length(ooo)
     o=ooo{i};
     o.block=i;
     o.fixationAtCenter=true; 
-    o.eccentricityXYDeg=[-5 0];
     o.nearPointXYInUnitSquare=[0.5 0.5];
+    o.eccentricityXYDeg=[-15 0];
     radialDeg=sqrt(sum(o.eccentricityXYDeg.^2));
     o.viewingDistanceCm=max(30,min(400,round(9/tand(radialDeg))));
     o.viewingDistanceCm=40;
     oo(1)=o;
-    o.eccentricityXYDeg=[5 0];
+    o.eccentricityXYDeg= -o.eccentricityXYDeg;
     oo(2)=o;
     ooo{i}=oo;
 end
