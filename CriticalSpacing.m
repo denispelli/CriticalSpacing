@@ -180,12 +180,12 @@ function oo=CriticalSpacing(oIn)
 % license. (US Copyright law does not cover fonts. Adobe patents the font
 % program, but the images are public domain.) You can also ask
 % CriticalSpacing to use any font that's installed in your computer OS by
-% setting o.readAlphabetFromDisk=0. The Pelli and Sloan fonts are provided
-% in the CriticalSpacing/fonts/ folder, and you can install them in your
-% computer OS. On a Mac, you can just double-click the font file and say
-% "yes" when your computer offers to install it for you. Once you've
-% installed a font, you must quit and restart MATLAB to use the newly
-% available font.
+% setting o.readAlphabetFromDisk=false. The Pelli and Sloan fonts are
+% provided in the CriticalSpacing/fonts/ folder, and you can install them
+% in your computer OS. On a Mac, you can just double-click the font file
+% and say "yes" when your computer offers to install it for you. Once
+% you've installed a font, you must quit and restart MATLAB to use the
+% newly available font.
 %
 % OPTIONAL: ADD A NEW FONT. Running the program SaveAlphabetToDisk in
 % the CriticalSpacing/lib/ folder, after you edit it to specify the font,
@@ -193,15 +193,15 @@ function oo=CriticalSpacing(oIn)
 % font's alphabet to the pdf folder and add a new folder, named for your
 % font, to the CriticalSpacing/alphabets/ folder.
 %
-% OPTIONAL: USE YOUR COMPUTER'S FONTS, LIVE. Set o.readAlphabetFromDisk=0.
-% You may wish to install Pelli or Sloan from the CriticalSpacing/fonts/
-% folder into your computer's OS. Restart MATLAB after installing a new
-% font. To render fonts well, Psychtoolbox needs to load the FTGL DrawText
-% dropin. It typically takes some fiddling with dynamic libraries to make
-% sure the right library is available and that access to it is not blocked
-% by the presence of an obsolete version. For explanation see "help
-% drawtextplugin". You need this only if you want to set
-% o.readAlphabetFromDisk=0.
+% OPTIONAL: USE YOUR COMPUTER'S FONTS, LIVE. Set
+% o.readAlphabetFromDisk=false. You may wish to install Pelli or Sloan from
+% the CriticalSpacing/fonts/ folder into your computer's OS. Restart MATLAB
+% after installing a new font. To render fonts well, Psychtoolbox needs to
+% load the FTGL DrawText dropin. It typically takes some fiddling with
+% dynamic libraries to make sure the right library is available and that
+% access to it is not blocked by the presence of an obsolete version. For
+% explanation see "help drawtextplugin". You need this only if you want to
+% set o.readAlphabetFromDisk=false.
 %
 % CHILDREN. Adults and children seem to find it easy and intuitive. Sarah
 % Waugh (Dept. of Vision and Hearing Sciences, Anglia Ruskin University)
@@ -456,6 +456,7 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
+plusMinus=char(177);
 
 % Once we call onCleanup, until CriticalSpacing ends, MyCleanupFunction
 % will run (closing any open windows) when this function terminates for any
@@ -635,6 +636,7 @@ o.scriptFullFileName='';
 o.scriptName='';
 o.targetFontNumber=[];
 o.targetHeightOverWidth=nan;
+o.actualDurationSec=[];
 
 % PROCESS INPUT.
 % o is a single struct, and oIn may be an array of structs.
@@ -919,7 +921,7 @@ try
             if ~oo(1).standardDrawTextPlugin
                 error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
                     'Hopefully there''s an explanatory PTB-WARNING above. ' ...
-                    'Unless you fix that, you must set o.readAlphabetFromDisk=1 in your script.']);
+                    'Unless you fix that, you must set o.readAlphabetFromDisk=true in your script.']);
             end
             % Check availability of fonts.
             if IsOSX
@@ -1049,60 +1051,63 @@ try
             black=BlackIndex(window);
             
             % SELECT NEAR POINT
-            % The user specifies the target eccentricity o.eccentricityXYDeg,
-            % which specifies its offset from fixation. Currently, we always
-            % place the target and the near point together. We take
-            % o.nearPointXYInUnitSquare as the user's designation of a point
-            % on the screen and the desire that the target (and near point) be
-            % placed as close to there as possible, while still achieving the
-            % specified eccentricity by shifting target and fixation together
-            % enough to get the fixation mark to fit on screen. If the
-            % eccentricity is too large to allow both the target and fixation
-            % to be on-screen, then the fixation mark is placed off-screen and
-            % we place the target and near point at o.nearPointXYInUnitSquare.
-            % Thus o.eccentricityXYDeg is a requirement, and we'll error-exit
-            % if it cannot be achieved, while o.nearPointXYInUnitSquare is
+            % The user specifies the target eccentricity
+            % o.eccentricityXYDeg, which specifies its offset from
+            % fixation. Currently, we always place the target and the near
+            % point together. We take o.nearPointXYInUnitSquare as the
+            % user's designation of a point on the screen and the desire
+            % that the target (and near point) be placed as close to there
+            % as possible, while still achieving the specified eccentricity
+            % by shifting target and fixation together enough to get the
+            % fixation mark to fit on screen. If the eccentricity is too
+            % large to allow both the target and fixation to be on-screen,
+            % then the fixation mark is placed off-screen and we place the
+            % target and near point at o.nearPointXYInUnitSquare. Thus
+            % o.eccentricityXYDeg is a requirement, and we'll error-exit if
+            % it cannot be achieved, while o.nearPointXYInUnitSquare is
             % merely a preference for where to place the target.
             %
-            % To achieve this we first imagine the target at the desired spot
-            % (typically the center of the screen) and note where fixation
-            % would land, given the specified eccentricity. If it's on-screen
-            % then we're done. If it's off-screen then we push the target just
-            % enough in the direction of the eccentricity vector to allow the
-            % fixation mark to just fit on-screen. If we can do that without
-            % pushing the target off-screen, then we're done.
+            % To achieve this we first imagine the target at the desired
+            % spot (typically the center of the screen) and note where
+            % fixation would land, given the specified eccentricity. If
+            % it's on-screen then we're done. If it's off-screen then we
+            % push the target just enough in the direction of the
+            % eccentricity vector to allow the fixation mark to just fit
+            % on-screen. If we can do that without pushing the target
+            % off-screen, then we're done.
             %
             % If we can't get both fixation and target on-screen, then the
             % fixation goes off-screen and the target springs back to the
             % desired spot.
             %
-            % We don't mind partially clipping the fixation mark 0.5 deg from
-            % its center, but the target must not be clipped by the screen
-            % edge, and, further more, since this is a crowding test, there
-            % should be enough room to place a radial flanker beyond the
-            % target and not clip it. To test a diverse population we should
-            % allow twice the normal crowding distance beyond the target
-            % center, plus half the flanker size. We typically use equal
-            % target and flanker size.
+            % We don't mind partially clipping the fixation mark 0.5 deg
+            % from its center, but the target must not be clipped by the
+            % screen edge, and, further more, since this is a crowding
+            % test, there should be enough room to place a radial flanker
+            % beyond the target and not clip it. To test a diverse
+            % population we should allow twice the normal crowding distance
+            % beyond the target center, plus half the flanker size. We
+            % typically use equal target and flanker size.
             %
             % These requirements extend the eccentricity vector's length,
-            % first by adding 0.5 deg for the fixation mark. If necessary to
-            % keep fixation on-screen, we shift the target away from the
-            % desired location (in the direction of the eccentricity vector)
-            % just enough to get fixation on-screen. Then we have
-            % to decide whether it's acceptable. If we're measuring acuity, we
-            % just need room, radially (i.e. from fixation), beyond the target
-            % center for half the target. If we're measuring crowding, we need
-            % room radially, beyond the target center, for 2/3 the
-            % eccentricity, plus half the target size.
+            % first by adding 0.5 deg for the fixation mark. If necessary
+            % to keep fixation on-screen, we shift the target away from the
+            % desired location (in the direction of the eccentricity
+            % vector) just enough to get fixation on-screen. Then we have
+            % to decide whether it's acceptable. If we're measuring acuity,
+            % we just need room, radially (i.e. from fixation), beyond the
+            % target center for half the target. If we're measuring
+            % crowding, we need room radially, beyond the target center,
+            % for 2/3 the eccentricity, plus half the target size.
             
             %% SANITY CHECK OF ECCENTRICITY AND DESIRED NEAR POINT
             if ~all(isfinite(oo(oi).eccentricityXYDeg))
                 error('o.eccentricityXYDeg (%.1f %.1f) must be finite. o.useFixation=%d is optional.',...
-                    oo(oi).eccentricityXYDeg,oo(oi).useFixation);
+                    oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2),oo(oi).useFixation);
             end
             if ~IsXYInRect(oo(oi).nearPointXYInUnitSquare,[0 0 1 1])
-                error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',oo(oi).nearPointXYInUnitSquare);
+                error('o.nearPointXYInUnitSquare (%.2f %.2f) must be in unit square [0 0 1 1].',...
+                    oo(oi).nearPointXYInUnitSquare(1),oo(oi).nearPointXYInUnitSquare(2));
             end
             % Provide default target size if not already provided.
             if ~isfinite(oo(oi).targetDeg)
@@ -1873,8 +1878,8 @@ try
         cal.brightnessSetting=1;
         % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
         % silently do nothing if not supported. But when I used it on my
-        % video projector, Screen gave a fatal error. How can my program know
-        % when it's safe to use Screen ConfigureDisplay?
+        % video projector, Screen gave a fatal error. How can my program
+        % know when it's safe to use Screen ConfigureDisplay?
         % Bug reported to Psychtoolbox forum June 2017.
         % The work around, not yet implemented here, is to wrap the call in a
         % try-catch block.
@@ -1911,7 +1916,7 @@ try
         error('Targets are neither digits nor letters');
     end
     Screen('FillRect',window,white);
-    if length(oo(oi).observer)>0
+    if ~isempty(oo(oi).observer)
         string=[sprintf('Hello %s. ',oo(oi).observer)];
     else
         string='Hello. ';
@@ -2022,7 +2027,7 @@ try
     for oi=1:conditions
         % Run the specified number of presentations of each condition, in
         % random order
-        condList = [condList repmat(oi,1,oo(oi).presentations)];
+        condList=[condList repmat(oi,1,oo(oi).presentations)];
         oo(oi).spacingsSequence=Shuffle(oo(oi).spacingsSequence);
         oo(oi).q=QuestCreate(oo(oi).tGuess,oo(oi).tGuessSd,oo(oi).pThreshold,oo(oi).beta,delta,gamma,grain,range);
         oo(oi).trialData=struct([]);
@@ -2205,10 +2210,13 @@ try
                 stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
                 ffprintf(ff,'o.stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
                     stimulusSize,stimulusSize/pixPerDeg,...
-                    oo(oi).fix.x/pixPerDeg,oo(oi).fix.y/pixPerDeg,...
+                    oo(oi).fix.xy/pixPerDeg,...
                     oo(oi).eccentricityXYDeg,...
                     xyT/pixPerDeg);
-                error('Sorry, the target (eccentricity [%.0f %.0f] deg) is falling off the screen. Please reduce the viewing distance.',oo(oi).eccentricityXYDeg);
+                error(['Sorry, the target (eccentricity [%.0f %.0f] deg)'...
+                    ' is falling off the screen. ' ...
+                    'Please reduce the viewing distance.'],...
+                    oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
             end
             assert(length(spacingPix)==1);
             if oo(oi).fixedSpacingOverSize
@@ -2714,6 +2722,7 @@ try
         if isfinite(oo(oi).durationSec)
             WaitSecs(oo(oi).durationSec); % Display letters.
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
+            oo(oi).actualDurationSec(end+1)=GetSecs-trialTimeSecs;
 %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-trialTimeSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 fl=ClipLines(fixationLines,fixationClipRect);
@@ -2913,7 +2922,7 @@ try
         end
         for responseScore=responseScores
             switch oo(oi).thresholdParameter
-                case 'spacing',
+                case 'spacing'
                     intensity=log10(oo(oi).spacingDeg);
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
@@ -2989,8 +2998,8 @@ try
                             warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
                     end
                 end
-                ffprintf(ff,'Threshold log %s spacing deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',...
-                    ori,t,sd,10^t);
+                ffprintf(ff,'Threshold log %s spacing deg (mean%csd) is %.2f%c%.2f, which is %.3f deg.\n',...
+                    ori,plusMinus,t,plusMinus,sd,10^t);
                 if 10^t<oo(oi).minimumSpacingDeg
                     ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
                 end
@@ -3008,9 +3017,11 @@ try
                 else
                     ori='horizontal';
                 end
-                ffprintf(ff,'Threshold log %s size deg (mean +-sd) is %.2f +-%.2f, which is %.3f deg.\n',ori,t,sd,10^t);
+                ffprintf(ff,'Threshold log %s size deg (mean%csd) is %.2f%c%.2f, which is %.3f deg.\n',...
+                    ori,plusMinus,t,plusMinus,sd,10^t);
                 if 10^t<oo(oi).minimumSizeDeg
-                    ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSizeDeg);
+                    ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed size %.3f deg. Please increase viewing distance.\n',...
+                        10^t,oo(oi).minimumSizeDeg);
                 end
                 if oo(oi).responseCount>1
                     trials=QuestTrials(oo(oi).q);
@@ -3051,16 +3062,31 @@ try
     end % for oi=1:conditions
     Snd('Close');
     CloseWindowsAndCleanup; % Takes 4 s.
+    a=[];
+    for oi=1:conditions
+        ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms.\n',...
+            oi,oo(oi).durationSec*1000, ...
+            1000*mean(oo(oi).actualDurationSec),...
+            plusMinus,...
+            1000*std(oo(oi).actualDurationSec),...
+            1000*max(oo(oi).actualDurationSec));
+        a=[a oo(oi).actualDurationSec];
+        if max(oo(oi).actualDurationSec)>oo(oi).durationSec+2/60
+            warning('Duration overrun by %.2 s.',max(oo(oi).actualDurationSec)-oo(oi).durationaSec);
+        end
+    end
+    ffprintf(ff,'all: duration is %.0f%c%.0f ms, max %.0f ms.\n',...
+        1000*mean(a),plusMinus,1000*std(a),1000*max(a));
     for oi=1:conditions
         if exist('results','var') && oo(oi).responseCount>1
             ffprintf(ff,'%d:',oi);
             trials=QuestTrials(oo(oi).q);
             p=sum(trials.responses(2,:))/sum(sum(trials.responses));
             switch oo(oi).thresholdParameter
-                case 'spacing',
+                case 'spacing'
                     ffprintf(ff,'%s: p %.0f%%, size %.2f deg, ecc. [%.1f  %.1f] deg, critical spacing %.2f deg.\n',...
                         oo(oi).observer,100*p,oo(oi).targetDeg,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
-                case 'size',
+                case 'size'
                     ffprintf(ff,'%s: p %.0f%%, ecc. [%.2f  %.2f] deg, threshold size %.3f deg.\n',...
                         oo(oi).observer,100*p,oo(oi).eccentricityXYDeg,10^QuestMean(oo(oi).q));
             end
