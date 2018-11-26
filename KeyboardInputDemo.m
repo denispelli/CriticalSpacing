@@ -39,3 +39,4 @@ catch
    % the SCREEN window is closed. Calling ListenChar and SCA give you a
    % good chance of being in control after an error stops execution.
 end
+
