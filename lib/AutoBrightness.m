@@ -2,7 +2,7 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % [oldSetting, status] = AutoBrightness([screenNumber=0][, newSetting])
 %
 % AUTOBRIGHTNESS Get and set the "Automatically adjust brightness" checkbox
-% on the Mac OS X: System Preferences: Displays panel. The function
+% on the macOS: System Preferences: Displays panel. The function
 % argument "newSetting" (integer 0 or 1) indicates whether you want to turn
 % the autobrightness feature on (newSetting==1) or off (newSetting==0). If
 % you call without an argument (or anything other than 0 or 1) then nothing
@@ -20,12 +20,12 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % if you try to call it while an onscreen window is already open.
 %
 % AutoBrightness.m uses AutoBrightness.applescript to allow you to turn off
-% a pesky feature of Apple's liquid crystal displays. In Mac OSX, this
+% a pesky feature of Apple's liquid crystal displays. In macOS, this
 % feature is manually enabled/disabled by the"Automatically adjust
 % brightness"checkbox in theSystem Preferences: Displays panel. While the
 % feature is enabled, your Mac slowly adjusts the screen luminance of your
-% Apple liquid crystal display, tracking the luminance of the room.
-% That instability is bad for screen calibration, and may also be bad for your
+% Apple liquid crystal display, tracking the luminance of the room. That
+% instability is bad for screen calibration, and may also be bad for your
 % experiments. My AutoBrightness routines allow your programs to read the
 % on/off setting of that feature, and set it on or off.
 %
@@ -41,7 +41,7 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % the script is to prevent changes of brightness in response to the room
 % luminance while calibrating a display. The automatic adjustments are
 % slow, over many seconds, which could invalidate your display calibration.
-% When "Automatically adjust brightness" is checked, the Mac OS uses the
+% When "Automatically adjust brightness" is checked, macOS uses the
 % video camera to sense the room luminance and slowly dims the display if
 % the room is dark. It does this by adjusting the "brightness" setting,
 % which controls the luminance of the fluorescent light that is behind the
@@ -78,8 +78,8 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % straightforward. I would add a second, optional, argument that specifies
 % which screen.
 %
-% LINUX and WINDOWS. Applescript works only under Mac OS X. When running
-% under any operating system other that Mac OS X, this program ignores the
+% LINUX and WINDOWS. Applescript works only under macOS. When running
+% under any operating system other that macOS, this program ignores the
 % newSetting argument and always returns zero as the oldSetting. It is
 % conceivable that Apple's auto brightness feature is implemented on
 % Macintoshes running Linux or Windows. If that applies to you, please
@@ -92,7 +92,7 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_cmds.html
 % https://discussions.apple.com/thread/6418291
 %
-% Thanks to Mario Kleiner for explaining how Mac OSX "brightness" works.
+% Thanks to Mario Kleiner for explaining how macOS "brightness" works.
 % Thanks to nick.peatfield@gmail.com for sharing his applescript code for 
 % dimmer.scpt and brighter.scpt.
 
@@ -103,7 +103,7 @@ function [oldSetting, status] = AutoBrightness(screenNumber, newSetting)
 % would be a much better solution. Denis 2018.
 
 if ~IsOSX
-    % I believe that Applescript works only within Mac OS X. It is
+    % I believe that Applescript works only within macOS. It is
     % conceivable that Apple's auto brightness feature is implemented on
     % Macintoshes running Linux or Windows, in which case someone might
     % enhance this program to return a correct answer for those cases.
