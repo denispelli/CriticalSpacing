@@ -549,7 +549,7 @@ o.flankerLetter='';
 
 % FIXATION
 o.fixationCrossBlankedNearTarget=true;
-o.fixationCrossBlankedUntilSecAfterTarget=false; % This value is reported, but not used. Haven't yet needed it.
+% o.fixationCrossBlankedUntilSecAfterTarget=0; % This value is reported, but not used. Haven't yet needed it.
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
 o.markTargetLocation=false; % true to mark target location
@@ -562,13 +562,17 @@ o.fixationAtCenter=false; % Force fixation to be at center of screen.
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
 o.responseLabels='abcdefghijklmnopqrstivwxyz123456789';
 
+% SIMULATE OBSERVER
+o.simulateObserver=false;
+o.simulatedLogThreshold=0;
+
 % QUEST threshold estimation
 o.beta=nan;
 o.measureBeta=false;
 o.pThreshold=nan;
 o.tGuess=nan;
 o.tGuessSd=nan;
-o.useQuest=true; % true(1) or false(0)
+o.useQuest=true; % true or false
 o.spacingGuessDeg = 0.3;
 
 % DEBUGGING AIDS
@@ -810,7 +814,7 @@ for i=1:length(res)
 end
 actualScreenRect=Screen('Rect',oo(1).screen,1);
 if oo(1).nativeWidth==RectWidth(actualScreenRect)
-    ffprintf(ff,'%d: Your screen resolution is at its native maximum %d x %d. Excellent!\n',1,oo(1).nativeWidth,oo(1).nativeHeight);
+    ffprintf(ff,':: Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
 else
     warning backtrace off
     if oo(1).permissionToChangeResolution
@@ -826,7 +830,7 @@ else
         actualScreenRect=Screen('Rect',oo(1).screen,1);
     end
     if oo(1).nativeWidth==RectWidth(actualScreenRect)
-        ffprintf(ff,'1: Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
+        ffprintf(ff,':: Your screen resolution is at its native maximum %d x %d. Excellent!\n',oo(1).nativeWidth,oo(1).nativeHeight);
     else
         if RectWidth(actualScreenRect)<oo(1).nativeWidth
             ffprintf(ff,'WARNING: Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
@@ -1013,7 +1017,7 @@ try
             % Adjust textSize so our line fits perfectly.
             oo(oi).textSize=round(oo(oi).textSize/fraction);
         end
-        %       fprintf('1: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
+        %       fprintf(':: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
         pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
         for oi=1:conditions
             oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
@@ -1129,7 +1133,7 @@ try
             % point is at center.
             xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
             rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
-            fprintf('%d: screen %.0f %.0f, rectSizeDeg %.1f %.1f, pixPerCm %.1f, viewingDistance %.1f cm, xy %.0f %.0f\n',...
+            fprintf('%d: screen %.0fx%.0f = %.1fx%.1f deg, %.1f pixPerCm, viewingDistance %.1f cm, xy %.0f %.0f\n',...
                 oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
             if all(totalSizeXYDeg <= rectSizeDeg)
                 oo(oi).fixationOnScreen=true;
@@ -1168,7 +1172,7 @@ try
                     xyNew=ClipLineSegment2(xy,oo(oi).nearPointXYPix,r);
                     % Apply the needed shift of fixation, from xy to xyNew, to the nearPointXYPix
                     ffprintf(ff,'%d: Adjusting o.nearPointXYPix from [%.0f %.0f] to [%.0f %.0f] to center fixation on screen.\n',...
-                        1,oo(oi).nearPointXYPix,oo(oi).nearPointXYPix+xyNew-xy);
+                        oi,oo(oi).nearPointXYPix,oo(oi).nearPointXYPix+xyNew-xy);
                     oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+xyNew-xy;
                 end
             end
@@ -1538,7 +1542,7 @@ try
             ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
         end
     end
-    ffprintf(ff,'1: %s: %s\n',oo(1).experimenter,oo(1).observer);
+    ffprintf(ff,':: %s: %s\n',oo(1).experimenter,oo(1).observer);
     for oi=1:conditions
         if oo(oi).repeatedTargets
             oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
@@ -1779,15 +1783,15 @@ try
         ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
             oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalAcuityDeg/2);
     end
-    s=sprintf(['%d: Needing screen size of at least %.0fx%.0f deg, ' ...
-        'you should view from at most'],oi,minimumScreenSizeXYDeg);
+    s=sprintf([':: Needing screen size of at least %.0fx%.0f deg, ' ...
+        'you should view from at most'],minimumScreenSizeXYDeg);
     if maximumViewingDistanceCm<100
         s=sprintf('%s %.0f cm.\n',s,maximumViewingDistanceCm);
     else
         s=sprintf('%s %.1f m.\n',s,maximumViewingDistanceCm/100);
     end
     ffprintf(ff,'%s',s);
-    ffprintf(ff,'1: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
+    ffprintf(ff,':: %d keyboards: ',length(oo(1).keyboardNameAndTransport));
     for i=1:length(oo(1).keyboardNameAndTransport)
         ffprintf(ff,'%s,  ',oo(1).keyboardNameAndTransport{i});
     end
@@ -1858,20 +1862,20 @@ try
     if oo(1).flipScreenHorizontally
         ffprintf(ff,'Using mirror. ');
     end
-    ffprintf(ff,'%d: Viewing distance %.0f cm,',1,oo(1).viewingDistanceCm);
+    ffprintf(ff,':: Viewing distance %.0f cm,',oo(1).viewingDistanceCm);
     xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
     xyDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
     ffprintf(ff,' %.0f pixPerDeg, %.0f pix/cm.\n',...
         pixPerDeg,RectWidth(actualScreenRect)/(screenWidthMm/10));
-    ffprintf(ff,'%d: Screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.1fx%.1f deg.\n',...
-        1,cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
+    ffprintf(ff,':: Screen %d, %dx%d pixels (%dx%d native), %.1fx%.1f cm, %.1fx%.1f deg.\n',...
+        cal.screen,RectWidth(actualScreenRect),RectHeight(actualScreenRect),...
         oo(1).nativeWidth,oo(1).nativeHeight,...
         screenWidthMm/10,screenHeightMm/10,xyDeg);
-    ffprintf(ff,'1: %s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
+    ffprintf(ff,':: %s, "%s", %s\n',cal.macModelName,cal.localHostName,cal.processUserLongName);
     oo(1).matlab=version;
     [~,oo(1).psychtoolbox]=PsychtoolboxVersion;
     v=oo(1).psychtoolbox;
-    ffprintf(ff,'1: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
+    ffprintf(ff,':: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
     assert(cal.screenWidthCm==screenWidthMm/10);
     cal.ScreenConfigureDisplayBrightnessWorks=true;
     if cal.ScreenConfigureDisplayBrightnessWorks
@@ -2028,11 +2032,11 @@ try
         % Run the specified number of presentations of each condition, in
         % random order
         condList=[condList repmat(oi,1,oo(oi).presentations)];
-        oo(oi).spacingsSequence=Shuffle(oo(oi).spacingsSequence);
+        oo(oi).spacingsSequence=shuffle(oo(oi).spacingsSequence);
         oo(oi).q=QuestCreate(oo(oi).tGuess,oo(oi).tGuessSd,oo(oi).pThreshold,oo(oi).beta,delta,gamma,grain,range);
         oo(oi).trialData=struct([]);
     end % for oi=1:conditions
-    condList=Shuffle(condList);
+    condList=shuffle(condList);
     presentation=0;
     while presentation<length(condList)
         presentation=presentation+1;
@@ -2042,7 +2046,7 @@ try
         if oo(oi).useQuest
             intensity=QuestQuantile(oo(oi).q);
             if oo(oi).measureBeta
-                offsetToMeasureBeta=Shuffle(offsetToMeasureBeta);
+                offsetToMeasureBeta=shuffle(offsetToMeasureBeta);
                 intensity=intensity+offsetToMeasureBeta(1);
             end
             if easyPresentation
@@ -2076,11 +2080,12 @@ try
         if streq(oo(oi).thresholdParameter,'size') && oo(oi).fixedSpacingOverSize
             oo(oi).spacingDeg=oo(oi).targetDeg*oo(oi).fixedSpacingOverSize;
         end
-        spacingPix=oo(oi).spacingDeg*pixPerDeg;
+        spacingPix=oo(oi).spacingDeg*pixPerDeg; % Now spacingPix holds the baton.
         if oo(oi).fixedSpacingOverSize
             spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
         end
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
+                oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Screen and letter size vary hugely. For the trial to make sense,
         % we need to guarantee a certain minimum number of characters. We
         % achieve this by specifying the required number of spaces (plus
@@ -2182,7 +2187,7 @@ try
             end
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        oo(oi).spacingDeg=spacingPix/pixPerDeg;
+        oo(oi).spacingDeg=spacingPix/pixPerDeg; % spacingPix holds the baton.
         xyT=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
         if oo(oi).printSizeAndSpacing
             fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xyT %d, %d\n',...
@@ -2288,7 +2293,7 @@ try
                 xF(end+1:end+2)=xyT(1)+[-spacingPix outerSpacingPix]*sind(orientation);
                 yF(end+1:end+2)=xyT(2)-[-spacingPix outerSpacingPix]*cosd(orientation);
             end
-        end
+        end % if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
         oo(oi).spacingDeg=spacingPix/pixPerDeg;
         if streq(oo(oi).thresholdParameter,'spacing') && oo(oi).fixedSpacingOverSize
             oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
@@ -2302,7 +2307,8 @@ try
             oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
+                oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Prepare to draw fixation cross.
         if oo(oi).fixationCrossBlankedNearTarget
             % Blanking of marks to prevent masking and crowding of the
@@ -2383,13 +2389,14 @@ try
         else
             Screen('FillRect',window); % Clear screen.
         end
-        stimulus=Shuffle(oo(oi).alphabet);
+        stimulus=shuffle(oo(oi).alphabet);
+        stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
         if length(stimulus)>=3
-            stimulus=stimulus(1:3); % three random letters, all different.
+            stimulus=stimulus(1:3); % Three random letters, all different.
         else
             % three random letters, independent samples, with replacement.
-            b=Shuffle(stimulus);
-            c=Shuffle(stimulus);
+            b=shuffle(stimulus);
+            c=shuffle(stimulus);
             stimulus(2)=b(1);
             stimulus(3)=c(1);
         end
@@ -2454,7 +2461,7 @@ try
             xStimulus=[xF(1) xyT(1) xF(2:end)];
             yStimulus=[yF(1) xyT(2) yF(2:end)];
             if oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing')
-                newFlankers=Shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
+                newFlankers=shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
                 stimulus(end+1:end+2)=newFlankers(1:2);
             end
 %             if oo(oi).isolatedTarget
@@ -2824,14 +2831,38 @@ try
             imwrite(img,fullfile(mypath,filename),'png');
             ffprintf(ff,'Saving image to file "%s".\n',filename);
         end
-        
+ 
         responseString='';
         skipping=false;
         flipSecs=GetSecs;
+        trueFalse={'false' 'true'};
         for i=1:length(targets)
-            [answer,secs]=GetKeypressWithHelp( ...
-                [spaceKeyCode escapeKeyCode graveAccentKeyCode oo(oi).responseKeyCodes], ...
-                oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
+            if oo(oi).simulateObserver
+                assert(length(targets)==1);
+                switch oo(oi).thresholdParameter
+                    case 'spacing'
+                        oo(oi).spacingDeg=spacingPix/pixPerDeg;
+                        intensity=log10(oo(oi).spacingDeg);
+                    case 'size'
+                        oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
+                        intensity=log10(oo(oi).targetDeg);
+                end
+                if intensity>oo(oi).simulatedLogThreshold
+                    answer=targets(i);
+                    fprintf('%d: intensity 10^%.2f=%.2f=%.2f, right: ''%s''\n',...
+                        oi,intensity,10^intensity,oo(oi).spacingDeg,targets);
+                else
+                    answer=shuffle(oo(oi).alphabet);
+                    answer=answer(1);
+                    fprintf('%d: intensity 10^%.2f=%.2f=%.2f, %s guess from ''%s'' is ''%s'' vs ''%s'' is target.\n',...
+                        oi,intensity,10^intensity,oo(oi).spacingDeg,trueFalse{1+streq(answer,targets)},oo(oi).alphabet,answer,targets);
+                end
+                secs=GetSecs;
+            else
+                [answer,secs]=GetKeypressWithHelp( ...
+                    [spaceKeyCode escapeKeyCode graveAccentKeyCode oo(oi).responseKeyCodes], ...
+                    oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
+            end
             trialData.reactionTimes(i)=secs-flipSecs;
             
             if ismember(answer,[escapeChar graveAccentChar])
@@ -2864,7 +2895,7 @@ try
                 easeRequest=easeRequest+1;
                 ffprintf(ff,'*** Typed <space>. Skipping to next trial. Observer gave %d responses, and we added %d guesses.\n',responsesNumber,guesses);
                 break;
-            end
+            end % if streq(upper(answer),' ')
             % GetKeypressWithHelp returns only one character.
             if oo(oi).labelAnswers
                 reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).validResponseLabels),upper(answer)));
@@ -2876,10 +2907,12 @@ try
                 Speak(answer);
             end
             if ismember(upper(reportedTarget),upper(targets))
+%                 fprintf('reportedTarget %s, targets %s, right\n',reportedTarget,targets);
                 if oo(oi).beepPositiveFeedback
                     Snd('Play',rightBeep);
                 end
             else
+%                 fprintf('reportedTarget %s, targets %s, wrong\n',reportedTarget,targets);
                 if oo(oi).beepNegativeFeedback
                     Snd('Play',wrongBeep);
                 end
@@ -2904,6 +2937,7 @@ try
             break;
         end
         responseScores=ismember(responseString,targets);
+%         fprintf('responseString %s, targets %s, responseScores %d\n',responseString,targets,responseScores);
         oo(oi).spacingDeg=spacingPix/pixPerDeg;
         
         trialData.targetDeg=oo(oi).targetDeg;
@@ -2913,6 +2947,8 @@ try
         trialData.responses=responseString;
         trialData.responseScores=responseScores;
         % trialData.reactionTimes is computed above.
+%         fprintf('spacingDeg %.2f, targetScores %d, responses %s targets %s\n',...
+%             trialData.spacingDeg, trialData.targetScores, trialData.responses,trialData.targets);
         if oo(oi).practiceCountdown==0
             if isempty(oo(oi).trialData)
                 oo(oi).trialData=trialData;
@@ -3251,7 +3287,8 @@ oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
 if oo(oi).fixationCrossBlankedNearTarget
     ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
-    ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
+%     ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
+    ffprintf(ff,'%d: Fixation cross is not blanked.\n');
 end
 end
 
@@ -3295,3 +3332,7 @@ end
 ListenChar; % May already be done by sca.
 ShowCursor; % May already be done by sca.
 end % function CloseWindowsAndCleanup()
+
+function v=shuffle(v)
+     v=v(randperm(length(v)));
+ end
