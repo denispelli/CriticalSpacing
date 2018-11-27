@@ -21,6 +21,7 @@ if ~isempty(Screen('Windows'))
         % AutoBrightness(0,1);
     end
 end
+% These three are quick, about 0.1 s.
 ListenChar;
 ShowCursor;
 RestoreCluts;
