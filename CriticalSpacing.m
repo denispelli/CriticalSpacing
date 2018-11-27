@@ -573,7 +573,7 @@ o.pThreshold=nan;
 o.tGuess=nan;
 o.tGuessSd=nan;
 o.useQuest=true; % true or false
-o.spacingGuessDeg = 0.3;
+o.spacingGuessDeg = 1;
 
 % DEBUGGING AIDS
 o.frameTheTarget=false;
