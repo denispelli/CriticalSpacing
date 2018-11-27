@@ -12,7 +12,7 @@
 % the observer's name. On subsequent blocks it will remember the observer's
 % name.
 %
-% PLEASE USE BINOCULAR VIEWING, USING BOTH EYES AT ALL TIMES.
+% IMPORTANT: Please use binocular viewing, using both eyes at all times.
 % 
 % IMPORTANT: Use a meter stick or tape measure to actually measure the
 % viewing distance and ensure that the observer's eye is actually at the
