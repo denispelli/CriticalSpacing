@@ -2080,7 +2080,7 @@ try
         if streq(oo(oi).thresholdParameter,'size') && oo(oi).fixedSpacingOverSize
             oo(oi).spacingDeg=oo(oi).targetDeg*oo(oi).fixedSpacingOverSize;
         end
-        spacingPix=oo(oi).spacingDeg*pixPerDeg; % Now spacingPix holds the baton.
+        spacingPix=oo(oi).spacingDeg*pixPerDeg; % Now spacingPix is master.
         if oo(oi).fixedSpacingOverSize
             spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
         end
@@ -2187,7 +2187,7 @@ try
             end
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        oo(oi).spacingDeg=spacingPix/pixPerDeg; % spacingPix holds the baton.
+        oo(oi).spacingDeg=spacingPix/pixPerDeg; % spacingPix is master.
         xyT=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
         if oo(oi).printSizeAndSpacing
             fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xyT %d, %d\n',...
@@ -3313,26 +3313,28 @@ xyDeg=xyDeg+o.nearPointXYDeg;
 end
 
 %% Clean up whenever CriticalSpacing terminates, even by control-c.
-% Takes 120 s.
 function CloseWindowsAndCleanup()
 % Close any windows opened by the Psychtoolbox Screen command, and
-% re-enable keyboard.
+% re-enable the keyboard.
 if ~isempty(Screen('Windows'))
     % Screen CloseAll is very slow, so we call it only if we need to.
     Screen('CloseAll');
-    % Equivalent to calling CloseAll.
-    %     while ~isempty(Screen('Windows'))
-    %         ww=Screen('Windows');
-    %         Screen('Close',ww(1));
-    %     end
+    % Calling Screen('CloseAll') is equivalent to:
+%     while ~isempty(Screen('Windows'))
+%         ww=Screen('Windows');
+%         Screen('Close',ww(1));
+%     end
+    % "sca" is a shortcut that calls Screen('CloseAll'), ShowCursor, and
+    % RestoreCluts.
     if ismac % Takes 120 s.
-%         AutoBrightness(0,1);
+        % AutoBrightness(0,1);
     end
 end
-ListenChar; % May already be done by sca.
-ShowCursor; % May already be done by sca.
+ListenChar;
+ShowCursor;
+% RestoreCluts;
 end % function CloseWindowsAndCleanup()
 
 function v=shuffle(v)
-     v=v(randperm(length(v)));
- end
+v=v(randperm(length(v)));
+end
