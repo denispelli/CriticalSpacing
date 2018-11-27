@@ -76,7 +76,7 @@ for i=1:length(ooo)
 end
 t=struct2table(oo);
 disp(t); % Print the conditions in the Command Window.
-return
+% return
 
 % RUN THE CONDITIONS, ONE BLOCK AT A TIME.
 for i=1:length(ooo)
