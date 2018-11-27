@@ -68,8 +68,8 @@ function oo=CriticalSpacing(oIn)
 %
 % PRINT THE ALPHABET ON PAPER. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
-% o.readAlphabetFromDisk=true. We have done most of our work with the "Sloan"
-% and "Pelli" fonts. Only Pelli is skinny enough to measure foveal
+% o.readAlphabetFromDisk=true. We have done most of our work with the
+% "Sloan" and "Pelli" fonts. Only Pelli is skinny enough to measure foveal
 % crowding. Outside the fovea you can use any font. We recommend "Pelli"
 % for threshold spacing (crowding) in the fovea, and Sloan for threshold
 % size (acuity) anywhere. Print the PDF for your font, e.g. "Pelli
@@ -213,8 +213,8 @@ function oo=CriticalSpacing(oIn)
 % CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
 % o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
 % viewing distance (or declare that you're using a mirror) at the beginning
-% of each block. You need long distance to display tiny letters, and you need
-% short viewing distance to display peripheral letters, if fixation is
+% of each block. You need long distance to display tiny letters, and you
+% need short viewing distance to display peripheral letters, if fixation is
 % on-screen. (We plan to add support for off-screen fixation.) When viewing
 % foveally, please err on the side of making the viewing distance longer
 % than necessary. If you use too short a viewing distance then the minimum
@@ -290,14 +290,14 @@ function oo=CriticalSpacing(oIn)
 % hidden behind the CriticalSpacing window, so you'll be stuck. The caps
 % lock key is always safe.)
 %
-% ESCAPE KEY: QUIT. You can always terminate the current block by hitting the
-% escape key on your keyboard (typically in upper left, labeled "esc").
+% ESCAPE KEY: QUIT. You can always terminate the current block by hitting
+% the escape key on your keyboard (typically in upper left, labeled "esc").
 % Because at least one computer (e.g. the 2017 MacBook Pro with track bar)
 % lacks an ESCAPE key, we always accept the GRAVE ACCENT key (also in upper
 % left of keyboard) as equivalent. CriticalSpacing will then print out (and
 % save to disk) results so far, and ask whether you're quitting the whole
-% session or proceeding to the next block. Quitting this block sets the flag
-% o.quitBlock, and quitting the whole session also sets the flag
+% session or proceeding to the next block. Quitting this block sets the
+% flag o.quitBlock, and quitting the whole session also sets the flag
 % o.quitSession. If o.quitSession is already set when you call
 % CriticalSpacing, the CriticalSpacing returns immediately after processing
 % arguments. (CriticalSpacing ignores o.quitBlock on input.)
@@ -327,20 +327,20 @@ function oo=CriticalSpacing(oIn)
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures threshold spacing in either of two
 % directions, selected by the variable o.targetSizeIsHeight, true for
-% vertically, and false for horizontally. Target size can be made proportional
-% to spacing, allowing measurement of critical spacing without knowing the
-% acuity, because we use the largest possible letter for each spacing. The
-% ratio SpacingOverSize is computed for spacing and size along the axis
-% specified by o.flankingPolarDeg. You can directly specify
+% vertically, and false for horizontally. Target size can be made
+% proportional to spacing, allowing measurement of critical spacing without
+% knowing the acuity, because we use the largest possible letter for each
+% spacing. The ratio SpacingOverSize is computed for spacing and size along
+% the axis specified by o.flankingPolarDeg. You can directly specify
 % o.flankingPolarDeg as a polar angle (right is 0, up is 90), or you can
 % leave it as [] and set o.flankingDirection: radial, tangential,
 % horizontal, or vertical, which will be used to compute
 % o.flankingPolarDeg. The final report by CriticalSpacing includes the
 % aspect ratio of your font: o.heightOverWidth.
 %
-% ECCENTRICITY. Set o.eccentricityXYDeg=[x y] in your script. For peripheral
-% testing, it's usually best to set o.durationSec=0.2 to exclude eye
-% movements during the brief target presentation. When the flankers are
+% ECCENTRICITY. Set o.eccentricityXYDeg=[x y] in your script. For
+% peripheral testing, it's usually best to set o.durationSec=0.2 to exclude
+% eye movements during the brief target presentation. When the flankers are
 % radial, the specified spacing refers to the inner flanker, between target
 % and fixation. We define scaling eccentricity as eccentricity plus 0.015
 % deg. The critical spacing of crowding is proportional to the scaling
@@ -458,10 +458,11 @@ end
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
 plusMinus=char(177);
 
-% Once we call onCleanup, until CriticalSpacing ends, MyCleanupFunction
-% will run (closing any open windows) when this function terminates for any
-% reason, whether by reaching the end, the posting of an error here or in
-% any function called from here, or the user hitting control-C.
+% Once we call onCleanup, until CriticalSpacing ends,
+% CloseWindowsAndCleanup will run (closing any open windows) when this
+% function terminates for any reason, whether by reaching the end, the
+% posting of an error here or in any function called from here, or the user
+% hitting control-C.
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
@@ -469,10 +470,10 @@ cleanup=onCleanup(@() CloseWindowsAndCleanup);
 
 % PROCEDURE
 o.easyBoost=0.3; % On easy trials, boost log threshold parameter by this.
-o.experimenter=''; % Put name here to skip the runtime question.
+o.experimenter=''; % Assign your name to skip the runtime question.
 o.flipScreenHorizontally=false; % Set to true when using a mirror.
 o.fractionEasyTrials=0;
-o.observer=''; % Put name here to skip the runtime question.
+o.observer=''; % Assign the name to skip the runtime question.
 o.permissionToChangeResolution=false; % Works for main screen only, due to Psychtoolbox bug.
 o.readAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
