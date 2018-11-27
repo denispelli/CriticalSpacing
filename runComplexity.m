@@ -29,26 +29,6 @@ clear o oo ooo
 ooo={};
 o.experiment='Complexity';
 
-% crowding
-if 0
-    o.conditionName='crowdingDistance';
-    o.thresholdParameter='spacing';
-    o.targetFont='Sloan';
-    o.minimumTargetPix=8;
-    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-    o.borderLetter='X';
-    o.labelAnswers=false;
-    o.readAlphabetFromDisk=true;
-    for radial=0:1
-        if radial
-            o.flankingDirection='radial';
-        else
-            o.flankingDirection='tangential';
-        end
-        ooo{end+1}=o;
-    end
-end
-
 % acuity
 o.conditionName='acuity';
 o.thresholdParameter='size';
@@ -56,6 +36,7 @@ o.flankingDirection='radial'; % Ignored
 o.minimumTargetPix=8;
 
 if 1
+    % Sloan
     o.targetFont='Sloan';
     o.minimumTargetPix=8;
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -144,6 +125,25 @@ if 1
     o.readAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
+if 1
+    % crowding
+    o.conditionName='crowdingDistance';
+    o.thresholdParameter='spacing';
+    o.targetFont='Sloan';
+    o.minimumTargetPix=8;
+    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+    o.borderLetter='X';
+    o.labelAnswers=false;
+    o.readAlphabetFromDisk=true;
+    for radial=0:1
+        if radial
+            o.flankingDirection='radial';
+        else
+            o.flankingDirection='tangential';
+        end
+        ooo{end+1}=o;
+    end
+end
 
 % Randomly interleave testing left and right.
 for i=1:length(ooo)
@@ -170,7 +170,7 @@ for i=1:length(ooo)
 end
 t=struct2table(oo);
 disp(t); % Print the conditions in the Command Window.
-% return
+return
 
 for i=1:length(ooo)
     oo=ooo{i};
