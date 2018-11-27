@@ -3312,29 +3312,6 @@ end
 xyDeg=xyDeg+o.nearPointXYDeg;
 end
 
-%% Clean up whenever CriticalSpacing terminates, even by control-c.
-function CloseWindowsAndCleanup()
-% Close any windows opened by the Psychtoolbox Screen command, and
-% re-enable the keyboard.
-if ~isempty(Screen('Windows'))
-    % Screen CloseAll is very slow, so we call it only if we need to.
-    Screen('CloseAll');
-    % Calling Screen('CloseAll') is equivalent to:
-%     while ~isempty(Screen('Windows'))
-%         ww=Screen('Windows');
-%         Screen('Close',ww(1));
-%     end
-    % "sca" is a shortcut that calls Screen('CloseAll'), ShowCursor, and
-    % RestoreCluts.
-    if ismac % Takes 120 s.
-        % AutoBrightness(0,1);
-    end
-end
-ListenChar;
-ShowCursor;
-% RestoreCluts;
-end % function CloseWindowsAndCleanup()
-
 function v=shuffle(v)
 v=v(randperm(length(v)));
 end
