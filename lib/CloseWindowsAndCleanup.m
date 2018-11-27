@@ -14,11 +14,9 @@ function CloseWindowsAndCleanup()
 % denis.pelli@nyu.edu, November 27, 2018
 
 if ~isempty(Screen('Windows'))
-    % Screen CloseAll is very slow, so we call it only if we need to.
     Screen('CloseAll');
     if ismac
-        % Takes 120 s.
-        % AutoBrightness(0,1);
+        AutoBrightness(0,1);
     end
 end
 % These three are quick, about 0.1 s.
