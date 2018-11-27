@@ -11,12 +11,16 @@ function CloseWindowsAndCleanup()
 %
 % cleanup=onCleanup(@() CloseWindowsAndCleanup);
 %
+% The cleanup function you specify is called when the local variable
+% "cleanup" is cleared, which occurs at termination (normal or abnormal) of
+% the program that it's in.
+%
 % denis.pelli@nyu.edu, November 27, 2018
 
 if ~isempty(Screen('Windows'))
-    Screen('CloseAll'); % May take many seconds.
+    Screen('CloseAll'); % May take a minute.
     if ismac
-        AutoBrightness(0,1); % May take many seconds.
+        AutoBrightness(0,1); % May take a minute.
     end
 end
 % These three are quick.
@@ -24,5 +28,4 @@ ListenChar;
 ShowCursor;
 RestoreCluts;
 end % function CloseWindowsAndCleanup()
-
 
