@@ -4,10 +4,10 @@ function CloseWindowsAndCleanup()
 % tables (cluts). This function is similar to "sca".
 %
 % It can be frustrating to have your program terminate, possibly due to an
-% error, while a psychtoolbox window obscures your view of the MATLAB
-% Command Window. You can avoid that problem by planning ahead. Call
-% onCleanup at the beginning of your main program to request a clean up
-% whenever your program terminates, even by error or control-c.
+% error, while a psychtoolbox window obscures the MATLAB Command Window.
+% You can avoid that problem by planning ahead. Call onCleanup at the
+% beginning of your main program to request a clean up whenever your
+% program terminates, even by error or control-c.
 %
 % cleanup=onCleanup(@() CloseWindowsAndCleanup);
 %
