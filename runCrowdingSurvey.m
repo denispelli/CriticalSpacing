@@ -32,8 +32,8 @@
 
 clear o oo ooo
 % SIMULATE OBSERVER TO TEST THRESHOLD ESTIMATION
-% oo(oi).simulateObserver=true;
-% oo(oi).simulatedLogThreshold=0;
+% o.simulateObserver=true;
+% o.simulatedLogThreshold=0;
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
 o.borderLetter='X';
@@ -71,7 +71,7 @@ for i=1:length(ooo)
     radialDeg=sqrt(sum(o.eccentricityXYDeg.^2));
     o.viewingDistanceCm=max(30,min(400,round(9/tand(radialDeg))));
     o.viewingDistanceCm=40;
-    oo(1)=o;
+    oo=o;
     o.eccentricityXYDeg= -o.eccentricityXYDeg;
     oo(2)=o;
     ooo{i}=oo;
