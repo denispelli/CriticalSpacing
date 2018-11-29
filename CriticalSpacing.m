@@ -561,7 +561,7 @@ o.fixationAtCenter=false; % Force fixation to be at center of screen.
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
-o.responseLabels='abcdefghijklmnopqrstivwxyz123456789';
+o.responseLabels='abcdefghijklmnopqrstuvwxyz123456789';
 
 % SIMULATE OBSERVER
 o.simulateObserver=false;
