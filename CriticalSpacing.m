@@ -489,6 +489,8 @@ o.condition=[]; % Integer count of the condition, starting at 1.
 o.conditionName=''; 
 o.experiment=''; % Name of this experiment. Used to select files for analysis.
 o.block=[]; % Each block may contain more than one condition.
+o.quitBlock=false;
+o.quitSession=false;
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
