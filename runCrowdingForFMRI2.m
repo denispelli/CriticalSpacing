@@ -111,7 +111,7 @@ end
 %% PRINT TABLE OF CONDITIONS.
 t=struct2table(oo);
 disp(t(:,{'condition','thresholdParameter','eccentricityXYDeg','flankingDirection','viewingDistanceCm','targetFont'}));
-return
+
 %% RUN THE EXPERIMENT
 oOld.observer='';
 for i=1:length(oo)
@@ -124,7 +124,7 @@ for i=1:length(oo)
     o.durationSec=0.2; % duration of display of target and flankers
     o.repeatedTargets=0;
     o=CriticalSpacing(o);
-    if ~o.quitRun
+    if ~o.quitBlock
         fprintf('Finished condition %d.\n',i);
     end
     if o.quitSession
