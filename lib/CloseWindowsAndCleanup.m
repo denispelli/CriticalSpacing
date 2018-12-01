@@ -16,10 +16,11 @@ function CloseWindowsAndCleanup()
 % the program that it's in.
 %
 % denis.pelli@nyu.edu, November 27, 2018
+global isLastBlock % Set in CriticalSpacing.m. True on last block.
 
 if ~isempty(Screen('Windows'))
     Screen('CloseAll'); % May take a minute.
-    if ismac
+    if ismac && ~isLastBlock
         AutoBrightness(0,1); % May take a minute.
     end
 end
