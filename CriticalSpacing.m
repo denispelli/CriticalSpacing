@@ -457,7 +457,7 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
-addpath(fullfile(fileparts(mfilename('fullpath')),'Autobrightness')); % "lib" folder in same directory as this file
+addpath(fullfile(fileparts(mfilename('fullpath')),'AutoBrightness')); % "AutoBrightness" folder in same directory as this file
 plusMinus=char(177);
 
 % Once we call onCleanup, until CriticalSpacing ends,
@@ -602,7 +602,7 @@ o.useFractionOfScreen=false;
 % terminates). Otherwise the brightness will remain ready for the next
 % block. I think this code eliminates an annoying dead time of 30 to 60 s
 % per block.
-o.isFirstBlock=false;
+o.isFirstBlock=true;
 o.isLastBlock=true;
 
 % TO MEASURE BETA
@@ -1939,8 +1939,6 @@ try
                 for i=1:3
                     Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
                     cal.brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
-                    %          Brightness(cal.screen,cal.brightnessSetting);
-                    %          cal.brightnessReading=Brightness(cal.screen);
                     if abs(cal.brightnessSetting-cal.brightnessReading)<0.01
                         break;
                     elseif i==3
