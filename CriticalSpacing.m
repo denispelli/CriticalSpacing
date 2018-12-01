@@ -298,9 +298,10 @@ function oo=CriticalSpacing(oIn)
 % save to disk) results so far, and ask whether you're quitting the whole
 % session or proceeding to the next block. Quitting this block sets the
 % flag o.quitBlock, and quitting the whole session also sets the flag
-% o.quitSession. If o.quitSession is already set when you call
-% CriticalSpacing, the CriticalSpacing returns immediately after processing
-% arguments. (CriticalSpacing ignores o.quitBlock on input.)
+% o.quitSession (and o.isLastBlock=true and isLastBlock=true).
+% If o.quitSession is already set when you call CriticalSpacing, the
+% CriticalSpacing returns immediately after processing arguments.
+% (CriticalSpacing ignores o.quitBlock on input.)
 %
 % SPACE KEY: SKIP THIS TRIAL. To make it easier to test children, we've
 % softened the "forced" in forced choice. If you (the experimenter) think
@@ -464,6 +465,8 @@ plusMinus=char(177);
 % posting of an error here or in any function called from here, or the user
 % hitting control-C.
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
+global isLastBlock
+isLastBlock=true;
 
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
@@ -588,6 +591,19 @@ o.showLineOfLetters=false;
 o.speakSizeAndSpacing=false;
 o.useFractionOfScreen=false;
 
+% BLOCKS AND BRIGHTNESS
+% To save time, we set brightness only before the first block, and restore
+% it only after the last block. Each call to AutoBrightness seems to take
+% about 30 s on an iMac under Mojave. CriticalSpacing doesn't know the
+% block number, so we provide two flags to designate the first and last
+% blocks. If you provide o.lastBlock=true then brightness
+% will be restored at the end of the block (or when CriticalSpacing
+% terminates). Otherwise the brightness will remain ready for the next
+% block. I think this code eliminates an annoying dead time of 30 to 60 s
+% per block.
+o.isFirstBlock=false;
+o.isLastBlock=true;
+
 % TO MEASURE BETA
 % o.measureBeta=false;
 % o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
@@ -697,6 +713,8 @@ if ~isempty(unknownFields)
     warning on backtrace
 end
 if oo(1).quitSession
+    % Quick return. We're skipping every block in the session.
+    isLastBlock=false; % Speed up CloseWindowAndCleanup().
     return
 end
 % clear Screen % might help get appropriate restore after using Screen('Resolution');
@@ -859,9 +877,11 @@ try
     oo(1).screen=max(Screen('Screens'));
     computer=Screen('Computer');
     oo(1).computer=computer;
-    if computer.osx || computer.macintosh
-        % Do this BEFORE opening the window, so user can see any alerts.
-        AutoBrightness(oo(1).screen,0); % Takes 26 s.
+    if oo(1).isFirstBlock
+        if computer.osx || computer.macintosh
+            % Do this BEFORE opening the window, so user can see any alerts.
+            AutoBrightness(oo(1).screen,0); % Takes 26 s.
+        end
     end
     screenBufferRect=Screen('Rect',oo(1).screen);
     screenRect=Screen('Rect',oo(1).screen,1);
@@ -1342,6 +1362,8 @@ try
             oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
             if oo(1).quitSession
                 ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining blocks.\n');
+                oo(1).isLastBlock=true;
+                isLastBlock=true; % Tell CloseWindowsAndCleanup().
             else
                 ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
             end
@@ -1443,6 +1465,8 @@ try
             oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
             if oo(1).quitSession
                 ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+                oo(1).isLastBlock=true;
+                isLastBlock=true; % Tell CloseWindowsAndCleanup().
             else
                 ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
             end
@@ -1476,6 +1500,8 @@ try
             oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
             if oo(1).quitSession
                 ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+                oo(1).isLastBlock=true;
+                isLastBlock=true; % Tell CloseWindowsAndCleanup().
             else
                 ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
             end
@@ -1854,7 +1880,6 @@ try
         cal.macModelName=MacModelName;
     end
     cal.screenOutput=[]; % only for Linux
-    cal.ScreenConfigureDisplayBrightnessWorks=true; % default value
     cal.brightnessSetting=1.00; % default value
     cal.brightnessRMSError=0; % default value
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
@@ -1880,20 +1905,57 @@ try
     v=oo(1).psychtoolbox;
     ffprintf(ff,':: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
     assert(cal.screenWidthCm==screenWidthMm/10);
-    cal.ScreenConfigureDisplayBrightnessWorks=true;
-    if cal.ScreenConfigureDisplayBrightnessWorks
-        cal.brightnessSetting=1;
-        % Psychtoolbox Bug: Screen ConfigureDisplay claims that it will
-        % silently do nothing if not supported. But when I used it on my
-        % video projector, Screen gave a fatal error. How can my program
-        % know when it's safe to use Screen ConfigureDisplay?
-        % Bug reported to Psychtoolbox forum June 2017.
-        % The work around, not yet implemented here, is to wrap the call in a
-        % try-catch block.
-        if computer.osx || computer.macintosh
-            Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+    if oo(1).isFirstBlock
+        %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
+        useBrightnessFunction=false;
+        if useBrightnessFunction
+            Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
+            cal.brightnessReading=Brightness(cal.screen); % Read brightness.
+            if cal.brightnessReading==-1
+                % If it failed, try again. The first attempt sometimes fails.
+                % Not sure why. Maybe it times out.
+                cal.brightnessReading=Brightness(cal.screen); % Read brightness.
+            end
+            if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.01
+                error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
+            end
+        else
+            try
+                % Caution: Screen ConfigureDisplay Brightness gives a fatal
+                % error if not supported, and is unsupported on many
+                % devices, including a video projector under macOS. We use
+                % try-catch to recover. NOTE: It was my impression in
+                % summer 2017 that the Brightness function (which uses
+                % AppleScript to control the System Preferences Display
+                % panel) is currently more reliable than the Screen
+                % ConfigureDisplay Brightness feature (which uses a macOS
+                % call). The Screen call adjusts the brightness, but not
+                % the slider in the Preferences Display panel, and macOS
+                % later unpredictably resets the brightness to the level of
+                % the slider, not what we asked for. This is a macOS bug in
+                % the Apple call used by Screen.
+                for i=1:3
+                    Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+                    cal.brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
+                    %          Brightness(cal.screen,cal.brightnessSetting);
+                    %          cal.brightnessReading=Brightness(cal.screen);
+                    if abs(cal.brightnessSetting-cal.brightnessReading)<0.01
+                        break;
+                    elseif i==3
+                        error('Tried three times to set brightness to %.2f, but read back %.2f',...
+                            cal.brightnessSetting,cal.brightnessReading);
+                    end
+                end
+            catch
+                cal.brightnessReading=NaN;
+            end
+            % END OF SET BRIGHTNESS
         end
     end
+    
+    % Control the behavior of CloseWindowsAndCleanUp().
+    isLastBlock=oo(1).isLastBlock;
+
     for oi=1:conditions
         oo(oi).cal=cal;
     end
@@ -1978,6 +2040,8 @@ try
         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
         if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+            oo(1).isLastBlock=true;
+            isLastBlock=true; % Tell CloseWindowsAndCleanup().
         else
             ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
         end
@@ -2355,6 +2419,8 @@ try
                     oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
                     if oo(1).quitSession
                         ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+                        oo(1).isLastBlock=true;
+                        isLastBlock=true; % Tell CloseWindowsAndCleanup().
                     else
                         ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
                     end
@@ -2996,6 +3062,8 @@ try
         oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
         if oo(1).quitSession
             ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+            oo(1).isLastBlock=true;
+            isLastBlock=true; % Tell CloseWindowsAndCleanup().
         else
             ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
         end
