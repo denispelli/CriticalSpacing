@@ -8,7 +8,7 @@
 % Novermber 29, 2018, Correct test sites to match Jing's data.
 %% PREPARE THE CONDITIONS
 % Crowding distance at 25 combinations of location and orientation:
-% * (12 thresholds). Horizontal meridian: 6 ecc. (±2.5, ±5, ±10 deg) X 2 orientations (0, 90 deg)
+% * (12 thresholds). Horizontal meridian: 6 ecc. (ï¾±2.5, ï¾±5, ï¾±10 deg) X 2 orientations (0, 90 deg)
 % * (8 thresholds). At 5 deg ecc: 4 obliques (45, 135, 225, 315 deg) X 2 orientations
 % * (4 thresholds) Vertical meridian: +/-5 deg ecc X 2 orientations
 % * (0 threshold) Fovea: Horizontal crowding distance X 1 orientation.
@@ -24,6 +24,8 @@ o.conditionName='crowding';
 o.fixationLineWeightDeg=0.04;
 o.fixationCrossDeg=3; % 0, 3, and inf are typical values.
 o.eccentricityXYDeg=[0 0];
+o.isFirstBlock=false;
+o.isLastBlock=false;
 oo=o; % Include all the fields that we need.
 oo(1)=[]; % oo is now empty with the fields that we need.
 
@@ -107,6 +109,8 @@ for i=1:length(oo)
     oo(i).viewingDistanceCm=max(30,min(400,round(9/tand(radialDeg))));
     oo(i).condition=i;
 end
+oo(1).isFirstBlock=true;
+oo(end).isLastBlock=true;
 
 %% PRINT TABLE OF CONDITIONS.
 t=struct2table(oo);
