@@ -1922,20 +1922,20 @@ try
                 error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
             end
         else
+            % Caution: Screen ConfigureDisplay Brightness gives a fatal
+            % error if not supported, and is unsupported on many
+            % devices, including a video projector under macOS. We use
+            % try-catch to recover. NOTE: It was my impression in
+            % summer 2017 that the Brightness function (which uses
+            % AppleScript to control the System Preferences Display
+            % panel) is currently more reliable than the Screen
+            % ConfigureDisplay Brightness feature (which uses a macOS
+            % call). The Screen call adjusts the brightness, but not
+            % the slider in the Preferences Display panel, and macOS
+            % later unpredictably resets the brightness to the level of
+            % the slider, not what we asked for. This is a macOS bug in
+            % the Apple call used by Screen.
             try
-                % Caution: Screen ConfigureDisplay Brightness gives a fatal
-                % error if not supported, and is unsupported on many
-                % devices, including a video projector under macOS. We use
-                % try-catch to recover. NOTE: It was my impression in
-                % summer 2017 that the Brightness function (which uses
-                % AppleScript to control the System Preferences Display
-                % panel) is currently more reliable than the Screen
-                % ConfigureDisplay Brightness feature (which uses a macOS
-                % call). The Screen call adjusts the brightness, but not
-                % the slider in the Preferences Display panel, and macOS
-                % later unpredictably resets the brightness to the level of
-                % the slider, not what we asked for. This is a macOS bug in
-                % the Apple call used by Screen.
                 for i=1:3
                     Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
                     cal.brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
@@ -1946,7 +1946,9 @@ try
                             cal.brightnessSetting,cal.brightnessReading);
                     end
                 end
-            catch
+            catch e
+                warning('Screen ConfigureDisplay Brightness failed.');
+                warning(e.message);
                 cal.brightnessReading=NaN;
             end
             % END OF SET BRIGHTNESS
