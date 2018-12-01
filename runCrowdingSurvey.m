@@ -82,10 +82,13 @@ disp(t); % Print the conditions in the Command Window.
 for i=1:length(ooo)
     oo=ooo{i};
     for oi=1:length(oo)
+        oo(oi).isFirstBlock=false;
+        oo(oi).isLastBlock=false;
         if i==1
             oo(oi).experimenter='Darshan';
             oo(oi).observer='';
-        else
+            oo(oi).isFirstBlock=true;
+       else
             oo(oi).experimenter=old.experimenter;
             oo(oi).observer=old.observer;
             oo(oi).viewingDistanceCm=old.viewingDistanceCm;
@@ -97,6 +100,7 @@ for i=1:length(ooo)
         oo(oi).durationSec=0.1; % duration of display of target and flankers
         oo(oi).repeatedTargets=0;
     end
+    ooo{end}(1).isLastBlock=true;
     oo=CriticalSpacing(oo);
     ooo{i}=oo;
     if ~any([oo.quitBlock])
