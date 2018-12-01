@@ -20,7 +20,7 @@ global isLastBlock % Set in CriticalSpacing.m. True on last block.
 
 if ~isempty(Screen('Windows'))
     Screen('CloseAll'); % May take a minute.
-    if ismac && ~isLastBlock
+    if ismac && isLastBlock
         AutoBrightness(0,1); % May take a minute.
     end
 end
