@@ -457,6 +457,7 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
+addpath(fullfile(fileparts(mfilename('fullpath')),'Autobrightness')); % "lib" folder in same directory as this file
 plusMinus=char(177);
 
 % Once we call onCleanup, until CriticalSpacing ends,
@@ -881,6 +882,7 @@ try
         if computer.osx || computer.macintosh
             % Do this BEFORE opening the window, so user can see any alerts.
             AutoBrightness(oo(1).screen,0); % Takes 26 s.
+        
         end
     end
     screenBufferRect=Screen('Rect',oo(1).screen);
@@ -1907,7 +1909,7 @@ try
     assert(cal.screenWidthCm==screenWidthMm/10);
     if oo(1).isFirstBlock
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
-        useBrightnessFunction=false;
+        useBrightnessFunction=true;
         if useBrightnessFunction
             Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
             cal.brightnessReading=Brightness(cal.screen); % Read brightness.
