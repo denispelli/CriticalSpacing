@@ -95,7 +95,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0; 
+o.useFractionOfScreenToDebug=0; 
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -108,7 +108,7 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 
-o.useFractionOfScreen=0; 
+o.useFractionOfScreenToDebug=0; 
 
 o.durationSec=0.2; % duration of display of target and flankers
 o.viewingDistanceCm=200; % Default for runtime question.

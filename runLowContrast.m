@@ -95,7 +95,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0; 
+o.useFractionOfScreenToDebug=0; 
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -109,7 +109,7 @@ o.useFractionOfScreen=0;
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
 
-% o.useFractionOfScreen=0.5; 
+% o.useFractionOfScreenToDebug=0.5; 
 o.frameTheTarget=0; 
 o.printSizeAndSpacing=0;
 o.showBounds=0;

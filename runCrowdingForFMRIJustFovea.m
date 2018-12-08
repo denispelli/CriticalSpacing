@@ -70,7 +70,7 @@ disp(t(:,{'condition','thresholdParameter','eccentricityXYDeg','flankingDirectio
 oOld.observer='';
 for i=1:length(oo)
     o=oo(i);
-    % o.useFractionOfScreen=0.5;
+    % o.useFractionOfScreenToDebug=0.5;
     o.trials=30;
     o.practicePresentations=0;
     o.experimenter='Jing';

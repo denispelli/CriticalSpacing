@@ -27,7 +27,8 @@
 % CREATE A CELL ARRAY ooo WITH ONE CELL PER BLOCK.
 % EACH BLOCK IS SPECIFIED BY A STRUCT ARRAY, WITH ONE STRUCT PER CONDITION.
 clear o oo ooo
-% oo(oi).useFractionOfScreen=0.5;
+% o.useFractionOfScreenToDebug=0.5; %% USE ONLY FOR DEBUGGING
+o.rushToDebug=true; %% USE ONLY FOR DEBUGGING
 % SIMULATE OBSERVER TO TEST THRESHOLD ESTIMATION
 % o.simulateObserver=true;
 % o.simulatedLogThreshold=0;
@@ -57,7 +58,7 @@ end
 for i=1:length(ooo)
     o=ooo{i};
     o.block=i;
-    o.fixationAtCenter=true; 
+    o.setNearPointEccentricityTo='fixation';
     o.nearPointXYInUnitSquare=[0.5 0.5];
     o.eccentricityXYDeg=[-10 0];
 %     radialDeg=sqrt(sum(o.eccentricityXYDeg.^2));

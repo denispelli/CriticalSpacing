@@ -96,7 +96,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0; 
+o.useFractionOfScreenToDebug=0; 
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -166,7 +166,7 @@ if 1
     o.borderLetter='';
 end
 
-% o.useFractionOfScreen=0.3;
+% o.useFractionOfScreenToDebug=0.3;
 
 o.practicePresentations=0;
 o.experimenter='Darshan';

@@ -95,7 +95,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0;
+o.useFractionOfScreenToDebug=0;
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -115,7 +115,7 @@ o.speakSizeAndSpacing=1;
 % o.showAlphabet=0;
 % o.showBounds=1;
 % o.showLineOfLetters=1;
-o.useFractionOfScreen=0.2;
+o.useFractionOfScreenToDebug=0.2;
 o.nearPointXYInUnitSquare=[0.5 0.5];
 % o.targetFont='Sloan';
 % o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C

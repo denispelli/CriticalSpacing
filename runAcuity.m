@@ -95,7 +95,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0;
+o.useFractionOfScreenToDebug=0;
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -108,7 +108,7 @@ o.useFractionOfScreen=0;
 
 %% CUSTOM CODE
 % RUN (measure two thresholds, interleaved)
-o.useFractionOfScreen=0;
+o.useFractionOfScreenToDebug=0;
 o.nearPointXYInUnitSquare=[0.2  0.5];
 o.targetFont='Sloan';
 o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -121,7 +121,7 @@ o.durationSec=0.2;
 o.fourFlankers=0;
 o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
-% o.useFractionOfScreen=0.2;
+% o.useFractionOfScreenToDebug=0.2;
 
 % TEST FOVEA
 o.thresholdParameter='size'; % 'spacing' or 'size'

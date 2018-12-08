@@ -95,7 +95,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0;
+o.useFractionOfScreenToDebug=0;
 
 % TO MEASURE BETA
 % o.measureBeta=0;

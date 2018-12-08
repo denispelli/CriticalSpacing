@@ -96,7 +96,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreen=0;
+o.useFractionOfScreenToDebug=0;
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -204,7 +204,7 @@ t=struct2table(oo);
 t % Print the conditions in the Command Window.
 for i=1:length(oo)
    o=oo(i);
-% o.useFractionOfScreen=0.5;
+% o.useFractionOfScreenToDebug=0.5;
    o.fixationLineWeightDeg=0.04;
    o.fixationCrossDeg=3; % 0, 3, and inf are typical values.
    o.trials=30;
