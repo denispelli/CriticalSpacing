@@ -149,8 +149,8 @@ end
 for i=1:length(ooo)
     o=ooo{i};
     o.block=i;
-    o.fixationAtCenter=true;
-    %     o.nearPointXYInUnitSquare=[0.5 0.5];
+    o.setNearPointEccentricityTo='fixation';
+%     o.nearPointXYInUnitSquare=[0.5 0.5];
     o.viewingDistanceCm=40;
     o.eccentricityXYDeg=[-10 0];
     oo=o;
@@ -175,7 +175,7 @@ disp(t); % Print the conditions in the Command Window.
 for i=1:length(ooo)
     oo=ooo{i};
     for oi=1:length(oo)
-%         oo(oi).useFractionOfScreen=0.5;
+%         oo(oi).useFractionOfScreenToDebug=0.5;
         oo(oi).isFirstBlock=false;
         oo(oi).isLastBlock=false;
         if i==1
