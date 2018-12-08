@@ -4,8 +4,9 @@ function [newXY1,newXY2]=ClipLineSegment2(xy1,xy2,r)
 % Liang-Barsky Algorithm for line clipping. See
 % http://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm
 %
-% Take a 2-D line from xy1 to xy2, and clip to fit in rectangle r. If
-% nothing remains, the output arguments are NaN.
+% Take a 2-D line from xy1 to xy2, and clip it to fit in rectangle r,
+% returning the new line segment from newXY1 to newXY2. If nothing remains,
+% the output arguments are NaN.
 %
 % Inputs must be vectors of length 2. Outputs are vectors of length 2. If
 % no outputs are specified, a plot is made.
@@ -13,6 +14,7 @@ function [newXY1,newXY2]=ClipLineSegment2(xy1,xy2,r)
 % Original source is online:
 % http://mass-communicating.com/code/2013/05/12/line-clipping.html
 %
+% denis.pelli@nyu.edu, 2016.
 v1=r(1:2);
 v2=r(3:4);
 
