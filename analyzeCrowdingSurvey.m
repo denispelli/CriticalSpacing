@@ -14,7 +14,7 @@ vars={'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'experimenter' 'observer' 'trials' 'thresholdParameter' ...
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'... %'targetHeightDeg' 'targetKind'
     'viewingDistanceCm' 'durationSec'  ...
-    'contrast' 'pixPerCm'  'nearPointXYPix'  'beginningTime' 'row'};
+    'contrast' 'pixPerCm'  'nearPointXYPix'  'beginningTime' };
 oo=ReadExperimentData(experiment,vars); % Adds date and missingFields.
 
 %% CLEAN
@@ -24,7 +24,9 @@ for oi=1:length(oo)
         oo(oi).flankingDirection='none';
     end
     oo(oi).experiment=experiment;
+    ok(oi)=~any(ismember(oo(oi).observer,{'','d'}));
 end
+oo=oo(ok);
 
 %% SELECT CONDITION(S)
 
