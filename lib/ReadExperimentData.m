@@ -57,7 +57,7 @@ if nargin<2
 %         'targetPix' 'targetSizeIsHeight' 'targetXYPix' 'task'  ...
 %         'textFont' 'textLineLength' 'textSize' 'textSizeDeg'  ...
 %         'thresholdParameter' 'totalSecs' 'trialData' 'trials' ...
-%         'unknownFields' 'useFixation' 'useFractionOfScreen'  ...
+%         'unknownFields' 'useFixation' 'useFractionOfScreenToDebug'  ...
         };
 end
 oo=struct([]);
@@ -118,7 +118,7 @@ if isempty(oo)
 end
 [~,ii]=unique({oo.dataFilename}); % Discard duplicates.
 oo=oo(ii);
-missingFields=unique(cat(1,oo.missingFields));
+missingFields=unique(cat(2,oo.missingFields));
 if ~isempty(missingFields)
     warning OFF BACKTRACE
     s='Missing fields:';
