@@ -894,13 +894,19 @@ try
     if oo(1).isFirstBlock && ~oo(1).rushToDebug
         if computer.osx || computer.macintosh
             % Do this BEFORE opening the window, so user can see any alerts.
+            ffprintf(ff,'%d: Turning AutoBrightness off. ... ',MFileLineNr);
+            s=GetSecs;
             AutoBrightness(oo(1).screen,0); % Takes 26 s.
+            ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
         end
     end
     screenBufferRect=Screen('Rect',oo(1).screen);
     screenRect=Screen('Rect',oo(1).screen,1);
     Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
+    ffprintf(ff,'%d: OpenWindow. ... ',MFileLineNr);
+    s=GetSecs;
     window=OpenWindow(oo(1));
+    ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
     white=WhiteIndex(window);
     black=BlackIndex(window);
     if oo(1).printScreenResolution
@@ -929,9 +935,12 @@ try
     if exist(drawTextWarningFileName,'file')
         delete(drawTextWarningFileName);
     end
+    ffprintf(ff,'%d: Screen DrawText. ... ',MFileLineNr);
+    s=GetSecs;
     diary(drawTextWarningFileName);
     Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
     diary off
+    ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
     fileId=fopen(drawTextWarningFileName);
     oo(1).drawTextWarning=char(fread(fileId)');
     fclose(fileId);
@@ -1882,6 +1891,7 @@ try
     % Identify the computer
     cal.screen=0;
     computer=Screen('Computer');
+    computer.system=strrep(computer.system,'Mac OS','macOS'); % Modernize the spelling.
     [cal.screenWidthMm,cal.screenHeightMm]=Screen('DisplaySize',cal.screen);
     if computer.windows
         cal.processUserLongName=getenv('USERNAME');
@@ -1930,10 +1940,11 @@ try
     assert(cal.screenWidthCm==screenWidthMm/10);
     if oo(1).isFirstBlock && ~oo(1).rushToDebug
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
-        useBrightnessFunction=true;
+        useBrightnessFunction=false;
         if useBrightnessFunction
+            ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
             Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
-            for i=1:3
+            for i=1:5
                 cal.brightnessReading=Brightness(cal.screen); % Read brightness.
                 if cal.brightnessReading>=0
                     break
@@ -1941,6 +1952,7 @@ try
                 % If it failed, try again. The first attempt sometimes
                 % fails. Not sure why. Maybe it times out.
             end
+            ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
             if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.01
                 error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
             end
@@ -1957,6 +1969,7 @@ try
             % macOS later unpredictably resets the brightness to the level
             % of the slider, not what we asked for. This is a macOS bug in
             % the Apple call used by Screen.
+            ffprintf(ff,'%d: Screen ConfigureDisplay Brightness. ... ',MFileLineNr); s=GetSecs;
             try
                 for i=1:3
                     Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
@@ -1973,6 +1986,7 @@ try
                 warning(e.message);
                 cal.brightnessReading=NaN;
             end
+            ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
             % END OF SET BRIGHTNESS
         end
     end
