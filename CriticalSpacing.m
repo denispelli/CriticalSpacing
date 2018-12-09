@@ -1940,12 +1940,14 @@ try
     assert(cal.screenWidthCm==screenWidthMm/10);
     if oo(1).isFirstBlock && ~oo(1).rushToDebug
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
-        useBrightnessFunction=false;
+        useBrightnessFunction=true;
         if useBrightnessFunction
             ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
             Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
             for i=1:5
-                cal.brightnessReading=Brightness(cal.screen); % Read brightness.
+                % cal.brightnessReading=Brightness(cal.screen); % Read brightness.
+                cal.brightnessReading=Screen('ConfigureDisplay',...
+                    'Brightness',cal.screen,cal.screenOutput);
                 if cal.brightnessReading>=0
                     break
                 end
