@@ -1940,6 +1940,13 @@ try
     assert(cal.screenWidthCm==screenWidthMm/10);
     if oo(1).isFirstBlock && ~oo(1).rushToDebug
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
+        % Currently, in December 2018, my Brightness function
+        % writes reliably but seems to always fail when reading,
+        % returning -1. So we use my function to write (since
+        % Screen is unreliable there) and use Screen to read (since
+        % my Brightness is failing to read). By the way, the Screen
+        % function is quick writing and reading while my function
+        % is very slow (20 s) writing and reading.
         useBrightnessFunction=true;
         if useBrightnessFunction
             ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
