@@ -1591,13 +1591,15 @@ try
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
     ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
     if any([oo.recordGaze])
+        videoExtension='.avi'; % '.avi', '.mp4' or '.mj2'
         clear cam
         cam=webcam;
-        gazeFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename '.avi']);
-        vidWriter = VideoWriter(gazeFile);
+        gazeFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename videoExtension]);
+        vidWriter=VideoWriter(gazeFile);
+        vidWriter.FrameRate=2; % Play back at 2 frame/s.
         open(vidWriter);
         ffprintf(ff,'Recording gaze of conditions %s in:\n',num2str(find([oo.recordGaze])));
-        ffprintf(ff,'/data/%s.avi\n',oo(1).dataFilename);
+        ffprintf(ff,'/data/%s%s\n',oo(1).dataFilename,videoExtension);
     end
     if oo(1).useFractionOfScreenToDebug
         ffprintf(ff,'WARNING: Using o.useFractionOfScreenToDebug. This may invalidate all results.\n');
@@ -3273,7 +3275,7 @@ try
     if exist('vidWriter','var')
         close(vidWriter);
         clear cam
-        fprintf('Gaze recorded in %s.avi\n',oo(1).dataFilename);
+        fprintf('Gaze recorded in %s%s\n',oo(1).dataFilename,videoExtension);
     end
     fprintf('in folder %s\n',oo(1).dataFolder);
 catch e
