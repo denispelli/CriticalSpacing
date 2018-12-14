@@ -37,6 +37,7 @@ o.minimumTargetPix=8;
 
 if 1
     % Sloan
+    o.recordGaze=true;
     o.targetFont='Sloan';
     o.minimumTargetPix=8;
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
