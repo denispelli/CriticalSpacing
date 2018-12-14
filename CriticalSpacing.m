@@ -1596,10 +1596,10 @@ try
         cam=webcam;
         gazeFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename videoExtension]);
         vidWriter=VideoWriter(gazeFile);
-        vidWriter.FrameRate=2; % Play back at 2 frame/s.
+        vidWriter.FrameRate=1; % frame/s.
         open(vidWriter);
-        ffprintf(ff,'Recording gaze of conditions %s in:\n',num2str(find([oo.recordGaze])));
-        ffprintf(ff,'/data/%s%s\n',oo(1).dataFilename,videoExtension);
+        ffprintf(ff,'Recording gaze of conditions %s with extension %s\n',...
+            num2str(find([oo.recordGaze])),videoExtension);
     end
     if oo(1).useFractionOfScreenToDebug
         ffprintf(ff,'WARNING: Using o.useFractionOfScreenToDebug. This may invalidate all results.\n');
@@ -3275,7 +3275,7 @@ try
     if exist('vidWriter','var')
         close(vidWriter);
         clear cam
-        fprintf('Gaze recorded in %s%s\n',oo(1).dataFilename,videoExtension);
+        fprintf('Gaze recorded with extension %s\n',videoExtension);
     end
     fprintf('in folder %s\n',oo(1).dataFolder);
 catch e
