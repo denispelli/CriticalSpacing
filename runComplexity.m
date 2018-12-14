@@ -35,9 +35,10 @@ o.thresholdParameter='size';
 o.flankingDirection='radial'; % Ignored
 o.minimumTargetPix=8;
 
+o.recordGaze=true;
+
 if 1
     % Sloan
-    o.recordGaze=true;
     o.targetFont='Sloan';
     o.minimumTargetPix=8;
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
@@ -192,7 +193,7 @@ for i=1:length(ooo)
         oo(oi).fixationCrossBlankedNearTarget=false;
         oo(oi).fixationLineWeightDeg=0.1;
         oo(oi).fixationCrossDeg=1; % 0, 3, and inf are typical values.
-        oo(oi).trials=30;
+        oo(oi).trials=50;
         oo(oi).practicePresentations=0;
         oo(oi).durationSec=0.2; % duration of display of target and flankers
         oo(oi).repeatedTargets=0;
