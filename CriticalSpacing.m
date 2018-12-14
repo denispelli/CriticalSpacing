@@ -573,6 +573,7 @@ o.markTargetLocation=false; % true to mark target location
 o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
+o.recordGaze=false;
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
@@ -1589,6 +1590,15 @@ try
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
     ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
+    if any([oo.recordGaze])
+        clear cam
+        cam=webcam;
+        gazeFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename '.avi']);
+        vidWriter = VideoWriter(gazeFile);
+        open(vidWriter);
+        ffprintf(ff,'Recording gaze of conditions %s in:\n',num2str(find([oo.recordGaze])));
+        ffprintf(ff,'/data/%s.avi\n',oo(1).dataFilename);
+    end
     if oo(1).useFractionOfScreenToDebug
         ffprintf(ff,'WARNING: Using o.useFractionOfScreenToDebug. This may invalidate all results.\n');
     end
@@ -2832,6 +2842,12 @@ try
         end
         Screen('Flip',window,[],1); % Display stimulus & fixation.
         trialTimeSecs=GetSecs;
+        if oo(oi).recordGaze
+            img=snapshot(cam);
+            % FUTURE: Write trial number and condition number in corner of
+            % image.
+            writeVideo(vidWriter,img); % Write frame to video
+        end
         % Discard the line textures, to free graphics memory.
         if exist('lineTexture','var')
             for i=1:length(lineTexture)
@@ -3228,7 +3244,7 @@ try
             1000*max(oo(oi).actualDurationSec));
         a=[a oo(oi).actualDurationSec];
         if max(oo(oi).actualDurationSec)>oo(oi).durationSec+2/60
-            warning('Duration overrun by %.2 s.',max(oo(oi).actualDurationSec)-oo(oi).durationaSec);
+            warning('Duration overrun by %.2 s.',max(oo(oi).actualDurationSec)-oo(oi).durationSec);
         end
     end
     ffprintf(ff,':: duration is %.0f%c%.0f ms, max %.0f ms.\n',...
@@ -3253,14 +3269,24 @@ try
         fclose(dataFid);
         dataFid=-1;
     end
-    fprintf('Results saved in %s.txt and "".mat\nin folder %s\n',oo(1).dataFilename,oo(1).dataFolder);
+    fprintf('Results saved in %s.txt and "".mat\n',oo(1).dataFilename);
+    if exist('vidWriter','var')
+        close(vidWriter);
+        clear cam
+        fprintf('Gaze recorded in %s.avi\n',oo(1).dataFilename);
+    end
+    fprintf('in folder %s\n',oo(1).dataFolder);
 catch e
-    % One or more of these functions spoils psychlasterror, so i don't use them.
+    % One or more of these functions spoils psychlasterror, so I don't use them.
     %     Snd('Close');
     %     ShowCursor;
     if exist('dataFid','file') && dataFid~=-1
         fclose(dataFid);
         dataFid=-1;
+    end
+    if exist('vidWriter','var')
+        close(vidWriter);
+        clear cam
     end
     CloseWindowsAndCleanup; % Takes 120 s.
     rethrow(e);
