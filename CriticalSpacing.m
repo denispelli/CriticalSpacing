@@ -523,7 +523,7 @@ o.fourFlankers=0;
 o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
-o.flankingDirection='horizontal'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
+o.flankingDirection='radial'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
 o.flankingPolarDeg=[]; % Specify angle here (0 is right, 90 is up), or specify o.flankingDirection.
 o.repeatedTargets=false;
 o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 1,3,4, ... inf.
@@ -2347,9 +2347,12 @@ try
             % analyze only with one pair of flankers or iterate to analyze
             % both pairs.
             %
-            % Should the two arguments (x,y) to atan2d(y,x) be exchanged?
-            % Or does adding 90 take care of it?
-            orientation=90+atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
+            % 3/4/19 BUG. This code needs to be revised to cope with the
+            % case of zero eccentricity. Currently, we allow
+            % horizontal/vertical only when eccentricity is zero, in which
+            % case atan2d returns zero, even though it's actually
+            % undefined.
+            orientation=90+atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
             if ~IsXYInRect(xyT,oo(oi).stimulusRect)
                 ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
                 ffprintf(ff,'NOTE: Perhaps this would be fixed by enhancing CriticalSpacing with another call to ShiftPointInRect. Ask denis.pelli@nyu.edu.');
