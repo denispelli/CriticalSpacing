@@ -381,7 +381,7 @@ function oo=CriticalSpacing(oIn)
 % You can use o.stimulusMarginFraction to shrink stimulusRect e.g. 10% so
 % that letters have white above and below.
 %
-% Copyright © 2016, 2017, 2018, Denis Pelli, denis.pelli@nyu.edu
+% Copyright © 2016, 2017, 2018, 2019 Denis Pelli, denis.pelli@nyu.edu
 
 %% PLANS
 %
@@ -705,6 +705,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
     'fixationOnScreen' 'fixationXYPix' 'nearPointXYPix' ...
     'pixPerCm' 'pixPerDeg' 'stimulusRect' 'targetXYPix' 'textLineLength' ...
     'speakInstructions' 'fixationOnScreen' 'fixationIsOffscreen' ...
+    'eccentricityPolarDeg' 'okToShiftCoordinates' 'responseTextWidth' ...
     };
 unknownFields=cell(0);
 for oi=1:conditions
@@ -1371,7 +1372,7 @@ try
         
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         
         % Get typed response
         Screen('TextSize',window,oo(1).textSize);
@@ -1479,7 +1480,7 @@ try
         Screen('TextSize',window,round(0.6*oo(1).textSize));
         Screen('DrawText',window,'Please always use the same name. You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1514,7 +1515,7 @@ try
         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1625,7 +1626,14 @@ try
         end
         ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
         if isempty(oo(oi).flankingPolarDeg) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
-            error('At o.eccentricityXYDeg==0, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
+            error('At zero o.eccentricityXYDeg, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
+                oo(oi).flankingDirection);
+        end
+        if isempty(oo(oi).flankingPolarDeg) && ecc>0 && ismember(oo(oi).flankingDirection,{'horizontal' 'vertical'})
+            % Currently, allowing 'horizonal' at nonzero ecc +10 deg results in
+            % tangential (i.e. vertical) flankers, which is reported as
+            % "horizontal". So we insist on just 'radial' or 'tangential'.
+            error('At nonzero o.eccentricityXYDeg, o.flankingDirection must be "radial'' or ''tangential'', not ''%s''.',...
                 oo(oi).flankingDirection);
         end
         oo(oi).eccentricityPolarDeg=atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
@@ -1961,6 +1969,11 @@ try
         % is very slow (20 s) writing and reading.
         useBrightnessFunction=true;
         if useBrightnessFunction
+            Screen('FillRect',window);
+            Screen('TextSize',window,oo(1).textSize);
+            Screen('DrawText',window,'Setting brightness ...',...
+                instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+            Screen('Flip',window);
             ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
             Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
             for i=1:5
@@ -2079,7 +2092,7 @@ try
     string=[string 'To continue, please hit RETURN. '];
     Screen('TextFont',window,oo(oi).textFont,0);
     Screen('TextSize',window,round(oo(oi).textSize*0.35));
-    Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+    Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
     Screen('TextSize',window,oo(oi).textSize);
     string=strrep(string,'letter',symbolName);
     DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
@@ -2372,7 +2385,7 @@ try
             outerSpacingPix=0;
         end
         if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
-            % I think the two arguments to atan2d should be exchanged:
+            % Should the two arguments to atan2d be exchanged?
             orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
             eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
             if eccentricityPix==0
