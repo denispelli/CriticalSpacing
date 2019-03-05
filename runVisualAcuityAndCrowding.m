@@ -123,6 +123,7 @@ o.borderLetter='X';
 o.thresholdParameter='size';
 o.targetSizeIsHeight=nan; % depends on parameter
 o.eccentricityXYDeg=[0 0];
+o.flankingDirection= 'horizontal';
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o=CriticalSpacing(o);
 
@@ -146,6 +147,7 @@ o.borderLetter='X';
 o.thresholdParameter='size';
 o.targetSizeIsHeight=nan; % depends on parameter
 o.eccentricityXYDeg=[10 0];
+o.flankingDirection= 'radial';
 o.nearPointXYInUnitSquare=[0.8  0.5];
 o=CriticalSpacing(o);
 
