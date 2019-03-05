@@ -37,6 +37,7 @@ o.minimumTargetPix=8;
 
 o.recordGaze=true;
 
+if 0
 if 1
     % Sloan
     o.targetFont='Sloan';
@@ -127,6 +128,7 @@ if 1
     o.readAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
+end
 if 1
     % crowding
     o.conditionName='crowdingDistance';
@@ -172,7 +174,7 @@ for i=1:length(ooo)
 end
 t=struct2table(oo);
 disp(t); % Print the conditions in the Command Window.
-% return
+return
 
 for i=1:length(ooo)
     oo=ooo{i};
