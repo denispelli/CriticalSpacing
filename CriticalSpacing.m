@@ -1967,7 +1967,7 @@ try
         % my Brightness is failing to read). By the way, the Screen
         % function is quick writing and reading while my function
         % is very slow (20 s) writing and reading.
-        useBrightnessFunction=true;
+        useBrightnessFunction=ismac;
         if useBrightnessFunction
             Screen('FillRect',window);
             Screen('TextSize',window,oo(1).textSize);
