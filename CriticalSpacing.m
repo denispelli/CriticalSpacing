@@ -1018,6 +1018,8 @@ try
             else
                 oo(oi).targetFontNumber=[];
                 Screen('TextFont',window,oo(oi).targetFont);
+                % Perform dummy draw call, to take deferred font setting on some OS'es into account:
+                Screen('DrawText',window,' ',0,0);
                 font=Screen('TextFont',window);
                 if ~streq(font,oo(oi).targetFont)
                     error('The o.targetFont "%s" is not available. Please install it.',oo(oi).targetFont);
@@ -1046,6 +1048,7 @@ try
     
     % Ask about viewing distance
     while true
+
         screenRect=Screen('Rect',window);
         screenWidthPix=RectWidth(screenRect);
         screenHeightPix=RectHeight(screenRect);
