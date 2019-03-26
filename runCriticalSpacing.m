@@ -96,7 +96,7 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreenToDebug=0; 
+o.useFractionOfScreenToDebug=0.3; 
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -142,7 +142,7 @@ if 0
     o.labelAnswers=true;
     o.borderLetter=40517;
 end
-if 1
+if 0
     % Japanese: Katakan, Hiragani, and Kanji
     % from Ayaka
     o.targetFont='Hiragino Mincho ProN W3';
@@ -177,8 +177,9 @@ o.eccentricityXYDeg=[10 0]; % Distance of target from fixation. Positive up and 
 o.nearPointXYInUnitSquare=[0.7 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
 
 o.durationSec=0.2; % duration of display of target and flankers
-if 0
+if 1
     o.targetFont='Sloan';
+%     o.targetFont='Calibri';
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
 end
