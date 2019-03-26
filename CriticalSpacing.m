@@ -1968,27 +1968,29 @@ try
         % function is quick writing and reading while my function
         % is very slow (20 s) writing and reading.
         useBrightnessFunction=ismac;
-        if useBrightnessFunction
-            Screen('FillRect',window);
-            Screen('TextSize',window,oo(1).textSize);
-            Screen('DrawText',window,'Setting brightness ...',...
-                instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
-            Screen('Flip',window);
-            ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
-            Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
-            for i=1:5
-                % cal.brightnessReading=Brightness(cal.screen); % Read brightness.
-                cal.brightnessReading=Screen('ConfigureDisplay',...
-                    'Brightness',cal.screen,cal.screenOutput);
-                if cal.brightnessReading>=0
-                    break
+        if useBrightnessFunction 
+            if ~IsWin
+                Screen('FillRect',window);
+                Screen('TextSize',window,oo(1).textSize);
+                Screen('DrawText',window,'Setting brightness ...',...
+                    instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+                Screen('Flip',window);
+                ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
+                Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
+                for i=1:5
+                    % cal.brightnessReading=Brightness(cal.screen); % Read brightness.
+                    cal.brightnessReading=Screen('ConfigureDisplay',...
+                        'Brightness',cal.screen,cal.screenOutput);
+                    if cal.brightnessReading>=0
+                        break
+                    end
+                    % If it failed, try again. The first attempt sometimes
+                    % fails. Not sure why. Maybe it times out.
                 end
-                % If it failed, try again. The first attempt sometimes
-                % fails. Not sure why. Maybe it times out.
-            end
-            ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
-            if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.01
-                error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
+                ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+                if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.01
+                    error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
+                end
             end
         else
             % Caution: Screen ConfigureDisplay Brightness gives a fatal
@@ -2005,14 +2007,16 @@ try
             % the Apple call used by Screen.
             ffprintf(ff,'%d: Screen ConfigureDisplay Brightness. ... ',MFileLineNr); s=GetSecs;
             try
-                for i=1:3
-                    Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
-                    cal.brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
-                    if abs(cal.brightnessSetting-cal.brightnessReading)<0.01
-                        break;
-                    elseif i==3
-                        error('Tried three times to set brightness to %.2f, but read back %.2f',...
-                            cal.brightnessSetting,cal.brightnessReading);
+                if ~IsWin
+                    for i=1:3
+                        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
+                        cal.brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
+                        if abs(cal.brightnessSetting-cal.brightnessReading)<0.01
+                            break;
+                        elseif i==3
+                            error('Tried three times to set brightness to %.2f, but read back %.2f',...
+                                cal.brightnessSetting,cal.brightnessReading);
+                        end
                     end
                 end
             catch e
