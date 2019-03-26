@@ -15,7 +15,7 @@ o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Put name here to skip the runtime question.
 o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
-o.readAlphabetFromDisk=true; % true makes the program more portable.
+% o.readAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=0; % To illustrate your talk or paper.
 o.task='identify';
@@ -179,9 +179,15 @@ o.nearPointXYInUnitSquare=[0.7 0.5]; % location on screen. [0 0]  lower right, [
 o.durationSec=0.2; % duration of display of target and flankers
 if 1
     o.targetFont='Sloan';
-%     o.targetFont='Calibri';
+    %     o.targetFont='Calibri';
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
+    o.readAlphabetFromDisk=false;
+end
+if 1
+    o.targetFont='Pelli Eye Chart';
+    o.alphabet='123456789';
+    o.borderLetter='$';
 end
 o.targetDeg=2;
 
@@ -192,7 +198,7 @@ o.thresholdParameter='spacing';
 
 o.thresholdParameter='size';
 % o(2)=o(1); % Copy the condition
-o.readAlphabetFromDisk=false; % true makes the program more portable.
+% o.readAlphabetFromDisk=false; % true makes the program more portable.
 
 % Japanese
 % o.targetFont='Hiragino Mincho ProN W3';
