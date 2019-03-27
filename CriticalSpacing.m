@@ -1881,16 +1881,20 @@ try
     ffprintf(ff,'\n');
     for oi=1:conditions
         sizesPix=oo(oi).minimumTargetPix*[oo(oi).targetHeightOverWidth 1];
-        ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pix, %.3fx%.3f deg. ',oi,sizesPix,sizesPix/pixPerDeg);
+        ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pix, %.3fx%.3f deg. ',...
+            oi,sizesPix,sizesPix/pixPerDeg);
         if oo(oi).fixedSpacingOverSize
             spacingPix=round(oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
-            ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',spacingPix,spacingPix/pixPerDeg);
+            ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',...
+                spacingPix,spacingPix/pixPerDeg);
         else
             switch oo(oi).thresholdParameter
                 case 'size'
-                    ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',oo(oi).spacingPix,oo(oi).spacingDeg);
+                    ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',...
+                        oo(oi).spacingPix,oo(oi).spacingDeg);
                 case 'spacing'
-                    ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',oo(oi).targetPix,oo(oi).targetDeg);
+                    ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',...
+                        oo(oi).targetPix,oo(oi).targetDeg);
             end
         end
     end
@@ -2331,8 +2335,8 @@ try
         % guarantee that we have the requested number of spaces
         % horizontally (minSpacesX) and vertically (minSpacesY).
         if oo(oi).targetSizeIsHeight
-            % spacingPix is vertical. It is scaled by heightOverWidth in
-            % the orthogonal direction.
+            % targetSizeIsHeight==true, so spacingPix is vertical. It is
+            % scaled by heightOverWidth in the orthogonal direction.
             if oo(oi).fixedSpacingOverSize
                 spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
                 spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
@@ -2342,8 +2346,8 @@ try
                 spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
             end
         else
-            % spacingPix is horizontal. It is scaled by heightOverWidth in
-            % the orthogonal direction.
+            % targetSizeIsHeight==false, so spacingPix is horizontal. It is
+            % scaled by heightOverWidth in the orthogonal direction.
             if oo(oi).fixedSpacingOverSize
                 spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
                 spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
@@ -2362,8 +2366,6 @@ try
                 spacingPix,oo(oi).spacingDeg,tXY);
         end
         spacingPix=round(spacingPix);
-%         xF=[];
-%         yF=[];
         fXY=[];
         if ismember(oo(oi).flankingDirection,{'horizontal' 'tangential'}) ...
                 || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
@@ -2401,11 +2403,15 @@ try
             end
             assert(length(spacingPix)==1);
             if oo(oi).fixedSpacingOverSize
+                % Compute the line on which the flankers lie, and clip it
+                % to o.stimulusRect.
                 fXY(1,:)=tXY+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 fXY(2,:)=tXY-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
                 spacingPix=norm(fXY-tXY)/(1+0.5*oo(oi).fixedSpacingOverSize);
             else
+                % Compute the line on which the flankers lie, and clip it
+                % to o.stimulusRect.
                 fXY(1,:)=tXY+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 fXY(2,:)=tXY-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
@@ -2416,7 +2422,7 @@ try
             assert(length(spacingPix)==1);
             fXY(1,:)=tXY+spacingPix*flankingPixVector;
             fXY(2,:)=tXY-spacingPix*flankingPixVector;
-             outerSpacingPix=0;
+            outerSpacingPix=0;
         end
         if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
             flankingDegVector=oo(oi).eccentricityDegVector;
@@ -2434,7 +2440,8 @@ try
                 fXY(end+1,1:2)=tXY-spacingPix*flankingPixVector;
                 % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
                 outerSpacingPix=0;
-                if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
+                if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
+                        oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
             else % nonzero eccentricity
                 assert(spacingPix>=0);
                 spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
@@ -2643,7 +2650,7 @@ try
 %             yStimulus=[yF(1) tXY(2) yF(2:end)];
             stimulusXY=[fXY(1,1:2);tXY;fXY(2:end,1:2)];
             
-            if 1
+            if 0
                 % Print flanker spacing.
                 fprintf('%d: %s  F T F\n',oi,oo(oi).flankingDirection);
                 xyDeg={};
@@ -2804,10 +2811,14 @@ try
             yMax=tXY(2)+ySpacing*n/2;
             yMin=tXY(2)-ySpacing*n/2;
             
-            if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target tXY [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,tXY); end
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end
+            if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',...
+                    1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target tXY [%.0f %.0f]\n',...
+                    oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,tXY); end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
+                    oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',...
+                    oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end
             clear textures dstRects
             n=length(xMin:xSpacing:xMax);
             textures=zeros(1,n);
