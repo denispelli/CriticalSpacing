@@ -1337,7 +1337,8 @@ try
         string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
             'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
             string,smallestDeg,minimumViewingDistanceCm);
-        ffprintf(ff,'%s',string);
+        wrappedString=regexprep(string,'.{1,80}\s','$0\n');
+        ffprintf(ff,'\n%s',wrappedString);
         
         % RESOLUTION
         if oo(1).nativeWidth==RectWidth(actualScreenRect)
