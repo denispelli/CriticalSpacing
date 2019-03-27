@@ -180,7 +180,7 @@ for i=1:length(ooo)
     oo=ooo{i};
     for oi=1:length(oo)
 %         oo(oi).useFractionOfScreenToDebug=0.5; %% USE ONLY FOR DEBUGGING
-%         oo(oi).rushToDebug=true; %% USE ONLY FOR DEBUGGING
+%         oo(oi).skipScreenCalibration=true; %% USE ONLY FOR DEBUGGING
         oo(oi).isFirstBlock=false;
         oo(oi).isLastBlock=false;
         if i==1
