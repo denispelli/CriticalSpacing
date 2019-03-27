@@ -251,7 +251,7 @@ function oo=CriticalSpacing(oIn)
 % 1. Set nearPointXYPix according to o.nearPointXYInUnitSquare, whose
 % default is 0.5 0.5.
 % 2. If setNearPointEccentricityTo==
-% 'target', then set nearPointXYDeg=eccentricityXYDeg
+% 'target', then set nearPointXYDeg=eccentricityXYDeg.
 % 'fixation', then set nearPointXYDeg=[0 0].
 % 'value', then assume nearPointXYDeg is already set by user script.
 % 3. Ask viewer to adjust display so desired near point is at desired
@@ -533,7 +533,7 @@ o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect rati
 o.spacingDeg=nan;
 o.targetDeg=nan;
 o.stimulusMarginFraction=0.0; % White margin around stimulusRect.
-o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetHeightDeg.
+o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetDeg height.
 o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
@@ -723,9 +723,7 @@ for oi=1:conditions
 end % for oi=1:conditions
 unknownFields=unique(unknownFields);
 if ~isempty(unknownFields)
-    warning off backtrace
-    warning(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
-    warning on backtrace
+    error(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
 end
 if oo(1).quitSession
     % Quick return. We're skipping every block in the session.
@@ -1185,7 +1183,7 @@ try
             % point is at center.
             xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
             rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
-            fprintf('%d: screen %.0fx%.0f = %.1fx%.1f deg, %.1f pixPerCm, viewingDistance %.1f cm, xy %.0f %.0f\n',...
+            fprintf('%d: screen %.0fx%.0f = %.1fx%.1f deg, %.1f pixPerCm, viewingDistanceCm %.1f cm, xy %.0f %.0f\n',...
                 oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
             if all(totalSizeXYDeg <= rectSizeDeg)
                 oo(oi).fixationOnScreen=true;
@@ -1213,6 +1211,7 @@ try
             xy(2)=1-xy(2); % Move origin from lower left to upper left.
             oo(oi).nearPointXYPix=xy.*[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
             oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+oo(oi).stimulusRect(1:2);
+            oo(oi).nearPointXYPix=round(oo(oi).nearPointXYPix); % DGP
             % oo(oi).nearPointXYPix is a screen coordinate.
 
             %% ASSIGN NEAR POINT VISUAL COORDINATE
@@ -1616,7 +1615,7 @@ try
     end
     for oi=1:conditions
         if ~isempty(oo(oi).unknownFields)
-            ffprintf(ff,['%d: Ignoring unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:}) '.\n'],oi);
+            error(['%d: Unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:})],oi);
         end
     end
     ffprintf(ff,':: %s: %s\n',oo(1).experimenter,oo(1).observer);
@@ -2205,7 +2204,29 @@ try
             end
             switch oo(oi).thresholdParameter
                 case 'spacing'
-                    oo(oi).spacingDeg=10^intensity;
+                    % Compute maxSpacingDeg.
+                    fixationXY=XYPixOfXYDeg(oo(oi),[0 0]);
+                    targetXY=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
+                    switch(oo(oi).flankingDirection)
+                        case 'radial'
+                            deltaXY=targetXY-fixationXY;
+                        case 'tangential'
+                            deltaXY=(targetXY-fixationXY)*[cosd(90) -sind(90); sind(90) cosd(90)];
+                        case 'horizontal'
+                            deltaXY=[1 0];
+                        case 'vertical'
+                            deltaXY=[0 1];
+                    end
+                    deltaXY=deltaXY/sqrt(sum(deltaXY.^2));
+                    deltaXY=deltaXY*RectWidth(oo(oi).stimulusRect);
+                    [far1XY,far2XY]=ClipLineSegment2(targetXY+deltaXY,targetXY-deltaXY,oo(oi).stimulusRect);
+                    delta1XYDeg=XYDegOfXYPix(oo(oi),far1XY)-oo(oi).eccentricityXYDeg;
+                    delta2XYDeg=XYDegOfXYPix(oo(oi),far2XY)-oo(oi).eccentricityXYDeg;
+                    maxSpacingDeg=min(sqrt(sum(delta1XYDeg.^2)),sqrt(sum(delta2XYDeg.^2)));
+                    maxSpacingDeg=maxSpacingDeg-oo(oi).targetDeg*0.75; % Assume flanker is about size of target.
+                    maxSpacingDeg=max(0,maxSpacingDeg); % Stay positive.
+                    % maxSpacingDeg is ready.
+                    oo(oi).spacingDeg=min(10^intensity,maxSpacingDeg);
                     if oo(oi).fixedSpacingOverSize
                         oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
                     else
@@ -2392,12 +2413,12 @@ try
             xF=xyT(1)+[-1 1]*spacingPix*sind(orientation);
             yF=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
             % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
-            outerSpacingPix=0;
+             outerSpacingPix=0;
         end
         if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
             % Should the two arguments to atan2d be exchanged?
             orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
-            eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+            eccentricityPix=norm(oo(oi).eccentricityXYPix);
             if eccentricityPix==0
                 % Flanker must fit on screen, horizontally
                 if oo(oi).fixedSpacingOverSize
@@ -2412,16 +2433,20 @@ try
                 outerSpacingPix=0;
                 if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
             else % eccentricity not zero
+                vector=oo(oi).eccentricityXYPix;
+                vector=vector/norm(vector);
                 assert(spacingPix>=0);
                 spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
                 assert(spacingPix>=0);
                 if oo(oi).fixedSpacingOverSize
-                    spacingPix=min(spacingPix,xyT(1)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
+                    spacingPix=min(spacingPix,norm(xyT)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
                     assert(spacingPix>=0);
                     for i=1:100
                         outerSpacingPix=(eccentricityPix+addonPix)^2/(eccentricityPix+addonPix-spacingPix)-(eccentricityPix+addonPix);
                         assert(outerSpacingPix>=0);
-                        if outerSpacingPix<=RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2; % Outer flanker is on screen.
+                        % if outerSpacingPix<=RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2 % Outer flanker is on screen.
+                        flankerRadius=spacingPix/oo(oi).fixedSpacingOverSize/2;
+                        if IsXYInRect(xyT+vector*(outerSpacingPix+flankerRadius),oo(oi).stimulusRect)
                             break;
                         else
                             spacingPix=0.9*spacingPix;
@@ -2613,6 +2638,34 @@ try
             end
             xStimulus=[xF(1) xyT(1) xF(2:end)];
             yStimulus=[yF(1) xyT(2) yF(2:end)];
+            
+            if 1
+                % Print flanker spacing.
+                fprintf('%d: %s  F T F\n',oi,oo(oi).flankingDirection);
+                xyDeg={};
+                ok=[];
+                for ii=1:3
+                    xyDeg{ii}=XYDegOfXYPix(oo(oi),[xStimulus(ii) yStimulus(ii)]);
+                    logE(ii)=log10(norm(xyDeg{ii}));
+                    ok(ii)=IsXYInRect([xStimulus(ii) yStimulus(ii)],oo(oi).stimulusRect);
+                end
+                fprintf('ok %d %d %d\n',ok);
+                fprintf('x y deg: ');
+                fprintf('(%.1f %.1f) ',xyDeg{:});
+                fprintf('\nlog eccentricity: ');
+                fprintf('%.2f ',logE);
+                fprintf('\n');
+                fprintf('diff log ecc. %.2f %.2f\n',diff(logE));
+                fprintf('Spacings %.1f %.1f deg\n',norm(xyDeg{1}-xyDeg{2}),norm(xyDeg{2}-xyDeg{3}));
+                if exist('maxSpacingDeg','var')
+                    fprintf('maxSpacingDeg %.1f\n',maxSpacingDeg);
+                    ecc=norm(xyDeg{2});
+                    fprintf(['log (tDeg+maxSpacingDeg)/tDeg %.1f \n' ...
+                        'log (tDeg-maxSpacingDeg)/tDeg %.1f\n'],...
+                        log10([ (ecc+maxSpacingDeg)/ecc (ecc-maxSpacingDeg)/ecc]));
+                end
+            end
+            
             if oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing')
                 newFlankers=shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
                 stimulus(end+1:end+2)=newFlankers(1:2);
