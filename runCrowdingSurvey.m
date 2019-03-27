@@ -8,7 +8,7 @@ clear o
 o.experiment='CrowdingSurvey';
 o.experimenter='';
 o.observer='';
-o.viewingDistanceCm=50;
+o.viewingDistanceCm=100;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
 o.durationSec=0.2; % duration of display of target and flankers
@@ -25,6 +25,7 @@ for ecc=[0 2.5 5 10]
         o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=false;
         o.flankingDirection='radial';
+        o.viewingDistanceCm=50;
     else
         o.targetFont='Pelli';
         o.alphabet='123456789';
@@ -33,6 +34,7 @@ for ecc=[0 2.5 5 10]
         o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=true;
         o.flankingDirection='horizontal';
+        o.viewingDistanceCm=200;
     end
     o.targetDeg=2;
     o.thresholdParameter='spacing';
@@ -51,6 +53,7 @@ for ecc=[0 5]
         o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=false;
         o.flankingDirection='radial';
+        o.viewingDistanceCm=100;
     else
         o.targetFont='Pelli';
         o.alphabet='123456789';
@@ -59,11 +62,9 @@ for ecc=[0 5]
         o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=true;
         o.flankingDirection='horizontal';
+        o.viewingDistanceCm=250;
     end
-    o.targetFont='Sloan';
-    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-    o.borderLetter='X';
-    o.targetDeg=2;
+    o.targetDeg=4;
     o.thresholdParameter='size';
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
@@ -94,7 +95,7 @@ end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' 'targetDeg' 'eccentricityXYDeg'})); 
-% return
+return
 
 %% Run.
 for i=1:length(ooo)
