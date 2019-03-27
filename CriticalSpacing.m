@@ -1382,6 +1382,26 @@ try
         Screen('TextSize',window,round(oo(1).textSize*0.6));
         [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+1.5*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
         
+        % ALERT TO CHANGE IN VIEWING DISTANCE.
+        global old
+        if isempty(old) || oo(1).viewingDistanceCm ~= old.viewingDistanceCm
+            string=sprintf(['Please use a ruler or tape measure to move the display and ' ...
+                'yourself to achieve the new viewing distance of %.0f cm.'],...
+                oo(1).viewingDistanceCm);
+            DrawFormattedText(window,string,instructionalMarginPix,...
+                y+1.5*oo(1).textSize,[255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3));
+            if isempty(old)
+                speech=sprintf('Please use a ruler to adjust your viewing distance to be %.0f centimeters.',...
+                    oo(1).viewingDistanceCm);
+            else
+                speech=sprintf(['The viewing distance has changed to %.0f centimeters. '...
+                    'Please use a ruler to adjust your distance.'],oo(1).viewingDistanceCm);
+            end
+        else
+            speech='';
+        end
+        old=oo(1);
+        
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
@@ -1395,6 +1415,8 @@ try
         end
         Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',...
             instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*(0.5-1.1));
+        Screen('Flip',window,[],1);
+        Speak(speech);
         [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
             ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
@@ -1480,8 +1502,9 @@ try
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
-        Screen('TextSize',window,round(0.6*oo(1).textSize));
-        Screen('DrawText',window,'Please always use the same name. You can skip these screens by defining o.experimenter and o.observer in your script.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(0.55*oo(1).textSize));
+        Screen('DrawText',window,['Please always use the same name. You can skip these screens by defining o.experimenter and o.observer ' ...
+            'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
@@ -1508,6 +1531,8 @@ try
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(0.55*oo(1).textSize));
+        Screen('DrawText',window,'Please use exactly the same name every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
@@ -3104,7 +3129,7 @@ try
                 reportedTarget = oo(oi).alphabet(ismember(upper(oo(oi).alphabet),upper(answer)));
             end
             if oo(oi).speakEachLetter && oo(oi).useSpeech
-                % Speak the answer that the observer gave, e.g 'a'.
+                % Speak the observer's typed response, e.g 'a'.
                 Speak(answer);
             end
             if ismember(upper(reportedTarget),upper(targets))
