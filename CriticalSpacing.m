@@ -1134,7 +1134,7 @@ try
             % fixation goes off-screen and the target springs back to the
             % desired spot.
             %
-            % We don't mind allowing the screen edge to partially clipping
+            % We don't mind allowing the screen edge to partially clip
             % the fixation mark 0.5 deg from its center, but the target
             % must not be clipped by the screen edge, and, further more,
             % since this is a crowding test, there should be enough room to
@@ -1144,9 +1144,9 @@ try
             % flanker size. We typically use equal target and flanker size.
             %
             % These requirements extend the eccentricity vector's length,
-            % first by adding 0.5 deg for the fixation mark. If necessary
-            % to keep fixation on-screen, we shift the target away from the
-            % desired location (in the direction of the eccentricity
+            % first by adding 0.5 deg for the fixation mark. If we need to
+            % keep fixation on-screen, then we shift the target away from
+            % the desired location (in the direction of the eccentricity
             % vector) just enough to get fixation on-screen. Then we have
             % to decide whether it's acceptable. If we're measuring acuity,
             % we just need room, radially (i.e. from fixation), beyond the
@@ -2647,7 +2647,7 @@ try
                 ok=[];
                 for ii=1:3
 %                     xyDeg{ii}=XYDegOfXYPix(oo(oi),[xStimulus(ii) yStimulus(ii)]);
-                    xyDeg{ii}=XYDegOfXYPix(oo(oi),[stimulusXY(ii,:)]);
+                    xyDeg{ii}=XYDegOfXYPix(oo(oi),stimulusXY(ii,:));
                     logE(ii)=log10(norm(xyDeg{ii}));
 %                     ok(ii)=IsXYInRect([xStimulus(ii) yStimulus(ii)],oo(oi).stimulusRect);
                     ok(ii)=IsXYInRect(stimulusXY(ii,:),oo(oi).stimulusRect);
