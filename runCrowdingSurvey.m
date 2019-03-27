@@ -75,9 +75,10 @@ end
 for i=1:length(ooo)
     for oi=1:length(ooo{i})
         ooo{i}(oi).block=i;
+        ooo{i}(oi).blocksDesired=length(ooo);
     end
 end
-ooo=Shuffle(ooo);
+% ooo=Shuffle(ooo);
 
 %% Print as a table. One row per threshold.
 for i=1:length(ooo)
