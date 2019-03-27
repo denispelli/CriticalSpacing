@@ -1720,9 +1720,9 @@ try
         addOnDeg=0.15;
         addOnPix=pixPerDeg*addOnDeg;
         oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
-        % If flanking direction is orthogonal to eccentricity direction, then
-        % halve the expected crowding distance. A better model would deal
-        % with all possible differences in orientation.
+        % If flanking direction is orthogonal to eccentricity direction,
+        % then halve the expected crowding distance. A better model would
+        % deal with all possible differences in orientation.
         if ecc>0 && norm(oo(oi).flankingDegVector.*oo(oi).eccentricityDegVector)<0.7
             % Tangential crowding distance is half radial.
             oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
@@ -2355,11 +2355,11 @@ try
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
         oo(oi).spacingDeg=spacingPix/pixPerDeg; % spacingPix is master.
-        xyT=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
+        tXY=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
         if oo(oi).printSizeAndSpacing
-            fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, xyT %d, %d\n',...
+            fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f, tXY %d, %d\n',...
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,...
-                spacingPix,oo(oi).spacingDeg,xyT);
+                spacingPix,oo(oi).spacingDeg,tXY);
         end
         spacingPix=round(spacingPix);
 %         xF=[];
@@ -2369,25 +2369,23 @@ try
                 || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
             % Flankers must fit on screen. Compute where tangent line
             % intersects stimulusRect. The tangent line goes through target
-            % xyT and is orthogonal to the line from fixation.
+            % tXY and is orthogonal to the line from fixation.
             % NOTE: When dealing with o.fourFlankers, we could
             % analyze only with one pair of flankers or iterate to analyze
             % both pairs.
             %
-            % 3/4/19 LIMITATION. This code would need to be revised to cope
-            % with the case of zero eccentricity. Currently, we allow
-            % horizontal/vertical only when eccentricity is zero.
-%             orientation=90+atan2d(oo(oi).eccentricityXYDeg(2),oo(oi).eccentricityXYDeg(1));
+            % 3/4/19 LIMITATION. Currently, we allow
+            % 'horizontal' or 'vertical' iff eccentricity is zero.
             switch(oo(oi).flankingDirection)
                 case {'horizontal' 'fourFlankers'}
                     flankingDegVector=[1 0];
                 case 'vertical'
                     flankingDegVector=[0 1];
                 case 'tangential'
-                    flankingDegVector=oo(oi).eccentricityDegVector .* rotate90;
+                    flankingDegVector=oo(oi).eccentricityDegVector*rotate90;
             end
             flankingPixVector=flankingDegVector.*[1 -1]; % Because Apple Y coordinate increases downward.
-            if ~IsXYInRect(xyT,oo(oi).stimulusRect)
+            if ~IsXYInRect(tXY,oo(oi).stimulusRect)
                 ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
                 ffprintf(ff,'NOTE: Perhaps this would be fixed by enhancing CriticalSpacing with another call to ShiftPointInRect. Ask denis.pelli@nyu.edu.');
                 stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
@@ -2395,7 +2393,7 @@ try
                     stimulusSize,stimulusSize/pixPerDeg,...
                     oo(oi).fix.xy/pixPerDeg,...
                     oo(oi).eccentricityXYDeg,...
-                    xyT/pixPerDeg);
+                    tXY/pixPerDeg);
                 error(['Sorry, the target (eccentricity [%.0f %.0f] deg)'...
                     ' is falling off the screen. ' ...
                     'Please reduce the viewing distance.'],...
@@ -2403,39 +2401,25 @@ try
             end
             assert(length(spacingPix)==1);
             if oo(oi).fixedSpacingOverSize
-                %                 xF=xyT(1)+[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*sind(orientation);
-                %                 yF=xyT(2)-[-1 1]*spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*cosd(orientation);
-                fXY(1,:)=xyT+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
-                fXY(2,:)=xyT-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
-%                 [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
+                fXY(1,:)=tXY+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                fXY(2,:)=tXY-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-%                 spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))/(1+0.5*oo(oi).fixedSpacingOverSize);
-                spacingPix=norm(fXY-xyT)/(1+0.5*oo(oi).fixedSpacingOverSize);
+                spacingPix=norm(fXY-tXY)/(1+0.5*oo(oi).fixedSpacingOverSize);
             else
-%                 xF=xyT(1)+[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*sind(orientation);
-%                 yF=xyT(2)-[-1 1]*(spacingPix+0.5*oo(oi).targetPix)*cosd(orientation);
-%               [xF,yF]=ClipLineSegment(xF,yF,oo(oi).stimulusRect);
-                fXY(1,:)=xyT+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
-                fXY(2,:)=xyT-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                fXY(1,:)=tXY+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                fXY(2,:)=tXY-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-%                 spacingPix=min(sqrt((xF-xyT(1)).^2 + (yF-xyT(2)).^2))-0.5*oo(oi).targetPix;
-                spacingPix=norm(fXY-xyT)-0.5*oo(oi).targetPix;
+                spacingPix=norm(fXY-tXY)-0.5*oo(oi).targetPix;
             end
             assert(length(spacingPix)==1);
             spacingPix=max(0,spacingPix);
             assert(length(spacingPix)==1);
-            %             xF=xyT(1)+[-1 1]*spacingPix*sind(orientation);
-            %             yF=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
-            fXY(1,:)=xyT+spacingPix*flankingPixVector;
-            fXY(2,:)=xyT-spacingPix*flankingPixVector;
-          % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
+            fXY(1,:)=tXY+spacingPix*flankingPixVector;
+            fXY(2,:)=tXY-spacingPix*flankingPixVector;
              outerSpacingPix=0;
         end
         if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
-            % Should the two arguments to atan2d be exchanged?
-%             orientation=atan2d(oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
             flankingDegVector=oo(oi).eccentricityDegVector;
-            flankingPixVector=oo(oi).eccentricityXYPix/norm(oo(oi).eccentricityXYPix);
             flankingPixVector=flankingDegVector.*[1 -1]; % Because Apple Y coordinate increases downward.
             eccentricityPix=norm(oo(oi).eccentricityXYPix);
             if eccentricityPix==0
@@ -2446,10 +2430,8 @@ try
                     spacingPix=min(spacingPix,(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX);
                 end
                 assert(spacingPix>=0);
-%                 xF(end+1:end+2)=xyT(1)+[-1 1]*spacingPix*sind(orientation);
-%                 yF(end+1:end+2)=xyT(2)-[-1 1]*spacingPix*cosd(orientation);
-                fXY(end+1,1:2)=xyT+spacingPix*flankingPixVector;
-                fXY(end+1,1:2)=xyT-spacingPix*flankingPixVector;
+                fXY(end+1,1:2)=tXY+spacingPix*flankingPixVector;
+                fXY(end+1,1:2)=tXY-spacingPix*flankingPixVector;
                 % ffprintf(ff,'spacing reduced from %.0f to %.0f pixels (%.1f to %.1f deg)\n',requestedSpacing,spacingPix,requestedSpacing/pixPerDeg,spacingPix/pixPerDeg);
                 outerSpacingPix=0;
                 if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
@@ -2458,7 +2440,7 @@ try
                 spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
                 assert(spacingPix>=0);
                 if oo(oi).fixedSpacingOverSize
-                    spacingPix=min(spacingPix,norm(xyT)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
+                    spacingPix=min(spacingPix,norm(tXY)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
                     assert(spacingPix>=0);
                     for i=1:100
                         % Our goal is:
@@ -2466,32 +2448,29 @@ try
                         % So we solve for outerSpacingPix:
                         outerSpacingPix=(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix-spacingPix)-(eccentricityPix+addOnPix);
                         assert(outerSpacingPix>=0);
-                        % if outerSpacingPix<=RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2 % Outer flanker is on screen.
                         flankerRadius=spacingPix/oo(oi).fixedSpacingOverSize/2;
-                        if IsXYInRect(xyT+flankingPixVector*(outerSpacingPix+flankerRadius),oo(oi).stimulusRect)
+                        if IsXYInRect(tXY+flankingPixVector*(outerSpacingPix+flankerRadius),oo(oi).stimulusRect)
                             break;
                         else
                             spacingPix=0.9*spacingPix;
                         end
                     end
                     if i==100
-                        ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
+                        ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-tXY(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
                         error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
                     end
                 else
-                    spacingPix=min(spacingPix,xyT(1)-oo(oi).targetPix/2); % inner flanker on screen
+                    spacingPix=min(spacingPix,tXY(1)-oo(oi).targetPix/2); % inner flanker on screen
                     outerSpacingPix=(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix-spacingPix)-(eccentricityPix+addOnPix);
-                    outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-xyT(1)-oo(oi).targetPix/2); % outer flanker on screen
+                    outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-tXY(1)-oo(oi).targetPix/2); % outer flanker on screen
                 end
                 assert(outerSpacingPix>=0);
                 spacingPix=eccentricityPix+addOnPix-(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix+outerSpacingPix);
                 assert(spacingPix>=0);
                 spacingPix=round(spacingPix);
                 assert(spacingPix>=0);
-%                 xF(end+1:end+2)=xyT(1)+[-spacingPix outerSpacingPix]*sind(orientation);
-%                 yF(end+1:end+2)=xyT(2)-[-spacingPix outerSpacingPix]*cosd(orientation);
-                fXY(end+1,1:2)=xyT-spacingPix*flankingPixVector;
-                fXY(end+1,1:2)=xyT+outerSpacingPix*flankingPixVector;
+                fXY(end+1,1:2)=tXY-spacingPix*flankingPixVector;
+                fXY(end+1,1:2)=tXY+outerSpacingPix*flankingPixVector;
             end
         end % if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
         oo(oi).spacingDeg=spacingPix/pixPerDeg;
@@ -2660,9 +2639,9 @@ try
             if isempty(fXY)
                 error('fXY is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
             end
-%             xStimulus=[xF(1) xyT(1) xF(2:end)];
-%             yStimulus=[yF(1) xyT(2) yF(2:end)];
-            stimulusXY=[fXY(1,1:2);xyT;fXY(2:end,1:2)];
+%             xStimulus=[xF(1) tXY(1) xF(2:end)];
+%             yStimulus=[yF(1) tXY(2) yF(2:end)];
+            stimulusXY=[fXY(1,1:2);tXY;fXY(2:end,1:2)];
             
             if 1
                 % Print flanker spacing.
@@ -2737,14 +2716,14 @@ try
         else
             % repeatedTargets
             % Compute screen bounds for letter array.
-            xMin=xyT(1)-xSpacing*floor((xyT(1)-oo(oi).stimulusRect(1)-0.5*xPix)/xSpacing);
-            xMax=xyT(1)+xSpacing*floor((oo(oi).stimulusRect(3)-xyT(1)-0.5*xPix)/xSpacing);
-            yMin=xyT(2)-ySpacing*floor((xyT(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
-            yMax=xyT(2)+ySpacing*floor((oo(oi).stimulusRect(4)-xyT(2)-0.5*yPix)/ySpacing);
+            xMin=tXY(1)-xSpacing*floor((tXY(1)-oo(oi).stimulusRect(1)-0.5*xPix)/xSpacing);
+            xMax=tXY(1)+xSpacing*floor((oo(oi).stimulusRect(3)-tXY(1)-0.5*xPix)/xSpacing);
+            yMin=tXY(2)-ySpacing*floor((tXY(2)-oo(oi).stimulusRect(2)-0.5*yPix)/ySpacing);
+            yMax=tXY(2)+ySpacing*floor((oo(oi).stimulusRect(4)-tXY(2)-0.5*yPix)/ySpacing);
             % Enforce the required minimum number of rows.
             if (yMax-yMin)/ySpacing<minSpacesY
-                yMin=xyT(2)-ySpacing*minSpacesY/2;
-                yMax=xyT(2)+ySpacing*minSpacesY/2;
+                yMin=tXY(2)-ySpacing*minSpacesY/2;
+                yMax=tXY(2)+ySpacing*minSpacesY/2;
             end
             % Show only as many letters as we need so that, despite a
             % fixation error (in any direction) as large as  
@@ -2794,24 +2773,24 @@ try
             xR=round(xR); % Integer pixels.
             yR=round(yR);
             % Clip the desired radius by the limits of actual screen.
-            xMin=xyT(1)-min(xR,xyT(1)-xMin); 
-            xMax=xyT(1)+min(xR,xMax-xyT(1));
-            yMin=xyT(2)-min(yR,xyT(2)-yMin);
-            yMax=xyT(2)+min(yR,yMax-xyT(2));
+            xMin=tXY(1)-min(xR,tXY(1)-xMin); 
+            xMax=tXY(1)+min(xR,xMax-tXY(1));
+            yMin=tXY(2)-min(yR,tXY(2)-yMin);
+            yMax=tXY(2)+min(yR,yMax-tXY(2));
 %             fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
             if oo(oi).repeatedTargets && 1+(yMax-yMin)/ySpacing>oo(oi).maxLines
                 % Restrict to show no more than o.maxLines.
                 s=(oo(oi).maxLines-1)*ySpacing;
-                yMin=xyT(2)-s/2;
-                yMax=xyT(2)+s/2;
+                yMin=tXY(2)-s/2;
+                yMax=tXY(2)+s/2;
 %                 fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
             end
             if oo(oi).practiceCountdown>=3
                 % Enforce half xR and yR as upper bound on radius.
-                xMin=xyT(1)-min(xR/2,xyT(1)-xMin);
-                xMax=xyT(1)+min(xR/2,xMax-xyT(1));
-                yMin=xyT(2)-min(yR/2,xyT(2)-yMin);
-                yMax=xyT(2)+min(yR/2,yMax-xyT(2));
+                xMin=tXY(1)-min(xR/2,tXY(1)-xMin);
+                xMax=tXY(1)+min(xR/2,xMax-tXY(1));
+                yMin=tXY(2)-min(yR/2,tXY(2)-yMin);
+                yMax=tXY(2)+min(yR/2,yMax-tXY(2));
             end
             % Round (yMax-yMin)/ySpacing and (xMax-xMin)/xSpacing. This is
             % important because we use for loops, with steps of xSpacing
@@ -2819,14 +2798,14 @@ try
             % need to arrive precisely at xMax. The rows at yMin and yMax
             % are margins, as are the columins at xMin and xMax.
             n=round((xMax-xMin)/xSpacing);
-            xMax=xyT(1)+xSpacing*n/2;
-            xMin=xyT(1)-xSpacing*n/2;
+            xMax=tXY(1)+xSpacing*n/2;
+            xMin=tXY(1)-xSpacing*n/2;
             n=round((yMax-yMin)/ySpacing);
-            yMax=xyT(2)+ySpacing*n/2;
-            yMin=xyT(2)-ySpacing*n/2;
+            yMax=tXY(2)+ySpacing*n/2;
+            yMin=tXY(2)-ySpacing*n/2;
             
             if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
-            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target xyT [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,xyT); end
+            if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target tXY [%.0f %.0f]\n',oi,MFileLineNr,1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing,tXY); end
             if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
             if oo(oi).printSizeAndSpacing; fprintf('%d: %d: left & right margins %.0f, %.0f, top and bottom margins %.0f,  %.0f\n',oi,MFileLineNr,xMin,RectWidth(oo(oi).stimulusRect)-xMax,yMin,RectHeight(oo(oi).stimulusRect)-yMax); end
             clear textures dstRects
@@ -2928,8 +2907,8 @@ try
                 fprintf(' (%.0f,%.0f)',x,y);
                 Screen('FrameRect',window,[255 0 0],dstRects(:,ii),4);
             end
-            fprintf('. Target center (%d,%d)\n',xyT);
-            letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],xyT(1),xyT(2));
+            fprintf('. Target center (%d,%d)\n',tXY);
+            letterRect=OffsetRect([-0.5*xPix -0.5*yPix 0.5*xPix 0.5*yPix],tXY(1),tXY(2));
             Screen('FrameRect',window,[255 0 0],letterRect);
             fprintf('%d: %d: screenHeightPix %d, letterRect height %.0f, targetPix %.0f, textSize %.0f, xPix %.0f, yPix %.0f\n',...
                 oi,MFileLineNr,RectHeight(oo(oi).stimulusRect),RectHeight(letterRect),oo(oi).targetPix,Screen('TextSize',window),xPix,yPix);
