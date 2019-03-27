@@ -498,11 +498,12 @@ o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 o.measureViewingDistanceToTargetNotFixation=true;
-o.condition=[]; % Integer count of the condition, starting at 1.
-o.conditionName='';
 o.experiment=''; % Name of this experiment. Used to select files for analysis.
-o.block=[]; % Each block may contain more than one condition.
-o.quitBlock=false;
+o.block=1; % Each block may contain more than one condition.
+o.blocksDesired=1;
+o.condition=1; % Integer count of the condition, starting at 1.
+o.conditionName='';
+quitBlock=false;
 o.quitSession=false;
 
 % SOUND & FEEDBACK
@@ -1336,6 +1337,7 @@ try
         string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
             'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
             string,smallestDeg,minimumViewingDistanceCm);
+        ffprintf(ff,'%s',string);
         
         % RESOLUTION
         if oo(1).nativeWidth==RectWidth(actualScreenRect)
@@ -1386,7 +1388,7 @@ try
         global old
         if isempty(old) || oo(1).viewingDistanceCm ~= old.viewingDistanceCm
             string=sprintf(['Please use a ruler or tape measure to move the display and ' ...
-                'yourself to achieve the new viewing distance of %.0f cm.'],...
+                'yourself to achieve the new viewing distance of %.0f cm, from your eye to the screen.'],...
                 oo(1).viewingDistanceCm);
             DrawFormattedText(window,string,instructionalMarginPix,...
                 y+1.11*oo(1).textSize,[255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3));
@@ -1597,6 +1599,8 @@ try
     assert(dataFid>-1);
     ff=[1 dataFid];
     ffError=[2 dataFid];
+    ffprintf(ff,'experiment ''%s'', block %d of %d/n',...
+        oo(1).experiment,oo(1).block,oo(1).blocksDesired);
     ffprintf(ff,'%s %s. ',oo(1).functionNames,datestr(now));
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
