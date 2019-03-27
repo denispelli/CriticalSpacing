@@ -401,7 +401,7 @@ function oo=CriticalSpacing(oIn)
 % In repetition mode, don't assume one centered target and an even number
 % of spaces. We might want to center between two targets to show an odd
 % number of spaces.
-% 
+%
 % The software currently assumes that you want it to place fixation so as
 % to put the target close to the near point. That is fine when all
 % targets in the block have the same eccentricity, but it's weird to have a
@@ -473,7 +473,10 @@ plusMinus=char(177);
 % posting of an error here or in any function called from here, or the user
 % hitting control-C.
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
-global isLastBlock rushToDebug
+global isLastBlock skipScreenCalibration ff
+global window keepWindowOpen % Keep window open until end of last block.
+global instructionalMarginPix screenRect % For QuitBlock
+keepWindowOpen=false; % For safety, keep false until we need it.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
@@ -496,7 +499,7 @@ o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 o.measureViewingDistanceToTargetNotFixation=true;
 o.condition=[]; % Integer count of the condition, starting at 1.
-o.conditionName=''; 
+o.conditionName='';
 o.experiment=''; % Name of this experiment. Used to select files for analysis.
 o.block=[]; % Each block may contain more than one condition.
 o.quitBlock=false;
@@ -614,9 +617,9 @@ o.useFractionOfScreenToDebug=false;
 % per block.
 o.isFirstBlock=true;
 o.isLastBlock=true;
-o.rushToDebug=false;
+o.skipScreenCalibration=false;
 isLastBlock=o.isLastBlock; % Global for CloseWindowsAndCleanup.
-rushToDebug=o.rushToDebug; % Global for CloseWindowsAndCleanup.
+skipScreenCalibration=o.skipScreenCalibration; % Global for CloseWindowsAndCleanup.
 
 % TO MEASURE BETA
 % o.measureBeta=false;
@@ -705,7 +708,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
     'fixationOnScreen' 'fixationXYPix' 'nearPointXYPix' ...
     'pixPerCm' 'pixPerDeg' 'stimulusRect' 'targetXYPix' 'textLineLength' ...
     'speakInstructions' 'fixationOnScreen' 'fixationIsOffscreen' ...
-     'okToShiftCoordinates' 'responseTextWidth' ...
+    'okToShiftCoordinates' 'responseTextWidth' ...
     'eccentricityDegVector' 'flankingDegVector'
     };
 unknownFields=cell(0);
@@ -728,10 +731,11 @@ if ~isempty(unknownFields)
 end
 if oo(1).quitSession
     % Quick return. We're skipping every block in the session.
-    isLastBlock=false; % Speed up CloseWindowAndCleanup().
+    oo(1).isLastBlock=true;
+    isLastBlock=true; % Tell CloseWindowsAndCleanup().
     return
 end
-rushToDebug=oo(1).rushToDebug; % Global used by CloseWindowsAndCleanup.
+skipScreenCalibration=oo(1).skipScreenCalibration; % Global used by CloseWindowsAndCleanup.
 % clear Screen % might help get appropriate restore after using Screen('Resolution');
 Screen('Preference','SuppressAllWarnings',1);
 Screen('Preference','VisualDebugLevel',0);
@@ -892,8 +896,8 @@ try
     oo(1).screen=max(Screen('Screens'));
     computer=Screen('Computer');
     oo(1).computer=computer;
-    if oo(1).isFirstBlock && ~oo(1).rushToDebug
-        if computer.osx || computer.macintosh
+    if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration
+        if IsOSX
             % Do this BEFORE opening the window, so user can see any alerts.
             ffprintf(ff,'%d: Turning AutoBrightness off. ... ',MFileLineNr);
             s=GetSecs;
@@ -903,11 +907,13 @@ try
     end
     screenBufferRect=Screen('Rect',oo(1).screen);
     screenRect=Screen('Rect',oo(1).screen,1);
-    Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
-    ffprintf(ff,'%d: OpenWindow. ... ',MFileLineNr);
-    s=GetSecs;
-    window=OpenWindow(oo(1));
-    ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+    if oo(1).isFirstBlock
+        Screen('Preference','TextRenderer',1); % Request FGTL DrawText plugin.
+        ffprintf(ff,'%d: OpenWindow. ... ',MFileLineNr);
+        s=GetSecs;
+        window=OpenWindow(oo(1));
+        ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+    end
     white=WhiteIndex(window);
     black=BlackIndex(window);
     if oo(1).printScreenResolution
@@ -917,41 +923,44 @@ try
         resolution=Screen('Resolution',oo(1).screen)
     end
     screenRect=Screen('Rect',window,1);
-    % Are we using the FGTL DrawText plugin?
-    Screen('TextFont',window,oo(1).textFont);
-    % Ignore possible warning: "PTB-WARNING: DrawText: Failed to load
-    % external drawtext plugin".
-    Screen('Preference','SuppressAllWarnings',0);
-    Screen('Preference','Verbosity',2); % Print WARNINGs
-    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
-    if ~exist(oo(1).dataFolder,'dir')
-        [success,msg]=mkdir(oo(1).dataFolder);
-        if ~success
-            error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
-        end
-    end
     
-    % Record any warnings provoked by calling DrawText.
-    drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
-    if exist(drawTextWarningFileName,'file')
+    if true || oo(1).isFirstBlock
+        % Are we using the FGTL DrawText plugin?
+        Screen('TextFont',window,oo(1).textFont);
+        % Ignore possible warning: "PTB-WARNING: DrawText: Failed to load
+        % external drawtext plugin".
+        Screen('Preference','SuppressAllWarnings',0);
+        Screen('Preference','Verbosity',2); % Print WARNINGs
+        oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+        if ~exist(oo(1).dataFolder,'dir')
+            [success,msg]=mkdir(oo(1).dataFolder);
+            if ~success
+                error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
+            end
+        end
+        
+        % Record any warnings provoked by calling DrawText.
+        ffprintf(ff,'Testing DrawText. ... '); s=GetSecs;
+        drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
+        if exist(drawTextWarningFileName,'file')
+            delete(drawTextWarningFileName);
+        end
+        s=GetSecs;
+        diary(drawTextWarningFileName);
+        Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
+        diary off
+        fileId=fopen(drawTextWarningFileName);
+        oo(1).drawTextWarning=char(fread(fileId)');
+        fclose(fileId);
+        if ~isempty(oo(1).drawTextWarning) && oo(oi).readAlphabetFromDisk
+            warning backtrace off
+            warning('You can ignore the warnings above about DrawText because we aren''t using it.');
+            warning backtrace on
+        end
         delete(drawTextWarningFileName);
+        ffprintf(ff,'Done (%.1f s).\n',GetSecs-s);
+        % Below we print any drawTextWarning into our log file.
     end
-    ffprintf(ff,'%d: Screen DrawText. ... ',MFileLineNr);
-    s=GetSecs;
-    diary(drawTextWarningFileName);
-    Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
-    diary off
-    ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
-    fileId=fopen(drawTextWarningFileName);
-    oo(1).drawTextWarning=char(fread(fileId)');
-    fclose(fileId);
-    if ~isempty(oo(1).drawTextWarning) && oo(oi).readAlphabetFromDisk
-        warning backtrace off
-        warning('You can ignore the warnings above about DrawText because we aren''t using it.');
-        warning backtrace on
-    end
-    delete(drawTextWarningFileName);
-    % Below we print any drawTextWarning into our log file.
     
     Screen('Preference','SuppressAllWarnings',1);
     Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
@@ -1047,7 +1056,7 @@ try
     
     % Ask about viewing distance
     while true
-
+        
         screenRect=Screen('Rect',window);
         screenWidthPix=RectWidth(screenRect);
         screenHeightPix=RectHeight(screenRect);
@@ -1098,7 +1107,7 @@ try
         end
         minimumScreenSizeXYDeg=[0 0];
         for oi=1:conditions
-             
+            
             %% COPIED FROM SET UP NEAR POINT
             white=WhiteIndex(window);
             black=BlackIndex(window);
@@ -1207,14 +1216,14 @@ try
                 ffprintf(ff,'%d: This forces the fixation off-screen. Consider reducing the viewing distance or eccentricity.\n',oi);
             end
             
-            %% USE o.nearPointXYInUnitSquare TO SET NEAR POINT SCREEN COORDINATE 
+            %% USE o.nearPointXYInUnitSquare TO SET NEAR POINT SCREEN COORDINATE
             xy=oo(oi).nearPointXYInUnitSquare;
             xy(2)=1-xy(2); % Move origin from lower left to upper left.
             oo(oi).nearPointXYPix=xy.*[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
             oo(oi).nearPointXYPix=oo(oi).nearPointXYPix+oo(oi).stimulusRect(1:2);
             oo(oi).nearPointXYPix=round(oo(oi).nearPointXYPix); % DGP
             % oo(oi).nearPointXYPix is a screen coordinate.
-
+            
             %% ASSIGN NEAR POINT VISUAL COORDINATE
             % Enabling okToShiftCoordinates will typical result in different
             % fixation locations for each condition. That may be ok for some
@@ -1242,7 +1251,7 @@ try
                 xy=XYPixOfXYDeg(oo(oi),[0 0]); % Current screen coord. of fixation.
                 radiusDeg=oo(oi).fixationCoreSizeDeg/2;
                 oo(oi)=ShiftPointIntoRect(oo(oi),ff,'fixation',xy,radiusDeg,oo(oi).stimulusRect);
-            end 
+            end
             % In addition to its argument xyDeg, the returned value of
             % XYPixOfXYDeg(xyDeg) depends solely on o.nearPointXYDeg and
             % o.nearPointXYPix.
@@ -1389,16 +1398,7 @@ try
         [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
             ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo(1).quitBlock=true;
-            oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-            if oo(1).quitSession
-                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated. Skipping any remaining blocks.\n');
-                oo(1).isLastBlock=true;
-                isLastBlock=true; % Tell CloseWindowsAndCleanup().
-            else
-                ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-            end
-            CloseWindowsAndCleanup;
+            oo=QuitBlock(oo);
             return
         end
         if ~isempty(d)
@@ -1491,21 +1491,12 @@ try
             background=WhiteIndex(window);
         end
         [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+        for i=1:conditions
+            oo(i).experimenter=name;
+        end
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo(1).quitBlock=true;
-            oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-            if oo(1).quitSession
-                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-                oo(1).isLastBlock=true;
-                isLastBlock=true; % Tell CloseWindowsAndCleanup().
-            else
-                ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-            end
-            for i=1:conditions
-                oo(i).experimenter=name;
-            end
-            Screen('FillRect',window);
-            CloseWindowsAndCleanup;
+            oo=QuitBlock(oo);
+            return
         end
     end % if isempty(oo(1).experimenter)
     
@@ -1527,16 +1518,7 @@ try
         end
         [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo(1).quitBlock=true;
-            oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-            if oo(1).quitSession
-                ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-                oo(1).isLastBlock=true;
-                isLastBlock=true; % Tell CloseWindowsAndCleanup().
-            else
-                ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-            end
-            CloseWindowsAndCleanup;
+            oo=QuitBlock(oo);
             return
         end
         for i=1:conditions
@@ -1608,8 +1590,8 @@ try
     if oo(1).useFractionOfScreenToDebug
         ffprintf(ff,'WARNING: Using o.useFractionOfScreenToDebug. This may invalidate all results.\n');
     end
-    if oo(1).rushToDebug
-        ffprintf(ff,'WARNING: Using o.rushToDebug. This may invalidate all results.\n');
+    if oo(1).skipScreenCalibration
+        ffprintf(ff,'WARNING: Using o.skipScreenCalibration. This may invalidate all results.\n');
     end
     if ~isempty(oo(1).drawTextWarning) && ~oo(oi).readAlphabetFromDisk
         ffprintf(ff,'Warning from Screen(''DrawText''...):\n%s\n',oo(1).drawTextWarning);
@@ -1964,7 +1946,7 @@ try
     v=oo(1).psychtoolbox;
     ffprintf(ff,':: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
     assert(cal.screenWidthCm==screenWidthMm/10);
-    if oo(1).isFirstBlock && ~oo(1).rushToDebug
+    if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
         % Currently, in December 2018, my Brightness function
         % writes reliably but seems to always fail when reading,
@@ -1974,7 +1956,7 @@ try
         % function is quick writing and reading while my function
         % is very slow (20 s) writing and reading.
         useBrightnessFunction=ismac;
-        if useBrightnessFunction 
+        if useBrightnessFunction
             if ~IsWin
                 Screen('FillRect',window);
                 Screen('TextSize',window,oo(1).textSize);
@@ -2036,7 +2018,7 @@ try
     end
     
     isLastBlock=oo(1).isLastBlock; % Global for CloseWindowsAndCleanup.
-    rushToDebug=oo(1).rushToDebug; % Global for CloseWindowsAndCleanup.
+    skipScreenCalibration=oo(1).skipScreenCalibration; % Global for CloseWindowsAndCleanup.
     
     for oi=1:conditions
         oo(oi).cal=cal;
@@ -2118,16 +2100,7 @@ try
     
     Screen('FillRect',window);
     if ismember(answer,[escapeChar graveAccentChar])
-        oo(1).quitBlock=true;
-        oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-        if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-            oo(1).isLastBlock=true;
-            isLastBlock=true; % Tell CloseWindowsAndCleanup().
-        else
-            ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-        end
-        CloseWindowsAndCleanup;
+        oo=QuitBlock(oo);
         return
     end
     fixationClipRect=oo(oi).stimulusRect;
@@ -2371,10 +2344,9 @@ try
                 || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
             % Flankers must fit on screen. Compute where tangent line
             % intersects stimulusRect. The tangent line goes through target
-            % tXY and is orthogonal to the line from fixation.
-            % NOTE: When dealing with o.fourFlankers, we could
-            % analyze only with one pair of flankers or iterate to analyze
-            % both pairs.
+            % tXY and is orthogonal to the line from fixation. NOTE: When
+            % dealing with o.fourFlankers, we could analyze only with one
+            % pair of flankers or iterate to analyze both pairs.
             %
             % 3/4/19 LIMITATION. Currently, we allow
             % 'horizontal' or 'vertical' iff eccentricity is zero.
@@ -2387,7 +2359,18 @@ try
                     flankingDegVector=oo(oi).eccentricityDegVector*rotate90;
             end
             flankingPixVector=flankingDegVector.*[1 -1]; % Because Apple Y coordinate increases downward.
-            if ~IsXYInRect(tXY,oo(oi).stimulusRect)
+            if oo(oi).fixedSpacingOverSize
+                pix=spacingPix/oo(oi).fixedSpacingOverSize;
+            else
+                pix=oo(oi).targetPix;
+            end
+            if oo(oi).targetSizeIsHeight
+                height=pix;
+            else
+                height=pix*oo(oi).targetHeightOverWidth;
+            end
+            r=InsetRect(oo(oi).stimulusRect,0.5*height/oo(oi).targetHeightOverWidth,0.5*height);
+            if ~IsXYInRect(tXY,r)
                 ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
                 ffprintf(ff,'NOTE: Perhaps this would be fixed by enhancing CriticalSpacing with another call to ShiftPointInRect. Ask denis.pelli@nyu.edu.');
                 stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
@@ -2403,19 +2386,21 @@ try
             end
             assert(length(spacingPix)==1);
             if oo(oi).fixedSpacingOverSize
-                % Compute the line on which the flankers lie, and clip it
-                % to o.stimulusRect.
-                fXY(1,:)=tXY+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
-                fXY(2,:)=tXY-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                % Clip the nominal spacingPix, allowing for half a letter
+                % beyond the spacing, clipped by the stimulusRect.
+                fXY(1,:)=tXY+spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                fXY(2,:)=tXY-spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                spacingPix=norm(fXY-tXY)/(1+0.5*oo(oi).fixedSpacingOverSize);
+                v=fXY-tXY;
+                spacingPix=min(norm(v(1,:)),norm(v(2,:)))/(1+0.5/oo(oi).fixedSpacingOverSize);
             else
-                % Compute the line on which the flankers lie, and clip it
-                % to o.stimulusRect.
-                fXY(1,:)=tXY+spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
-                fXY(2,:)=tXY-spacingPix*(1+0.5*oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                % Clip the nominal spacingPix, allowing for half a letter
+                % beyond the spacing, clipped by the stimulusRect.
+                fXY(1,:)=tXY+(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
+                fXY(2,:)=tXY-(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                spacingPix=norm(fXY-tXY)-0.5*oo(oi).targetPix;
+                v=fXY-tXY;
+                spacingPix=min(norm(v(1,:)),norm(v(2,:)))-0.5*oo(oi).targetPix;
             end
             assert(length(spacingPix)==1);
             spacingPix=max(0,spacingPix);
@@ -2534,16 +2519,7 @@ try
                 SetMouse(screenRect(3),screenRect(4),window);
                 answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
                 if ismember(answer,[escapeChar graveAccentChar])
-                    oo(1).quitBlock=true;
-                    oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-                    if oo(1).quitSession
-                        ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-                        oo(1).isLastBlock=true;
-                        isLastBlock=true; % Tell CloseWindowsAndCleanup().
-                    else
-                        ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-                    end
-                    CloseWindowsAndCleanup;
+                    oo=QuitBlock(oo);
                     return
                 end
                 beginAfterKeypress=false;
@@ -2646,8 +2622,6 @@ try
             if isempty(fXY)
                 error('fXY is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
             end
-%             xStimulus=[xF(1) tXY(1) xF(2:end)];
-%             yStimulus=[yF(1) tXY(2) yF(2:end)];
             stimulusXY=[fXY(1,1:2);tXY;fXY(2:end,1:2)];
             
             if 0
@@ -2680,13 +2654,12 @@ try
                 newFlankers=shuffle(oo(oi).alphabet(oo(oi).alphabet~=stimulus(2)));
                 stimulus(end+1:end+2)=newFlankers(1:2);
             end
-%             if oo(oi).isolatedTarget
-%                 xStimulus=xStimulus(2);
-%                 yStimulus=yStimulus(2);
-%                 stimulus=stimulus(2);
-%             end
+            %             if oo(oi).isolatedTarget
+            %                 xStimulus=xStimulus(2);
+            %                 yStimulus=yStimulus(2);
+            %                 stimulus=stimulus(2);
+            %             end
             clear textures dstRects
-%             for textureIndex=1:length(xStimulus)
             for textureIndex=1:size(stimulusXY,1)
                 whichLetter=strfind(letters,stimulus(textureIndex)); % finds stimulus letter in "letters".
                 assert(length(whichLetter)==1)
@@ -2733,10 +2706,10 @@ try
                 yMax=tXY(2)+ySpacing*minSpacesY/2;
             end
             % Show only as many letters as we need so that, despite a
-            % fixation error (in any direction) as large as  
+            % fixation error (in any direction) as large as
             % +/-maxFixationErrorXYDeg, at least one of the many target
             % letters will escape crowding by landing at a small enough
-            % eccentricity at which the (normal adult) observer's crowding 
+            % eccentricity at which the (normal adult) observer's crowding
             % distance is less than half the actual spacing. This is the
             % standard formula for crowding distance, as a function of
             % radial eccentricity.
@@ -2746,7 +2719,7 @@ try
             % The target will be easily visible if the crowding distance
             % is less than half the actual spacing.
             crowdingDistanceDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
-            % We solve for eccentricity to get this crowding distance. 
+            % We solve for eccentricity to get this crowding distance.
             eccDeg=crowdingDistanceDeg/0.3-0.15;
             % If positive, this is the greatest ecc whose normal adult
             % critical spacing is half the test spacing. The radial
@@ -2780,17 +2753,17 @@ try
             xR=round(xR); % Integer pixels.
             yR=round(yR);
             % Clip the desired radius by the limits of actual screen.
-            xMin=tXY(1)-min(xR,tXY(1)-xMin); 
+            xMin=tXY(1)-min(xR,tXY(1)-xMin);
             xMax=tXY(1)+min(xR,xMax-tXY(1));
             yMin=tXY(2)-min(yR,tXY(2)-yMin);
             yMax=tXY(2)+min(yR,yMax-tXY(2));
-%             fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
+            %             fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
             if oo(oi).repeatedTargets && 1+(yMax-yMin)/ySpacing>oo(oi).maxLines
                 % Restrict to show no more than o.maxLines.
                 s=(oo(oi).maxLines-1)*ySpacing;
                 yMin=tXY(2)-s/2;
                 yMax=tXY(2)+s/2;
-%                 fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
+                %                 fprintf('%d: %.1f rows, yMin %.0f yMax %.0f.\n',MFileLineNr,1+(yMax-yMin)/ySpacing,yMin,yMax);
             end
             if oo(oi).practiceCountdown>=3
                 % Enforce half xR and yR as upper bound on radius.
@@ -2958,7 +2931,7 @@ try
             WaitSecs(oo(oi).durationSec); % Display letters.
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
             oo(oi).actualDurationSec(end+1)=GetSecs-trialTimeSecs;
-%             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-trialTimeSecs));
+            %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-trialTimeSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 fl=ClipLines(fixationLines,fixationClipRect);
                 if ~isempty(fl)
@@ -3059,7 +3032,7 @@ try
             imwrite(img,fullfile(mypath,filename),'png');
             ffprintf(ff,'Saving image to file "%s".\n',filename);
         end
- 
+        
         responseString='';
         skipping=false;
         flipSecs=GetSecs;
@@ -3135,12 +3108,12 @@ try
                 Speak(answer);
             end
             if ismember(upper(reportedTarget),upper(targets))
-%                 fprintf('reportedTarget %s, targets %s, right\n',reportedTarget,targets);
+                %                 fprintf('reportedTarget %s, targets %s, right\n',reportedTarget,targets);
                 if oo(oi).beepPositiveFeedback
                     Snd('Play',rightBeep);
                 end
             else
-%                 fprintf('reportedTarget %s, targets %s, wrong\n',reportedTarget,targets);
+                %                 fprintf('reportedTarget %s, targets %s, wrong\n',reportedTarget,targets);
                 if oo(oi).beepNegativeFeedback
                     Snd('Play',wrongBeep);
                 end
@@ -3165,7 +3138,7 @@ try
             break;
         end
         responseScores=ismember(responseString,targets);
-%         fprintf('responseString %s, targets %s, responseScores %d\n',responseString,targets,responseScores);
+        %         fprintf('responseString %s, targets %s, responseScores %d\n',responseString,targets,responseScores);
         oo(oi).spacingDeg=spacingPix/pixPerDeg;
         
         trialData.targetDeg=oo(oi).targetDeg;
@@ -3175,8 +3148,8 @@ try
         trialData.responses=responseString;
         trialData.responseScores=responseScores;
         % trialData.reactionTimes is computed above.
-%         fprintf('spacingDeg %.2f, targetScores %d, responses %s targets %s\n',...
-%             trialData.spacingDeg, trialData.targetScores, trialData.responses,trialData.targets);
+        %         fprintf('spacingDeg %.2f, targetScores %d, responses %s targets %s\n',...
+        %             trialData.spacingDeg, trialData.targetScores, trialData.responses,trialData.targets);
         if oo(oi).practiceCountdown==0
             if isempty(oo(oi).trialData)
                 oo(oi).trialData=trialData;
@@ -3218,14 +3191,8 @@ try
     end % for presentation=1:length(condList)
     % Quitting just this block or whole session?
     if oo(1).quitBlock
-        oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
-        if oo(1).quitSession
-            ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-            oo(1).isLastBlock=true;
-            isLastBlock=true; % Tell CloseWindowsAndCleanup().
-        else
-            ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-        end
+        oo=QuitBlock(oo);
+        return
     end
     Screen('FillRect',window);
     Screen('Flip',window);
@@ -3327,7 +3294,12 @@ try
         end % if oo.measureBeta
     end % for oi=1:conditions
     Snd('Close');
-    CloseWindowsAndCleanup; % Takes 4 s.
+    if isLastBlock
+        CloseWindowsAndCleanup; % Takes 4 s.
+    else
+        ListenChar;
+        ShowCursor;
+    end
     a=[];
     for oi=1:conditions
         ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms.\n',...
@@ -3371,7 +3343,7 @@ try
     end
     fprintf('in folder %s\n',oo(1).dataFolder);
 catch e
-    % One or more of these functions spoils psychlasterror, so I don't use them.
+    % One or more of these functions spoils rethrow, so I don't use them.
     %     Snd('Close');
     %     ShowCursor;
     if exist('dataFid','file') && dataFid~=-1
@@ -3510,7 +3482,7 @@ oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
 if oo(oi).fixationCrossBlankedNearTarget
     ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
-%     ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
+    %     ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
     ffprintf(ff,'%d: Fixation cross is not blanked.\n');
 end
 end
@@ -3538,3 +3510,24 @@ end
 function v=shuffle(v)
 v=v(randperm(length(v)));
 end
+
+function ooOut=QuitBlock(oo)
+global isLastBlock window ff keepWindowOpen
+global instructionalMarginPix screenRect % For QuitBlock
+oo(1).quitBlock=true;
+oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+if oo(1).quitSession
+    ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+    oo(1).isLastBlock=true;
+    isLastBlock=true; % Tell CloseWindowsAndCleanup().
+    keepWindowOpen=false;
+    CloseWindowsAndCleanup;
+else
+    keepWindowOpen=true;
+    %     ListenChar;
+    %     ShowCursor;
+    ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
+end
+ooOut=oo;
+end
+
