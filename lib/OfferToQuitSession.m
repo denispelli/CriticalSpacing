@@ -29,4 +29,5 @@ if oo(1).useSpeech
    end
 end
 Screen('FillRect',window);
+Screen('Flip',window);
 end
