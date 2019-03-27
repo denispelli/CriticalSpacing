@@ -2636,8 +2636,9 @@ try
             if isempty(xF)
                 error('xF is empty. o.repeatedTargets==%d',oo(oi).repeatedTargets);
             end
-            xStimulus=[xF(1) xyT(1) xF(2:end)];
-            yStimulus=[yF(1) xyT(2) yF(2:end)];
+%             xStimulus=[xF(1) xyT(1) xF(2:end)];
+%             yStimulus=[yF(1) xyT(2) yF(2:end)];
+            stimulusXY=[xF(1) yF(1);xyT;xF(2:end)' yF(2:end)'];
             
             if 1
                 % Print flanker spacing.
@@ -2645,9 +2646,11 @@ try
                 xyDeg={};
                 ok=[];
                 for ii=1:3
-                    xyDeg{ii}=XYDegOfXYPix(oo(oi),[xStimulus(ii) yStimulus(ii)]);
+%                     xyDeg{ii}=XYDegOfXYPix(oo(oi),[xStimulus(ii) yStimulus(ii)]);
+                    xyDeg{ii}=XYDegOfXYPix(oo(oi),[stimulusXY(ii,:)]);
                     logE(ii)=log10(norm(xyDeg{ii}));
-                    ok(ii)=IsXYInRect([xStimulus(ii) yStimulus(ii)],oo(oi).stimulusRect);
+%                     ok(ii)=IsXYInRect([xStimulus(ii) yStimulus(ii)],oo(oi).stimulusRect);
+                    ok(ii)=IsXYInRect(stimulusXY(ii,:),oo(oi).stimulusRect);
                 end
                 fprintf('ok %d %d %d\n',ok);
                 fprintf('x y deg: ');
@@ -2676,7 +2679,8 @@ try
 %                 stimulus=stimulus(2);
 %             end
             clear textures dstRects
-            for textureIndex=1:length(xStimulus)
+%             for textureIndex=1:length(xStimulus)
+            for textureIndex=1:size(stimulusXY,1)
                 whichLetter=strfind(letters,stimulus(textureIndex)); % finds stimulus letter in "letters".
                 assert(length(whichLetter)==1)
                 textures(textureIndex)=letterStruct(whichLetter).texture;
@@ -2693,9 +2697,10 @@ try
                     heightPix=oo(oi).targetHeightOverWidth*oo(oi).targetPix;
                 end
                 r=round((heightPix/RectHeight(letterStruct(whichLetter).rect))*letterStruct(whichLetter).rect);
-                dstRects(1:4,textureIndex)=OffsetRect(r,round(xStimulus(textureIndex)-xPix/2),round(yStimulus(textureIndex)-yPix/2));
+                dstRects(1:4,textureIndex)=OffsetRect(r,round(stimulusXY(textureIndex,1)-xPix/2),round(stimulusXY(textureIndex,2)-yPix/2));
                 if oo(oi).printSizeAndSpacing
-                    fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',xPix,yPix,RectWidth(r),RectHeight(r),xStimulus(textureIndex),yStimulus(textureIndex),dstRects(1:4,textureIndex));
+                    fprintf('xPix %.0f, yPix %.0f, RectWidth(r) %.0f, RectHeight(r) %.0f, x %.0f, y %.0f, dstRect %0.f %0.f %0.f %0.f\n',...
+                        xPix,yPix,RectWidth(r),RectHeight(r),stimulusXY(textureIndex),dstRects(1:4,textureIndex));
                 end
             end
             if ~streq(oo(oi).thresholdParameter,'spacing') || oo(oi).practiceCountdown>0
