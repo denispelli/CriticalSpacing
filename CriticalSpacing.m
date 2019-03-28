@@ -1631,7 +1631,14 @@ try
             error(['%d: Unknown o fields:' sprintf(' %s',oo(oi).unknownFields{:})],oi);
         end
     end
-    ffprintf(ff,':: %s: %s\n',oo(1).experimenter,oo(1).observer);
+    ffprintf(ff,':: <strong>%s:%s: %s</strong>\n',oo(1).experiment,oo(1).experimenter,oo(1).observer);
+    for oi=1:conditions
+        % Print names and eccentricities of all conditions.
+        if ~isempty([oo.conditionName])
+            ffprintf(ff,'%d: o.conditionName <strong>''%s''</strong>, o.eccentricityXYDeg [%.0f %.0f]\n',...
+                oi,oo(oi).conditionName,oo(oi).eccentricityXYDeg);
+        end
+    end
     for oi=1:conditions
         if oo(oi).repeatedTargets
             oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
@@ -1717,14 +1724,15 @@ try
                 oo(oi).targetDeg=2*oo(oi).normalAcuityDeg; % initial guess for threshold size.
             end
         end
-        
-        for ii=1:conditions
-            if oo(ii).repeatedTargets
-                oo(ii).useFixation=false;
+        if oi==1
+            for ii=1:conditions
+                if oo(ii).repeatedTargets
+                    oo(ii).useFixation=false;
+                end
+                oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
+                oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
+                oo(ii).speakInstructions=oo(ii).useSpeech;
             end
-            oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
-            oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
-            oo(ii).speakInstructions=oo(ii).useSpeech;
         end
         
         oo=SetUpFixation(window,oo,oi,ff);
