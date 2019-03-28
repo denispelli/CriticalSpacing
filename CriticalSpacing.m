@@ -1338,7 +1338,7 @@ try
             'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
             string,smallestDeg,minimumViewingDistanceCm);
         wrappedString=regexprep(string,'.{1,80}\s','$0\n');
-        ffprintf(ff,'\n%s',wrappedString);
+        ffprintf(ff,'%s',wrappedString(1:end-2));
         
         % RESOLUTION
         if oo(1).nativeWidth==RectWidth(actualScreenRect)
@@ -1600,7 +1600,7 @@ try
     assert(dataFid>-1);
     ff=[1 dataFid];
     ffError=[2 dataFid];
-    ffprintf(ff,'experiment ''%s'', block %d of %d/n',...
+    ffprintf(ff,'<strong>o.experiment ''%s''</strong>, block %d of %d\n',...
         oo(1).experiment,oo(1).block,oo(1).blocksDesired);
     ffprintf(ff,'%s %s. ',oo(1).functionNames,datestr(now));
     ffprintf(ff,'Saving results in:\n');
