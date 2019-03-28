@@ -941,7 +941,16 @@ try
         end
         
         % Record any warnings provoked by calling DrawText.
-        ffprintf(ff,'Testing DrawText. ... '); s=GetSecs;
+        if ~isempty(window)
+            Screen('FillRect',window);
+            oo(1).textSize=89; % Rough guess.
+            Screen('TextSize',window,oo(1).textSize);
+            instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
+            Screen('DrawText',window,'Testing DrawText (and cache fonts) ...',...
+                instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+            Screen('Flip',window);
+        end
+        ffprintf(ff,'Testing DrawText (and cache fonts) ... '); s=GetSecs;
         drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
         if exist(drawTextWarningFileName,'file')
             delete(drawTextWarningFileName);
