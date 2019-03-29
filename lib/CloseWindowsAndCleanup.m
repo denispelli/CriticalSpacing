@@ -1,4 +1,4 @@
-function CloseWindowsAndCleanup()
+function CloseWindowsAndCleanup
 % Closes any windows opened by the Psychtoolbox Screen command, re-enables
 % the keyboard, shows the cursor, and restores the video color lookup
 % tables (cluts). This function is similar to "sca".
@@ -29,7 +29,6 @@ if ~isempty(Screen('Windows')) && ~keepWindowOpen
     end
     ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
 end
-keepWindowOpen=false; % For safety we raise this flag only when needed.
 % These are quick.
 ListenChar;
 ShowCursor;
