@@ -473,10 +473,10 @@ plusMinus=char(177);
 % posting of an error here (or in any function called from here), or the
 % user hitting control-C.
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
-global isLastBlock skipScreenCalibration ff
+global skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
 global instructionalMarginPix screenRect % For QuitBlock
-keepWindowOpen=false; % For safety, keep false until we need it.
+keepWindowOpen=false; % Enable only in normal return.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
 % They are overridden by what you provide in the argument struct oIn.
@@ -619,7 +619,6 @@ o.useFractionOfScreenToDebug=false;
 o.isFirstBlock=true;
 o.isLastBlock=true;
 o.skipScreenCalibration=false;
-isLastBlock=o.isLastBlock; % Global for CloseWindowsAndCleanup.
 skipScreenCalibration=o.skipScreenCalibration; % Global for CloseWindowsAndCleanup.
 
 % TO MEASURE BETA
@@ -732,8 +731,7 @@ if ~isempty(unknownFields)
 end
 if oo(1).quitSession
     % Quick return. We're skipping every block in the session.
-    oo(1).isLastBlock=true;
-    isLastBlock=true; % Tell CloseWindowsAndCleanup().
+    keepWindowOpen=false;
     return
 end
 skipScreenCalibration=oo(1).skipScreenCalibration; % Global used by CloseWindowsAndCleanup.
@@ -2139,7 +2137,6 @@ try
         end
     end
     
-    isLastBlock=oo(1).isLastBlock; % Global for CloseWindowsAndCleanup.
     skipScreenCalibration=oo(1).skipScreenCalibration; % Global for CloseWindowsAndCleanup.
     
     for oi=1:conditions
@@ -3427,12 +3424,8 @@ try
         end % if oo.measureBeta
     end % for oi=1:conditions
     Snd('Close');
-    if isLastBlock
-        CloseWindowsAndCleanup; % Takes 4 s.
-    else
-        ListenChar;
-        ShowCursor;
-    end
+    ListenChar;
+    ShowCursor;
     a=[];
     for oi=1:conditions
         ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms.\n',...
@@ -3487,9 +3480,11 @@ catch e
         close(vidWriter);
         clear cam
     end
-    CloseWindowsAndCleanup; % Takes 120 s.
+    keepWindowOpen=false;
     rethrow(e);
 end
+keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
+return
 end % function CriticalSpacing
 
 function xyPix=XYPixOfXYDeg(o,xyDeg)
@@ -3651,11 +3646,10 @@ oo(1).quitBlock=true;
 oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
 if oo(1).quitSession
     ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-    keepWindowOpen=false; % Tell CloseWindowsAndCleanup().
 else
     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
-    keepWindowOpen=~oo(1).isLastBlock;
 end
+keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
 % CloseWindowsAndCleanup; % Redundant, since we are about to return from
 % CriticalSpacing, which will invoked CloseWindowsAndCleanup via the
 % onCleanup mechanism.
