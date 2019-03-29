@@ -914,6 +914,12 @@ try
         s=GetSecs;
         window=OpenWindow(oo(1));
         ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+    else
+        windowOpen=~isempty(Screen('Windows'));
+        kind=Screen(window,'WindowKind');
+        if kind~=1
+            error('Invalid "window" pointer. %d windows open.',windowOpen);
+        end
     end
     white=WhiteIndex(window);
     black=BlackIndex(window);
@@ -943,10 +949,10 @@ try
         % Record any warnings provoked by calling DrawText.
         if ~isempty(window)
             Screen('FillRect',window);
-            oo(1).textSize=89; % Rough guess.
+            oo(1).textSize=60; % Rough guess.
             Screen('TextSize',window,oo(1).textSize);
             instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
-            Screen('DrawText',window,'Testing DrawText (and cache fonts) ...',...
+            Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
                 instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
             Screen('Flip',window);
         end
@@ -1064,9 +1070,8 @@ try
             'This won''t affect the experimental stimuli, but small print in the instructions may be ugly.\n']);
     end
     
-    % Ask about viewing distance
+    % Ask about viewing distance, keyboard, etc.
     while true
-        
         screenRect=Screen('Rect',window);
         screenWidthPix=RectWidth(screenRect);
         screenHeightPix=RectHeight(screenRect);
@@ -1351,10 +1356,10 @@ try
         
         % RESOLUTION
         if oo(1).nativeWidth==RectWidth(actualScreenRect)
-            string=sprintf('%sRESOLUTION  %.0fx%.0f: Your screen resolution is optimal.\n\n',string,RectWidth(actualScreenRect),RectHeight(actualScreenRect));
+            string=sprintf('%sRESOLUTION: %.0fx%.0f. Your screen resolution is optimal.\n\n',string,RectWidth(actualScreenRect),RectHeight(actualScreenRect));
         else
             if RectWidth(actualScreenRect)<oo(1).nativeWidth
-                string=sprintf(['%sRESOLUTION %.0fx%.0f: You could reduce the minimum viewing distance ' ...
+                string=sprintf(['%sRESOLUTION: %.0fx%.0f. You could reduce the minimum viewing distance ' ...
                     '%.1f-fold by increasing the screen resolution to native resolution %.0fx%.0f. '],...
                     string,RectWidth(actualScreenRect),RectHeight(actualScreenRect),oo(1).nativeWidth/RectWidth(actualScreenRect),oo(1).nativeWidth,oo(1).nativeHeight);
             else
@@ -1380,43 +1385,68 @@ try
                 'or type "m" below, followed by RETURN.\n\n'],...
                 string);
         end
+          
+        % Draw all the plain small text onto the screen.
+        Screen('TextSize',window,round(oo(1).textSize*0.6));
+        [~,y]=DrawFormattedText(window,string,...
+            instructionalMarginPix,y+1.5*oo(1).textSize,...
+            black,(1/0.6)*(length(instructionalTextLineSample)+3),...
+            [],[],1.1);
+        
+        alertString='';
         
         % KEYBOARD
         if oo(1).needWirelessKeyboard
-            string=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
+            alertString=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
                 'but I can''t detect any. After connecting a new keyboard, ' ...
                 'use your old keyboard to type "k" below, followed by RETURN, ' ...
-                'and I''ll recreate the keyboard list.'],string);
+                'and I''ll recreate the keyboard list.\n\n'],alertString);
         end
         
-        
-        % Draw all the small text on screen.
-        Screen('TextSize',window,round(oo(1).textSize*0.6));
-        [~,y]=DrawFormattedText(window,string,instructionalMarginPix,y+1.5*oo(1).textSize,black,(1/0.6)*(length(instructionalTextLineSample)+3),[],[],1.1);
-        
-        % ALERT TO CHANGE IN VIEWING DISTANCE.
-        global old
-        if isempty(old) || oo(1).viewingDistanceCm ~= old.viewingDistanceCm
-            string=sprintf(['Please use a ruler or tape measure to move the display and ' ...
-                'yourself to achieve the new viewing distance of %.0f cm, from your eye to the screen.'],...
-                oo(1).viewingDistanceCm);
-            DrawFormattedText(window,string,instructionalMarginPix,...
-                y+1.11*oo(1).textSize,[255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3));
-            if isempty(old)
+        % CHANGE IN VIEWING DISTANCE.
+        global oldViewingDistanceCm
+        newViewingDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
+        if newViewingDistance
+            alertString=sprintf(['%sDISTANCE: %.0f cm. Please use a ruler or tape measure to move the display and ' ...
+                'yourself to achieve the new viewing distance of %.0f cm from your eye to the screen.\n\n'],...
+                alertString,oo(1).viewingDistanceCm,oo(1).viewingDistanceCm);
+            if isempty(oldViewingDistanceCm)
                 speech=sprintf('Please use a ruler to adjust your viewing distance to be %.0f centimeters.',...
                     oo(1).viewingDistanceCm);
             else
-                speech=sprintf(['The viewing distance has changed to %.0f centimeters. '...
-                    'Please use a ruler to adjust your distance.'],oo(1).viewingDistanceCm);
+                speech=sprintf(['The necessary viewing distance has changed. '...
+                    'Please use a ruler to adjust your distance to %.0f centimeters.'],oo(1).viewingDistanceCm);
             end
         else
             speech='';
         end
-        old=oo(1);
+        oldViewingDistanceCm=oo(1).viewingDistanceCm;
         
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,...
+            double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),...
+            instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,...
+            black,white,1);
+        
+        if ~isempty(alertString)
+            Screen('TextSize',window,round(oo(1).textSize*0.6));
+            for i=1:2*4
+                % 2 seconds of flicker at 8 Hz.
+                DrawFormattedText(window,alertString,...
+                    instructionalMarginPix,y+0*round(oo(1).textSize*0.6),...
+                    [255 255 255],(1/0.6)*(length(instructionalTextLineSample)+3),...
+                    [],[],1.1);
+                Screen('Flip',window,[],1);
+                pause(1/16)
+                DrawFormattedText(window,alertString,...
+                    instructionalMarginPix,y+0*round(oo(1).textSize*0.6),...
+                    [255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3),...
+                    [],[],1.1);
+                Screen('Flip',window,[],1);
+                pause(1/16);
+            end
+        end
         
         % Get typed response
         Screen('TextSize',window,oo(1).textSize);
@@ -1425,12 +1455,15 @@ try
         else
             background=WhiteIndex(window);
         end
-        Screen('DrawText',window,'To continue to next screen, just hit RETURN. To make a change,',...
-            instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*(0.5-1.1));
+        Screen('DrawText',window,'To continue, just hit RETURN. To make a change, enter numerical',...
+            instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*(0.5-1.1),...
+            black,white);
         Screen('Flip',window,[],1);
-        Speak(speech);
-        [d,terminatorChar]=GetEchoString(window,'enter numerical viewing distance (cm) or a command (r, m, or k):'...
-            ,instructionalMarginPix,0.82*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
+        if ~isempty(alertString)
+            Speak(speech);
+        end
+        [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
+            ,instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
             oo=QuitBlock(oo);
             return
@@ -2432,13 +2465,20 @@ try
                     oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
             end
             assert(length(spacingPix)==1);
+            fXY=zeros(2,2);
             if oo(oi).fixedSpacingOverSize
                 % Clip the nominal spacingPix, allowing for half a letter
                 % beyond the spacing, clipped by the stimulusRect.
                 fXY(1,:)=tXY+spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 fXY(2,:)=tXY-spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                v=fXY-tXY;
+                try
+                    v=fXY-tXY;
+                catch e
+                    fXY
+                    tXY
+                    rethrow(e)
+                end
                 spacingPix=min(norm(v(1,:)),norm(v(2,:)))/(1+0.5/oo(oi).fixedSpacingOverSize);
             else
                 % Clip the nominal spacingPix, allowing for half a letter
@@ -2446,7 +2486,13 @@ try
                 fXY(1,:)=tXY+(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
                 fXY(2,:)=tXY-(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                v=fXY-tXY;
+                try
+                    v=fXY-tXY;
+                catch e
+                    fXY
+                    tXY
+                    rethrow(e)
+                end
                 spacingPix=min(norm(v(1,:)),norm(v(2,:)))-0.5*oo(oi).targetPix;
             end
             assert(length(spacingPix)==1);
