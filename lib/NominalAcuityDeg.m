@@ -1,4 +1,5 @@
 function nominalAcuityDeg=NominalAcuityDeg(eccentricityXYDeg)
+% nominalAcuityDeg=NominalAcuityDeg(eccentricityXYDeg);
 % Eq. 13 from Song, Levi, and Pelli (2014).
 % See also: NominalCriticalSpacingDeg
 assert(length(eccentricityXYDeg)==2)
