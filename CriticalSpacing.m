@@ -2472,12 +2472,9 @@ try
                 fXY(1,:)=tXY+spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 fXY(2,:)=tXY-spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                try
-                    v=fXY-tXY;
-                catch e
-                    fXY
-                    tXY
-                    rethrow(e)
+                v=fXY;
+                for i=1:size(fXY,1)
+                    v(i,1:2)=fXY(i,1:2)-tXY;
                 end
                 spacingPix=min(norm(v(1,:)),norm(v(2,:)))/(1+0.5/oo(oi).fixedSpacingOverSize);
             else
@@ -2486,12 +2483,9 @@ try
                 fXY(1,:)=tXY+(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
                 fXY(2,:)=tXY-(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
                 [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                try
-                    v=fXY-tXY;
-                catch e
-                    fXY
-                    tXY
-                    rethrow(e)
+                v=fXY;
+                for i=1:size(fXY,1)
+                    v(i,1:2)=fXY(i,1:2)-tXY;
                 end
                 spacingPix=min(norm(v(1,:)),norm(v(2,:)))-0.5*oo(oi).targetPix;
             end
