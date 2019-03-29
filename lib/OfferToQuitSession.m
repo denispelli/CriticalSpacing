@@ -1,5 +1,6 @@
 function quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect)
 % quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect)
+global keepWindowOpen
 if oo(1).speakEachLetter && oo(1).useSpeech
    Speak('Escape');
 end
@@ -22,11 +23,20 @@ Screen('Flip',window);
 answer=GetKeypress([returnKeyCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
 quitSession=ismember(answer,[escapeChar,graveAccentChar]);
 if oo(1).useSpeech
-   if quitSession
-      Speak('Escape. Done.');
-   else
-      Speak('Proceeding to next block.');
-   end
+    if quitSession
+        Speak('Escape. Done.');
+    elseif oo(1).isLastBlock
+        Speak('Done.');
+    else
+        Speak('Proceeding to next block.');
+    end
+end
+if quitSession
+    keepWindowOpen=false;
+elseif oo(1).isLastBlock
+    keepWindowOpen=false;
+else
+    keepWindowOpen=true;
 end
 Screen('FillRect',window);
 Screen('Flip',window);
