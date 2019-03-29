@@ -3,24 +3,31 @@
 
 %% DEFINE CONDITIONS
 clear o
+% o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey';
 o.experimenter='';
 o.observer='';
 o.viewingDistanceCm=100;
+o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0]  lower right, [1 1] upper right.
 o.durationSec=0.2; % duration of display of target and flankers
 o.readAlphabetFromDisk=true;
+o.trials=40;
 ooo={};
 for ecc=[0 2.5 5 10]
     o.conditionName='crowding';
+    o.targetDeg=2;
+    o.spacingDeg=2;
+    o.thresholdParameter='spacing';
     o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
     if ecc>0
         o.targetFont='Sloan';
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
+        o.minimumTargetPix=8;
         o.fixationLineWeightDeg=0.03;
         o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=false;
@@ -30,42 +37,38 @@ for ecc=[0 2.5 5 10]
         o.targetFont='Pelli';
         o.alphabet='123456789';
         o.borderLetter='$';
-        o.fixationLineWeightDeg=0.01;
+        o.minimumTargetPix=4;
+        o.fixationLineWeightDeg=0.02;
         o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=true;
         o.flankingDirection='horizontal';
-        o.viewingDistanceCm=200;
+        o.viewingDistanceCm=250;
     end
-    o.targetDeg=2;
-    o.thresholdParameter='spacing';
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
 end
 for ecc=[0 5]
     o.conditionName='acuity';
+    o.targetDeg=4;
+    o.thresholdParameter='size';
     o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+    o.targetFont='Sloan';
+    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+    o.borderLetter='X';
     if ecc>0
-        o.targetFont='Sloan';
-        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-        o.borderLetter='X';
         o.fixationLineWeightDeg=0.03;
         o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=false;
         o.flankingDirection='radial';
         o.viewingDistanceCm=100;
     else
-        o.targetFont='Pelli';
-        o.alphabet='123456789';
-        o.borderLetter='$';
-        o.fixationLineWeightDeg=0.01;
-        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
+        o.fixationLineWeightDeg=0.02;
+        o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=true;
         o.flankingDirection='horizontal';
-        o.viewingDistanceCm=250;
+        o.viewingDistanceCm=100;
     end
-    o.targetDeg=4;
-    o.thresholdParameter='size';
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
