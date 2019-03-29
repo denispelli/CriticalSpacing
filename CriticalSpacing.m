@@ -528,7 +528,7 @@ o.oneFlanker=0;
 o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 o.flankingDirection='radial'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
-o.flankingDegVector=[]; % Specify x,y vector, or specify named o.flankingDirection.
+o.flankingDegVector=[]; % Specify x,y vector, or [] to specify named o.flankingDirection.
 o.repeatedTargets=false;
 o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 1,3,4, ... inf.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
@@ -696,7 +696,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
     'dataFolder' 'eccentricityXYPix' 'fix' 'functionNames' ...
     'keyboardNameAndTransport' 'minimumSizeDeg' 'minimumSpacingDeg' ...
     'minimumViewingDistanceCm' 'normalAcuityDeg' ...
-    'normalCriticalSpacingDeg' 'presentations' 'q' 'responseCount' ...
+    'normalCrowdingDistanceDeg' 'presentations' 'q' 'responseCount' ...
     'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
     'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
     'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
@@ -1101,20 +1101,44 @@ try
             oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
             oo(oi).pixPerDeg=pixPerDeg;
             oo(oi).pixPerCm=pixPerCm;
-            ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+            ecc=norm(oo(oi).eccentricityXYDeg);
             oo(oi).normalAcuityDeg=0.029*(ecc+2.72); % Eq. 13 from Song, Levi and Pelli (2014).
-            if ismember(oo(oi).targetFont,{'Pelli'})
-                oo(oi).normalAcuityDeg=oo(oi).normalAcuityDeg/5; % For Pelli font.
+            switch oo(oi).targetFont
+                case 'Pelli'
+                    oo(oi).normalAcuityDeg=oo(oi).normalAcuityDeg/5;
             end
-            oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % Adjusted.
+            oo(oi).normalCrowdingDistanceDeg=0.3*(ecc+0.15); % From Pelli et al. (2017).
+            switch oo(oi).flankingDirection
+                case 'tangential'
+                    oo(oi).normalCrowdingDistanceDeg=0.5*oo(oi).normalCrowdingDistanceDeg;
+            end
             oo(oi).typicalThesholdSizeDeg=oo(oi).normalAcuityDeg;
             if oo(oi).fixedSpacingOverSize && streq(oo(oi).thresholdParameter,'spacing')
-                oo(oi).typicalThesholdSizeDeg=max(oo(oi).typicalThesholdSizeDeg,oo(oi).normalCriticalSpacingDeg/oo(oi).fixedSpacingOverSize);
+                % Observer fails if size or spacing is below threshold, so
+                % we care only about the bigger size of failure.
+                oo(oi).typicalThesholdSizeDeg= ...
+                    max(oo(oi).typicalThesholdSizeDeg, oo(oi).normalCrowdingDistanceDeg/oo(oi).fixedSpacingOverSize);
             end
-            minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
-            % Distance so minimum size is half the typical threshold (size or
-            % spacing, whichever is higher).
-            oo(oi).minimumViewingDistanceCm=10*ceil(0.1*oo(oi).viewingDistanceCm*2*minimumSizeDeg/oo(oi).typicalThesholdSizeDeg);
+            minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg; % Limited by display resolution.
+            if oo(oi).fixedSpacingOverSize
+                minimumSpacingDeg=oo(oi).fixedSpacingOverSize*minimumSizeDeg;
+            else
+                minimumSpacingDeg=1.4*oo(oi).targetDeg;
+                switch oo(oi).targetFont
+                    case 'Pelli'
+                        minimumSpacingDeg=minimumSpacingDeg/5; % For Pelli font.
+                    otherwise
+                end
+            end
+            % Distance at which minimum size is half the typical threshold
+            % whther due to size or spacing.
+            switch oo(oi).thresholdParameter
+                case 'size'
+                    oo(oi).minimumViewingDistanceCm=10*ceil(0.1*oo(oi).viewingDistanceCm*2*minimumSizeDeg/oo(oi).typicalThesholdSizeDeg);
+                case 'spacing'
+                    oo(oi).minimumViewingDistanceCm=10*ceil(0.1*oo(oi).viewingDistanceCm*2*minimumSpacingDeg/oo(oi).normalCrowdingDistanceDeg);
+            end
+            
         end
         minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
         if oo(1).speakViewingDistance && oo(1).useSpeech
@@ -1190,7 +1214,7 @@ try
             end
             % Provide default target size if not already provided.
             if ~isfinite(oo(oi).targetDeg)
-                ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+                ecc=norm(oo(oi).eccentricityXYDeg);
                 oo(oi).targetDeg=0.3*(ecc+0.15)/oo(oi).fixedSpacingOverSize;
             end
             
@@ -1338,7 +1362,7 @@ try
         
         string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
             'the screen is %.0fx%.0f deg, and can display characters'...
-            ' as small as %.2f deg with spacing as small as %.2f deg. '],...
+            ' as small as %.3f deg with spacing as small as %.3f deg. '],...
             string,oo(1).viewingDistanceCm,rectSizeDeg,...
             sizeDeg,spacingDeg);
         if any([oo(:).eccentricityXYDeg]~=0)
@@ -1347,10 +1371,18 @@ try
                 'To allow on-screen fixation, view me from at most %.0f cm. '],...
                 string,minimumScreenSizeXYDeg,verb,rectSizeDeg,floor(maximumViewingDistanceCm));
         end
-        smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
-        string=sprintf(['%sTo allow display of your target as small as %.2f deg, ' ...
-            'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
-            string,smallestDeg,minimumViewingDistanceCm);
+        switch oo(oi).thresholdParameter
+            case 'size'
+                smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
+                string=sprintf(['%sTo allow display of your target as small as %.3f deg, ' ...
+                    'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
+                    string,smallestDeg,minimumViewingDistanceCm);
+            case 'spacing'
+                smallestDeg=min([oo.normalCrowdingDistanceDeg])/2;
+                string=sprintf(['%sTo allow spacing as small as %.2f deg, ' ...
+                    'half of typical crowding distance, view me from at least %.0f cm.\n\n'], ...
+                    string,smallestDeg,minimumViewingDistanceCm);
+        end
         wrappedString=regexprep(string,'.{1,80}\s','$0\n');
         ffprintf(ff,'%s',wrappedString(1:end-2));
         
@@ -1385,7 +1417,7 @@ try
                 'or type "m" below, followed by RETURN.\n\n'],...
                 string);
         end
-          
+        
         % Draw all the plain small text onto the screen.
         Screen('TextSize',window,round(oo(1).textSize*0.6));
         [~,y]=DrawFormattedText(window,string,...
@@ -1688,7 +1720,7 @@ try
         else
             oo(oi).presentations=oo(oi).trials;
         end
-        ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+        ecc=norm(oo(oi).eccentricityXYDeg);
         if isempty(oo(oi).flankingDegVector) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
             error('At zero o.eccentricityXYDeg, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
                 oo(oi).flankingDirection);
@@ -1781,18 +1813,18 @@ try
         
         addOnDeg=0.15;
         addOnPix=pixPerDeg*addOnDeg;
-        oo(oi).normalCriticalSpacingDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
+        oo(oi).normalCrowdingDistanceDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
         % If flanking direction is orthogonal to eccentricity direction,
         % then halve the expected crowding distance. A better model would
         % deal with all possible differences in orientation.
         if ecc>0 && norm(oo(oi).flankingDegVector.*oo(oi).eccentricityDegVector)<0.7
             % Tangential crowding distance is half radial.
-            oo(oi).normalCriticalSpacingDeg=oo(oi).normalCriticalSpacingDeg/2; % Toet and Levi.
+            oo(oi).normalCrowdingDistanceDeg=oo(oi).normalCrowdingDistanceDeg/2; % Toet and Levi.
         end
         if isfield(oo(oi),'spacingGuessDeg') && isfinite(oo(oi).spacingGuessDeg)
             oo(oi).spacingDeg=oo(oi).spacingGuessDeg;
         else
-            oo(oi).spacingDeg=oo(oi).normalCriticalSpacingDeg; % initial guess for distance from center of middle letter
+            oo(oi).spacingDeg=oo(oi).normalCrowdingDistanceDeg; % initial guess for distance from center of middle letter
         end
         oo(oi).spacings=oo(oi).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
         oo(oi).spacingsSequence=repmat(oo(oi).spacings,1,...
@@ -1864,7 +1896,7 @@ try
             if ~oo(oi).targetSizeIsHeight
                 diameter=diameter*oo(oi).targetHeightOverWidth;
             end
-            eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+            eccentricityPix=norm(oo(oi).eccentricityXYPix);
             oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
             if oo(oi).fix.blankingRadiusPix >= eccentricityPix
                 % Make sure we can see fixation. Extend the lines.
@@ -1925,8 +1957,14 @@ try
         end
     end
     for oi=1:conditions
-        ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg letter.)\n',...
-            oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalAcuityDeg/2);
+        switch oo(oi).thresholdParameter
+            case 'size'
+                ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.3f deg target.)\n',...
+                    oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalAcuityDeg/2);
+            case 'spacing'
+                ffprintf(ff,'%d: Viewing distance %.0f cm. (Must exceed %.0f cm to produce %.2f deg spacing.)\n',...
+                    oi,oo(oi).viewingDistanceCm,oo(oi).minimumViewingDistanceCm,oo(oi).normalCrowdingDistanceDeg/2);
+        end
     end
     s=sprintf([':: Needing screen size of at least %.0fx%.0f deg, ' ...
         'you should view from at most'],minimumScreenSizeXYDeg);
@@ -2274,7 +2312,7 @@ try
                         case 'vertical'
                             deltaXY=[0 1];
                     end
-                    deltaXY=deltaXY/sqrt(sum(deltaXY.^2));
+                    deltaXY=deltaXY/norm(deltaXY);
                     deltaXY=deltaXY*RectWidth(oo(oi).stimulusRect);
                     [far1XY,far2XY]=ClipLineSegment2(targetXY+deltaXY,targetXY-deltaXY,oo(oi).stimulusRect);
                     delta1XYDeg=XYDegOfXYPix(oo(oi),far1XY)-oo(oi).eccentricityXYDeg;
@@ -2576,7 +2614,7 @@ try
             if ~oo(oi).targetSizeIsHeight
                 diameter=diameter*oo(oi).targetHeightOverWidth;
             end
-            eccentricityPix=sqrt(sum(oo(oi).eccentricityXYPix.^2));
+            eccentricityPix=norm(oo(oi).eccentricityXYPix);
             oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
             if oo(oi).fix.blankingRadiusPix >= eccentricityPix
                 % Make sure we can see fixation. Extend the lines.
@@ -3303,7 +3341,7 @@ try
         switch oo(oi).thresholdParameter
             case 'spacing'
                 ori=oo(oi).flankingDirection;
-                ecc=sqrt(sum(oo(oi).eccentricityXYDeg.^2));
+                ecc=norm(oo(oi).eccentricityXYDeg);
                 if ~oo(oi).repeatedTargets && ecc>0
                     switch(oo(oi).flankingDirection)
                         case 'radial'
@@ -3454,7 +3492,7 @@ function xyPix=XYPixOfXYDeg(o,xyDeg)
 % sight. We typically put the target there, but that is not assumed in this
 % routine.
 xyDeg=xyDeg-o.nearPointXYDeg;
-rDeg=sqrt(sum(xyDeg.^2));
+rDeg=norm(xyDeg);
 rPix=o.pixPerCm*o.viewingDistanceCm*tand(rDeg);
 if rDeg>0
     xyPix=xyDeg*rPix/rDeg;
@@ -3488,14 +3526,14 @@ else
         % oo(oi).fixationXYPix is in plane of display. Off-screen fixation is
         % not! Instead it is the same distance from the eye as the near point.
         % fixationOffsetXYCm is vector from near point to fixation.
-        rDeg=sqrt(sum(oo(oi).nearPointXYDeg.^2));
+        rDeg=norm(oo(oi).nearPointXYDeg);
         ori=atan2d(-oo(oi).nearPointXYDeg(2),-oo(oi).nearPointXYDeg(1));
         rCm=2*sind(0.5*rDeg)*oo(oi).viewingDistanceCm;
         fixationOffsetXYCm=[cosd(ori) sind(ori)]*rCm;
         if 0
             % Check the geometry.
             oriCheck=atan2d(fixationOffsetXYCm(2),fixationOffsetXYCm(1));
-            rCmCheck=sqrt(sum(fixationOffsetXYCm.^2));
+            rCmCheck=norm(fixationOffsetXYCm);
             rDegCheck=2*asind(0.5*rCm/oo(oi).viewingDistanceCm);
             xyDegCheck=-[cosd(ori) sind(ori)]*rDeg;
             fprintf('CHECK NEAR-POINT GEOMETRY: ori %.1f %.1f; rCm %.1f %.1f; rDeg %.1f %.1f; xyDeg [%.1f %.1f] [%.1f %.1f]\n',...
@@ -3583,7 +3621,7 @@ function xyDeg=XYDegOfXYPix(o,xyPix)
 % o.nearPointXYDeg. We typically put the target at the near point, but that
 % is not assumed in this routine.
 xyPix=xyPix-o.nearPointXYPix;
-rPix=sqrt(sum(xyPix.^2));
+rPix=norm(xyPix);
 rDeg=atan2d(rPix/o.pixPerCm,o.viewingDistanceCm);
 if rPix>0
     xyPix(2)=-xyPix(2); % Apple y goes down.
