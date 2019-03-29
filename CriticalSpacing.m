@@ -470,8 +470,8 @@ plusMinus=char(177);
 % Once we call onCleanup, until CriticalSpacing ends,
 % CloseWindowsAndCleanup will run (closing any open windows) when this
 % function terminates for any reason, whether by reaching the end, the
-% posting of an error here or in any function called from here, or the user
-% hitting control-C.
+% posting of an error here (or in any function called from here), or the
+% user hitting control-C.
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
 global isLastBlock skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
@@ -503,7 +503,7 @@ o.block=1; % Each block may contain more than one condition.
 o.blocksDesired=1;
 o.condition=1; % Integer count of the condition, starting at 1.
 o.conditionName='';
-quitBlock=false;
+o.quitBlock=false;
 o.quitSession=false;
 
 % SOUND & FEEDBACK
@@ -1360,7 +1360,7 @@ try
         sizeDeg=max([oo.minimumSizeDeg]);
         spacingDeg=max([oo.minimumSpacingDeg]);
         
-        string=sprintf(['%sSIZE LIMITS: At the current %.0f cm viewing distance, '...
+        string=sprintf(['%sSIZE LIMITS: At the current <strong>%.0f cm</strong> viewing distance, '...
             'the screen is %.0fx%.0f deg, and can display characters'...
             ' as small as %.3f deg with spacing as small as %.3f deg. '],...
             string,oo(1).viewingDistanceCm,rectSizeDeg,...
@@ -1368,19 +1368,19 @@ try
         if any([oo(:).eccentricityXYDeg]~=0)
             string=sprintf(['%s The combined size of the target and fixation %.1f x %.1f deg '...
                 '%s the screen %.1f x %.1f deg. ',...
-                'To allow on-screen fixation, view me from at most %.0f cm. '],...
+                'To allow on-screen fixation, view screen from at most %.0f cm. '],...
                 string,minimumScreenSizeXYDeg,verb,rectSizeDeg,floor(maximumViewingDistanceCm));
         end
         switch oo(oi).thresholdParameter
             case 'size'
                 smallestDeg=min([oo.typicalThesholdSizeDeg])/2;
                 string=sprintf(['%sTo allow display of your target as small as %.3f deg, ' ...
-                    'half of typical threshold size, view me from at least %.0f cm.\n\n'], ...
+                    'half of typical threshold size, view screen from <strong>at least %.0f cm</strong>.\n\n'], ...
                     string,smallestDeg,minimumViewingDistanceCm);
             case 'spacing'
                 smallestDeg=min([oo.normalCrowdingDistanceDeg])/2;
                 string=sprintf(['%sTo allow spacing as small as %.2f deg, ' ...
-                    'half of typical crowding distance, view me from at least %.0f cm.\n\n'], ...
+                    'half of typical crowding distance, view screen from <strong>at least %.0f cm</strong>.\n\n'], ...
                     string,smallestDeg,minimumViewingDistanceCm);
         end
         wrappedString=regexprep(string,'.{1,80}\s','$0\n');
@@ -1491,7 +1491,7 @@ try
             instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*(0.5-1.1),...
             black,white);
         Screen('Flip',window,[],1);
-        if ~isempty(alertString)
+        if ~isempty(alertString) && oo(oi).useSpeech
             Speak(speech);
         end
         [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
@@ -1813,7 +1813,7 @@ try
         
         addOnDeg=0.15;
         addOnPix=pixPerDeg*addOnDeg;
-        oo(oi).normalCrowdingDistanceDeg=0.3*(ecc+0.15); % modified Eq. 14 from Song, Levi, and Pelli (2014).
+        oo(oi).normalCrowdingDistanceDeg=0.3*(ecc+0.15); % from Pelli et al. (2017).
         % If flanking direction is orthogonal to eccentricity direction,
         % then halve the expected crowding distance. A better model would
         % deal with all possible differences in orientation.
@@ -2000,10 +2000,12 @@ try
     end
     for oi=1:conditions
         if oo(oi).readAlphabetFromDisk
-            ffprintf(ff,'%d: "%s" font from disk. ',oi,oo(oi).targetFont);
+            fontString='font from disk';
         else
-            ffprintf(ff,'%d: "%s" font, live. ',oi,oo(oi).targetFont);
+            fontString='font, live';
         end
+        ffprintf(ff,'%d: "%s" %s. ',oi,oo(oi).targetFont,fontString);
+        ffprintf(ff,'o.minimumTargetPix %d. ',oo(oi).minimumTargetPix);
         ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(oi).alphabet,oo(oi).borderLetter);
     end
     for oi=1:conditions
@@ -2724,7 +2726,9 @@ try
                 Screen('FrameRect',window,0,r);
             end
             Screen('Flip',window);
-            Speak('Alphabet. Click.');
+            if oo(1).useSpeech
+                Speak('Alphabet. Click.');
+            end
             GetClicks;
         end
         
@@ -2972,7 +2976,9 @@ try
                 end
                 if oo(oi).showLineOfLetters
                     Screen('Flip',window);
-                    Speak(sprintf('Line %d. Click.',lineIndex));
+                    if oo(1).useSpeech
+                        Speak(sprintf('Line %d. Click.',lineIndex));
+                    end
                     GetClicks;
                 end
                 % Create a texture holding one line of letters.
@@ -3637,22 +3643,20 @@ v=v(randperm(length(v)));
 end
 
 function ooOut=QuitBlock(oo)
-global isLastBlock window ff keepWindowOpen
+global window ff keepWindowOpen
 global instructionalMarginPix screenRect % For QuitBlock
 oo(1).quitBlock=true;
 oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
 if oo(1).quitSession
     ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-    oo(1).isLastBlock=true;
-    isLastBlock=true; % Tell CloseWindowsAndCleanup().
-    keepWindowOpen=false;
-    CloseWindowsAndCleanup;
+    keepWindowOpen=false; % Tell CloseWindowsAndCleanup().
 else
-    keepWindowOpen=true;
-    %     ListenChar;
-    %     ShowCursor;
     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
+    keepWindowOpen=~oo(1).isLastBlock;
 end
+% CloseWindowsAndCleanup; % Redundant, since we are about to return from
+% CriticalSpacing, which will invoked CloseWindowsAndCleanup via the
+% onCleanup mechanism.
 ooOut=oo;
 end
 
