@@ -1232,8 +1232,8 @@ try
             % point is at center.
             xy=oo(oi).stimulusRect(3:4)-oo(oi).stimulusRect(1:2); % width and height
             rectSizeDeg=2*atand(0.5*xy/oo(1).pixPerCm/oo(1).viewingDistanceCm);
-            fprintf('%d: screen %.0fx%.0f = %.1fx%.1f deg, %.1f pixPerCm, viewingDistanceCm %.1f cm, xy %.0f %.0f\n',...
-                oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
+            fprintf('%d: screen %.0fx%.0f = %.1fx%.1f deg, %.0f pixPerDeg, %.1f pixPerCm, viewingDistanceCm %.1f cm, xy %.0f %.0f\n',...
+                oi,screenRect(3:4),rectSizeDeg,oo(1).pixPerDeg,oo(1).pixPerCm,oo(1).viewingDistanceCm, xy);
             if all(totalSizeXYDeg <= rectSizeDeg)
                 oo(oi).fixationOnScreen=true;
                 verb='fits within';
@@ -1383,8 +1383,10 @@ try
                     'half of typical crowding distance, view screen from <strong>at least %.0f cm</strong>.\n\n'], ...
                     string,smallestDeg,minimumViewingDistanceCm);
         end
-        wrappedString=regexprep(string,'.{1,80}\s','$0\n');
-        ffprintf(ff,'%s',wrappedString(1:end-2));
+        s=regexprep(string,'.{1,80}\s','$0\n');
+        ffprintf(ff,'%s',s(1:end-2)); % Print wrapped text with <strong> and </strong>.
+        string=strrep(string,'<strong>',''); % Strip out <strong> and </strong>.
+        string=strrep(string,'</strong>','');
         
         % RESOLUTION
         if oo(1).nativeWidth==RectWidth(actualScreenRect)
