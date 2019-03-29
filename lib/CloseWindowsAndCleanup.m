@@ -16,13 +16,15 @@ function CloseWindowsAndCleanup()
 % the program that it's in.
 %
 % denis.pelli@nyu.edu, November 27, 2018
-global ff isLastBlock skipScreenCalibration keepWindowOpen % Set this in your main program. True on last block.
+global ff skipScreenCalibration keepWindowOpen % Set this in your main program. True on last block.
 
 if ~isempty(Screen('Windows')) && ~keepWindowOpen
     ffprintf(ff,'CloseWindowsAndCleanup. ... '); s=GetSecs;
     Screen('CloseAll'); % May take a minute.
-    if ismac && isLastBlock && ~skipScreenCalibration
-        AutoBrightness(0,1); % May take a minute.
+    if ~skipScreenCalibration
+        if IsOSX
+            AutoBrightness(0,1); % May take a minute.
+        end
         RestoreCluts;
     end
     ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
