@@ -1788,14 +1788,12 @@ try
         end % if ecc==0
         % Prepare to draw fixation cross.
         fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
-        %       fixationCrossPix=min(fixationCrossPix,2*RectWidth(oo(oi).stimulusRect)); % full width and height, can extend off screen
         fixationLineWeightPix=round(oo(oi).fixationLineWeightDeg*pixPerDeg);
         fixationLineWeightPix=max(1,fixationLineWeightPix);
         fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
         oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
         oo(oi).fix.clipRect=oo(oi).stimulusRect;
         oo(oi).fix.fixationCrossPix=fixationCrossPix;
-        
         oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
         oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
@@ -3549,8 +3547,34 @@ xyPix=xyPix+o.nearPointXYPix;
 xyPix=round(xyPix);
 end
 
+function xyDeg=XYDegOfXYPix(o,xyPix)
+% Convert position from (x,y) coordinate in o.stimulusRect to deg (relative
+% to fixation). Deg increase right and up. Pix are in Apple screen
+% coordinates which increase down and right. The perspective transformation
+% is relative to location of near point, which is orthogonal to line of
+% sight. THe near-point location is specified by o.nearPointXYPix and
+% o.nearPointXYDeg. We typically put the target at the near point, but that
+% is not assumed in this routine.
+xyPix=xyPix-o.nearPointXYPix;
+rPix=norm(xyPix);
+rDeg=atan2d(rPix/o.pixPerCm,o.viewingDistanceCm);
+if rPix>0
+    xyPix(2)=-xyPix(2); % Apple y goes down.
+    xyDeg=xyPix*rDeg/rPix;
+else
+    xyDeg=[0 0];
+end
+xyDeg=xyDeg+o.nearPointXYDeg;
+end
+
+function v=shuffle(v)
+v=v(randperm(length(v)));
+end
+
 %% SET UP FIXATION
 function oo=SetUpFixation(window,oo,oi,ff)
+% Fixation may be off-screen. Set up o.fixationIsOffscreen, 
+% o.targetXYPix, fixationOffsetXYCm, o.nearPointXYPix,
 white=WhiteIndex(window);
 black=BlackIndex(window);
 escapeKeyCode=KbName('ESCAPE');
@@ -3562,9 +3586,9 @@ graveAccentChar='`';
 returnChar=char(13);
 oo(oi).fixationXYPix=XYPixOfXYDeg(oo(oi),[0 0]);
 if ~oo(oi).useFixation
-    oo(oi).fixationIsOffscreen = 0;
+    oo(oi).fixationIsOffscreen=false;
 else
-    oo(oi).fixationIsOffscreen = ~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
+    oo(oi).fixationIsOffscreen=~IsXYInRect(oo(oi).fixationXYPix,oo(oi).stimulusRect);
     if oo(oi).fixationIsOffscreen
         fprintf('%d: Fixation is off screen. fixationXYPix %.0f %.0f, o.stimulusRect [%d %d %d %d]\n',...
             oi,oo(oi).fixationXYPix,oo(oi).stimulusRect);
@@ -3655,31 +3679,8 @@ else
     %     ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
     ffprintf(ff,'%d: Fixation cross is not blanked.\n');
 end
-end
+end % function SetUpFixatiom
 
-function xyDeg=XYDegOfXYPix(o,xyPix)
-% Convert position from (x,y) coordinate in o.stimulusRect to deg (relative
-% to fixation). Deg increase right and up. Pix are in Apple screen
-% coordinates which increase down and right. The perspective transformation
-% is relative to location of near point, which is orthogonal to line of
-% sight. THe near-point location is specified by o.nearPointXYPix and
-% o.nearPointXYDeg. We typically put the target at the near point, but that
-% is not assumed in this routine.
-xyPix=xyPix-o.nearPointXYPix;
-rPix=norm(xyPix);
-rDeg=atan2d(rPix/o.pixPerCm,o.viewingDistanceCm);
-if rPix>0
-    xyPix(2)=-xyPix(2); % Apple y goes down.
-    xyDeg=xyPix*rDeg/rPix;
-else
-    xyDeg=[0 0];
-end
-xyDeg=xyDeg+o.nearPointXYDeg;
-end
-
-function v=shuffle(v)
-v=v(randperm(length(v)));
-end
 
 function ooOut=QuitBlock(oo)
 global window ff keepWindowOpen
