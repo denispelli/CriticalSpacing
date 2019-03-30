@@ -1723,7 +1723,7 @@ try
                 oi,oo(oi).conditionName,oo(oi).eccentricityXYDeg);
         end
     end
-    for oi=1:conditions
+    for oi=1:conditions % Prepare all the conditions.
         if oo(oi).repeatedTargets
             oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
             oo(oi).trials=2*oo(oi).presentations;
@@ -1792,7 +1792,7 @@ try
         fixationLineWeightPix=max(1,fixationLineWeightPix);
         fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
         oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
-        oo(oi).fix.clipRect=oo(oi).stimulusRect;
+        oo(oi).fix.clipRect=oo(oi).screenRect;
         oo(oi).fix.fixationCrossPix=fixationCrossPix;
         oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
@@ -1893,38 +1893,41 @@ try
         % o.markTargetLocationPix, 
         oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
         assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
-        oo(oi).fix.clipRect;
         oo(oi).fix.clipRect=screenRect;
         oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
         if oo(oi).markTargetLocation
             oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
         else
-            oo(oi).fix.markTargetLocationPix=false;
+            oo(oi).fix.markTargetLocationPix=0;
         end
         
-        if oo(oi).fixationCrossBlankedNearTarget
+      if oo(oi).fixationCrossBlankedNearTarget
             % Blanking of marks to prevent masking and crowding of the
             % target by the marks. Blanking radius (centered at target) is
-            % max of target diameter and half eccentricity.
-            % However, we do not allow fixation to be entirely blanked. We
-            % always retain at least of bit of it, to tell the observer
-            % where to look.
+            % max of target diameter and half eccentricity. However, we put
+            % a ceiling on the blanking radius so that fixation is not
+            % entirely blanked, provided the mark radius is high enough to
+            % exceed the blanking radius.
             diameter=oo(oi).targetDeg*pixPerDeg;
-            if ~oo(oi).targetSizeIsHeight
-                diameter=diameter*oo(oi).targetHeightOverWidth;
+            if oo(oi).targetSizeIsHeight
+                diameter=diameter*max(1,1/oo(oi).targetHeightOverWidth);
+            else
+                diameter=diameter*max(1,oo(oi).targetHeightOverWidth);
             end
             eccentricityPix=norm(oo(oi).eccentricityXYPix);
             oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
             if oo(oi).fix.blankingRadiusPix >= eccentricityPix
-                % Make sure we can see fixation. Extend the lines.
+                % To make sure we can see fixation, our first step is to
+                % extend the lines. Maybe this should be the last step,
+                % since we are about to reduce the blankingRadiusPix.
                 oo(oi).fix.fixationCrossPix=inf;
             end
             % There are four points where an infinite on-screen fixation
-            % mark crosses the edge of the screen. We need to retain at
-            % least two crossings, one on a vertical edge and one on a
-            % horizontal edge.
-            fXY=XYPixOfXYDeg(oo(oi),[0 0]);
-            tXY=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
+            % mark crosses the edge of the screen. For the crossings to
+            % indicate fixation location, we need to retain at least two,
+            % one on a vertical edge and one on a horizontal edge.
+            fXY=XYPixOfXYDeg(oo(oi),[0 0]); % fixation
+            tXY=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
             crossingXY{1}=[fXY(1) oo(oi).stimulusRect(2)];
             crossingXY{2}=[fXY(1) oo(oi).stimulusRect(4)];
             crossingXY{3}=[oo(oi).stimulusRect(1) fXY(2)];
@@ -1933,10 +1936,14 @@ try
             for i=1:4
                 d(i)=norm(crossingXY{i}-tXY);
             end
-            d=min(max([d(1:2)' d(3:4)'])); % Spare a horiz. and a vert. crossing.
-            %             d=d-5*oo(oi).fixationLineWeightDeg;
+            r=min(max([d(1:2)' d(3:4)'])); % Spare a horiz. and a vert. crossing.
+            fprintf('Four screen edge crossings by fixation mark.\n');
+            for i=1:4
+                fprintf('[%.0f %.0f] %.1f %d\n',crossingXY{i},d(i),d(i)>4);
+            end
+            r=r-0.5*oo(oi).pixPerDeg; % spare at least 0.5 deg 
             oo(oi).fix.blankingRadiusPix=...
-                min([oo(oi).fix.blankingRadiusPix d]);
+                round(min([oo(oi).fix.blankingRadiusPix r]));
         else
             oo(oi).fix.blankingRadiusPix=0;
         end
@@ -1959,7 +1966,7 @@ try
         gamma=1/length(oo(oi).alphabet);
         grain=0.01;
         range=6;
-    end % for oi=1:conditions
+    end % for oi=1:conditions % Prepare all the conditions.
     
     cal.screen=max(Screen('Screens'));
     if cal.screen>0
@@ -2259,7 +2266,6 @@ try
         oo=QuitBlock(oo);
         return
     end
-    fixationClipRect=oo(oi).stimulusRect;
     if oo(oi).showProgressBar
         string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the block. ';
     else
@@ -2287,7 +2293,6 @@ try
         string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACEBAR. ',...
             string,where);
         string=strrep(string,'letter',symbolName);
-        fixationClipRect(2)=5*oo(oi).textSize;
         x=instructionalMarginPix;
         y=1.3*oo(1).textSize;
         Screen('TextSize',window,oo(oi).textSize);
@@ -2646,31 +2651,14 @@ try
         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Prepare to draw fixation cross.
-        if oo(oi).fixationCrossBlankedNearTarget
-            % Blanking of marks to prevent masking and crowding of the
-            % target by the marks. Blanking radius (centered at target) is
-            % max of target diameter and half eccentricity.
-            diameter=oo(oi).targetDeg*pixPerDeg;
-            if ~oo(oi).targetSizeIsHeight
-                diameter=diameter*oo(oi).targetHeightOverWidth;
-            end
-            eccentricityPix=norm(oo(oi).eccentricityXYPix);
-            oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
-            if oo(oi).fix.blankingRadiusPix >= eccentricityPix
-                % Make sure we can see fixation. Extend the lines.
-                oo(oi).fix.fixationCrossPix=inf;
-            end
-        else
-            oo(oi).fix.blankingRadiusPix=0;
-        end
-        fixationLines=ComputeFixationLines2(oo(oi).fix);
+          fixationLines=ComputeFixationLines2(oo(oi).fix);
         % Set up fixation.
         if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
-            fl=ClipLines(fixationLines,fixationClipRect);
-            if ~isempty(fl)
-                Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+            if ~isempty(fixationLines)
+                Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
             end
+            Screen('Flip',window,[],1);
         end
         if oo(oi).showProgressBar
             Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
@@ -2692,16 +2680,13 @@ try
             end
             Screen('FillRect',window,white,oo(oi).stimulusRect);
             Screen('FillRect',window,white,clearRect);
-            % Define fixation bounds midway through first trial, for rest of
-            % trials.
-            %          fixationClipRect=InsetRect(oo(oi).stimulusRect,0,1.6*oo(oi).textSize);
-            fixationClipRect=oo(oi).stimulusRect;
+            % Define fixation bounds during first trial, for rest of
+            % trials in block.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 % Draw fixation.
-                fl=ClipLines(fixationLines,fixationClipRect);
-                if ~isempty(fl)
-                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                if ~isempty(fixationLines)
+                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
             DrawCounter(oo,presentation,condList);
@@ -2711,10 +2696,10 @@ try
             Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 % Draw fixation.
-                fl=ClipLines(fixationLines,fixationClipRect);
-                if ~isempty(fl)
-                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                if ~isempty(fixationLines)
+                    % Paint white border next to the black line.
+                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
         else
@@ -3107,10 +3092,9 @@ try
             oo(oi).actualDurationSec(end+1)=GetSecs-trialTimeSecs;
             %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-trialTimeSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
-                fl=ClipLines(fixationLines,fixationClipRect);
-                if ~isempty(fl)
-                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                if ~isempty(fixationLines)
+                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
             Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
@@ -3134,8 +3118,6 @@ try
             Screen('Close',texture);
             x=instructionalMarginPix;
             y=-bounds(2)+0.3*oo(oi).textSize;
-            %          fixationClipRect=oo(oi).stimulusRect;
-            %          fixationClipRect(2)=y+bounds(4)+0.3*oo(oi).textSize;
             % Draw text.
             Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
@@ -3153,7 +3135,6 @@ try
                 labelTextSize=oo(oi).textSize;
                 Screen('TextSize',window,labelTextSize);
             end
-            %          fixationClipRect(4)=y-1.3*RectHeight(alphabetBounds);
             for i=1:length(oo(oi).alphabet)
                 dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
                 % Draw the i-th letter in o.alphabet.
@@ -3175,10 +3156,9 @@ try
             Screen('TextSize',window,oo(oi).textSize);
             Screen('TextFont',window,oo(oi).textFont,0);
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
-                fl=ClipLines(fixationLines,fixationClipRect);
-                if ~isempty(fl)
-                    Screen('DrawLines',window,fl,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fl,fixationLineWeightPix,black);
+                if ~isempty(fixationLines)
+                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
             DrawCounter(oo,presentation,condList);
