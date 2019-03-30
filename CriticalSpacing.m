@@ -475,7 +475,9 @@ plusMinus=char(177);
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
 global skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
+global scratchWindow
 global instructionalMarginPix screenRect % For QuitBlock
+persistent drawTextWarning
 keepWindowOpen=false; % Enable only in normal return.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
@@ -497,7 +499,10 @@ o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
+
+% THIS SEEMS A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
 o.measureViewingDistanceToTargetNotFixation=true;
+
 o.experiment=''; % Name of this experiment. Used to select files for analysis.
 o.block=1; % Each block may contain more than one condition.
 o.blocksDesired=1;
@@ -912,11 +917,16 @@ try
         s=GetSecs;
         window=OpenWindow(oo(1));
         ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+        scratchWindow=Screen('OpenOffscreenWindow',-1,[],screenRect,8);
     else
         windowOpen=~isempty(Screen('Windows'));
         kind=Screen(window,'WindowKind');
         if kind~=1
             error('Invalid "window" pointer. %d windows open.',windowOpen);
+        end
+        kind=Screen(scratchWindow,'WindowKind');
+        if kind~=-1
+            error('Invalid "scratchWindow" pointer. %d windows open.',windowOpen);
         end
     end
     white=WhiteIndex(window);
@@ -928,10 +938,10 @@ try
         resolution=Screen('Resolution',oo(1).screen)
     end
     screenRect=Screen('Rect',window,1);
+    Screen('TextFont',window,oo(1).textFont);
     
-    if true || oo(1).isFirstBlock
+    if oo(1).isFirstBlock
         % Are we using the FGTL DrawText plugin?
-        Screen('TextFont',window,oo(1).textFont);
         % Ignore possible warning: "PTB-WARNING: DrawText: Failed to load
         % external drawtext plugin".
         Screen('Preference','SuppressAllWarnings',0);
@@ -943,7 +953,6 @@ try
                 error('%s. Could not create data folder: %s',msg,oo(1).dataFolder);
             end
         end
-        
         % Record any warnings provoked by calling DrawText.
         if ~isempty(window)
             Screen('FillRect',window);
@@ -954,7 +963,7 @@ try
                 instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
             Screen('Flip',window);
         end
-        ffprintf(ff,'Testing DrawText (and cache fonts) ... '); s=GetSecs;
+        ffprintf(ff,'Testing DrawText (and caching fonts) ... '); s=GetSecs;
         drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
         if exist(drawTextWarningFileName,'file')
             delete(drawTextWarningFileName);
@@ -964,9 +973,9 @@ try
         Screen('DrawText',window,'Hello',0,200,255,255); % Exercise DrawText.
         diary off
         fileId=fopen(drawTextWarningFileName);
-        oo(1).drawTextWarning=char(fread(fileId)');
+        drawTextWarning=char(fread(fileId)');
         fclose(fileId);
-        if ~isempty(oo(1).drawTextWarning) && oo(oi).readAlphabetFromDisk
+        if ~isempty(drawTextWarning) && oo(oi).readAlphabetFromDisk
             warning backtrace off
             warning('You can ignore the warnings above about DrawText because we aren''t using it.');
             warning backtrace on
@@ -975,6 +984,7 @@ try
         ffprintf(ff,'Done (%.1f s).\n',GetSecs-s);
         % Below we print any drawTextWarning into our log file.
     end
+    oo(1).drawTextWarning=drawTextWarning;
     
     Screen('Preference','SuppressAllWarnings',1);
     Screen('Preference','Verbosity',0); % Mute Psychtoolbox INFOs & WARNINGs.
@@ -1040,7 +1050,7 @@ try
             else
                 oo(oi).targetFontNumber=[];
                 Screen('TextFont',window,oo(oi).targetFont);
-                % Perform dummy draw call, to take deferred font setting on some OS'es into account:
+                % Perform dummy draw call, in case the OS has deferred settings.
                 Screen('DrawText',window,' ',0,0);
                 font=Screen('TextFont',window);
                 if ~streq(font,oo(oi).targetFont)
@@ -1262,13 +1272,13 @@ try
             % oo(oi).nearPointXYPix is a screen coordinate.
             
             %% ASSIGN NEAR POINT VISUAL COORDINATE
-            % Enabling okToShiftCoordinates will typical result in different
-            % fixation locations for each condition. That may be ok for some
-            % experiments, but is not ok when the randomization matters and we
-            % don't want the locaiton of fixation to inform the observer about
-            % which condition is being tested by this trial. THe current criterion
-            % for okToShiftCoordinates may be overly strict and could be relaxed
-            % somewhat.
+            % Enabling okToShiftCoordinates will typical result in
+            % different fixation locations for each condition. That may be
+            % ok for some experiments, but is not ok when the randomization
+            % matters and we don't want the locaiton of fixation to inform
+            % the observer about which condition is being tested by this
+            % trial. THe current criterion for okToShiftCoordinates may be
+            % overly strict and could be relaxed somewhat.
             oo(1).okToShiftCoordinates = length(oo)==1 || all(ismember([oo.setNearPointEccentricityTo],'target'));
             [oo.okToShiftCoordinates]=deal(oo(1).okToShiftCoordinates);
             switch oo(oi).setNearPointEccentricityTo
@@ -1332,11 +1342,12 @@ try
         % Say hello, and get viewing distance.
         Screen('FillRect',window,white);
         cmString=sprintf('%.0f cm',oo(1).viewingDistanceCm);
-        string=sprintf(['Welcome to CriticalSpacing. ' ...
+        string=sprintf('Block %d of %d.',oo(1).block,oo(1).blocksDesired);
+        string=sprintf(['%s Welcome to CriticalSpacing. ' ...
             'If you want a viewing distance of %.0f cm, ' ...
             'please move me to that distance from your eye, and hit RETURN. ' ...
             'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
-            oo(1).viewingDistanceCm);
+            string,oo(1).viewingDistanceCm);
         Screen('TextSize',window,oo(1).textSize);
         [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3-2*length(cmString),[],[],1.1);
         Screen('TextSize',window,2*oo(1).textSize);
@@ -1425,9 +1436,15 @@ try
             black,(1/0.6)*(length(instructionalTextLineSample)+3),...
             [],[],1.1);
         
-        alertString='';
+        % COPYRIGHT
+        Screen('TextSize',window,round(oo(1).textSize*0.35));
+        Screen('DrawText',window,...
+            double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),...
+            instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,...
+            black,white,1);
         
         % KEYBOARD
+        alertString='';
         if oo(1).needWirelessKeyboard
             alertString=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
                 'but I can''t detect any. After connecting a new keyboard, ' ...
@@ -1454,13 +1471,6 @@ try
         end
         oldViewingDistanceCm=oo(1).viewingDistanceCm;
         
-        % COPYRIGHT
-        Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,...
-            double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),...
-            instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,...
-            black,white,1);
-        
         if ~isempty(alertString)
             Screen('TextSize',window,round(oo(1).textSize*0.6));
             for i=1:2*4
@@ -1470,13 +1480,13 @@ try
                     [255 255 255],(1/0.6)*(length(instructionalTextLineSample)+3),...
                     [],[],1.1);
                 Screen('Flip',window,[],1);
-                pause(1/16)
+                WaitSecs(1/16)
                 DrawFormattedText(window,alertString,...
                     instructionalMarginPix,y+0*round(oo(1).textSize*0.6),...
                     [255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3),...
                     [],[],1.1);
                 Screen('Flip',window,[],1);
-                pause(1/16);
+                WaitSecs(1/16);
             end
         end
         
@@ -1888,10 +1898,14 @@ try
         else
             oo(oi).fix.markTargetLocationPix=false;
         end
+        
         if oo(oi).fixationCrossBlankedNearTarget
             % Blanking of marks to prevent masking and crowding of the
             % target by the marks. Blanking radius (centered at target) is
             % max of target diameter and half eccentricity.
+            % However, we do not allow fixation to be entirely blanked. We
+            % always retain at least of bit of it, to tell the observer
+            % where to look.
             diameter=oo(oi).targetDeg*pixPerDeg;
             if ~oo(oi).targetSizeIsHeight
                 diameter=diameter*oo(oi).targetHeightOverWidth;
@@ -1902,6 +1916,24 @@ try
                 % Make sure we can see fixation. Extend the lines.
                 oo(oi).fix.fixationCrossPix=inf;
             end
+            % There are four points where an infinite on-screen fixation
+            % mark crosses the edge of the screen. We need to retain at
+            % least two crossings, one on a vertical edge and one on a
+            % horizontal edge.
+            fXY=XYPixOfXYDeg(oo(oi),[0 0]);
+            tXY=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
+            crossingXY{1}=[fXY(1) oo(oi).stimulusRect(2)];
+            crossingXY{2}=[fXY(1) oo(oi).stimulusRect(4)];
+            crossingXY{3}=[oo(oi).stimulusRect(1) fXY(2)];
+            crossingXY{4}=[oo(oi).stimulusRect(3) fXY(2)];
+            d=[];
+            for i=1:4
+                d(i)=norm(crossingXY{i}-tXY);
+            end
+            d=min(max([d(1:2)' d(3:4)'])); % Spare a horiz. and a vert. crossing.
+            %             d=d-5*oo(oi).fixationLineWeightDeg;
+            oo(oi).fix.blankingRadiusPix=...
+                min([oo(oi).fix.blankingRadiusPix d]);
         else
             oo(oi).fix.blankingRadiusPix=0;
         end
@@ -2206,7 +2238,9 @@ try
     Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
     Screen('TextSize',window,oo(oi).textSize);
     string=strrep(string,'letter',symbolName);
-    DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3,[],[],1.1);
+    DrawFormattedText(window,string,...
+        instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
+        black,length(instructionalTextLineSample)+3,[],[],1.1);
     Screen('Flip',window,[],1);
     if false && oo(oi).useSpeech
         string=strrep(string,'\n','');
@@ -2255,6 +2289,7 @@ try
         y=1.3*oo(1).textSize;
         Screen('TextSize',window,oo(oi).textSize);
         DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+        % Fixation mark should be visible after the Flip.
         Screen('Flip',window,[],1); % Don't clear.
         beginAfterKeypress=true;
     else
@@ -2282,6 +2317,7 @@ try
     while presentation<length(condList)
         presentation=presentation+1;
         oi=condList(presentation);
+        
         easyModulus=ceil(1/oo(oi).fractionEasyTrials-1);
         easyPresentation= easeRequest>0 || mod(presentation-1,easyModulus)==0;
         if oo(oi).useQuest
@@ -2639,6 +2675,7 @@ try
             r(4)=round(r(4)*(1-presentation/length(condList)));
             Screen('FillRect',window,[220 220 220],r); % grey background
         end
+        DrawCounter(oo,presentation,condList);
         Screen('Flip',window,[],1); % Display instructions and fixation.
         if oo(oi).useFixation
             if beginAfterKeypress
@@ -2664,6 +2701,7 @@ try
                     Screen('DrawLines',window,fl,fixationLineWeightPix,black);
                 end
             end
+            DrawCounter(oo,presentation,condList);
             Screen('Flip',window,[],1); % Display fixation.
             WaitSecs(1); % Duration of fixation display, before stimulus appears.
             Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
@@ -2724,6 +2762,7 @@ try
                 Screen('DrawTexture',window,letterStruct(i).texture,[],r);
                 Screen('FrameRect',window,0,r);
             end
+            DrawCounter(oo,presentation,condList);
             Screen('Flip',window);
             if oo(1).useSpeech
                 Speak('Alphabet. Click.');
@@ -2974,6 +3013,7 @@ try
                     textureIndex=textureIndex+1;
                 end
                 if oo(oi).showLineOfLetters
+                    DrawCounter(oo,presentation,condList);
                     Screen('Flip',window);
                     if oo(1).useSpeech
                         Speak(sprintf('Line %d. Click.',lineIndex));
@@ -3037,6 +3077,7 @@ try
         if oo(oi).usePurring
             Snd('Play',purr);
         end
+        DrawCounter(oo,presentation,condList);
         Screen('Flip',window,[],1); % Display stimulus & fixation.
         trialTimeSecs=GetSecs;
         if oo(oi).recordGaze
@@ -3137,6 +3178,7 @@ try
                     Screen('DrawLines',window,fl,fixationLineWeightPix,black);
                 end
             end
+            DrawCounter(oo,presentation,condList);
             Screen('Flip',window,[],1); % Display fixation & response instructions.
             Screen('FillRect',window,white,oo(oi).stimulusRect);
         end
@@ -3656,3 +3698,17 @@ keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
 ooOut=oo;
 end
 
+function DrawCounter(oo,presentation,condList)
+global window scratchWindow
+% Display counter in lower right corner.
+message=sprintf('Trial %d of %d. Block %d of %d.',...
+    presentation,length(condList),oo(1).block,oo(1).blocksDesired);
+counterSize=round(0.6*oo(1).textSize);
+Screen('TextSize',window,counterSize);
+Screen('TextSize',scratchWindow,counterSize);
+counterBounds=TextBounds(scratchWindow,message,1);
+counterBounds=AlignRect(counterBounds,InsetRect(oo(1).stimulusRect,counterSize/4,counterSize/4),'right','bottom');
+white=WhiteIndex(window);
+black=BlackIndex(window);
+Screen('DrawText',window,message,counterBounds(1),counterBounds(4),black,white,1);
+end
