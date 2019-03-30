@@ -1154,7 +1154,6 @@ try
         end
         minimumScreenSizeXYDeg=[0 0];
         for oi=1:conditions
-            
             %% COPIED FROM SET UP NEAR POINT
             white=WhiteIndex(window);
             black=BlackIndex(window);
@@ -1393,7 +1392,7 @@ try
                     string,smallestDeg,minimumViewingDistanceCm);
         end
         s=regexprep(string,'.{1,80}\s','$0\n');
-        ffprintf(ff,'%s',s(1:end-2)); % Print wrapped text with <strong> and </strong>.
+        ffprintf(ff,'%s',s(1:end-2)); % Print wrapped text including <strong> and </strong>.
         string=strrep(string,'<strong>',''); % Strip out <strong> and </strong>.
         string=strrep(string,'</strong>','');
         
@@ -1480,7 +1479,7 @@ try
                     [255 255 255],(1/0.6)*(length(instructionalTextLineSample)+3),...
                     [],[],1.1);
                 Screen('Flip',window,[],1);
-                WaitSecs(1/16)
+                WaitSecs(1/16);
                 DrawFormattedText(window,alertString,...
                     instructionalMarginPix,y+0*round(oo(1).textSize*0.6),...
                     [255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3),...
@@ -1792,9 +1791,9 @@ try
         fixationLineWeightPix=max(1,fixationLineWeightPix);
         fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
         oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
-        oo(oi).fix.clipRect=oo(oi).screenRect;
+        oo(oi).fix.clipRect=screenRect;
         oo(oi).fix.fixationCrossPix=fixationCrossPix;
-        oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
+        oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]); % Fixation screen location.
         oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
         oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
         
