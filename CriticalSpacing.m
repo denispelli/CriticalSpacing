@@ -478,6 +478,7 @@ global window keepWindowOpen % Keep window open until end of last block.
 global scratchWindow
 global instructionalMarginPix screenRect % For QuitBlock
 persistent drawTextWarning
+global blockTrial blockTrials % used in DrawCounter.
 keepWindowOpen=false; % Enable only in normal return.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
@@ -835,7 +836,7 @@ if oo(1).useFractionOfScreenToDebug
     % angular subtense.
     screenRect=round(oo(oi).useFractionOfScreenToDebug*screenRect);
 end
-
+[oo.stimulusRect]=deal(screenRect);
 for oi=1:conditions
     if ismember(oo(oi).borderLetter,oo(oi).alphabet)
         ListenChar(0);
@@ -961,6 +962,7 @@ try
             instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
             Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
                 instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+            DrawCounter(oo);
             Screen('Flip',window);
         end
         ffprintf(ff,'Testing DrawText (and caching fonts) ... '); s=GetSecs;
@@ -1472,6 +1474,7 @@ try
         
         if ~isempty(alertString)
             Screen('TextSize',window,round(oo(1).textSize*0.6));
+            DrawCounter(oo);
             for i=1:2*4
                 % 2 seconds of flicker at 8 Hz.
                 DrawFormattedText(window,alertString,...
@@ -1499,10 +1502,12 @@ try
         Screen('DrawText',window,'To continue, just hit RETURN. To make a change, enter numerical',...
             instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*(0.5-1.1),...
             black,white);
+        DrawCounter(oo);
         Screen('Flip',window,[],1);
         if ~isempty(alertString) && oo(oi).useSpeech
             Speak(speech);
         end
+        DrawCounter(oo);
         [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
             ,instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
@@ -1599,6 +1604,7 @@ try
         else
             background=WhiteIndex(window);
         end
+        DrawCounter(oo);
         [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
         for i=1:conditions
             oo(i).experimenter=name;
@@ -1627,6 +1633,7 @@ try
         else
             background=WhiteIndex(window);
         end
+        DrawCounter(oo);
         [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
             oo=QuitBlock(oo);
@@ -2123,6 +2130,7 @@ try
                 Screen('TextSize',window,oo(1).textSize);
                 Screen('DrawText',window,'Setting brightness ...',...
                     instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+                DrawCounter(oo);
                 Screen('Flip',window);
                 ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
                 Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
@@ -2214,10 +2222,10 @@ try
     else
         string='Hello. ';
     end
-    string=[string 'Please turn on this computer''s sound. '];
-    string=[string 'Press CAPS LOCK at any time to see the alphabet of possible letters. '];
-    string=[string 'You might also have the alphabet on a piece of paper. '];
-    string=[string 'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
+    string=[string 'Please make sure this computer''s sound is enabled. ' ...
+    	'Press CAPS LOCK at any time to see the alphabet of possible letters. ' ...
+    	'You might also have the alphabet on a piece of paper. ' ...
+    	'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
     for oi=1:conditions
         if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'size')
             string=[string 'When you see a letter, please report it. '];
@@ -2250,6 +2258,7 @@ try
     DrawFormattedText(window,string,...
         instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
         black,length(instructionalTextLineSample)+3,[],[],1.1);
+    DrawCounter(oo);
     Screen('Flip',window,[],1);
     if false && oo(oi).useSpeech
         string=strrep(string,'\n','');
@@ -2297,6 +2306,7 @@ try
         Screen('TextSize',window,oo(oi).textSize);
         DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
         % Fixation mark should be visible after the Flip.
+        DrawCounter(oo);
         Screen('Flip',window,[],1); % Don't clear.
         beginAfterKeypress=true;
     else
@@ -2323,6 +2333,8 @@ try
     presentation=0;
     while presentation<length(condList)
         presentation=presentation+1;
+        blockTrial=presentation; % For DrawCounter
+        blockTrials=length(condList); % For DrawCounter
         oi=condList(presentation);
         
         easyModulus=ceil(1/oo(oi).fractionEasyTrials-1);
@@ -2657,7 +2669,6 @@ try
             if ~isempty(fixationLines)
                 Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
             end
-            Screen('Flip',window,[],1);
         end
         if oo(oi).showProgressBar
             Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
@@ -2665,7 +2676,7 @@ try
             r(4)=round(r(4)*(1-presentation/length(condList)));
             Screen('FillRect',window,[220 220 220],r); % grey background
         end
-        DrawCounter(oo,presentation,condList);
+        DrawCounter(oo);
         Screen('Flip',window,[],1); % Display instructions and fixation.
         if oo(oi).useFixation
             if beginAfterKeypress
@@ -2688,7 +2699,7 @@ try
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
-            DrawCounter(oo,presentation,condList);
+            DrawCounter(oo);
             Screen('Flip',window,[],1); % Display fixation.
             WaitSecs(1); % Duration of fixation display, before stimulus appears.
             Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
@@ -2749,7 +2760,7 @@ try
                 Screen('DrawTexture',window,letterStruct(i).texture,[],r);
                 Screen('FrameRect',window,0,r);
             end
-            DrawCounter(oo,presentation,condList);
+            DrawCounter(oo);
             Screen('Flip',window);
             if oo(1).useSpeech
                 Speak('Alphabet. Click.');
@@ -3000,7 +3011,7 @@ try
                     textureIndex=textureIndex+1;
                 end
                 if oo(oi).showLineOfLetters
-                    DrawCounter(oo,presentation,condList);
+                    DrawCounter(oo);
                     Screen('Flip',window);
                     if oo(1).useSpeech
                         Speak(sprintf('Line %d. Click.',lineIndex));
@@ -3064,7 +3075,7 @@ try
         if oo(oi).usePurring
             Snd('Play',purr);
         end
-        DrawCounter(oo,presentation,condList);
+        DrawCounter(oo);
         Screen('Flip',window,[],1); % Display stimulus & fixation.
         trialTimeSecs=GetSecs;
         if oo(oi).recordGaze
@@ -3096,6 +3107,7 @@ try
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
+            DrawCounter(oo);
             Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
             Screen('FillRect',window,white,oo(oi).stimulusRect);
             WaitSecs(0.2); % pause before response screen
@@ -3160,7 +3172,7 @@ try
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
-            DrawCounter(oo,presentation,condList);
+            DrawCounter(oo);
             Screen('Flip',window,[],1); % Display fixation & response instructions.
             Screen('FillRect',window,white,oo(oi).stimulusRect);
         end
@@ -3343,12 +3355,15 @@ try
             break;
         end
     end % for presentation=1:length(condList)
+    blockTrial=[]; % For DrawCounter
+    blockTrials=[]; % For DrawCounter
     % Quitting just this block or whole session?
     if oo(1).quitBlock
         oo=QuitBlock(oo);
         return
     end
     Screen('FillRect',window);
+    DrawCounter(oo);
     Screen('Flip',window);
     if oo(1).useSpeech
         if ~oo(1).quitBlock
@@ -3626,6 +3641,7 @@ else
         a=0.1*RectHeight(oo(oi).stimulusRect);
         Screen('DrawLine',window,black,x-a,y,x+a,y,a/20);
         Screen('DrawLine',window,black,x,y-a,x,y+a,a/20);
+        DrawCounter(oo);
         Screen('Flip',window); % Display question.
         if false && oo(oi).speakInstructions
             string=strrep(string,'below ','');
@@ -3641,6 +3657,7 @@ else
             answer=1;
         end
         Screen('FillRect',window,white);
+        DrawCounter(oo);
         Screen('Flip',window); % Blank the screen, to acknowledge response.
         if answer
             oo(oi).fixationIsOffscreen = 1;
@@ -3671,30 +3688,38 @@ function ooOut=QuitBlock(oo)
 global window ff keepWindowOpen
 global instructionalMarginPix screenRect % For QuitBlock
 oo(1).quitBlock=true;
-oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect);
+Screen('FillRect',window);
+DrawCounter(oo);
+oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect,'dontClear');
 if oo(1).quitSession
     ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
 else
     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
 end
 keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
-% CloseWindowsAndCleanup; % Redundant, since we are about to return from
-% CriticalSpacing, which will invoked CloseWindowsAndCleanup via the
-% onCleanup mechanism.
 ooOut=oo;
+% Termination of CriticalSpacing will automatically invoke
+% CloseWindowsAndCleanup via the onCleanup mechanism.
 end
 
-function DrawCounter(oo,presentation,condList)
+function DrawCounter(oo)
 global window scratchWindow
+global blockTrial blockTrials 
 % Display counter in lower right corner.
-message=sprintf('Trial %d of %d. Block %d of %d.',...
-    presentation,length(condList),oo(1).block,oo(1).blocksDesired);
+if isempty(blockTrial)
+    message=sprintf('Block %d of %d.',...
+        oo(1).block,oo(1).blocksDesired);
+else
+    message=sprintf('Trial %d of %d. Block %d of %d.',...
+        blockTrial,blockTrials,oo(1).block,oo(1).blocksDesired);
+end
 counterSize=round(0.6*oo(1).textSize);
-Screen('TextSize',window,counterSize);
+oldTextSize=Screen('TextSize',window,counterSize);
 Screen('TextSize',scratchWindow,counterSize);
 counterBounds=TextBounds(scratchWindow,message,1);
 counterBounds=AlignRect(counterBounds,InsetRect(oo(1).stimulusRect,counterSize/4,counterSize/4),'right','bottom');
 white=WhiteIndex(window);
 black=BlackIndex(window);
 Screen('DrawText',window,message,counterBounds(1),counterBounds(4),black,white,1);
+Screen('TextSize',window,oldTextSize);
 end
