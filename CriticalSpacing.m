@@ -1893,8 +1893,9 @@ try
         % o.markTargetLocationPix, 
         oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
         assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
-        oo(oi).fix.clipRect, fixationCrossPix
-        oo(oi).fix.=fixationCrossPix; % Diameter of fixation cross.
+        oo(oi).fix.clipRect;
+        oo(oi).fix.clipRect=screenRect;
+        oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
         if oo(oi).markTargetLocation
             oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
         else
