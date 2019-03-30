@@ -1817,14 +1817,16 @@ try
             end
         end
         
-        oo=SetUpFixation(window,oo,oi,ff);
+        % Location of near point, fixation, and target.
+        oo=SetUpFixation(window,oo,oi,ff); %  o.targetXYPix, fixationOffsetXYCm, o.nearPointXYPix
         
+        % Crowding distances.
         addOnDeg=0.15;
         addOnPix=pixPerDeg*addOnDeg;
         oo(oi).normalCrowdingDistanceDeg=0.3*(ecc+0.15); % from Pelli et al. (2017).
         % If flanking direction is orthogonal to eccentricity direction,
-        % then halve the expected crowding distance. A better model would
-        % deal with all possible differences in orientation.
+        % then halve the expected crowding distance. A fully developed
+        % model would deal with all possible differences in orientation.
         if ecc>0 && norm(oo(oi).flankingDegVector.*oo(oi).eccentricityDegVector)<0.7
             % Tangential crowding distance is half radial.
             oo(oi).normalCrowdingDistanceDeg=oo(oi).normalCrowdingDistanceDeg/2; % Toet and Levi.
@@ -1875,22 +1877,24 @@ try
         end
         oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
         
+        % Set o.targetHeightOverWidth
+        if oo(oi).setTargetHeightOverWidth
+            oo(oi).targetHeightOverWidth=oo(oi).setTargetHeightOverWidth;
+        end
+        
+        % Make list of valid response key codes.
         for cd=1:conditions
             for i=1:length(oo(cd).validKeyNames)
                 oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
             end
         end
         
-        % Set o.targetHeightOverWidth
-        if oo(oi).setTargetHeightOverWidth
-            oo(oi).targetHeightOverWidth=oo(oi).setTargetHeightOverWidth;
-        end
-        
-        % Prepare to draw fixation cross
+        % Prepare to draw fixation cross.
+        % o.markTargetLocationPix, 
         oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
         assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
-        oo(oi).fix.clipRect=screenRect;
-        oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
+        oo(oi).fix.clipRect, fixationCrossPix
+        oo(oi).fix.=fixationCrossPix; % Diameter of fixation cross.
         if oo(oi).markTargetLocation
             oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
         else
@@ -3574,7 +3578,8 @@ end
 %% SET UP FIXATION
 function oo=SetUpFixation(window,oo,oi,ff)
 % Fixation may be off-screen. Set up o.fixationIsOffscreen, 
-% o.targetXYPix, fixationOffsetXYCm, o.nearPointXYPix,
+% o.targetXYPix, fixationOffsetXYCm, o.nearPointXYPix.
+% Primary figures out where fixation will be on screen.
 white=WhiteIndex(window);
 black=BlackIndex(window);
 escapeKeyCode=KbName('ESCAPE');
