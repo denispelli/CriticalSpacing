@@ -1,5 +1,7 @@
-function quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect)
-% quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect)
+function quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect,dontClear)
+% quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect,dontClear)
+% Setting dontClear='dontClear' allows you to clear the screen yourself and
+% add annotations to our display before calling.
 global keepWindowOpen
 if oo(1).speakEachLetter && oo(1).useSpeech
    Speak('Escape');
@@ -10,7 +12,9 @@ returnKeyCode=KbName('return');
 graveAccentKeyCode=KbName('`~');
 escapeChar=char(27);
 graveAccentChar='`';
-Screen('FillRect',window);
+if nargin<5 || ~streq(dontClear,'dontClear')
+    Screen('FillRect',window);
+end
 Screen('TextFont',window,oo(1).textFont,0);
 string='Quitting the block. Hit ESCAPE again to quit the whole session. Or hit RETURN to proceed with the next block.';
 black=0;
