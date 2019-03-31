@@ -1915,8 +1915,8 @@ try
             oo(oi).fix.blankingRadiusPix=0; % None.
         end
         % Calling ComputeFixationLines2 now (it's quick) just to make sure
-        % it works. We'll call it again, with the same argument, during any
-        % trial with this condition.
+        % it works. We'll call it again (line 2629), with the same
+        % argument, during each trial of this condition.
         fixationLines=ComputeFixationLines2(oo(oi).fix);
         
         oo(1).quitBlock=false;
