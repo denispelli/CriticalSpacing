@@ -958,9 +958,10 @@ try
         % Record any warnings provoked by calling DrawText.
         if ~isempty(window)
             Screen('FillRect',window);
-            oo(1).textSize=60; % Rough guess.
+            r=Screen('Rect',window);
+            oo(1).textSize=round(0.02*RectWidth(r)); % Rough guess.
             Screen('TextSize',window,oo(1).textSize);
-            instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
+            instructionalMarginPix=round(0.08*min(RectWidth(r),RectHeight(r)));
             Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
                 instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
             Screen('Flip',window);
