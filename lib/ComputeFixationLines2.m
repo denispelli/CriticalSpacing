@@ -47,7 +47,7 @@ if ~isfield(fix,'blankingRadiusReEccentricity')
     fix.blankingRadiusReEccentricity=0.5;
 end
 if ~isfield(fix,'blankingRadiusReTargetHeight')
-    fix.blankingRadiusReTargetHeight=1;
+    fix.blankingRadiusReTargetHeight=2;
 end
 if ~isfield(fix,'targetHeightPix')
     fix.targetHeightPix=0;
@@ -55,8 +55,8 @@ end
 if ~isfield(fix,'blankingRadiusPix') || isempty(fix.blankingRadiusPix)
     % We blank (i.e. suppress) any marks near the target to prevent masking
     % and crowding of the target by the marks. The usual blanking radius
-    % (centered at target) is the greater of target diameter and half
-    % eccentricity. 
+    % (centered at target) is the greater of twice the target diameter and
+    % half eccentricity.
     eccentricityPix=norm(fix.eccentricityXYPix);
     fix.blankingRadiusPix=max(...
         fix.blankingRadiusReEccentricity*eccentricityPix,...
@@ -72,7 +72,8 @@ if isempty(fix.blankingRadiusPix) || fix.blankingRadiusPix>0
     % where to fixate. First we restrict the blanking radius to be less
     % than the screen size, then we increase the fixation mark radius to
     % exceed the blanking, so that we show at least two marks with length
-    % at least fix.fixationCrossPix.
+    % at least fix.fixationCrossPix. Typically the display is symmetric so
+    % we get all four marks.
     diameter=fix.targetHeightPix;
     %     if oo(oi).targetSizeIsHeight
     %         diameter=diameter*max(1,1/oo(oi).targetHeightOverWidth);
