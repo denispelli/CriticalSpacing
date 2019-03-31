@@ -579,6 +579,7 @@ o.fixationCrossBlankedNearTarget=true;
 % o.fixationCrossBlankedUntilSecAfterTarget=0; % This value is reported, but not used. Haven't yet needed it.
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
+o.fixationLineMinimumLengthDeg=0.2;
 o.markTargetLocation=false; % true to mark target location
 o.useFixation=true;
 o.forceFixationOffScreen=false;
@@ -962,7 +963,6 @@ try
             instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
             Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
                 instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
-            DrawCounter(oo);
             Screen('Flip',window);
         end
         ffprintf(ff,'Testing DrawText (and caching fonts) ... '); s=GetSecs;
@@ -1896,63 +1896,26 @@ try
         end
         
         % Prepare to draw fixation cross.
-        % o.markTargetLocationPix, 
         oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
         assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
         oo(oi).fix.clipRect=screenRect;
         oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
+        oo(oi).fix.fixationLineMinimumLengthPix= ...
+            round(oo(oi).fixationLineMinimumLengthDeg*oo(oi).pixPerDeg);
         if oo(oi).markTargetLocation
             oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
         else
             oo(oi).fix.markTargetLocationPix=0;
         end
-        
-      if oo(oi).fixationCrossBlankedNearTarget
-            % Blanking of marks to prevent masking and crowding of the
-            % target by the marks. Blanking radius (centered at target) is
-            % max of target diameter and half eccentricity. However, we put
-            % a ceiling on the blanking radius so that fixation is not
-            % entirely blanked, provided the mark radius is high enough to
-            % exceed the blanking radius.
-            diameter=oo(oi).targetDeg*pixPerDeg;
-            if oo(oi).targetSizeIsHeight
-                diameter=diameter*max(1,1/oo(oi).targetHeightOverWidth);
-            else
-                diameter=diameter*max(1,oo(oi).targetHeightOverWidth);
-            end
-            eccentricityPix=norm(oo(oi).eccentricityXYPix);
-            oo(oi).fix.blankingRadiusPix=round(max(diameter,0.5*eccentricityPix));
-            if oo(oi).fix.blankingRadiusPix >= eccentricityPix
-                % To make sure we can see fixation, our first step is to
-                % extend the lines. Maybe this should be the last step,
-                % since we are about to reduce the blankingRadiusPix.
-                oo(oi).fix.fixationCrossPix=inf;
-            end
-            % There are four points where an infinite on-screen fixation
-            % mark crosses the edge of the screen. For the crossings to
-            % indicate fixation location, we need to retain at least two,
-            % one on a vertical edge and one on a horizontal edge.
-            fXY=XYPixOfXYDeg(oo(oi),[0 0]); % fixation
-            tXY=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg); % target
-            crossingXY{1}=[fXY(1) oo(oi).stimulusRect(2)];
-            crossingXY{2}=[fXY(1) oo(oi).stimulusRect(4)];
-            crossingXY{3}=[oo(oi).stimulusRect(1) fXY(2)];
-            crossingXY{4}=[oo(oi).stimulusRect(3) fXY(2)];
-            d=[];
-            for i=1:4
-                d(i)=norm(crossingXY{i}-tXY);
-            end
-            r=min(max([d(1:2)' d(3:4)'])); % Spare a horiz. and a vert. crossing.
-            fprintf('Four screen edge crossings by fixation mark.\n');
-            for i=1:4
-                fprintf('[%.0f %.0f] %.1f %d\n',crossingXY{i},d(i),d(i)>4);
-            end
-            r=r-0.5*oo(oi).pixPerDeg; % spare at least 0.5 deg 
-            oo(oi).fix.blankingRadiusPix=...
-                round(min([oo(oi).fix.blankingRadiusPix r]));
+        oo(oi).fix.targetHeightPix=round(oo(oi).targetDeg*pixPerDeg);
+        if oo(oi).fixationCrossBlankedNearTarget
+            oo(oi).fix.blankingRadiusPix=[]; % Automatic.
         else
-            oo(oi).fix.blankingRadiusPix=0;
+            oo(oi).fix.blankingRadiusPix=0; % None.
         end
+        % Calling ComputeFixationLines2 now (it's quick) just to make sure
+        % it works. We'll call it again, with the same argument, during any
+        % trial with this condition.
         fixationLines=ComputeFixationLines2(oo(oi).fix);
         
         oo(1).quitBlock=false;
@@ -2223,9 +2186,9 @@ try
         string='Hello. ';
     end
     string=[string 'Please make sure this computer''s sound is enabled. ' ...
-    	'Press CAPS LOCK at any time to see the alphabet of possible letters. ' ...
-    	'You might also have the alphabet on a piece of paper. ' ...
-    	'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
+        'Press CAPS LOCK at any time to see the alphabet of possible letters. ' ...
+        'You might also have the alphabet on a piece of paper. ' ...
+        'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
     for oi=1:conditions
         if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'size')
             string=[string 'When you see a letter, please report it. '];
@@ -2662,7 +2625,7 @@ try
         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Prepare to draw fixation cross.
-          fixationLines=ComputeFixationLines2(oo(oi).fix);
+        fixationLines=ComputeFixationLines2(oo(oi).fix);
         % Set up fixation.
         if ~oo(oi).repeatedTargets && oo(oi).useFixation
             % Draw fixation.
@@ -3572,7 +3535,7 @@ end
 
 %% SET UP FIXATION
 function oo=SetUpFixation(window,oo,oi,ff)
-% Fixation may be off-screen. Set up o.fixationIsOffscreen, 
+% Fixation may be off-screen. Set up o.fixationIsOffscreen,
 % o.targetXYPix, fixationOffsetXYCm, o.nearPointXYPix.
 % Primary figures out where fixation will be on screen.
 white=WhiteIndex(window);
@@ -3704,7 +3667,7 @@ end
 
 function DrawCounter(oo)
 global window scratchWindow
-global blockTrial blockTrials 
+global blockTrial blockTrials
 % Display counter in lower right corner.
 if isempty(blockTrial)
     message=sprintf('Block %d of %d.',...
