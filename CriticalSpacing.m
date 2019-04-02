@@ -1697,6 +1697,11 @@ try
     ffprintf(ff,'Saving results in:\n');
     ffprintf(ff,'/data/%s.txt and "".mat\n',oo(1).dataFilename);
     ffprintf(ff,'Keep both files, .txt and .mat, readable by humans and machines.\n');
+    for oi=2:length(oo)
+        oo(oi).dataFilename=oo(1).dataFilename;
+        oo(oi).dataFolder=oo(1).dataFolder;
+        oo(oi).beginningTime=oo(1).beginningTime;
+    end
     if any([oo.recordGaze])
         videoExtension='.avi'; % '.avi', '.mp4' or '.mj2'
         clear cam
@@ -3464,7 +3469,7 @@ try
         fclose(dataFid);
         dataFid=-1;
     end
-    fprintf('Results saved in %s.txt and "".mat\n',oo(1).dataFilename);
+    fprintf('Results for all %d conditions saved in %s.txt and "".mat\n',length(oo),oo(1).dataFilename);
     if exist('vidWriter','var')
         close(vidWriter);
         clear cam
