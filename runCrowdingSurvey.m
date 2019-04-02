@@ -17,33 +17,21 @@ o.durationSec=0.2; % duration of display of target and flankers
 o.readAlphabetFromDisk=true;
 o.trials=40;
 ooo={};
-for ecc=[0 2.5 5 10]
+for ecc=[ 2.5 5 10]
     o.conditionName='crowding';
     o.targetDeg=2;
     o.spacingDeg=2;
     o.thresholdParameter='spacing';
     o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
-    if ecc>0
-        o.targetFont='Sloan';
-        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-        o.borderLetter='X';
-        o.minimumTargetPix=8;
-        o.fixationLineWeightDeg=0.03;
-        o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=false;
-        o.flankingDirection='radial';
-        o.viewingDistanceCm=50;
-    else
-        o.targetFont='Pelli';
-        o.alphabet='123456789';
-        o.borderLetter='$';
-        o.minimumTargetPix=4;
-        o.fixationLineWeightDeg=0.02;
-        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=true;
-        o.flankingDirection='horizontal';
-        o.viewingDistanceCm=250;
-    end
+    o.targetFont='Sloan';
+    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+    o.borderLetter='X';
+    o.minimumTargetPix=8;
+    o.fixationLineWeightDeg=0.03;
+    o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
+    o.fixationCrossBlankedNearTarget=false;
+    o.flankingDirection='radial';
+    o.viewingDistanceCm=50;
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
@@ -72,6 +60,29 @@ for ecc=[0 5]
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
+end
+for ecc=[0 ]
+    o.conditionName='crowding';
+    o.targetDeg=2;
+    o.spacingDeg=2;
+    o.thresholdParameter='spacing';
+    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+    o.targetFont='Pelli';
+    o.alphabet='123456789';
+    o.borderLetter='$';
+    o.minimumTargetPix=4;
+    o.fixationLineWeightDeg=0.02;
+    o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
+    o.fixationCrossBlankedNearTarget=true;
+    o.flankingDirection='horizontal';
+    o.viewingDistanceCm=250;
+    o2=o; % Copy the condition
+    o2.eccentricityXYDeg=-o.eccentricityXYDeg;
+    ooo{end+1}=[o o2];
+end
+
+if rand>0.5
+    ooo=fliplr(ooo);
 end
 
 %% Number the blocks.
