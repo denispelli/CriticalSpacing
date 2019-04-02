@@ -17,7 +17,7 @@ myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
 % lib and data folders are in the same folder.
 dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data'); 
-matFiles=dir(fullfile(dataFolder,[experiment '*.mat']));
+matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
 
 % Each threshold has a unique identifier: o.dataFilename. It is created
 % just before we start running trials. I think that we could read all the
@@ -149,7 +149,7 @@ for oi=length(oo):-1:1
 end
 for oi=1:length(oo)
     [y,m,d,h,mi,s] = datevec(oo(oi).beginningTime) ;
-    oo(oi).date=sprintf('%02d.%02d.%d, %02d:%02d:%02.0f',d,m,y,h,mi,s);
+    oo(oi).date=sprintf('%04d.%02d.%02d, %02d:%02d:%02.0f',y,m,d,h,mi,s);
 end
 tt=struct2table(oo,'AsArray',true);
 minimumTrials=1; % 25 DGP
