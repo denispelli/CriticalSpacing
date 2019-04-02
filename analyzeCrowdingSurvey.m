@@ -1,6 +1,6 @@
-%% Analyze the data collected by runCrowdingSurvey.
+%% Analyze the data collected by runCrowdingSurvey. April 2019
 
-experiment='runCrowdingSurvey';
+experiment='CrowdingSurvey';
 printFilenames=true;
 makePlotLinear=false;
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
@@ -12,9 +12,9 @@ close all
 %% READ ALL DATA OF EXPERIMENT FILES INTO A LIST OF THRESHOLDS "oo".
 vars={'condition' 'conditionName' 'dataFilename' ... % 'experiment' 
     'experimenter' 'observer' 'trials' 'thresholdParameter' ...
-    'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'... %'targetHeightDeg' 'targetKind'
+    'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'... 
     'viewingDistanceCm' 'durationSec'  ...
-    'contrast' 'pixPerCm'  'nearPointXYPix'  'beginningTime' };
+    'contrast' 'pixPerCm'  'nearPointXYPix'  'beginningTime' 'block' 'blocksDesired' };
 oo=ReadExperimentData(experiment,vars); % Adds date and missingFields.
 
 %% CLEAN
@@ -24,18 +24,18 @@ for oi=1:length(oo)
         oo(oi).flankingDirection='none';
     end
     oo(oi).experiment=experiment;
-    ok(oi)=~any(ismember(oo(oi).observer,{'','d'}));
+    timeVector=datevec(oo(oi).beginningTime);
+    ok(oi)=~any(ismember(oo(oi).observer,{'','d'})) && timeVector(1)>2018;
 end
 oo=oo(ok);
 
 %% SELECT CONDITION(S)
-
 if isempty(oo)
     error('No conditions selected.');
 end
 
 % Report the relevant fields of each file.
-t=struct2table(oo);
+t=struct2table(oo,'AsArray',true);
 t=sortrows(t,{'thresholdParameter' 'observer' 'eccentricityXYDeg' });
 if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
@@ -187,8 +187,7 @@ saveSpreadsheet=true;
 vars={'thresholdParameter'  'observer' 'eccentricityXYDeg' 'flankingDirection' ...
     'experiment' 'experimenter' 'trials' 'contrast'  ...
     'targetDeg' 'spacingDeg' 'durationSec' ...
-    'viewingDistanceCm'  ...
-     'dataFilename'};
+    'viewingDistanceCm' 'dataFilename'};
 t=struct2table(oo,'AsArray',true);
 t=sortrows(t,{'thresholdParameter' 'observer' 'eccentricityXYDeg' });
 dataFilename=[experiment '.csv'];
