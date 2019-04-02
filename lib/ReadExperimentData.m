@@ -3,18 +3,20 @@ function [oo,tt]=ReadExperimentData(experiment,vars)
 % Returns all the thresholds contains in all the MAT files in the data
 % folder whose names begin with the string specified in the "experiment"
 % argument. The MAT file may contain a whole experiment ooo{}, or a block
-% oo(), or a trial o. ooo{} is a cell array of oo. oo is an array of o.
-% Each o is a threshold. The thresholds are extracted from all the MAT
-% files in the data folder whose names begin with the string in
-% "experiment". We add two new fields to each threshold record. "date" is a
-% readable string indicating the date and time of measurement.
-% "missingField" is a cell list of strings of all the fields that were
-% requested in vars, but not available in the threshold record.
+% oo(), with one element per condition. ooo{} is a cell array of oo. oo is
+% a struct array of o. Each o is a condition with a threshold. The
+% thresholds are extracted from all the MAT files in the data folder whose
+% names begin with the string in "experiment". We add two new fields to
+% each threshold record. "date" is a readable string indicating the date
+% and time of measurement. "missingField" is a cell list of strings of all
+% the fields that were requested in vars, but not available in the
+% threshold record.
 % denis.pelli@nyu.edu July 2018
 
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
-dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data'); % lib and data folders are in the same folder.
+% lib and data folders are in the same folder.
+dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data'); 
 matFiles=dir(fullfile(dataFolder,[experiment '*.mat']));
 
 % Each threshold has a unique identifier: o.dataFilename. It is created
@@ -24,14 +26,14 @@ matFiles=dir(fullfile(dataFolder,[experiment '*.mat']));
 % multiple blocks "oo" each of which contains several thresholds "o".  if
 % we first discard instances with zero trials then we can safely discard
 % duplicates with the same identifier and neither lose data, nor retain any
-% duplcate data.
+% duplicate data.
 
 % The summary file retains the organization of trials into blocks and
 % experiments. The individual threshold files do not, but they do have
 % "conditionName" "observer" and "experiment" fields that encode the most
 % important aspects of the grouping.
 
-%% READ ALL DATA INTO A LIST OF THRESHOLDS "oo".
+%% READ ALL DATA INTO A BLOCK LIST OF THRESHOLDS "oo".
 if nargin<1
     error('You must include the first argument, a string, but it can be an empty string.');
 end
