@@ -40,7 +40,7 @@ end
 if nargin<2
     vars={'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection' ...
         'thresholdParameter' 'task' 'targetFont' 'alphabet' 'borderLetter' ...
-        'viewingDistanceCm' 'row'  ...
+        'viewingDistanceCm' 'row' 'block' ...
 %         'alphabet' 'borderLetter' 'computer' 'condition' 'conditionName' ...
 %         'contrast' 'dataFilename' 'dataFolder' 'durationSec' ...
 %         'eccentricityPolarDeg' 'eccentricityXYDeg' 'eccentricityXYPix' ...
@@ -91,10 +91,6 @@ for iFile=1:length(matFiles) % One file per iteration.
             continue
         end
         for oi=1:length(ooo{block}) % Iterate through conditions within a block.
-%             if isempty(ooo{block}(1).dataFilename)
-%                 % Skip any block lacking a dataFilename (empty).
-%                 continue
-%             end
             if isempty(ooo{block}(oi).dataFilename)
                 % Make sure every condition has this field.
                 ooo{block}(oi).dataFilename=ooo{block}(1).dataFilename;
@@ -131,8 +127,6 @@ oo=oo([oo.trials]>0); % Discard conditions with no data.
 if isempty(oo)
     return;
 end
-% [~,ok]=unique({oo.dataFilename}); % Discard duplicates.
-% oo=oo(ok);
 missingFields=unique(cat(2,oo.missingFields));
 if ~isempty(missingFields)
     warning OFF BACKTRACE
