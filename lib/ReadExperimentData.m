@@ -136,13 +136,14 @@ for oi=1:length(oo)
     [y,m,d,h,mi,s] = datevec(oo(oi).beginningTime) ;
     oo(oi).date=sprintf('%02d.%02d.%d, %02d:%02d:%02.0f',d,m,y,h,mi,s);
 end
-tt=struct2table(oo);
-if sum(tt.trials<25)>0
-    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than 25 trials:\n',sum(tt.trials<25));
-    disp(tt(tt.trials<25,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trials'})) % 'experiment'  'conditionName'
+tt=struct2table(oo,'AsArray',true);
+minimumTrials=1; % 25 DGP
+if sum(tt.trials<minimumTrials)>0
+    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than %d trials:\n',sum(tt.trials<minimumTrials),minimumTrials);
+    disp(tt(tt.trials<minimumTrials,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trials'})) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
-    if oo(oi).trials<25
+    if oo(oi).trials<minimumTrials
         oo(oi)=[];
         tt(oi,:)=[];
     end
