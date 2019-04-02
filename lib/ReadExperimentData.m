@@ -64,33 +64,46 @@ if nargin<2
 end
 oo=struct([]);
 for iFile=1:length(matFiles) % One file per iteration.
-    % Each threshold file includes just one "o" threshold struct. Each
+    % Accumulate all conditions into one long oo struct array. First we
+    % read each file into a temporary ooo{} cell array, each of whose
+    % elements represents a block. There are two kinds of file: block and
+    % summary. Each block file includes an oo() array struct, with one
+    % element per condition, all tested during one block, interleaved. Each
     % summary file includes a whole experiment ooo{}, each of whose
-    % elements is a block oo(), each of whose elements is a threshold
-    % struct o. For each threshold, we extract the desired fields into one
-    % element of the "oo" array.
+    % elements represents a block by an oo() array struct, with one element
+    % per condition.
     d=load(matFiles(iFile).name);
     if isfield(d,'ooo')
-        % Grab experiment ooo struct from summary file.
+        % Get ooo struct (a cell array) from summary file.
         ooo=d.ooo;
     elseif isfield(d,'oo')
-        % Grab "oo" struct array from threshold file.
+        % Get "oo" struct array from threshold file.
         ooo={d.oo};
     elseif isfield(d,'o')
-        % Grab "o" struct from threshold file.
+        % Get "o" struct from threshold file.
         ooo={d.o};
     else
         continue % Skip unknown file type.
     end
-    for k=1:length(ooo) % Iterate through blocks.
-        if ~isfield(ooo{k},'dataFilename')
+    for block=1:length(ooo) % Iterate through blocks.
+        if ~isfield(ooo{block},'dataFilename')
+            % Skip any block lacking a dataFilename (undefined).
             continue
         end
-        for j=1:length(ooo{k}) % Iterate through conditions within a block.
-            if isempty(ooo{k}(j).dataFilename)
-                continue
+        for oi=1:length(ooo{block}) % Iterate through conditions within a block.
+%             if isempty(ooo{block}(1).dataFilename)
+%                 % Skip any block lacking a dataFilename (empty).
+%                 continue
+%             end
+            if isempty(ooo{block}(oi).dataFilename)
+                % Make sure every condition has this field.
+                ooo{block}(oi).dataFilename=ooo{block}(1).dataFilename;
             end
-            o=ooo{k}(j); % "o" is a threshold struct.
+            if isempty(ooo{block}(oi).beginningTime)
+                % Make sure every condition has this field.
+                ooo{block}(oi).beginningTime=ooo{block}(1).beginningTime;
+            end
+            o=ooo{block}(oi); % "o" holds one condition.
             oo(end+1).missingFields={}; % Create new element.
             usesSecsPlural=isfield(o,'targetDurationSecs');
             for i=1:length(vars)
@@ -114,12 +127,12 @@ fprintf('Read %d thresholds from %d files. Now discarding empties and duplicates
 if ~isfield(oo,'trials')
     error('No data');
 end
-oo=oo([oo.trials]>0); % Discard empties.
+oo=oo([oo.trials]>0); % Discard conditions with no data.
 if isempty(oo)
     return;
 end
-[~,ii]=unique({oo.dataFilename}); % Discard duplicates.
-oo=oo(ii);
+% [~,ok]=unique({oo.dataFilename}); % Discard duplicates.
+% oo=oo(ok);
 missingFields=unique(cat(2,oo.missingFields));
 if ~isempty(missingFields)
     warning OFF BACKTRACE
