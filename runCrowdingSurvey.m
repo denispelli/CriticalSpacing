@@ -118,7 +118,7 @@ for i=1:length(ooo)
         [ooo{i}.experimenter]=deal(ooo{i-1}(1).experimenter);
     end
     if isempty(ooo{i}(1).observer) && i>1
-        [ooo{i}.observer]=deal(ooo{i-1}(1).experimenter);
+        [ooo{i}.observer]=deal(ooo{i-1}(1).observer);
     end
     [ooo{i}.isFirstBlock]=deal(i==1);
     [ooo{i}.isLastBlock]=deal(i==length(ooo));
