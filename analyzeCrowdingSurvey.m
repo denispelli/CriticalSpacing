@@ -47,6 +47,9 @@ if printFilenames
                 }));
     end
 end
+fprintf('Writing data to ''crowdingSurveyData.xls''.\n');
+writetable(t,fullfile(dataFolder,'crowdingSurveyData.xls'));
+return
 
 %% COMPUTE MEAN FOR EACH OBSERVER FOR EACH MEASURE
 % Replace repeated measures by their mean.
