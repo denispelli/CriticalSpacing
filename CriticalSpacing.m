@@ -1645,7 +1645,6 @@ try
         end
         Screen('FillRect',window);
     end % if isempty(oo(1).observer)
-    
     oo(1).beginSecs=GetSecs;
     oo(1).beginningTime=now;
     timeVector=datevec(oo(1).beginningTime);
@@ -1672,7 +1671,8 @@ try
             error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotsFolder);
         end
     end
-    oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
+    oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',...
+        oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
     if ~exist(oo(1).dataFolder,'dir')
         [success,msg]=mkdir(oo(1).dataFolder);
