@@ -2114,7 +2114,10 @@ try
                     % fails. Not sure why. Maybe it times out.
                 end
                 ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
-                if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.01
+                % Darshan discovered that some MacBook Pros are missing by
+                % a few percent, which doesn't matter, so i increased the
+                % tolerance from 1% to 10%. DGP April 2019
+                if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.1
                     error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
                 end
             end
