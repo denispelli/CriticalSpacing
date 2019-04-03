@@ -25,6 +25,7 @@ for oi=1:length(oo)
     end
     oo(oi).experiment=experiment;
     timeVector=datevec(oo(oi).beginningTime);
+    % FOR NOW, USE ONLY 2019 DATA
     ok(oi)=~any(ismember(oo(oi).observer,{'','d'})) && timeVector(1)>2018;
 end
 oo=oo(ok);
@@ -40,7 +41,7 @@ t=sortrows(t,{'thresholdParameter' 'observer' 'eccentricityXYDeg' });
 if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
     switch experiment
-        case 'runCrowdingSurvey'
+        case 'CrowdingSurvey'
             disp(t(:,{'thresholdParameter' 'observer' 'eccentricityXYDeg' ...
                 'flankingDirection' 'spacingDeg' 'targetDeg' ...
                 'dataFilename' ...
