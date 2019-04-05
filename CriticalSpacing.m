@@ -1527,8 +1527,9 @@ try
                         if oo(1).useSpeech
                             Speak('Now flipping the display.');
                         end
-                        Screen('Close',window);
+                        Screen('CloseAll');
                         window=OpenWindow(oo(1));
+                        scratchWindow=Screen('OpenOffscreenWindow',-1,[],screenRect,8);
                     case 'r'
                         if oo(1).permissionToChangeResolution
                             Speak('Resolution is already optimal.');
@@ -1536,7 +1537,7 @@ try
                             if oo(1).useSpeech
                                 Speak('Optimizing resolution.');
                             end
-                            Screen('Close',window);
+                            Screen('CloseAll');
                             warning backtrace off
                             warning('Trying to change your screen resolution to be optimal for this test.');
                             warning backtrace on
@@ -1551,6 +1552,7 @@ try
                             end
                             actualScreenRect=Screen('Rect',oo(1).screen,1);
                             window=OpenWindow(oo(1));
+                            scratchWindow=Screen('OpenOffscreenWindow',-1,[],screenRect,8);
                             oo(1).resolution=Screen('Resolution',oo(1).screen);
                             screenBufferRect=Screen('Rect',oo(1).screen);
                             screenRect=Screen('Rect',oo(1).screen,1);
