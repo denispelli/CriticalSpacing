@@ -14,10 +14,11 @@ vars={'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'experimenter' 'observer' 'trials' 'thresholdParameter' ...
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'... 
     'viewingDistanceCm' 'durationSec'  ...
-    'contrast' 'pixPerCm'  'nearPointXYPix'  'beginningTime' 'block' 'blocksDesired' };
+    'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' };
 oo=ReadExperimentData(experiment,vars); % Adds date and missingFields.
 
 %% CLEAN
+ok=logical([]);
 for oi=1:length(oo)
     if streq(oo(oi).thresholdParameter,'size')
         oo(oi).spacingDeg=nan;
@@ -26,7 +27,7 @@ for oi=1:length(oo)
     oo(oi).experiment=experiment;
     timeVector=datevec(oo(oi).beginningTime);
     % FOR NOW, USE ONLY 2019 DATA
-    ok(oi)=~any(ismember(oo(oi).observer,{'','d'})) && timeVector(1)>2018;
+    ok(oi)= timeVector(1)>2018;
 end
 oo=oo(ok);
 
@@ -34,9 +35,17 @@ oo=oo(ok);
 if isempty(oo)
     error('No conditions selected.');
 end
+% rightDay=zeros(1,length(oo));
+% rightDay=logical(rightDay);
+% for i=1:length(oo)
+%     rightDay(i)=contains(oo(i).dataFilename,'2019.4.2.17');
+% end
 
 % Report the relevant fields of each file.
 t=struct2table(oo,'AsArray',true);
+t=sortrows(t,{'beginningTime' });
+t(:,{'dataFilename' 'targetDeg' 'trials' 'eccentricityXYDeg' 'observer' 'beginningTime'})
+% return
 t=sortrows(t,{'thresholdParameter' 'observer' 'eccentricityXYDeg' });
 if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
@@ -44,7 +53,7 @@ if printFilenames
         case 'CrowdingSurvey'
             disp(t(:,{'thresholdParameter' 'observer' 'eccentricityXYDeg' ...
                 'flankingDirection' 'spacingDeg' 'targetDeg' ...
-                'dataFilename' ...
+                'dataFilename'  ...
                 }));
     end
 end
@@ -90,11 +99,11 @@ disp(t(:,{'thresholdParameter','observer','n','eccentricityXYDeg', ...
 
 %% PLOT HISTOGRAMS (ACROSS OBSERVERS & HEMISPHERES) OF THREE KINDS OF THRESHOLD. AT ±5,0 DEG.
 figure;
-width=25;
-height=50;
+graphWidth=25;
+graphHeight=50;
 set(0,'units','centimeters');
 screenSize=get(groot,'Screensize');
-set(gcf,'units','centimeters','position',[screenSize(3)-width,0,width,height])
+set(gcf,'units','centimeters','position',[screenSize(3)-graphWidth,0,graphWidth,graphHeight])
 plusMinus=char(177);
 for type=1:3
     switch type
@@ -188,7 +197,7 @@ fprintf('Figure saved as ''/data/%s.eps'' and ''/data/%s.fig''\n',figureTitle,fi
 %% SAVE TO DISK AS CSV AND FIG FILES
 printConditions=true;
 saveSpreadsheet=true;
-vars={'thresholdParameter'  'observer' 'eccentricityXYDeg' 'flankingDirection' ...
+vars={'thresholdParameter' 'observer' 'eccentricityXYDeg' 'flankingDirection' ...
     'experiment' 'experimenter' 'trials' 'contrast'  ...
     'targetDeg' 'spacingDeg' 'durationSec' ...
     'viewingDistanceCm' 'dataFilename'};
