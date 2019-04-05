@@ -1597,7 +1597,7 @@ try
         Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,['Please always use the same name. You can skip these screens by defining o.experimenter and o.observer ' ...
+        Screen('DrawText',window,['You should always use the same name. You can skip these screens by defining o.experimenter and o.observer ' ...
             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
@@ -1619,13 +1619,13 @@ try
     end % if isempty(oo(1).experimenter)
     
     % Ask observer name
-    if isempty(oo(1).observer)
-        Screen('FillRect',window);
+    Screen('FillRect',window);
+    while isempty(oo(1).observer)
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please slowly type your first and last name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
         Screen('DrawText',window,'Please use exactly the same name every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
@@ -1637,16 +1637,25 @@ try
             background=WhiteIndex(window);
         end
         DrawCounter(oo);
-        [name,terminatorChar]=GetEchoString(window,'Observer name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+        [name,terminatorChar]=GetEchoString(window,'Observer name:',...
+            instructionalMarginPix,0.82*screenRect(4),...
+            black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
             oo=QuitBlock(oo);
             return
+        end
+        if length(name)<3
+            Screen('FillRect',window);
+            Screen('DrawText',window,['Sorry. ''' name ''' is too short. Please try again.'],...
+                instructionalMarginPix,screenRect(4)-6*instructionalMarginPix,...
+                [255 0 0],white,1);
+            continue
         end
         for i=1:conditions
             oo(i).observer=name;
         end
         Screen('FillRect',window);
-    end % if isempty(oo(1).observer)
+    end % while isempty(oo(1).observer)
     oo(1).beginSecs=GetSecs;
     oo(1).beginningTime=now;
     timeVector=datevec(oo(1).beginningTime);
