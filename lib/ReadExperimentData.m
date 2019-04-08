@@ -37,9 +37,7 @@ myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
 % THe lib and data folders are in the same folder.
 dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data'); 
-% This scratch folder was used during development of my program to fix data
-% files with missing observer (i.e. observer=experimenter).
-% dataFolder='/Users/denispelli/Dropbox/MATLAB/CriticalSpacing/scratch/';
+% dataFolder='/Users/denispelli/Dropbox/MATLAB/CriticalSpacing/data/';
 matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
 
 % Each block has a unique identifier: o.dataFilename. It is created
@@ -120,6 +118,7 @@ for iFile=1:length(matFiles) % One file per iteration.
             filenameList{end+1}=ooo{block}(1).dataFilename;
         end
         for oi=1:length(ooo{block}) % Iterate through conditions within a block.
+            ooo{block}(oi).localHostName=ooo{block}(oi).cal.localHostName; % Expose computer name, to help identify observer.
             if isempty(ooo{block}(oi).dataFilename)
                 % Make sure every condition has this field.
                 ooo{block}(oi).dataFilename=ooo{block}(1).dataFilename;
