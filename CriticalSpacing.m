@@ -1597,7 +1597,7 @@ try
         Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,['You should always use the same name. You can skip these screens by defining o.experimenter and o.observer ' ...
+        Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
@@ -1625,9 +1625,9 @@ try
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'Please slowly type your first and last name followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please slowly type your first name, then SPACE, then last name, followed by RETURN.',instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,'Please use exactly the same name every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please type your name exactly the same way every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
