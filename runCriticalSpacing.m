@@ -74,8 +74,8 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationCrossBlankedNearTarget=0;
+o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
 o.markTargetLocation=0; % 1 to mark target location
 o.useFixation=1;
@@ -96,7 +96,6 @@ o.showAlphabet=0;
 o.showBounds=0;
 o.showLineOfLetters=0;
 o.speakSizeAndSpacing=0;
-o.useFractionOfScreenToDebug=0.3; 
 
 % TO MEASURE BETA
 % o.measureBeta=0;
@@ -184,7 +183,10 @@ if 1
     o.borderLetter='X';
     o.readAlphabetFromDisk=false;
 end
-if 1
+oo=o;
+oo(2)=oo(1);
+oo(2).eccentricityXYDeg=-oo(2).eccentricityXYDeg;
+if 0
     o.targetFont='Pelli Eye Chart';
     o.alphabet='123456789';
     o.borderLetter='$';
@@ -196,7 +198,7 @@ o.thresholdParameter='spacing';
 % o(2)=o(1); % Copy the condition
 % o=CriticalSpacing(o); 
 
-o.thresholdParameter='size';
+% o.thresholdParameter='size';
 % o(2)=o(1); % Copy the condition
 % o.readAlphabetFromDisk=false; % true makes the program more portable.
 
@@ -225,9 +227,13 @@ o.thresholdParameter='size';
 % o.targetFont='Checkers';
 % o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
 % o.borderLetter='';
+o.setNearPointEccentricityTo='fixation';
+o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 
+o.skipScreenCalibration=true; % Skip calibration to save time.
+o.useFractionOfScreenToDebug=0.3; 
 
-o=CriticalSpacing(o); 
+oo=CriticalSpacing(oo); 
 
 % Results are printed in MATLAB's Command Window and saved in the
 % CriticalSpacing/data/ folder.
