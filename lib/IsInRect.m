@@ -8,9 +8,9 @@ function inside = IsInRect(x,y,rect)
 % 3/5/97  dhb  Wrote it.
 % 3/13/16 dgp Make returned value logical.
 
-if (x >= rect(RectLeft) && x <= rect(RectRight) && ...
-		y >= rect(RectTop) && y <= rect(RectBottom) )
-	inside = logical(1);
+if x >= rect(RectLeft) && x <= rect(RectRight) && ...
+		y >= rect(RectTop) && y <= rect(RectBottom) 
+	inside = true;
 else
-	inside = logical(0);
+	inside = false;
 end
