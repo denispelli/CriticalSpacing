@@ -19,9 +19,9 @@ reactionTimeIsValid=1;
 while 1
    [secs,keyCode]=KbPressWait(o.deviceIndex);
    answer=KbName(keyCode);
-   if ismember(answer,{'RightShift','LeftShift','CapsLock'});
+   if ismember(answer,{'RightShift','LeftShift','CapsLock'})
       reactionTimeIsValid=0;
-      if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky;
+      if ismember(answer,{'CapsLock'}) && ~capsLockIsSticky
          KbReleaseWait(o.deviceIndex);
       end
       %% SAVE SCREEN
