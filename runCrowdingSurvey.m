@@ -5,7 +5,7 @@
 clear o
 % o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
+o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey';
 o.experimenter='';
 o.observer='';
@@ -17,70 +17,96 @@ o.durationSec=0.2; % duration of display of target and flankers
 o.readAlphabetFromDisk=true;
 o.trials=40;
 ooo={};
-for ecc=[ 2.5 5 10]
-    o.conditionName='crowding';
-    o.targetDeg=2;
-    o.spacingDeg=2;
+
+if 1
+    o.conditionName='reading';
+    o.task='read';
     o.thresholdParameter='spacing';
-    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
-    o.targetFont='Sloan';
-    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-    o.borderLetter='X';
+    o.targetFont='Monaco';
+    o.targetDeg=nan;
+    o.readAlphabetFromDisk=false;
+    o.trials=2;
     o.minimumTargetPix=8;
-    o.fixationLineWeightDeg=0.03;
-    o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-    o.fixationCrossBlankedNearTarget=false;
-    o.flankingDirection='radial';
-    o.viewingDistanceCm=50;
-    o2=o; % Copy the condition
-    o2.eccentricityXYDeg=-o.eccentricityXYDeg;
-    ooo{end+1}=[o o2];
+    o.eccentricityXYDeg=[0 0];
+    % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
+    % 50 cm. Larger letters require proportionally smaller viewing
+    % distance.
+    o.viewingDistanceCm=25;
+    o.readSpacingDeg=2;
+    o.alphabet='abc';
+    o.borderLetter='x';
+    o.flankingDirection='horizontal';
+    o.experimenter='...';
+    o.observer='...';
+    o.useFixation=false;
+%     o.useFractionOfScreenToDebug=0.3;
+    ooo{end+1}=o;
 end
-for ecc=[0 5]
-    o.conditionName='acuity';
-    o.targetDeg=4;
-    o.thresholdParameter='size';
-    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
-    o.targetFont='Sloan';
-    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-    o.borderLetter='X';
-    if ecc>0
+if 0
+    for ecc=[ 2.5 5 10]
+        o.conditionName='crowding';
+        o.targetDeg=2;
+        o.spacingDeg=2;
+        o.thresholdParameter='spacing';
+        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+        o.targetFont='Sloan';
+        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+        o.borderLetter='X';
+        o.minimumTargetPix=8;
         o.fixationLineWeightDeg=0.03;
         o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=false;
         o.flankingDirection='radial';
-        o.viewingDistanceCm=100;
-    else
+        o.viewingDistanceCm=50;
+        o2=o; % Copy the condition
+        o2.eccentricityXYDeg=-o.eccentricityXYDeg;
+        ooo{end+1}=[o o2];
+    end
+    for ecc=[0 5]
+        o.conditionName='acuity';
+        o.targetDeg=4;
+        o.thresholdParameter='size';
+        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+        o.targetFont='Sloan';
+        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+        o.borderLetter='X';
+        if ecc>0
+            o.fixationLineWeightDeg=0.03;
+            o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
+            o.fixationCrossBlankedNearTarget=false;
+            o.flankingDirection='radial';
+            o.viewingDistanceCm=100;
+        else
+            o.fixationLineWeightDeg=0.02;
+            o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
+            o.fixationCrossBlankedNearTarget=true;
+            o.flankingDirection='horizontal';
+            o.viewingDistanceCm=100;
+        end
+        o2=o; % Copy the condition
+        o2.eccentricityXYDeg=-o.eccentricityXYDeg;
+        ooo{end+1}=[o o2];
+    end
+    for ecc=[0 ]
+        o.conditionName='crowding';
+        o.targetDeg=2;
+        o.spacingDeg=2;
+        o.thresholdParameter='spacing';
+        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+        o.targetFont='Pelli';
+        o.alphabet='123456789';
+        o.borderLetter='$';
+        o.minimumTargetPix=4;
         o.fixationLineWeightDeg=0.02;
-        o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
+        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=true;
         o.flankingDirection='horizontal';
-        o.viewingDistanceCm=100;
+        o.viewingDistanceCm=250;
+        o2=o; % Copy the condition
+        o2.eccentricityXYDeg=-o.eccentricityXYDeg;
+        ooo{end+1}=[o o2];
     end
-    o2=o; % Copy the condition
-    o2.eccentricityXYDeg=-o.eccentricityXYDeg;
-    ooo{end+1}=[o o2];
 end
-for ecc=[0 ]
-    o.conditionName='crowding';
-    o.targetDeg=2;
-    o.spacingDeg=2;
-    o.thresholdParameter='spacing';
-    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
-    o.targetFont='Pelli';
-    o.alphabet='123456789';
-    o.borderLetter='$';
-    o.minimumTargetPix=4;
-    o.fixationLineWeightDeg=0.02;
-    o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
-    o.fixationCrossBlankedNearTarget=true;
-    o.flankingDirection='horizontal';
-    o.viewingDistanceCm=250;
-    o2=o; % Copy the condition
-    o2.eccentricityXYDeg=-o.eccentricityXYDeg;
-    ooo{end+1}=[o o2];
-end
-
 if rand>0.5
     ooo=fliplr(ooo);
 end
@@ -100,16 +126,18 @@ for i=1:length(ooo)
         oo=ooo{1};
     else
         try
-        oo=[oo ooo{i}];
+            oo=[oo ooo{i}];
         catch e
-            fprintf('Success with %d conditions in %d blocks, but failed on next block.\n',length(oo),max([oo.block]));
+            fprintf('Success with %d conditions in %d blocks, but failed on next block.\n',...
+                length(oo),max([oo.block]));
             throw(e)
         end
     end
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' 'targetDeg' 'eccentricityXYDeg' 'viewingDistanceCm'})); 
+disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' ...
+    'targetDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
 % return
 
 %% Run.
