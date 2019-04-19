@@ -87,7 +87,7 @@ for i=1:length(observers)
     s(i).date=datestr(datevec(s(i).beginningTime));
 end
 sTable=struct2table(s);
-sTable=sortrows(sTable,{'date'  });
+sTable=sortrows(sTable,{'date'});
 sTable.beginningTime=[];
 sTable(:,{'date' 'observer' 'localHostName' 'conditions' 'spacingEccXDeg' 'sizeEccXDeg'})
 % return
@@ -106,6 +106,10 @@ for i=1:length(observers)
     s(i).conditions=length(oo1);
     for oi=1:length(oo1) % Iterate over all conditions for this observer.
         s(i).eccentricityXYDeg(1:2,oi)=oo1(oi).eccentricityXYDeg;
+        s(i).beginningTime=oo1(1).beginningTime;
+        s(i).localHostName=oo1(1).localHostName;
+        s(i).experimenter=oo1(1).experimenter;
+        s(i).date=datestr(datevec(s(i).beginningTime));
         switch oo1(oi).thresholdParameter
             case 'size'
                 s(i).sizeDeg(oi)=oo1(oi).targetDeg;
@@ -120,33 +124,37 @@ for i=1:length(observers)
                     oo1(oi).spacingDeg/NominalCrowdingDistanceDeg(oo1(oi).eccentricityXYDeg);
         end
     end
-    ok=s(i).eccentricityXYDeg(1,:)~=0;
+    ok=isfinite(s(i).eccentricityXYDeg(1,:));
     s(i).meanLogSizeReNominal=mean(log10(s(i).sizeReNominal(ok)),'omitnan');
     s(i).SDLogSizeReNominal=std(log10(s(i).sizeReNominal(ok)),'omitnan');
-    s(i).meanLogSpacingReNominal=mean(log10(s(i).spacingReNominal(ok)),'omitnan');
-    s(i).SDLogSpacingReNominal=std(log10(s(i).spacingReNominal(ok)),'omitnan');
+    ok=s(i).eccentricityXYDeg(1,:)~=0;
+    s(i).meanLogPeripheralSpacingReNominal=mean(log10(s(i).spacingReNominal(ok)),'omitnan');
+    s(i).SDLogPeripheralSpacingReNominal=std(log10(s(i).spacingReNominal(ok)),'omitnan');
     sortX=-10;
     ii=find(s(i).eccentricityXYDeg(1,:)==sortX);
     if isempty(ii)
         s(i).sort=nan;
     else
         ii=ii(1);
-        s(i).sort=log10(s(i).spacingReNominal(ii));
+        s(i).sort=s(i).meanLogPeripheralSpacingReNominal;
     end
 end
 ts=struct2table(s);
 ts=sortrows(ts,'sort');
 s=table2struct(ts);
 ts
+tableTitle='Ordered list of participants';
+tableFile=fullfile(fileparts(mfilename('fullpath')),'data',[tableTitle '.csv']);
+writetable(ts(:,{'observer'  'date' 'beginningTime' 'localHostName' 'experimenter' 'conditions' 'meanLogPeripheralSpacingReNominal' 'SDLogPeripheralSpacingReNominal' }),tableFile);
 figure
 count=0;
 for i=1:length(s)
     s(i).quantile=i/length(s);
     s(i).color=[1 0 0]*s(i).quantile+[0 1 0]*(1-s(i).quantile);
-    if s(i).SDLogSpacingReNominal>0.26
+    if s(i).SDLogPeripheralSpacingReNominal>0.26
 %         continue
     end
-    if s(i).meanLogSpacingReNominal>-1 && s(i).meanLogSpacingReNominal<0.2
+    if s(i).meanLogPeripheralSpacingReNominal>-1 && s(i).meanLogPeripheralSpacingReNominal<0.2
         % Plot only the extremes of crowding distance.
 %         continue
     end
@@ -184,27 +192,29 @@ for i=1:length(s)
     ok=ismember({oo.observer},s(i).observer); % list of conditions for this observer.
     ok=ok & ismember({oo.thresholdParameter},'size');
     oo1=oo(ok); % All conditions for this observer and measure.
-    clear x y 
-    for oi=1:length(oo1)
-%         x(oi)=abs(oo1(oi).eccentricityXYDeg(1));
-        x(oi)=oo1(oi).eccentricityXYDeg(1);
-        y(oi)=oo1(oi).targetDeg / NominalAcuityDeg(oo1(oi).eccentricityXYDeg);
+    if ~isempty(oo1)
+        clear x y
+        for oi=1:length(oo1)
+            %         x(oi)=abs(oo1(oi).eccentricityXYDeg(1));
+            x(oi)=oo1(oi).eccentricityXYDeg(1);
+            y(oi)=oo1(oi).targetDeg / NominalAcuityDeg(oo1(oi).eccentricityXYDeg);
+        end
+        [~,ii]=sort(x);
+        x=x(ii);
+        y=y(ii);
+        subplot(2,1,2)
+        semilogy(x,y,'-o','Color',s(i).color);
+        hold on
+        xlim([-10 10]);
+        ylim([.001 10]);
+        ylabel('Acuity re nominal');
+        xlabel('X eccentrity (deg)');
+        title('Acuity vs eccentricity');
+        text(-9.8,.015/10,'Nominal acuity = 0.029*(ecc+2.72)');
+        text(-9.8,6,coloringMessage);
+        ax=gca;
+        ax.FontSize=12;
     end
-    [~,ii]=sort(x);
-    x=x(ii);
-    y=y(ii);    
-    subplot(2,1,2)
-    semilogy(x,y,'-o','Color',s(i).color);
-    hold on
-    xlim([-10 10]);
-    ylim([.001 10]);
-    ylabel('Acuity re nominal');
-    xlabel('X eccentrity (deg)');
-    title('Acuity vs eccentricity');
-    text(-9.8,.015/10,'Nominal acuity = 0.029*(ecc+2.72)');
-    text(-9.8,6,coloringMessage);
-    ax=gca;
-    ax.FontSize=12;
 end
 subplot(2,1,1)
 text(8.5,.015,sprintf('N = %d',count));
