@@ -15,7 +15,7 @@ o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Put name here to skip the runtime question.
 o.permissionToChangeResolution=0; % Works for main screen only, due to Psychtoolbox bug.
-% o.readAlphabetFromDisk=true; % true makes the program more portable.
+% o.getAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=0; % To illustrate your talk or paper.
 o.task='identify';
@@ -113,28 +113,28 @@ o.useFractionOfScreenToDebug=0.3;
 if 0
     % Sans Forgetica
     o.targetFont='Sans Forgetica';
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     o.borderLetter='$';
 end
 if 0
     % Kuenstler
     o.targetFont='Kuenstler Script LT Medium';
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     o.borderLetter='$';
 end
 if 0
     % Black Sabbath
     o.targetFont='SabbathBlackRegular';
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     o.borderLetter='$';
 end
 if 0
     % Chinese from Qihan
     o.targetFont='Songti TC Regular';
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     % o.alphabet='????????????????????'; % Chinese from Qihan.
     o.alphabet=[20687 30524 38590 33310 28982 23627 29245 27169 32032 21338 26222 ...
         31661 28246 36891 24808 38065 22251 23500 39119 40517];
@@ -146,7 +146,7 @@ if 0
     % Japanese: Katakan, Hiragani, and Kanji
     % from Ayaka
     o.targetFont='Hiragino Mincho ProN W3';
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     japaneseScript='Kanji';
     switch japaneseScript
         case 'Katakana'
@@ -182,7 +182,7 @@ if 1
     %     o.targetFont='Calibri';
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
-    o.readAlphabetFromDisk=false;
+    o.getAlphabetFromDisk=false;
 end
 if 1
     o.targetFont='Pelli Eye Chart';
@@ -198,7 +198,7 @@ o.thresholdParameter='spacing';
 
 o.thresholdParameter='size';
 % o(2)=o(1); % Copy the condition
-% o.readAlphabetFromDisk=false; % true makes the program more portable.
+% o.getAlphabetFromDisk=false; % true makes the program more portable.
 
 % Japanese
 % o.targetFont='Hiragino Mincho ProN W3';
@@ -221,7 +221,7 @@ o.thresholdParameter='size';
 % o.targetFont='Sans Forgetica';
 % o.minimumTargetPix=16; % Complex fonts need more than the default 6 pix.
 
-% o.readAlphabetFromDisk=true; % true makes the program more portable.
+% o.getAlphabetFromDisk=true; % true makes the program more portable.
 % o.targetFont='Checkers';
 % o.alphabet='abcdefghijklmnopqrstuvwxyz'; 
 % o.borderLetter='';

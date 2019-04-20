@@ -5,14 +5,14 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % bounding box "alphabetBounds" that will hold any letter. Called by
 % CriticalSpacing.m. The font is o.targetFont.
 %
-% If o.readAlphabetFromDisk is false then the font is rendered by Screen
+% If o.getAlphabetFromDisk is false then the font is rendered by Screen
 % DrawText to create a texture for each desired letter. The font's TextSize
 % is computed to yield the desired o.targetPix size in the direction
 % specified by o.targetSizeIsHeight (true means height, false means width).
 % However, if o.targetFontHeightOverNominalPtSize==nan then the TextSize is
 % set equal to o.targetPix.
 %
-% If o.readAlphabetFromDisk==true then we look for a folder inside
+% If o.getAlphabetFromDisk==true then we look for a folder inside
 % CriticalSpacing/lib/alphabets/ whose name matches that of the desired
 % font. We give a fatal error if it's not found. The folder is very simple,
 % one image file per letter; the filename is the letter, URL-encoded to
@@ -41,7 +41,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % o.targetFontHeightOverNominalPtSize
 % o.alphabet
 % o.borderLetter
-% o.readAlphabetFromDisk
+% o.getAlphabetFromDisk
 % o.targetFont
 % o.showLineOfLetters
 % o.contrast % Typically 1. Positive for black letters.
@@ -70,7 +70,7 @@ end
 canvasRect=[0 0 o.targetPix o.targetPix]*max(1,o.targetHeightOverWidth);
 black=0;
 white=255;
-if o.readAlphabetFromDisk
+if o.getAlphabetFromDisk
     
     % Read from disk into "savedAlphabet".
     alphabetsFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'alphabets'); % CriticalSpacing/alphabets/
@@ -160,7 +160,7 @@ if o.readAlphabetFromDisk
         % Screen DrawTexture will later scale and stretch, as needed.
     end
     
-else % if o.readAlphabetFromDisk
+else % if o.getAlphabetFromDisk
     % Draw font and get bounds.
     Screen('Preference','TextAntiAliasing',0);
     scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
@@ -235,6 +235,6 @@ else % if o.readAlphabetFromDisk
         end
     end
     Screen('Preference','TextAntiAliasing',1);
-end % if o.readAlphabetFromDisk
+end % if o.getAlphabetFromDisk
 end
 

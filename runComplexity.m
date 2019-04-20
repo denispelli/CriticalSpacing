@@ -45,7 +45,7 @@ if 1
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
     o.labelAnswers=false;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 if 1
@@ -55,7 +55,7 @@ if 1
     o.alphabet='abcdefghijklmnopqrstuvwxyz';
     o.borderLetter='';
     o.labelAnswers=true;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 if 1
@@ -65,7 +65,7 @@ if 1
     o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     o.borderLetter='$';
     o.labelAnswers=false;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 if 1
@@ -75,7 +75,7 @@ if 1
     o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     o.borderLetter='$';
     o.labelAnswers=true;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 if 1
@@ -85,7 +85,7 @@ if 1
     o.alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     o.borderLetter='$';
     o.labelAnswers=true;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 if 1
@@ -97,7 +97,7 @@ if 1
     o.alphabet=char(o.alphabet);
     o.borderLetter='';
     o.labelAnswers=true;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 if 1
@@ -125,7 +125,7 @@ if 1
     o.alphabet=char(o.alphabet);
     o.borderLetter='';
     o.labelAnswers=true;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     ooo{end+1}=o;
 end
 end
@@ -138,7 +138,7 @@ if 1
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
     o.labelAnswers=false;
-    o.readAlphabetFromDisk=true;
+    o.getAlphabetFromDisk=true;
     for radial=0:1
         if radial
             o.flankingDirection='radial';

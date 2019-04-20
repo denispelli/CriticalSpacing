@@ -1,7 +1,7 @@
 %% Analyze the data collected by runCrowdingSurvey. April 2019
 
-experiment='CrowdingSurvey';
-printFilenames=true;
+experiment='CrowdingSurvey'; % And CrowdingSurvey2.
+printFilenames=false;
 makePlotLinear=false;
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(fullfile(myPath,'lib')); % Folder in same directory as this M file.
@@ -11,12 +11,17 @@ cd(dataFolder);
 close all
 
 %% READ ALL DATA OF EXPERIMENT FILES INTO A LIST OF THRESHOLDS "oo".
-vars={'condition' 'conditionName' 'dataFilename' ... % 'experiment'
+vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'experimenter' 'observer' 'localHostName' 'trials' 'thresholdParameter' ...
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' };
-oo=ReadExperimentData(experiment,vars); % Adds date and missingFields.
+oo1=ReadExperimentData(experiment,vars); 
+fprintf('%4.0f thresholds in experiment %s\n',length(oo1),experiment);
+oo2=ReadExperimentData('CrowdingSurvey2',vars); 
+fprintf('%4.0f thresholds in experiment %s\n',length(oo2),'CrowdingSurvey2');
+oo=[oo1 oo2];
+fprintf('%4.0f thresholds all together\n',length(oo));
 
 %% CLEAN
 ok=logical([]);
@@ -43,40 +48,41 @@ end
 
 % Report the relevant fields of each file.
 t=struct2table(oo,'AsArray',true);
-% t=sortrows(t,{'beginningTime' });
 t=sortrows(t,{'observer' 'thresholdParameter'  'xDeg' });
 % t(:,{'dataFilename' 'targetDeg' 'trials' 'eccentricityXYDeg' 'observer' 'beginningTime'})
 % return
 if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
     switch experiment
-        case 'CrowdingSurvey'
-            disp(t(:,{'observer' 'localHostName' 'thresholdParameter' 'eccentricityXYDeg' ...
+        case {'CrowdingSurvey' 'CrowdingSurvey2'}
+            disp(t(:,{'experiment' 'observer' 'localHostName' 'experimenter'...
+                'thresholdParameter' 'eccentricityXYDeg' ...
                 'flankingDirection' 'spacingDeg' 'targetDeg' ...
                 'dataFilename'  ...
                 }));
     end
 end
-t=sortrows(t,{'thresholdParameter' 'observer'  'xDeg'});
-fprintf('Writing data to ''crowdingSurveyData.xls''.\n');
+t=sortrows(t,{'thresholdParameter' 'observer' 'xDeg'});
+fprintf('<strong>Writing data to ''%sData.xls''.\n</strong>',oo(1).experiment);
 writetable(t,fullfile(dataFolder,'crowdingSurveyData.xls'));
 % return
 
-%% SUMMARIZE WHAT WE HAVE
+%% SUMMARIZE WHAT WE HAVE FOR EACH OBSERVER
 observers=unique({oo.observer});
 s=[];
 for i=1:length(observers)
     s(i).observer=observers{i};
-    tt=t(ismember(t.observer,observers{i}),:);
+    tt=t(ismember(t.observer,{observers{i}}),:);
     s(i).conditions=height(tt);
-    s(i).localHostNames=unique(table2cell(tt(:,'localHostName')));
-    s(i).numberOfComputers=length(s(i).localHostNames);
+    s(i).experimenter=unique(table2cell(tt(:,'experimenter')));
+    s(i).experiment=unique(table2cell(tt(:,'experiment')));
+    s(i).localHostName=unique(table2cell(tt(:,'localHostName')));
+    s(i).numberOfComputers=length(s(i).localHostName);
     params={'size' 'spacing'};
     for j=1:length(params)
-        param=params{j};
-        ttt=tt(ismember(tt.thresholdParameter,param),:);
+        ttt=tt(ismember(tt.thresholdParameter,{params{j}}),:);
         ecc=table2array(ttt(:,'xDeg'))';
-        s(i).([param 'EccXDeg'])=sprintf('%g ',ecc);
+        s(i).([params{j} 'EccXDeg'])=sprintf('%g ',ecc);
         if height(ttt)>0
             s(i).localHostName=table2array(ttt(1,'localHostName'));
         else
@@ -87,10 +93,12 @@ for i=1:length(observers)
     s(i).date=datestr(datevec(s(i).beginningTime));
 end
 sTable=struct2table(s);
-sTable=sortrows(sTable,{'date'});
+sTable=sortrows(sTable,{'beginningTime'});
 sTable.beginningTime=[];
-sTable(:,{'date' 'observer' 'localHostName' 'conditions' 'spacingEccXDeg' 'sizeEccXDeg'})
-% return
+fprintf('\n<strong>%.0f rows. One row per observer, sorted by date:</strong>\n',height(sTable));
+disp(sTable(:,{'date' 'conditions' 'observer' 'localHostName' ...
+    'experimenter' 'experiment'...
+    'spacingEccXDeg' 'sizeEccXDeg'}));
 
 %% Compute each observer's mean and SD of deviation from log normal.
 % Struct s with fields: observer, meanReLogNormal, sdReLogNorm.
@@ -109,6 +117,7 @@ for i=1:length(observers)
         s(i).beginningTime=oo1(1).beginningTime;
         s(i).localHostName=oo1(1).localHostName;
         s(i).experimenter=oo1(1).experimenter;
+        s(i).experiment=oo1(1).experiment;
         s(i).date=datestr(datevec(s(i).beginningTime));
         switch oo1(oi).thresholdParameter
             case 'size'
@@ -142,21 +151,30 @@ end
 ts=struct2table(s);
 ts=sortrows(ts,'sort');
 s=table2struct(ts);
-ts
-tableTitle='Ordered list of participants';
+fprintf(['\n<strong>%.0f rows. One row per observer. ' ...  
+    'Sorted by MeanLogPeripheralSpacing.\n</strong>'],height(ts));
+disp(ts);
+fprintf(['\n<strong>%.0f rows. One row per observer. ' ...  
+    'Sorted by observer name.\n</strong>'],height(ts));
+ts.observerLower=lower(ts.observer);
+t=sortrows(ts,{'observerLower'});
+disp(t(:,{'observer' 'conditions' 'localHostName' 'date' 'experimenter'}));
+tableTitle='List of observers, ordered by peripheral crowding';
 tableFile=fullfile(fileparts(mfilename('fullpath')),'data',[tableTitle '.csv']);
-writetable(ts(:,{'observer'  'date' 'beginningTime' 'localHostName' 'experimenter' 'conditions' 'meanLogPeripheralSpacingReNominal' 'SDLogPeripheralSpacingReNominal' }),tableFile);
+writetable(ts(:,{'observer' 'conditions' 'date' 'beginningTime' 'localHostName' ...
+    'experimenter' 'experiment' 'meanLogPeripheralSpacingReNominal' ...
+    'SDLogPeripheralSpacingReNominal'}),tableFile);
 figure
 count=0;
 for i=1:length(s)
     s(i).quantile=i/length(s);
     s(i).color=[1 0 0]*s(i).quantile+[0 1 0]*(1-s(i).quantile);
     if s(i).SDLogPeripheralSpacingReNominal>0.26
-%         continue
+        %         continue
     end
     if s(i).meanLogPeripheralSpacingReNominal>-1 && s(i).meanLogPeripheralSpacingReNominal<0.2
         % Plot only the extremes of crowding distance.
-%         continue
+        %         continue
     end
     
     % Spacing
@@ -165,7 +183,7 @@ for i=1:length(s)
     oo1=oo(ok); % All conditions for this observer and measure.
     clear x y y2
     for oi=1:length(oo1)
-%         x(oi)=abs(oo1(oi).eccentricityXYDeg(1));
+        %         x(oi)=abs(oo1(oi).eccentricityXYDeg(1));
         x(oi)=oo1(oi).eccentricityXYDeg(1);
         y(oi)=oo1(oi).spacingDeg / NominalCrowdingDistanceDeg(oo1(oi).eccentricityXYDeg);
         y2(oi)=oo1(oi).targetDeg / NominalAcuityDeg(oo1(oi).eccentricityXYDeg);
@@ -224,6 +242,7 @@ text(8.5,.015/10,sprintf('N = %d',count));
 figureTitle='Crowding & acuity vs eccentricity';
 % graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.eps']);
 % saveas(gcf,graphFile,'epsc')
+fprintf('<strong>Writing ''%s.pdf'' to disk.</strong>\n',figureTitle);
 graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.pdf']);
 saveas(gcf,graphFile,'pdf')
 return
@@ -383,5 +402,4 @@ if false % SKIP HISTOGRAMS
     if printConditions
         disp(t(:,vars));
     end
-
 end
