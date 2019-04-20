@@ -70,7 +70,7 @@ function oo=CriticalSpacing(oIn)
 %
 % PRINT THE ALPHABET ON PAPER. Choose a font from those available in the
 % CriticalSpacing/pdf/ folder. They are all available when you set
-% o.readAlphabetFromDisk=true. We have done most of our work with the
+% o.getAlphabetFromDisk=true. We have done most of our work with the
 % "Sloan" and "Pelli" fonts. Only Pelli is skinny enough to measure foveal
 % crowding. Outside the fovea you can use any font. We recommend "Pelli"
 % for threshold spacing (crowding) in the fovea, and Sloan for threshold
@@ -167,7 +167,7 @@ function oo=CriticalSpacing(oIn)
 % http://www.amazon.com/12-Acrylic-Mirror-Sheet-Pack/dp/B00JPJK3T0/ref=sr_1_13
 % http://www.amazon.com/Double-Infant-Mirror-surface-Approved/dp/B0041TABOG/ref=pd_sim_sbs_468_9
 %
-% READ ALPHABET FROM DISK. If you set o.readAlphabetFromDisk=true in your
+% READ ALPHABET FROM DISK. If you set o.getAlphabetFromDisk=true in your
 % script you can use any of the "fonts" inside the
 % CriticalSpacing/alphabets/ folder, which you can best see by looking at
 % the alphabet files in CriticalSpacing/pdf/. You can easily create and add
@@ -182,7 +182,7 @@ function oo=CriticalSpacing(oIn)
 % license. (US Copyright law does not cover fonts. Adobe patents the font
 % program, but the images are public domain.) You can also ask
 % CriticalSpacing to use any font that's installed in your computer OS by
-% setting o.readAlphabetFromDisk=false. The Pelli and Sloan fonts are
+% setting o.getAlphabetFromDisk=false. The Pelli and Sloan fonts are
 % provided in the CriticalSpacing/fonts/ folder, and you can install them
 % in your computer OS. On a Mac, you can just double-click the font file
 % and say "yes" when your computer offers to install it for you. Once
@@ -196,14 +196,14 @@ function oo=CriticalSpacing(oIn)
 % font, to the CriticalSpacing/alphabets/ folder.
 %
 % OPTIONAL: USE YOUR COMPUTER'S FONTS, LIVE. Set
-% o.readAlphabetFromDisk=false. You may wish to install Pelli or Sloan from
+% o.getAlphabetFromDisk=false. You may wish to install Pelli or Sloan from
 % the CriticalSpacing/fonts/ folder into your computer's OS. Restart MATLAB
 % after installing a new font. To render fonts well, Psychtoolbox needs to
 % load the FTGL DrawText dropin. It typically takes some fiddling with
 % dynamic libraries to make sure the right library is available and that
 % access to it is not blocked by the presence of an obsolete version. For
 % explanation see "help drawtextplugin". You need this only if you want to
-% set o.readAlphabetFromDisk=false.
+% set o.getAlphabetFromDisk=false.
 %
 % CHILDREN. Adults and children seem to find it easy and intuitive. Sarah
 % Waugh (Dept. of Vision and Hearing Sciences, Anglia Ruskin University)
@@ -480,6 +480,7 @@ global window keepWindowOpen % Keep window open until end of last block.
 global scratchWindow
 global instructionalMarginPix screenRect % For QuitBlock
 persistent drawTextWarning
+persistent textCorpus fCorpus wCorpus
 global blockTrial blockTrials % used in DrawCounter.
 keepWindowOpen=false; % Enable only in normal return.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
@@ -493,7 +494,7 @@ o.flipScreenHorizontally=false; % Set to true when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Assign the name to skip the runtime question.
 o.permissionToChangeResolution=false; % Works for main screen only, due to Psychtoolbox bug.
-o.readAlphabetFromDisk=true; % true makes the program more portable.
+o.getAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=false; % To illustrate your talk or paper.
 o.task='identify'; % identify, read
@@ -560,6 +561,12 @@ o.readChars=[]; % Length of string.
 o.readWords=[]; % Words in string.
 o.readCharPerSec=[]; % Speed, a ratio.
 o.readWordPerMin=[]; % Speed, a ratio.
+o.readMethod='';
+o.readError='';
+o.readQuestions=3;
+o.readFilename='MHC928.txt';
+o.readNumberOfResponses=[];
+o.readNumberCorrect=[];
 
 % TARGET FONT
 % o.targetFont='Sloan';
@@ -995,7 +1002,7 @@ try
         fileId=fopen(drawTextWarningFileName);
         drawTextWarning=char(fread(fileId)');
         fclose(fileId);
-        if ~isempty(drawTextWarning) && oo(oi).readAlphabetFromDisk
+        if ~isempty(drawTextWarning) && oo(oi).getAlphabetFromDisk
             warning backtrace off
             warning('You can ignore the warnings above about DrawText because we aren''t using it.');
             warning backtrace on
@@ -1021,11 +1028,11 @@ try
             s=round(s);
             oo(oi).stimulusRect=InsetRect(oo(oi).stimulusRect,RectWidth(s),RectHeight(s));
         end
-        if ~oo(oi).readAlphabetFromDisk
+        if ~oo(oi).getAlphabetFromDisk
             if ~oo(1).standardDrawTextPlugin
                 error(['Sorry. The FGTL DrawText plugin failed to load. ' ...
                     'Hopefully there''s an explanatory PTB-WARNING above. ' ...
-                    'Unless you fix that, you must set o.readAlphabetFromDisk=true in your script.']);
+                    'Unless you fix that, you must set o.getAlphabetFromDisk=true in your script.']);
             end
             % Check availability of fonts.
             if IsOSX
@@ -1049,7 +1056,7 @@ try
                     end
                     error(['The o.targetFont "%s" is not installed in your computer''s OS. \n' ...
                         'If you think it might be in CriticalSpacing''s "alphabet" folder \n' ...
-                        'then try setting "o.readAlphabetFromDisk=true;". \n' ...
+                        'then try setting "o.getAlphabetFromDisk=true;". \n' ...
                         'Otherwise please install the font, or use another font.\n' ...
                         'Similar names appear above.'],oo(oi).targetFont);
                 end
@@ -1087,7 +1094,7 @@ try
                 warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
                 warning on backtrace
             end
-        end % if ~oo(1).readAlphabetFromDisk
+        end % if ~oo(1).getAlphabetFromDisk
     end % for oi=1:conditions
     if ~oo(1).standardDrawTextPlugin
         warning off backtrace
@@ -1751,7 +1758,7 @@ try
     if oo(1).skipScreenCalibration
         ffprintf(ff,'WARNING: Using o.skipScreenCalibration. This may invalidate all results.\n');
     end
-    if ~isempty(oo(1).drawTextWarning) && ~oo(oi).readAlphabetFromDisk
+    if ~isempty(oo(1).drawTextWarning) && ~oo(oi).getAlphabetFromDisk
         ffprintf(ff,'Warning from Screen(''DrawText''...):\n%s\n',oo(1).drawTextWarning);
     end
     for oi=1:conditions
@@ -1919,7 +1926,7 @@ try
         [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
         DestroyLetterTextures(letterStruct);
         oo(oi).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
-        if ~oo(oi).readAlphabetFromDisk
+        if ~oo(oi).getAlphabetFromDisk
             oo(oi).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(oi).targetPix;
         end
         oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
@@ -2051,7 +2058,7 @@ try
         end
     end
     for oi=1:conditions
-        if oo(oi).readAlphabetFromDisk
+        if oo(oi).getAlphabetFromDisk
             fontString='font from disk';
         else
             fontString='font, live';
@@ -3250,100 +3257,55 @@ try
         
         switch oo(oi).task
             case 'read'
-                string=['"Darcy, why do you waste your time answering ads ' ...
-                    'and my time trying to reach you?  This is the fourth ' ...
-                    'time I''ve called.  I don''t like to leave messages, ' ...
-                    'but here''s this one.  ''Drop dead.''"  Vince shook his ' ...
-                    'head.  "That guy has a short leash."  "I didn''t ' ...
-                    'leave the answering machine on while I was away," ' ...
-                    'Darcy said.  "I suppose if anyone tried to reach me ' ...
-                    'in response to the few letters I sent myself, they ' ...
-                    'probably gave up.  Erin started answering ads in my ' ...
-                    'name about two weeks ago.  Those are the first calls ' ...
-                    'I''ve gotten."   Gus Boxer was surprised and not ' ...
-                    'especially pleased to respond to the buzzer and find ' ...
-                    'the same young woman who had wasted so much of his ' ...
-                    'time yesterday.  He was prepared to absolutely ' ...
-                    'refuse to allow her to enter Erin Kelley''s apartment ' ...
-                    'again but did not get the chance.  "We''ve reported ' ...
-                    'Erin''s disappearance to the FBI," Darcy'];
-                %                 'told him.  ' ...
-                %                     '"The agent in charge has asked me to go through her ' ...
-                %                     'desk."  The FBI.  Gus felt a nervous tremor go ' ...
-                %                     'through his body.  But that was so long ago.  He ' ...
-                %                     'had nothing to worry about.  A couple of people had ' ...
-                %                     'left their names recently'];
-                readFolder=fullfile(fileparts(mfilename('fullpath')),'read');
-                oo(oi).readFilename='MHC928.txt';
-                readFile=fullfile(readFolder,oo(oi).readFilename);
-                text=fileread(readFile);
-                words=WordsInString(text);
-                % fCorpus(i) is frequency of unique word wCorpus(i) in "words" list.
-                wCorpus=unique(words);
-                fCorpus=zeros(size(wCorpus));
-                for i=1:length(wCorpus)
-                    fCorpus(i)=sum(find(streq(wCorpus{i},words)));
-                end
-                [fCorpus,i]=sort(fCorpus,'descend');
-                wCorpus=wCorpus(i);
                 % The excerpt will be 12 lines of (up to) 50 characters
                 % each. That's about ten words per line.
-                screenLineChars=50;
                 screenLines=12;
+                screenLineChars=50;
+                if isempty(wCorpus)
+                    % Corpus stats.
+                    % wCorpus{i} lists all words in the corpus in order of
+                    % descending frequency. fCorpus(i) is
+                    % frequency in the corpus.
+                    readFolder=fullfile(fileparts(mfilename('fullpath')),'read');
+                    oo(oi).readFilename='MHC928.txt';
+                    readFile=fullfile(readFolder,oo(oi).readFilename);
+                    textCorpus=fileread(readFile);
+                    words=WordsInString(textCorpus);
+                    % fCorpus(i) is frequency of word wCorpus(i) in our corpus.
+                    wCorpus=unique(words);
+                    fCorpus=zeros(size(wCorpus));
+                    for i=1:length(wCorpus)
+                        fCorpus(i)=sum(find(streq(wCorpus{i},words)));
+                    end
+                    [fCorpus,ii]=sort(fCorpus,'descend');
+                    wCorpus=wCorpus(ii);
+                end
                 oo(oi).readMethod=sprintf(...
                     ['Random block of text from %s, ' ...
                     'beginning at beginning of a sentence.\n' ...
                     '%d lines of up to %d chars each, ragged right. '...
-                    '%s font. %.1f deg spacing. \n'...
-                    '%d point, %d leading at %.0f cm.'],...
+                    '%.1f deg spacing. \n'...
+                    '%s font set to %d point with %d point leading. '...
+                    'Viewed from %.0f cm.'],...
                     oo(oi).readFilename,screenLines,screenLineChars,...
-                    oo(oi).targetFont,oo(oi).spacingDeg, ...
-                    oo(oi).readSize,round(1.5*oo(oi).readSize),...
+                    oo(oi).spacingDeg, ...
+                    oo(oi).targetFont,oo(oi).readSize,round(1.5*oo(oi).readSize),...
                     oo(oi).viewingDistanceCm);
-                lineEndings=find(WrapString(text,screenLineChars)==newline);
+                lineEndings=find(WrapString(textCorpus,screenLineChars)==newline);
                 % Pick starting point that leaves enough lines.
                 % The newlines will move when we re-wrap, but their density
-                % won't change.
+                % won't change much.
                 n=length(lineEndings)-screenLines-1;
                 maxBegin=lineEndings(n)-n; % Discount the newlines added by wrapping.
-                sentenceBegins=[1 strfind(text,'.  ')+3];
+                sentenceBegins=[1 strfind(textCorpus,'.  ')+3];
                 sentenceBegins=sentenceBegins(sentenceBegins<=maxBegin);
                 begin=sentenceBegins(randi(end));
-                string=text(begin:end);
+                string=textCorpus(begin:end);
                 string=WrapString(string,screenLineChars);
                 lineEndings=find(string==newline);
                 string=string(1:lineEndings(screenLines)-1);
                 oo(oi).readString{end+1}=string;
-                words=WordsInString(string);
-                wPage=unique(words);
-                fPage=zeros(size(wPage));
-                for i=1:length(wPage)
-                    fPage(i)=sum(find(streq(wPage{i},words)));
-                end
-                [fPage,ii]=sort(fPage,'descend');
-                wPage=wPage(ii);
-                % Arguably the hardest words to report as present/absent
-                % are the most frequent word in the corpus that does not
-                % appear in the page (and a similar-frequency foil that
-                % does).
-                iAbsent=find(~ismember(wCorpus,wPage),1,'first');
-                for i=1:length(words)
-                    ii=find(fPage==i);
-                    if ~isempty(ii)
-                        ii=find(ismember(wCorpus,wPage(ii)));
-                        if ~isempty(ii)
-                            break
-                        end
-                    end
-                end
-                err=abs(log10(fCorpus(ii)/fCorpus(iAbsent)));
-                iPresent=find(err==min(err),1,'first');
-                fprintf('Present %s, corpus freq %d\n',wCorpus{iPresent},fCorpus(iPresent));
-                fprintf('Absent  %s, corpus freq %d\n',wCorpus{iAbsent},fCorpus(iAbsent));
-
-                question=sprintf('Yes or no. Did you read the word "%s"? (Y or N)\n',wCorpus{iPresent});
-                question=sprintf('Yes or no. Did you read the word "%s"? (Y or N)\n',wCorpus{iAbsent});
-
+                
                 % Time the interval from press to release of spacebar.
                 [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
                 answer=KbName(keyCode);
@@ -3356,6 +3318,7 @@ try
                 Screen('Flip',window,[],1);
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
                     warning('The text does not fit on screen.'); % DGP temporary.
+                    oo(oi).readError='The text does not fit on screen.';
                 end
                 Screen('TextSize',window,oo(1).textSize);
                 Screen('TextFont',window,oo(1).textFont);
@@ -3371,6 +3334,124 @@ try
                 ffprintf(ff,'%d: Read size %.1f deg (%.1f deg spacing) at %.0f char/s %.0f word/min.\n',...
                     oi,oo(oi).targetDeg,oo(oi).spacingDeg,...
                     oo(oi).readCharPerSec(i),oo(oi).readWordPerMin(i));
+                % Test recall.
+                % Query about words shown to test comprehension.
+                for iQuestion=1:oo(oi).readQuestions
+                    if iQuestion==1
+                        % Page stats.
+                        % wPage{i} lists all words on the page in order of
+                        % ascending frequency on the page. fPage(i) is frequency on
+                        % the page.
+                        words=WordsInString(string);
+                        wPage=unique(words);
+                        fPage=zeros(size(wPage));
+                        for i=1:length(wPage)
+                            fPage(i)=sum(find(streq(wPage{i},words)));
+                        end
+                        [fPage,ii]=sort(fPage,'ascend');
+                        wPage=wPage(ii);
+                        iUsed=[]; % Clear list of words not be be reused.
+                    end
+                    % The test will show three words (matched in corpus
+                    % frequency) only one of which was present in the page.
+                    % Thus knowledge of corpus frequency won't help assess
+                    % which is present in the page, so it's a more pure
+                    % test of recall from the page. I've got the corpus
+                    % words sorted by frequency. So I randomly pick a word
+                    % that appeared exactly once in the page and find it in
+                    % the corpus list. As the two foils, I pick the nearest
+                    % neighbors (randomly higher or lower) in the list
+                    % sorted by frequency.
+                    iiNotUsed=~ismember(wPage,wCorpus(iUsed));
+                    freq=fPage(find(iiNotUsed,1));
+                    words=wPage(fPage==freq & iiNotUsed); % Rarest unused words on page.
+                    assert(~isempty(words));
+                    word=words{randi(length(words))}; % Random choice.
+                    % iPresent is index in wCorpus of a word that appeared
+                    % in page. iAbsent(1:2) are indices in wCorpus of
+                    % similar frequency words that did not appear in page.
+                    % We use them as foils for the word that was present.
+                    iPresent=find(ismember(wCorpus,word),1);
+                    assert(isfinite(iPresent));
+                    % Find nearest neighbors in list that are absent from the page.
+                    clear seq
+                    seq=1;
+                    for i=2:2:length(wCorpus)-1
+                        seq(i)=-seq(i-1);
+                        seq(i+1)=seq(i-1)+1;
+                    end
+                    % Unbiased direction, so that relative frequency of the 
+                    % words is not a clue to which was present in page.
+                    if rand>0.5
+                        seq=-seq;
+                    end
+                    iAbsent=[];
+                    for i=1:length(seq)
+                        iCandidate=iPresent+seq(i);
+                        if iCandidate<1 || iCandidate>length(wCorpus)
+                            continue
+                        end
+                        if ~ismember(wCorpus(iCandidate),wPage) && ~ismember(iCandidate,iUsed)
+                            % This word is present in corpus, absent from
+                            % page, and unused.
+                            iAbsent(end+1)=iCandidate;
+                        end
+                        if length(iAbsent)>=2
+                            break
+                        end
+                    end
+                    assert(length(iAbsent)>=2);
+                    % Ask the observer.
+                    iWords=[iPresent iAbsent(1:2)];
+                    iUsed=[iUsed iWords]; % Don't reuse for recent page.
+                    iWords=Shuffle(iWords);
+                    msg=sprintf(['Which of these three words was present on the page you just read?\n'...
+                        '1. %s\n2. %s\n3. %s\n\n'...
+                        'Type 1, 2 or 3.\n\n\n'...
+                        '(The words can include contractions and proper names. '...
+                        'Upper/lower case matters.)'],...
+                        wCorpus{iWords});
+                    Screen('FillRect',window);
+                    DrawFormattedText(window,msg,...
+                        instructionalMarginPix,instructionalMarginPix,black,65);
+%                         instructionalMarginPix,screenRect(4)-3*oo(1).textSize,black,65);
+                    Screen('Flip',window);
+                    choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
+                    response=GetKeypress([choiceKeycodes escapeKeyCode graveAccentKeyCode]);
+                    if ismember(response,{'1' '2' '3'})
+                        response=str2num(response);
+                        answer=iWords(response); % Observer chose wCorpus{answer}.
+                        right=answer==iPresent;
+                        if iQuestion==1
+                            oo(oi).readNumberOfResponses=1;
+                            oo(oi).readNumberCorrect=double(right);
+                        else
+                            oo(oi).readNumberOfResponses=oo(oi).readNumberOfResponses+1;
+                            oo(oi).readNumberCorrect=oo(oi).readNumberCorrect+double(right);
+                        end
+                        if right
+                            if oo(oi).beepPositiveFeedback
+                                Snd('Play',rightBeep);
+                            end
+                        end
+                    else
+                        msg=sprintf('Invalid word choice ''%c'' char(%d) in read task.',...
+                            response,double(response));
+                        warning(msg);
+                        ffprintf(ff,'%s\n',msg);
+                        oo(oi).readError=[oo(oi).readError msg];
+                        oo(1).quitBlock=true;
+                        return;
+                    end
+                    % Print question words in Command Window
+                    ffprintf(ff,'Present  <strong>%10s</strong>,  corpus freq %d/%d\n',...
+                        wCorpus{iPresent},fCorpus(iPresent),sum(fCorpus));
+                    for i=1:length(iAbsent)
+                        ffprintf(ff,'Absent   <strong>%10s</strong>,  corpus freq %d/%d\n',...
+                            wCorpus{iAbsent(i)},fCorpus(iAbsent(i)),sum(fCorpus));
+                    end
+                    ffprintf(ff,'Response %10s\n',wCorpus{answer});
+                end % for iQuestion= ...
             case 'identify'
                 responseString='';
                 skipping=false;
