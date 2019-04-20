@@ -4,7 +4,7 @@
 %% DEFINE CONDITIONS
 clear o
 % o.printSizeAndSpacing=true;
-% o.useFractionOfScreenToDebug=0.3;
+o.useFractionOfScreenToDebug=0.3;
 o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey';
 o.experimenter='';
@@ -14,7 +14,7 @@ o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.2; % duration of display of target and flankers
-o.readAlphabetFromDisk=true;
+o.getAlphabetFromDisk=true;
 o.trials=40;
 ooo={};
 
@@ -24,7 +24,7 @@ if 1
     o.thresholdParameter='spacing';
     o.targetFont='Monaco';
     o.targetDeg=nan;
-    o.readAlphabetFromDisk=false;
+    o.getAlphabetFromDisk=false;
     o.trials=2;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
