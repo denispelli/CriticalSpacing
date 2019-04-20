@@ -37,7 +37,6 @@ myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
 % THe lib and data folders are in the same folder.
 dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data'); 
-% dataFolder='/Users/denispelli/Dropbox/MATLAB/CriticalSpacing/data/';
 matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
 
 % Each block has a unique identifier: o.dataFilename. It is created
