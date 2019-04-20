@@ -1,6 +1,6 @@
 function oo=CriticalSpacing(oIn)
 % BUGS:
-% When I quit, a small window appears.
+% When I quit, a small Figure window appears.
 % o=CriticalSpacing(o);
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
 % threshold spacing and size) to help characterize the observer's vision.
@@ -1300,7 +1300,7 @@ try
             % the observer about which condition is being tested by this
             % trial. THe current criterion for okToShiftCoordinates may be
             % overly strict and could be relaxed somewhat.
-            oo(1).okToShiftCoordinates = length(oo)==1 || all(ismember([oo.setNearPointEccentricityTo],'target'));
+            oo(1).okToShiftCoordinates = length(oo)==1 || all(ismember([oo.setNearPointEccentricityTo],{'target'}));
             [oo.okToShiftCoordinates]=deal(oo(1).okToShiftCoordinates);
             switch oo(oi).setNearPointEccentricityTo
                 case 'target'
@@ -1613,7 +1613,7 @@ try
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'Hello Experimenter,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'For the Experimenter/Administrator:',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type your name followed by RETURN.',...
             instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
@@ -2742,9 +2742,19 @@ try
                 oo(oi).readSize=round(oo(oi).targetDeg*pixPerDeg/widthPixPerSize);
                 oo(oi).targetDeg=widthPixPerSize*oo(oi).readSize/pixPerDeg;
                 % Display instructions.
-                string=['Please press and hold down the space bar to reveal ' ...
-                    'the story and begin reading. ' ...
-                    'Release the space bar when you''re done.'];
+                string=['When you''re ready, '...
+                    'press and hold down the space bar to reveal ' ...
+                    'the story and begin reading. '...
+                    'While holding down the space bar, '...
+                    'read as fast as you can '...
+                    'while maintaining full comprehension. '...
+                    'Read every word. ' ...
+                    'Release the space bar when you''re done. '...
+                    'You will then be tested for comprehension. '...
+                    'Speed matters. Once you press the space bar, begin reading '...
+                    'immediately when the story appears, '...
+                    'and release the space bar immediately '...
+                    'when you reach the end.'];
                 Screen('FillRect',window,[],clearRect);
                 Screen('TextFont',window,oo(oi).textFont);
                 DrawFormattedText(window,string,...
@@ -3135,7 +3145,7 @@ try
                 targets=stimulus(2);
             end
         end
-        if isfinite(oo(oi).durationSec) && ~ismember({oo(oi).task},'read')
+        if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
             WaitSecs(oo(oi).durationSec); % Display letters.
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
             oo(oi).actualDurationSec(end+1)=GetSecs-trialTimeSecs;
@@ -3267,7 +3277,16 @@ try
                 oo(oi).readFilename='MHC928.txt';
                 readFile=fullfile(readFolder,oo(oi).readFilename);
                 text=fileread(readFile);
-                % The excerpt will be 15 lines of (up to) 60 characters
+                words=WordsInString(text);
+                % fCorpus(i) is frequency of unique word wCorpus(i) in "words" list.
+                wCorpus=unique(words);
+                fCorpus=zeros(size(wCorpus));
+                for i=1:length(wCorpus)
+                    fCorpus(i)=sum(find(streq(wCorpus{i},words)));
+                end
+                [fCorpus,i]=sort(fCorpus,'descend');
+                wCorpus=wCorpus(i);
+                % The excerpt will be 12 lines of (up to) 50 characters
                 % each. That's about ten words per line.
                 screenLineChars=50;
                 screenLines=12;
@@ -3282,7 +3301,7 @@ try
                     oo(oi).readSize,round(1.5*oo(oi).readSize),...
                     oo(oi).viewingDistanceCm);
                 lineEndings=find(WrapString(text,screenLineChars)==newline);
-                % Pick starting point that leaves enough lines. 
+                % Pick starting point that leaves enough lines.
                 % The newlines will move when we re-wrap, but their density
                 % won't change.
                 n=length(lineEndings)-screenLines-1;
@@ -3295,6 +3314,36 @@ try
                 lineEndings=find(string==newline);
                 string=string(1:lineEndings(screenLines)-1);
                 oo(oi).readString{end+1}=string;
+                words=WordsInString(string);
+                wPage=unique(words);
+                fPage=zeros(size(wPage));
+                for i=1:length(wPage)
+                    fPage(i)=sum(find(streq(wPage{i},words)));
+                end
+                [fPage,ii]=sort(fPage,'descend');
+                wPage=wPage(ii);
+                % Arguably the hardest words to report as present/absent
+                % are the most frequent word in the corpus that does not
+                % appear in the page (and a similar-frequency foil that
+                % does).
+                iAbsent=find(~ismember(wCorpus,wPage),1,'first');
+                for i=1:length(words)
+                    ii=find(fPage==i);
+                    if ~isempty(ii)
+                        ii=find(ismember(wCorpus,wPage(ii)));
+                        if ~isempty(ii)
+                            break
+                        end
+                    end
+                end
+                err=abs(log10(fCorpus(ii)/fCorpus(iAbsent)));
+                iPresent=find(err==min(err),1,'first');
+                fprintf('Present %s, corpus freq %d\n',wCorpus{iPresent},fCorpus(iPresent));
+                fprintf('Absent  %s, corpus freq %d\n',wCorpus{iAbsent},fCorpus(iAbsent));
+
+                question=sprintf('Yes or no. Did you read the word "%s"? (Y or N)\n',wCorpus{iPresent});
+                question=sprintf('Yes or no. Did you read the word "%s"? (Y or N)\n',wCorpus{iAbsent});
+
                 % Time the interval from press to release of spacebar.
                 [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
                 answer=KbName(keyCode);
@@ -3428,7 +3477,7 @@ try
         if oo(1).quitBlock
             break;
         end
-        if ismember(oo(oi).task,'read')
+        if ismember(oo(oi).task,{'read'})
             responseString=[];
             targets=[];
         end
