@@ -1377,7 +1377,10 @@ try
             'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
             string,oo(1).viewingDistanceCm);
         Screen('TextSize',window,oo(1).textSize);
-        [~,y]=DrawFormattedText(window,string,instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,black,length(instructionalTextLineSample)+3-2*length(cmString),[],[],1.1);
+        [~,y]=DrawFormattedText(window,string,...
+            instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
+            black,length(instructionalTextLineSample)+3-2*length(cmString),...
+            [],[],1.1);
         Screen('TextSize',window,2*oo(1).textSize);
         bounds=Screen('TextBounds',window,cmString,[],[],1);
         x=screenRect(3)-bounds(3)-bounds(3)/length(cmString);
@@ -2750,8 +2753,8 @@ try
                 oo(oi).targetDeg=widthPixPerSize*oo(oi).readSize/pixPerDeg;
                 % Display instructions.
                 string=['When you''re ready, '...
-                    'press and hold down the space bar to reveal ' ...
-                    'the story and begin reading. '...
+                    'press and hold down the SPACE bar to reveal ' ...
+                    'the story and immediately begin reading. '...
                     'While holding down the space bar, '...
                     'read as fast as you can '...
                     'while maintaining full comprehension. '...
@@ -2766,7 +2769,7 @@ try
                 Screen('TextFont',window,oo(oi).textFont);
                 DrawFormattedText(window,string,...
                     oo(1).textSize,2*oo(1).textSize,...
-                    black,70,[],[],1.1);
+                    black,66,[],[],1.1);
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
@@ -3307,6 +3310,7 @@ try
                 oo(oi).readString{end+1}=string;
                 
                 % Time the interval from press to release of spacebar.
+                oldEnableKeyCodes=RestrictKeysForKbCheck(spaceKeyCode);
                 [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
                 answer=KbName(keyCode);
                 Screen('TextFont',window,oo(oi).targetFont);
@@ -3323,6 +3327,7 @@ try
                 Screen('TextSize',window,oo(1).textSize);
                 Screen('TextFont',window,oo(1).textFont);
                 endSecs=KbReleaseWait(oo(oi).deviceIndex);
+                RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
                 Screen('FillRect',window,white,oo(oi).stimulusRect);
                 Screen('Flip',window,[],1);
                 i=length(oo(oi).readString);
@@ -3417,7 +3422,8 @@ try
 %                         instructionalMarginPix,screenRect(4)-3*oo(1).textSize,black,65);
                     Screen('Flip',window);
                     choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
-                    response=GetKeypress([choiceKeycodes escapeKeyCode graveAccentKeyCode]);
+                    % Have yet to implement support for ESCAPE here.
+                    response=GetKeypress([choiceKeycodes ]); % escapeKeyCode graveAccentKeyCode
                     if ismember(response,{'1' '2' '3'})
                         response=str2num(response);
                         answer=iWords(response); % Observer chose wCorpus{answer}.
