@@ -4,7 +4,7 @@
 %% DEFINE CONDITIONS
 clear o
 % o.printSizeAndSpacing=true;
-o.useFractionOfScreenToDebug=0.3;
+% o.useFractionOfScreenToDebug=0.3;
 o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey';
 o.experimenter='';
@@ -18,7 +18,7 @@ o.getAlphabetFromDisk=true;
 o.trials=40;
 ooo={};
 
-if 1
+if 0
     o.conditionName='reading';
     o.task='read';
     o.thresholdParameter='spacing';
@@ -42,7 +42,7 @@ if 1
 %     o.useFractionOfScreenToDebug=0.3;
     ooo{end+1}=o;
 end
-if 0
+if 1
     for ecc=[ 2.5 5 10]
         o.conditionName='crowding';
         o.targetDeg=2;
@@ -108,7 +108,7 @@ if 0
     end
 end
 if rand>0.5
-    ooo=fliplr(ooo);
+    %     ooo=fliplr(ooo);
 end
 
 %% Number the blocks.
