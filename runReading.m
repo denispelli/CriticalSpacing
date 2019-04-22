@@ -41,10 +41,10 @@ if 1
     o.alphabet='abc';
     o.borderLetter='x';
     o.flankingDirection='horizontal';
-%     o.experimenter='...';
-%     o.observer='...';
+    %     o.experimenter='...';
+    %     o.observer='...';
     o.useFixation=false;
-%     o.useFractionOfScreenToDebug=0.3;
+    %     o.useFractionOfScreenToDebug=0.3;
     o.readSpacingDeg=2;
     ooo{end+1}=o;
     o.readSpacingDeg=1;
@@ -63,6 +63,7 @@ if 1
         o.thresholdParameter='spacing';
         o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
         o.targetFont='Sloan';
+        o.getAlphabetFromDisk=true;
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         o.minimumTargetPix=8;
@@ -83,6 +84,7 @@ if 0
         o.thresholdParameter='size';
         o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
         o.targetFont='Sloan';
+        o.getAlphabetFromDisk=true;
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         if ecc>0
@@ -102,7 +104,7 @@ if 0
         o2.eccentricityXYDeg=-o.eccentricityXYDeg;
         ooo{end+1}=[o o2];
     end
-end 
+end
 if 1
     for ecc=[0 ]
         o.conditionName='crowding';
@@ -111,6 +113,7 @@ if 1
         o.thresholdParameter='spacing';
         o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
         o.targetFont='Pelli';
+        o.getAlphabetFromDisk=true;
         o.alphabet='123456789';
         o.borderLetter='$';
         o.minimumTargetPix=4;
@@ -125,7 +128,7 @@ if 1
     end
 end
 if rand>0.5
-%     ooo=fliplr(ooo);
+    %     ooo=fliplr(ooo);
 end
 
 %% Number the blocks.
