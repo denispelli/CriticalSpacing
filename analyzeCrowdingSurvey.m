@@ -1,6 +1,6 @@
 %% Analyze the data collected by runCrowdingSurvey. April 2019
 
-experiment='CrowdingSurvey'; % And CrowdingSurvey2.
+experiment='CrowdingSurvey2'; % And CrowdingSurvey2.
 printFilenames=false;
 makePlotLinear=false;
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
@@ -18,9 +18,10 @@ vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' };
 oo1=ReadExperimentData(experiment,vars); 
 fprintf('%4.0f thresholds in experiment %s\n',length(oo1),experiment);
-oo2=ReadExperimentData('CrowdingSurvey2',vars); 
-fprintf('%4.0f thresholds in experiment %s\n',length(oo2),'CrowdingSurvey2');
-oo=[oo1 oo2];
+% oo2=ReadExperimentData('CrowdingSurvey2',vars); 
+% fprintf('%4.0f thresholds in experiment %s\n',length(oo2),'CrowdingSurvey2');
+% oo=[oo1 oo2];
+oo=oo1;
 fprintf('%4.0f thresholds all together\n',length(oo));
 
 %% CLEAN
@@ -148,22 +149,31 @@ for i=1:length(observers)
         s(i).sort=s(i).meanLogPeripheralSpacingReNominal;
     end
 end
-ts=struct2table(s);
-ts=sortrows(ts,'sort');
-s=table2struct(ts);
-fprintf(['\n<strong>%.0f rows. One row per observer. ' ...  
-    'Sorted by MeanLogPeripheralSpacing.\n</strong>'],height(ts));
-disp(ts);
-fprintf(['\n<strong>%.0f rows. One row per observer. ' ...  
-    'Sorted by observer name.\n</strong>'],height(ts));
-ts.observerLower=lower(ts.observer);
-t=sortrows(ts,{'observerLower'});
-disp(t(:,{'observer' 'conditions' 'localHostName' 'date' 'experimenter'}));
-tableTitle='List of observers, ordered by peripheral crowding';
-tableFile=fullfile(fileparts(mfilename('fullpath')),'data',[tableTitle '.csv']);
-writetable(ts(:,{'observer' 'conditions' 'date' 'beginningTime' 'localHostName' ...
-    'experimenter' 'experiment' 'meanLogPeripheralSpacingReNominal' ...
-    'SDLogPeripheralSpacingReNominal'}),tableFile);
+t=struct2table(s);
+t=sortrows(t,'sort');
+s=table2struct(t);
+if 1
+    fprintf('\n<strong>%.0f observers, sorted by MeanLogPeripheralSpacing.\n</strong>',...
+        height(t));
+    disp(t);
+    tableTitle='List of observers, sorted by peripheral crowding';
+    tableFile=fullfile(fileparts(mfilename('fullpath')),'data',[tableTitle '.csv']);
+    writetable(t(:,{'observer' 'conditions' 'date' 'beginningTime' 'localHostName' ...
+        'experimenter' 'experiment' 'meanLogPeripheralSpacingReNominal' ...
+        'SDLogPeripheralSpacingReNominal'}),tableFile);
+end
+if 1
+    fprintf('\n<strong>%.0f observers, sorted by name.\n</strong>',...
+        height(t));
+    t.observerLower=lower(t.observer);
+    t=sortrows(t,{'observerLower'});
+    disp(t(:,{'observer' 'conditions' 'localHostName' 'date' 'experimenter'}));
+    tableTitle='List of observers, alphabetical';
+    tableFile=fullfile(fileparts(mfilename('fullpath')),'data',[tableTitle '.csv']);
+    writetable(t(:,{'observer' 'conditions' 'localHostName' 'date' 'beginningTime' ...
+        'experimenter' }),tableFile);
+end
+return
 figure
 count=0;
 for i=1:length(s)
