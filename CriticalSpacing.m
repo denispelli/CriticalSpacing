@@ -1,6 +1,9 @@
 function oo=CriticalSpacing(oIn)
 % BUGS:
 % When I quit, a small Figure window appears.
+% Enforce first and last name. Consider asking two questions.
+% Some people insist on typing in 3 letters, not just the middle one.
+% Fix CalibrateScreenLuminance.
 % o=CriticalSpacing(o);
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
 % threshold spacing and size) to help characterize the observer's vision.
