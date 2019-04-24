@@ -1,25 +1,32 @@
 -- AutoBrightness.applescript
 -- Denis G. Pelli, denis.pelli@nyu.edu
 -- February 29, 2016. 
+-- July 26, 2018.
+-- April 24, 2019.
 --
 -- HISTORY
 -- May 21, 2015. First version.
 -- May 29, 2015 Enhanced to allow specification of screenNumber.
 -- June 1, 2015. Polished the comments.
--- July 25, 2015 Previously worked on Mavericks (Mac OS X 10.9). 
--- Now enhanced to also support Yosemite (Mac OS X 10.10.4).
--- August 3, 2015 Now uses try-blocks to try first group 1 and then group 2
--- to cope with variations in Apple's Mac OS. I find that under Mac OS X 10.9 
--- the checkbox is always in group 1. Under Mac OS X 10.10 I have previously
+-- July 25, 2015 Previously worked on Mavericks (macOS 10.9). 
+-- Now enhanced to also support Yosemite (macOS 10.10.4).
+-- August 3, 2015 Now uses try-blocks to first try group 1 and then group 2
+-- to cope with variations in Apple's Mac OS. I find that under macOS 10.9 
+-- the checkbox is always in group 1. Under macOS 10.10 I have previously
 -- found it in group 2, but now I find it in group 1, so it seems best for the
 -- program to keep trying groups until it finds the checkbox: first 1, then 2, then give up.
 -- February 29, 2016 Improved the wording of the pop-up screen to spell 
 -- out what the user needs to do to allow MATLAB to control the computer.
+--July 29, 2018. Further polish the message. Accept argument indicating whether a Psychtoolbox Screen window is obscuring the display.
+--In that case, if we need to give the user instructions we just return with error -999.
+--In case of return value -999, the calling MATLAB program should close the window and
+--try again.
+-- April 24, 2019. I was getting occasional failures, so I cleaned up the error handling. -- It now correctly reports AppleScript errors.
 --
 -- COMPATIBILITY
--- Works on Mavericks, Yosemite, and El Capitan (Mac OS X 10.9 to 10.11).
--- Not yet tested on earlier versions of Mac OS X (< 10.9).
--- I hope this will work internationally, with Macs running under Mac OS X
+-- Works on Mavericks, Yosemite, and El Capitan (macOS 10.9 to 10.11).
+-- Not yet tested on earlier versions of macOS (< 10.9).
+-- I hope this will work internationally, with Macs running under macOS
 -- localized for any language, not just English. That is why we select
 -- the Display/Colors panel by the internal name "displaysDisplayTab" 
 -- instead using the localized name "Display". 
@@ -30,7 +37,7 @@
 -- and display calibration. This applescript is equivalent to manually opening
 -- the System Preference:Displays and turning on or off the checkbox for
 -- "Automatic brightness adjustment". I wrote the script to be invoked from
--- MATLAB, but you could call it from any application running under Mac OS X.
+-- MATLAB, but you could call it from any application running under macOS.
 -- While "Automatically adjust brightness" is checked, the Mac OS uses the
 -- video camera to sense the room luminance and slowly dims the display if
 -- the room is dark. It does this by adjusting the "brightness" setting,
@@ -50,10 +57,10 @@
 -- observer's time waiting 30 s for System Preferences to open every time
 -- you call AutoBrightness.
 --
--- AutoBrightness screenNumber newStatus
--- The parameter "newStatus" (integer 0 or 1) indicates whether you want to
--- turn the autobrightness feature on (newStatus==1) or off (newStatus==0).
--- If  the newStatus argument is omitted (or anything other than 0 or 1)
+-- AutoBrightness screenNumber newSetting
+-- The parameter "newSetting" (integer 0 or 1) indicates whether you want to
+-- turn the autobrightness feature on (newSetting==1) or off (newSetting==0).
+-- If  the newSetting argument is omitted (or anything other than 0 or 1)
 -- then nothing is changed, and the current state is reported in the
 -- returned value (0 or 1). However, the returned value is -99 if your 
 -- application (e.g. MATLAB) does not have permission to control your computer 
@@ -62,7 +69,7 @@
 -- In MATLAB, use the corresponding MATLAB Psychtoolbox function, which calls 
 -- this script:
 --
--- oldStatus=AutoBrightness(newStatus);
+-- oldSetting=AutoBrightness(newSetting);
 --
 -- To call this directly from MATLAB, 
 -- [status,oldAuto]=system('osascript AutoBrightness.applescript 0'); % to disable
@@ -122,15 +129,29 @@
 -- https://discussions.apple.com/thread/6418291
 
 on run argv
-	-- integer screenNumber. Zero for main screen. Default is zero.
-	--  integer newStatus : state of the System Preferences:Displays:checkbox "Automatically adjust brightness"
+	-- INPUT ARGUMENTS
+	--  integer screenNumber. Zero for main screen. Default is zero.
+	--  integer newSetting : state of the System Preferences:Displays:checkbox "Automatically adjust brightness"
 	--     0 : off (unchecked)  
 	--     1 : on (checked)  
-	-- Default is to leave the status unchanged.
+	-- If missing then the setting is left unchanged.
+	-- windowIsOpen
+	--OUTPUT ARGUMENTS
+	-- oldSetting
+	--In success, this will be the old setting (0 for unchecked; 1 for checked). 
+	--We fail only if MATLAB lacks permission. In that case we open the relevant System Preference panel.
+	--If windowIsOpen is false, when we show an alert with instructions and return -99. If windowIsOpen
+	--is true then we skip the alert (which would be obscured) and return -999. Once the user
+	--grants permission, the user can start the MATLAB program again.
 	try
-		set newStatus to item 2 of argv as integer
+		set windowIsOpen to item 3 of argv as integer
 	on error
-		set newStatus to -1 -- Unspecified value, so don't change the setting.
+		set windowIsOpen to 1 -- Unspecified value, so assume open window.
+	end try
+	try
+		set newSetting to item 2 of argv as integer
+	on error
+		set newSetting to -1 -- Unspecified value, so don't change the setting.
 	end try
 	try
 		set screenNumber to item 1 of argv as integer
@@ -138,7 +159,7 @@ on run argv
 		set screenNumber to 0 -- Default is the main screen.
 	end try
 	set windowNumber to screenNumber + 1 -- Has been tested only for screenNumber==0
-	set leaveSystemPrefsRunning to true -- this could be made a third argument
+	set leaveSystemPrefsRunning to true -- this could be made a further argument
 	tell application "System Preferences"
 		set wasRunning to running
 		set the current pane to pane id "com.apple.preference.displays"
@@ -150,45 +171,44 @@ on run argv
 			tell application "System Preferences"
 				activate
 				reveal anchor "Privacy_Accessibility" of pane id "com.apple.preference.security"
+				if windowIsOpen > 0 then
+					return -999
+				end if
 				display alert "To set Displays preferences, " & applicationName & " needs your permission to control this computer.  BEFORE you click OK below, please unlock the Privacy panel and click the box that allows your MATLAB to control this computer. THEN click OK."
 				delay 1
 			end tell
 			return -99
 		end if
 		tell process "System Preferences"
-			--set os_version to do shell script "sw_vers -productVersion"
 			set versionString to system version of (system info)
 			considering numeric strings
-				--set isYosemiteOrBetter to os_version ≥ "10.10.0"
 				set isYosemiteOrBetter to versionString ≥ "10.10.0"
 			end considering
-			--if not isYosemiteOrBetter then
-			--Mac OS X 10.9 Mavericks, or earlier.
 			tell tab group 1 of window windowNumber
 				--click radio button "Display"-- commented out because it won't work in non-English installations
 				try
-					tell group 1 -- works on Mac OS X 10.9 Mavericks and sometimes Yosemite
+					tell group 1 -- works on macOS 10.9 Mavericks and sometimes Yosemite
 						--set slider 1's value to 0.5 -- Set brightness
 						tell checkbox 1 -- Automatically adjust brightness  
-							set oldStatus to value
-							if newStatus is in {0, 1} and newStatus is not oldStatus then
+							set oldSetting to value
+							if newSetting is in {0, 1} and newSetting is not oldSetting then
 								click -- It's wrong, so change it.
 							end if
 						end tell
 					end tell
 				on error
 					try
-						tell group 2 -- works other times on Mac OS X 10.10 Yosemite
+						tell group 2 -- works other times on macOS 10.10 Yosemite
 							--set slider 1's value to 0.5 -- Set brightness
 							tell checkbox 1 -- Automatically adjust brightness  
-								set oldStatus to value
-								if newStatus is in {0, 1} and newStatus is not oldStatus then
+								set oldSetting to value
+								if newSetting is in {0, 1} and newSetting is not oldSetting then
 									click -- It's wrong, so change it.
 								end if
 							end tell
 						end tell
 					on error
-						set oldStatus to 0
+						set oldSetting to 0
 					end try
 				end try
 			end tell
@@ -199,5 +219,5 @@ on run argv
 	else
 		quit application "System Preferences"
 	end if
-	return oldStatus
+	return oldSetting
 end run
