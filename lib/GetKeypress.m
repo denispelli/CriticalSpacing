@@ -1,28 +1,37 @@
 function response = GetKeypress(enableKeys,deviceIndex,returnOneChar)
 % response = GetKeypress(enableKeys,deviceIndex,returnOneChar); 
-% Wait for a keypress, and return it. If returnOneChar is true (default)
-% then "response" is just one character, if possible. (Some keynames, like
-% 'left_shift', have no obviously associated character and are passed
-% through.) This does not distinguish between pressing a number key on the
-% main or separate numeric keyboard. If returnOneChar is false, then the
-% full descriptive output of KbName is returned, unmodified, e.g. 'a',
-% '1!', 'ESCAPE', or 'left_shift'.
+% Wait for a keypress, and return it. 
+%
+% We  pass enableKeys to RestrictKeysForKbCheck.
 %
 % Note that the 2017 MacBook Pro with the track bar has no escape key. My
 % workaround, in my programs using GetKeyPress, is to accept as equivalent
 % a press of the normally nearby grave accent '`' key.
 %
-% First version written by Hormet Yiltiz, October 2015, as "checkResponse".
-% Renamed "GetKeypress" by Denis Pelli, November 2015, and enhanced.
+% If returnOneChar is true (default) then "response" is just one character,
+% if possible. (Some keynames, like 'left_shift', have no obviously
+% associated character and are passed through.) This does not distinguish
+% between pressing a number key on the main or separate numeric keyboard.
+% If returnOneChar is false, then the full descriptive output of KbName is
+% returned, unmodified, e.g. 'a', '1!', 'ESCAPE', or 'left_shift'.
+%
+% To specify a number key on a regular keyboard, use both characters on the
+% key, e.g. KbName('1!'). Using KbName('1') specifies the '1' key on a
+% numeric key pad.
+%
+% First version was written by Hormet Yiltiz, October 2015, as
+% "checkResponse". Renamed "GetKeypress" by Denis Pelli, November 2015, and
+% enhanced.
 
 printLog = 0;
-if nargin >= 1
-   % enableKeys should be cell strings.
-   restrictKeys=1;
+if nargin >= 1 
+   % enableKeys should be a vector of key codes returned by KbName.
+   % If enableKeys is empty, [], then all keys are enabled.
+   restrictKeys=true;
    oldEnableKeys=RestrictKeysForKbCheck(enableKeys);
    if printLog; disp('Enabled keys list is:'); disp(enableKeys); end
 else
-   restrictKeys=0;
+   restrictKeys=false;
 end
 if nargin<2
    % Accept input from all keyboards and keypads.
@@ -38,7 +47,7 @@ if nargin<3
    % e.g. 'escape', back to the single ASCII code. When KbName returns two
    % characters, e.g. for the '1!' key, Return only the initial character,
    % discarding the second,
-   returnOneChar = 1;
+   returnOneChar = true;
 end
 KbName('UnifyKeyNames');
 while KbCheck; end
@@ -52,10 +61,10 @@ if returnOneChar
    if streq(response,'return'); response=char(13); end
    % We assume that only one key is pressed (no shift, caps lock, etc.).
    % For keys in the upper row of the keyboard, including the number keys,
-   % KbName returns 2 characters, e.g. '0)'. When KbName returns two
-   % characters, we return the first and discard the second. Thus we do not
-   % distinguish between a number key on a number pad and a number key on
-   % the main keyboard.
+   % KbName returns 2 characters, e.g. '0)'. So when KbName returns two
+   % characters, we return the first and discard the second. Thus we do
+   % not distinguish between a number key on a number pad and a number key
+   % on the main keyboard.
    if length(response)==2
       response=response(1);
    end
