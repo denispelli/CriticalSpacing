@@ -147,7 +147,7 @@ for i=1:3
     % Occasionally oldSetting is empty, possibly because that's how we
     % initialized it. I don't know why or what that means.
     if failed
-        msg=sprintf('%s The osascript failed with the following error, trying again.\n%s'...
+        msg=sprintf('%s The applescript failed with the following error, trying again.\n%s'...
             ,s,oldSetting);
         warning(msg);
         continue
@@ -165,6 +165,9 @@ for i=1:3
     if ismember(oldSetting,0:1)
         break
     end
+end
+if failed
+    error('Make sure that System Preferences is not tied up in a user dialog.')
 end
 if forcedToClose
     error('Screen window was closed to allow user to grant permission. Please run your MATLAB program again.');
