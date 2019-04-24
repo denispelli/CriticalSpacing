@@ -137,13 +137,14 @@ windowIsOpen=~isempty(Screen('Windows'));
 % if ~ismember(screenNumber,Screen('Windows'))
 %     warning(sprintf('%s There is no window with screenNumber %d in the Screen(''Windows'') list.\n',s,screenNumber));
 % end
-command = ['osascript ', scriptPath ...
-    ' ', num2str(screenNumber),...
+% Double quotes cope with spaces in scriptPath.
+command = ['osascript "', scriptPath ...
+    '" ', num2str(screenNumber),...
     ' ', num2str(newSetting), ...
     ' ', num2str(windowIsOpen)];
 for i=1:3
     oldSetting=''; % Default in case not set by function.
-    [failed,oldSetting] = system(command);
+    [failed,oldSetting]=system(command);
     % Occasionally oldSetting is empty, possibly because that's how we
     % initialized it. I don't know why or what that means.
     if failed
