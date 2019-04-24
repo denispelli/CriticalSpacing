@@ -1,11 +1,10 @@
-function inside = IsRectInRect(rect1,rect2)
-% inside = IsRectInRect(rect1,rect2)
+function inside = IsRectInRect(smallRect,bigRect)
+% inside = IsRectInRect(smallRect,bigRect)
 %
-% Is the first rect inside the second?
+% Is smallRect inside bigRect?
 %
 % Also see PsychRects.
 
-% 1/9/16  dgp  Wrote it.
+% July 9, 2015  dgp  Wrote it.
 
-inside=IsInRect(rect1(1),rect1(2),rect2) && IsInRect(rect1(3),rect1(4),rect2);
-
+inside=IsInRect(smallRect(1),smallRect(2),bigRect) && IsInRect(smallRect(3),smallRect(4),bigRect);
