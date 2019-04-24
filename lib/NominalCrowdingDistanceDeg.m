@@ -2,7 +2,7 @@ function nominalCrowdingDistanceDeg=NominalCrowdingDistanceDeg(eccentricityXYDeg
 % Eq. 14 from Song, Levi, and Pelli (2014).
 % Revised to match foveal measurement of Pelli et al. (2016).
 % See also: NominalAcuityDeg
-% You can pass one or more eccentricities. Each row is one eccentry.
+% You can pass one or more eccentricities. Each row is one eccentricity.
 % The result is a column with one value per row.
 assert(size(eccentricityXYDeg,2)==2)
 ecc=sqrt(sum(eccentricityXYDeg.^2,2));
