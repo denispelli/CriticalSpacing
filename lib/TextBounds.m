@@ -79,11 +79,11 @@ if nargin < 2 || isempty(text)
 end
 
 if nargin < 3 || isempty(yPositionIsBaseline)
-    yPositionIsBaseline = 0;
+   yPositionIsBaseline = 0;
 end
 
-if nargin < 4
-    centerTheText = 0;
+if nargin<4
+   centerTheText=0;
 end
 
 white = 1;
@@ -92,57 +92,55 @@ white = 1;
 Screen('FillRect',w,0);
 
 if yPositionIsBaseline
-    % Draw text string baseline at location x,y with a wide margin from lower
-    % left corner of screen. The left and lower margins accommodate the many
-    % fonts with descenders, and the occasional fonts that have fancy capital
-    % letters with flourishes that extend to the left of the starting point.
-    screenRect=Screen('Rect',w);
-    x0=screenRect(1)+min(2*Screen('TextSize',w),RectWidth(screenRect)/20);
-    y0=screenRect(4)-min(2*Screen('TextSize',w),RectHeight(screenRect)/2);
+   % Draw text string baseline at location x,y with a wide margin from lower
+   % left corner of screen. The left and lower margins accommodate the many
+   % fonts with descenders, and the occasional fonts that have fancy capital
+   % letters with flourishes that extend to the left of the starting point.
+   screenRect=Screen('Rect',w);
+   x0=screenRect(1)+min(2*Screen('TextSize',w),RectWidth(screenRect)/20);
+   y0=screenRect(4)-min(2*Screen('TextSize',w),RectHeight(screenRect)/2);
 else
-    % Draw text string with bounding box origin at upper left corner of screen.
-    x0=0;
-    y0=0;
+   % Draw text string with bounding box origin at upper left corner of screen.
+   x0=0;
+   y0=0;
 end
-
 if centerTheText
-    x0=(screenRect(1)+screenRect(3))/2;
+   x0=(screenRect(1)+screenRect(3))/2;
 end
-
 % We've only got one scratch window, so we compute the widths for centering
 % in advance, so as not to mess up the accumulation of letters for the
 % bounds.
 dx=zeros(1,length(text));
 if centerTheText
-    if iscell(text)
-        for i=1:length(text)
-            string=char(text(i));
+   if iscell(text)
+      for i=1:length(text)
+         string=char(text(i));
             bounds=Screen('TextBounds',w,double(string));
-            width=bounds(3);
-            dx(i)=-width/2;
-        end
-    else
-        for i=1:size(text,1)
-            string=char(text(i,:));
+         width=bounds(3);
+         dx(i)=-width/2;
+      end
+   else
+      for i=1:size(text,1)
+         string=char(text(i,:));
             bounds=Screen('TextBounds',w,double(string));
-            width=bounds(3);
-            dx(i)=-width/2;
-        end
-    end
+         width=bounds(3);
+         dx(i)=-width/2;
+      end
+   end
 end
 
 if iscell(text)
-    for i=1:length(text)
-        string=char(text(i));
+   for i=1:length(text)
+      string=char(text(i));
         % Unicode support requires that we pass the string as a double.
         Screen('DrawText',w,double(string),x0+dx(i),y0,white,[],yPositionIsBaseline);
-    end
+   end
 else
-    for i=1:size(text,1)
-        string=char(text(i,:));
+   for i=1:size(text,1)
+      string=char(text(i,:));
         % Unicode support requires that we pass the string as a double.
         Screen('DrawText',w,double(string),x0+dx(i),y0,white,[],yPositionIsBaseline);
-    end
+   end
 end
 
 % Read back only 1 color channel for efficiency reasons:
@@ -161,9 +159,9 @@ x=x-x0;
 
 % Compute their bounding rect and return it:
 if isempty(y) || isempty(x)
-    bounds=[0 0 0 0];
+   bounds=[0 0 0 0];
 else
-    bounds=SetRect(min(x)-1,min(y)-1,max(x),max(y));
+   bounds=SetRect(min(x)-1,min(y)-1,max(x),max(y));
 end
 
 return;
