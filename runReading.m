@@ -41,10 +41,10 @@ if 1
     o.alphabet='abc';
     o.borderLetter='x';
     o.flankingDirection='horizontal';
-    %     o.experimenter='...';
-    %     o.observer='...';
+%     o.experimenter='...';
+%     o.observer='...';
     o.useFixation=false;
-    %     o.useFractionOfScreenToDebug=0.3;
+%     o.useFractionOfScreenToDebug=0.3;
     o.readSpacingDeg=2;
     ooo{end+1}=o;
     o.readSpacingDeg=1;
@@ -128,7 +128,7 @@ if 1
     end
 end
 if rand>0.5
-    %     ooo=fliplr(ooo);
+%     ooo=fliplr(ooo);
 end
 
 %% Number the blocks.
