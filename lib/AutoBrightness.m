@@ -1,6 +1,11 @@
 function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 % [oldSetting,failed] = AutoBrightness([screenNumber=0][, newSetting])
 %
+% I believe this script will only work if run from a macOS user account
+% with admin privileges, and if you give MATLAB permission to control the
+% computer. That is done in System Preferences:Privacy and required admin
+% privileges to set it.
+
 % AUTOBRIGHTNESS Get and set the checkbox called "Automatically adjust
 % brightness" on the macOS: System Preferences: Displays panel. The first
 % argument selects a screen, but has been tested only for screen 0 (the
@@ -59,9 +64,11 @@ function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 % to open every time you call AutoBrightness.
 %
 % BRIGHTNESS. Psychtoolbox for MATLAB and Macintosh already has a Screen
-% call to get and set the brightness, so we don't need applescript for
-% that. The Psychtoolbox call is:
+% call to get and set the brightness, so, in principle, we don't need
+% applescript for that. The Psychtoolbox call is:
 % [oldBrightness]=Screen('ConfigureDisplay','Brightness', screenId [,outputId][,brightness]);
+% However, in recent versions of macOS the Screen Brightness control works
+% unreliably, so you might want to check out the Brightness function.
 %
 % APPLE SECURITY. The first time any application (e.g. MATLAB) asks
 % AutoBrightness.applescript to change a setting, the request will be
@@ -86,8 +93,8 @@ function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 % screenNumber~=0, on a one-screen system, it returns normally and always
 % says autobrightness is off.
 %
-% SYSTEM COMPATIBILITY. It works with macOS 10.9 (Mavericks) through 10.13
-% (High Sierra), and seems likely work with future releases.
+% SYSTEM COMPATIBILITY. It works with macOS 10.9 (Mavericks) through 10.14
+% (Mojave), and seems likely work with future releases.
 %
 % LINUX and WINDOWS. Applescript works only under macOS. When running under
 % any operating system other that macOS, this program ignores the
