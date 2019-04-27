@@ -11,6 +11,10 @@ function ActivateMATLAB
 % appears immediately. Among several computers, the problem is always
 % present in MATLAB 2014a and never in MATLAB 2015a. (All computers are
 % running Mavericks.) denis.pelli@nyu.edu, June 18, 2015
+%
+% Unfortunately it takes 3 seconds to run. I'm not sure why. It appears
+% that AppleScript is always slow.
+% denis.pelli@nyu.edu, June 18, 2015
 
 if 1
     % This short program demonstrates the problem, which is evident if you
