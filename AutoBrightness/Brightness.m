@@ -115,25 +115,20 @@ end
 % end
 try
     scriptPath = which('Brightness.applescript');
-    command = ['osascript "' scriptPath '"']; % Double quotes cope with spaces.
+    command = ['osascript "' scriptPath '"']; % Double quotes cope with spaces in scriptPath.
     if nargin > 0
-        command = [command,' ',num2str(screenNumber)];
+        command = [command ' ' num2str(screenNumber)];
     end
     if nargin > 1
-        command = [command,' ',num2str(newLevel)];
+        command = [command ' ' num2str(newLevel)];
     end
-    [status,oldString] = system(command); % THIS LINE TAKES 4.7 s ON MY MACBOOK PRO!
+    [status,oldString]=system(command); % THIS LINE TAKES 4.7 s ON MY MACBOOK PRO!
     oldLevel=str2double(oldString);
     if isempty(oldLevel)
-        error('Brightness applescript error: %s',oldString);
+        error('Make sure you have admin privileges, and that System Preferences is not tied up in a dialog. Brightness applescript error: %s. ',oldString);
     end
 catch e
     sca;
     error(e);
 end
-% When I ran Brightness today, I got an error message saying something like
-% "System Preferences application not running". Once I manually opened
-% System Preferences, Brightness ran fine, even after I closed System
-% Preferences. I think there's a way to launch an app in applescript, and
-% it would be good to add that to Brightness to avoid this rare failure
-% mode. denis.pelli@nyu.edu January 2018.
+
