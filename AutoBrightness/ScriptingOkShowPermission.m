@@ -1,4 +1,4 @@
-function ok=ScriptingOkShowPermission
+function [ok,status]=ScriptingOkShowPermission
 %ScriptingOkShowPermission returns true (1) or false (0), indicating
 % whether this application has permission to control the computer through
 % scripting.
@@ -27,7 +27,7 @@ if ~IsOSX
 end
 script='ScriptingOkShowPermission.applescript';
 scriptPath=which(script);
-if length(scriptPath)==0
+if isempty(scriptPath)
     error('Cannot find %s within the MATLAB path.',script);
 end
 command=sprintf('osascript "%s"',scriptPath);
