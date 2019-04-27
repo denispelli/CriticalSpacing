@@ -1,4 +1,4 @@
- % MATLAB script to run CriticalSpacing.m
+% MATLAB script to run CriticalSpacing.m
 % Copyright 2019, Denis G. Pelli, denis.pelli@nyu.edu
 
 %% DEFINE CONDITIONS
