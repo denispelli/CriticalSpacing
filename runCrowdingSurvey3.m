@@ -5,8 +5,8 @@
 clear o
 % o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
-o.experiment='CrowdingSurvey2';
+o.skipScreenCalibration=true; % Skip calibration to save time.
+o.experiment='CrowdingSurvey3';
 o.experimenter='';
 o.observer='';
 o.viewingDistanceCm=100;
@@ -15,6 +15,7 @@ o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.2; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
+o.brightnessSetting=0.5;
 o.trials=35;
 ooo={};
 
@@ -37,7 +38,7 @@ for ecc=[2.5 5 10]
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     oo=[o o2];
     ooo{end+1}=oo;
-    if ecc==2.5
+    if ecc==5
         ooPelli=oo;
         ooPelli(1).targetFont='Pelli';
         ooPelli(2).targetFont='Pelli';
@@ -128,7 +129,7 @@ end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' 'targetDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
-return
+% return
 
 %% Run.
 for i=1:length(ooo)
