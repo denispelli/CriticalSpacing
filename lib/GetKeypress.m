@@ -24,7 +24,7 @@ function response = GetKeypress(enableKeys,deviceIndex,returnOneChar)
 % enhanced.
 
 printLog = 0;
-if nargin >= 1 
+if nargin >= 1
    % enableKeys should be a vector of key codes returned by KbName.
    % If enableKeys is empty, [], then all keys are enabled.
    restrictKeys=true;
