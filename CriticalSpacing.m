@@ -554,7 +554,7 @@ o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
 o.isolatedTarget=false; % Set to true when measuring acuity for a single isolated letter. Not yet fully supported.
-
+o.brightnessSetting=0.5; % Default. Some observers find 1.0 painfully bright.
 % READ TEXT
 o.readSpacingDeg=0.3;
 o.readString={}; % The string of text to be read.
@@ -1626,10 +1626,9 @@ try
     if isempty(oo(1).experimenter)
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
-        Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'For the Experimenter/Administrator:',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'Please slowly type your name followed by RETURN.',...
-            instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,white);
+%         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please slowly type the name of the Experimenter who is supervising you, followed by RETURN.',...
+            instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
@@ -1662,7 +1661,7 @@ try
         [~,y]=DrawFormattedText(window,'Please slowly type your first name, then SPACE, then last name, followed by RETURN.',...
             instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,65);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,'Please type your name exactly the same way every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please type your FIRST and LAST names in exactly the same way every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
@@ -2107,7 +2106,11 @@ try
         cal.macModelName=MacModelName;
     end
     cal.screenOutput=[]; % only for Linux
-    cal.brightnessSetting=1.00; % default value
+    if isfinite(oo(oi).brightnessSetting)
+        cal.brightnessSetting=oo(oi).brightnessSetting;
+    else
+        cal.brightnessSetting=1.00; % default value
+    end
     cal.brightnessRMSError=0; % default value
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
     cal.screenWidthCm=screenWidthMm/10;
@@ -2134,13 +2137,12 @@ try
     assert(cal.screenWidthCm==screenWidthMm/10);
     if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
-        % Currently, in December 2018, my Brightness function
-        % writes reliably but seems to always fail when reading,
-        % returning -1. So we use my function to write (since
-        % Screen is unreliable there) and use Screen to read (since
-        % my Brightness is failing to read). By the way, the Screen
-        % function is quick writing and reading while my function
-        % is very slow (20 s) writing and reading.
+        % Currently, in December 2018, my Brightness function writes
+        % reliably but seems to always fail when reading, returning -1. So
+        % we use my function to write (since Screen is unreliable there)
+        % and use Screen to read (since my Brightness is failing to read).
+        % By the way, the Screen function is quick writing and reading
+        % while my function is very slow (20 s) writing and reading.
         useBrightnessFunction=ismac;
         if useBrightnessFunction
             if ~IsWin
@@ -2164,7 +2166,7 @@ try
                 end
                 ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
                 % Darshan discovered that some MacBook Pros are missing by
-                % a few percent, which doesn't matter, so i increased the
+                % a few percent, which doesn't matter, so I increased the
                 % tolerance from 1% to 10%. DGP April 2019
                 if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.1
                     error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
