@@ -1,11 +1,11 @@
 function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 % [oldSetting,failed] = AutoBrightness([screenNumber=0][, newSetting])
 %
-% I believe this script will only work if run from a macOS user account
-% with admin privileges, and if you give MATLAB permission to control the
-% computer. That is done in System Preferences:Privacy and required admin
-% privileges to set it.
-
+% I think the AppleScript AutoBrightness function will work only if the
+% macOS user account has admin privileges, and MATLAB has permission to
+% control your computer, granted in the System Preferences: Privacy panel,
+% which required admin privileges.
+%
 % AUTOBRIGHTNESS Get and set the checkbox called "Automatically adjust
 % brightness" on the macOS: System Preferences: Displays panel. The first
 % argument selects a screen, but has been tested only for screen 0 (the
