@@ -26,9 +26,9 @@ if 0
     o.task='read';
     o.thresholdParameter='spacing';
     o.targetFont='Monaco';
-    o.targetDeg=nan;
     o.getAlphabetFromDisk=false;
-    o.trials=2;
+    o.targetDeg=nan;
+    o.trials=40;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
