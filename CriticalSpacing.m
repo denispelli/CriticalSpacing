@@ -1,8 +1,8 @@
 function oo=CriticalSpacing(oIn)
 % BUGS:
-% When I quit, a small Figure window appears.
 % Enforce first and last name. Consider asking two questions.
 % Some people insist on typing in 3 letters, not just the middle one.
+%
 % o=CriticalSpacing(o);
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
 % threshold spacing and size) to help characterize the observer's vision.
@@ -554,7 +554,7 @@ o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
 o.isolatedTarget=false; % Set to true when measuring acuity for a single isolated letter. Not yet fully supported.
-o.brightnessSetting=0.5; % Default. Some observers find 1.0 painfully bright.
+o.brightnessSetting=0.77; % Default. Half luminance. Some observers find 1.0 painfully bright.
 % READ TEXT
 o.readSpacingDeg=0.3;
 o.readString={}; % The string of text to be read.
@@ -1626,12 +1626,14 @@ try
     if isempty(oo(1).experimenter)
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
-%         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'Please slowly type the name of the Experimenter who is supervising you, followed by RETURN.',...
+        %         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please slowly type the name of the Experimenter who is ',...
             instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
-            'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'supervising, followed by RETURN.',...
+            instructionalMarginPix,screenRect(4)/2-4*oo(1).textSize,black,white);
+%         Screen('TextSize',window,round(0.55*oo(1).textSize));
+%         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
+%             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
@@ -1658,10 +1660,10 @@ try
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        [~,y]=DrawFormattedText(window,'Please slowly type your first name, then SPACE, then last name, followed by RETURN.',...
+        DrawFormattedText(window,'Please slowly type your first name, then SPACE, then last name, followed by RETURN.',...
             instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,65);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,'Please type your FIRST and LAST names in exactly the same way every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please type your first and last names, like "Jane Doe" or "John Smith", in exactly the same way every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
@@ -2307,7 +2309,10 @@ try
             case 'read'
                 string=[string 'On each trial, you''ll read a paragraph. '];
             otherwise
-                string=[string 'On each trial, try to identify the target letter by typing that key. Please rest your eye on the crosshirs before each trial. '];
+                string=[string 'On each trial, try to identify the target letter by typing that key. Please rest your eye on the crosshairs before each trial. '];
+        end
+        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
+            string=[string 'When you see three letters, please report just the middle letter. '];
         end
         if oo(1).fixationOnScreen
             where='below';
@@ -3513,7 +3518,6 @@ try
                             oo(oi),window,oo(oi).stimulusRect,letterStruct,responseString);
                     end
                     trialData.reactionTimes(i)=secs-flipSecs;
-                    
                     if ismember(answer,[escapeChar graveAccentChar])
                         oo(1).quitBlock=true;
                         break;
