@@ -13,7 +13,10 @@ o.viewingDistanceCm=100;
 o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
-o.durationSec=0.2; % duration of display of target and flankers
+% For 2018-April 2019 this was nominally 200 ms, but actually delivered 280
+% ms when tested in April. I've now improved the code to more accurately
+% deliver the requested duration, and reduced the request to 150 m.
+o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
 o.trials=40;
 ooo={};
@@ -54,6 +57,7 @@ if 1
         o.borderLetter='X';
         o.minimumTargetPix=8;
         o.fixationLineWeightDeg=0.03;
+%        o.fixationLineWeightDeg=0.06;
         o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
         o.fixationCrossBlankedNearTarget=false;
         o.flankingDirection='radial';
