@@ -705,6 +705,8 @@ o.scriptName='';
 o.targetFontNumber=[];
 o.targetHeightOverWidth=nan;
 o.actualDurationSec=[];
+o.actualDurationTimerSec=[];
+o.actualDurationVBLSec=[];
 
 % PROCESS INPUT.
 % o is a single struct, and oIn may be an array of structs.
@@ -3135,8 +3137,8 @@ try
             Snd('Play',purr);
         end
         DrawCounter(oo);
-        Screen('Flip',window,[],1); % Display stimulus & fixation.
-        trialTimeSecs=GetSecs;
+        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1); % Display stimulus & fixation.
+        stimulusFlipSecs=GetSecs;
         if oo(oi).recordGaze
             img=snapshot(cam);
             % FUTURE: Write trial number and condition number in corner of
@@ -3158,10 +3160,9 @@ try
             end
         end
         if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
-            WaitSecs(oo(oi).durationSec); % Display letters.
+% WaitSecs(oo(oi).durationSec); % Display letters. OLD CODE before 4/30/2019
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
-            oo(oi).actualDurationSec(end+1)=GetSecs-trialTimeSecs;
-            %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-trialTimeSecs));
+            %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-stimulusFlipSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 if ~isempty(fixationLines)
                     Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
@@ -3169,7 +3170,24 @@ try
                 end
             end
             DrawCounter(oo);
-            Screen('Flip',window,[],1); % Remove stimulus. Display fixation.
+            % We request a duration that is half a frame short of that desired. Flip waits
+            % for the next flip after the requested time. This ought to extend our  
+            % interval by a random sample from the uniform distribution from 0 to 1 
+            % frame, with a mean of half a frame. This should give us a mean duration
+            % equal to that desired. We assess that in three ways, and print it out 
+            % at the end of the block.
+            [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,stimulusBeginSec+oo(oi).durationSec-0.5/60,1); % Remove stimulus. Display fixation.
+            % We measure stimulus duration in three slightly different ways.
+            % We use the VBLTimestamp and StimulusOnsetTime values returned by our
+            % call to Screen Flip. And we time the interval between return times
+            % of our two calls to Flip. The first Flip displays the stimulus
+            % and the second call erases it.
+            % All of these have the same purpose of recording what the true 
+            % stimulus duration is. The documentation of Screen Flip is a bit
+            % vague, so we play safe by measuring in three ways.
+            oo(oi).actualDurationSec(end+1)=stimulusEndSec-stimulusBeginSec;
+            oo(oi).actualDurationVBLSec(end+1)=stimulusEndVBLSec-stimulusBeginVBLSec;
+            oo(oi).actualDurationTimerSec(end+1)=GetSecs-stimulusFlipSecs;
             Screen('FillRect',window,white,oo(oi).stimulusRect);
             WaitSecs(0.2); % pause before response screen
             Screen('TextFont',window,oo(oi).textFont,0);
@@ -3500,7 +3518,7 @@ try
                     end
                     if streq(upper(answer),' ')
                         responsesNumber=length(responseString);
-                        if GetSecs-trialTimeSecs>oo(oi).secsBeforeSkipCausesGuess
+                        if GetSecs-stimulusFlipSecs>oo(oi).secsBeforeSkipCausesGuess
                             if oo(oi).speakEachLetter && oo(oi).useSpeech
                                 Speak('space');
                             end
@@ -3743,6 +3761,26 @@ try
         a=[a oo(oi).actualDurationSec];
         if max(oo(oi).actualDurationSec)>oo(oi).durationSec+2/60
             warning('Duration overrun by %.2 s.',max(oo(oi).actualDurationSec)-oo(oi).durationSec);
+        end
+        ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms. TIMER\n',...
+            oi,oo(oi).durationSec*1000, ...
+            1000*mean(oo(oi).actualDurationTimerSec),...
+            plusMinus,...
+            1000*std(oo(oi).actualDurationTimerSec),...
+            1000*max(oo(oi).actualDurationTimerSec));
+        a=[a oo(oi).actualDurationTimerSec];
+        if max(oo(oi).actualDurationTimerSec)>oo(oi).durationSec+2/60
+            warning('Duration overrun by %.2 s. TIMER',max(oo(oi).actualDurationTimerSec)-oo(oi).durationSec);
+        end
+        ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms. VBL\n',...
+            oi,oo(oi).durationSec*1000, ...
+            1000*mean(oo(oi).actualDurationVBLSec),...
+            plusMinus,...
+            1000*std(oo(oi).actualDurationVBLSec),...
+            1000*max(oo(oi).actualDurationVBLSec));
+        a=[a oo(oi).actualDurationVBLSec];
+        if max(oo(oi).actualDurationVBLSec)>oo(oi).durationSec+2/60
+            warning('Duration overrun by %.2 s. VBL',max(oo(oi).actualDurationVBLSec)-oo(oi).durationSec);
         end
     end
     ffprintf(ff,':: duration is %.0f%c%.0f ms, max %.0f ms.\n',...
