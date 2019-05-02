@@ -4,7 +4,7 @@
 %% DEFINE CONDITIONS
 clear o
 % o.printSizeAndSpacing=true;
-% o.useFractionOfScreenToDebug=0.3;
+o.useFractionOfScreenToDebug=0.3;
 o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey3';
 o.experimenter='';
@@ -15,8 +15,8 @@ o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.2; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.brightnessSetting=0.5;
 o.trials=35;
+o.brightnessSetting=0.77; % Default. Half luminance. Some observers find 1.0 painfully bright.
 ooo={};
 
 for ecc=[2.5 5 10]
@@ -120,7 +120,7 @@ for i=1:length(ooo)
         try
             oo=[oo ooo{i}];
         catch e
-            fprintf('Success with %d conditions in %d blocks, but failed on next block.\n',...
+            fprintf('Success building table with %d conditions in %d blocks, but failed on next block.\n',...
                 length(oo),max([oo.block]));
             throw(e)
         end
@@ -128,7 +128,9 @@ for i=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' 'targetDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
+disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'viewingDistanceCm' 'trials'}));
+fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
+    sum([oo.trials]),sum([oo.trials])/10);
 % return
 
 %% Run.
