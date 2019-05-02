@@ -480,7 +480,7 @@ cleanup=onCleanup(@() CloseWindowsAndCleanup);
 global skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
 global scratchWindow
-global instructionalMarginPix screenRect % For QuitBlock
+global instructionalMarginPix screenRect % For ProcessEscape
 persistent drawTextWarning
 persistent textCorpus fCorpus wCorpus
 global blockTrial blockTrials % used in DrawCounter.
@@ -1473,8 +1473,8 @@ try
         
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,...
-            double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),...
+        copyright=sprintf('Crowding and Acuity Test. Copyright %c 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.',169);
+        Screen('DrawText',window,double(copyright),...
             instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,...
             black,white,1);
         
@@ -1545,7 +1545,7 @@ try
         [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
             ,instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo=QuitBlock(oo);
+            oo=ProcessEscape(oo);
             return
         end
         if ~isempty(d)
@@ -1626,16 +1626,15 @@ try
     if isempty(oo(1).experimenter)
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
-        %         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         Screen('DrawText',window,'Please slowly type the name of the Experimenter who is ',...
             instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'supervising, followed by RETURN.',...
-            instructionalMarginPix,screenRect(4)/2-4*oo(1).textSize,black,white);
+            instructionalMarginPix,screenRect(4)/2-3.9*oo(1).textSize,black,white);
 %         Screen('TextSize',window,round(0.55*oo(1).textSize));
 %         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
 %             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1648,7 +1647,7 @@ try
             oo(i).experimenter=name;
         end
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo=QuitBlock(oo);
+            oo=ProcessEscape(oo);
             return
         end
     end % if isempty(oo(1).experimenter)
@@ -1659,13 +1658,16 @@ try
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        DrawFormattedText(window,'Please slowly type your first name, then SPACE, then last name, followed by RETURN.',...
-            instructionalMarginPix,screenRect(4)/2-3*oo(1).textSize,black,65);
+%         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+        DrawFormattedText(window,...
+            'Hello Observer,\nPlease slowly type your first name, then SPACE, then your last name, followed by RETURN.',...
+            instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,65,[],[],1.1);
         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,'Please type your first and last names, like "Jane Doe" or "John Smith", in exactly the same way every time.',instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'Please include both your first name and your last name, like "Jane Doe" or "John Smith", in exactly the same way every time.',...
+            instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double(copyright),...
+            instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1677,7 +1679,7 @@ try
             instructionalMarginPix,0.82*screenRect(4),...
             black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo=QuitBlock(oo);
+            oo=ProcessEscape(oo);
             return
         end
         if length(name)<3
@@ -2277,7 +2279,7 @@ try
     string=[string 'To continue, please hit RETURN. '];
     Screen('TextFont',window,oo(oi).textFont,0);
     Screen('TextSize',window,round(oo(oi).textSize*0.35));
-    Screen('DrawText',window,double('Crowding and Acuity Test. Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+    Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
     Screen('TextSize',window,oo(oi).textSize);
     string=strrep(string,'letter',symbolName);
     DrawFormattedText(window,string,...
@@ -2296,7 +2298,7 @@ try
     
     Screen('FillRect',window);
     if ismember(answer,[escapeChar graveAccentChar])
-        oo=QuitBlock(oo);
+        oo=ProcessEscape(oo);
         return
     end
     if oo(oi).showProgressBar
@@ -2729,7 +2731,7 @@ try
                 SetMouse(screenRect(3),screenRect(4),window);
                 answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
                 if ismember(answer,[escapeChar graveAccentChar])
-                    oo=QuitBlock(oo);
+                    oo=ProcessEscape(oo);
                     return
                 end
                 beginAfterKeypress=false;
@@ -3664,7 +3666,7 @@ try
     blockTrials=[]; % For DrawCounter
     % Quitting just this block or whole session?
     if oo(1).quitBlock
-        oo=QuitBlock(oo);
+        oo=ProcessEscape(oo);
         return
     end
     Screen('FillRect',window);
@@ -4009,18 +4011,29 @@ end
 end % function SetUpFixatiom
 
 
-function ooOut=QuitBlock(oo)
+function [ooOut,skipTrial]=ProcessEscape(oo)
 global window ff keepWindowOpen
-global instructionalMarginPix screenRect % For QuitBlock
-oo(1).quitBlock=true;
-Screen('FillRect',window);
-DrawCounter(oo);
-oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect,'dontClear');
-if oo(1).quitSession
-    ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
-else
-    ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
+global instructionalMarginPix screenRect % For ProcessEscape
+switch nargout
+    case 2
+        [oo(1).quitExperiment,oo(1).quitBlock,skipTrial]=...
+            OfferEscapeOptions(window,oo,instructionalMarginPix);
+    case 1
+        oo(1).quitExperiment,oo(1).quitBlock=...
+            OfferEscapeOptions(window,oo,instructionalMarginPix);
+    otherwise
+        error('ProcessEscape requires 1 or 2 output arguments.');
 end
+
+% oo(1).quitBlock=true;
+% Screen('FillRect',window);
+% DrawCounter(oo);
+% oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect,'dontClear');
+% if oo(1).quitSession
+%     ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
+% else
+%     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
+% end
 keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
 ooOut=oo;
 % Termination of CriticalSpacing will automatically invoke
