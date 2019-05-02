@@ -2364,8 +2364,16 @@ try
     end % for oi=1:conditions
     condList=shuffle(condList);
     presentation=0;
+    skipTrial=false;
     while presentation<length(condList)
-        presentation=presentation+1;
+        if skipTrial
+            % We arrive here if user canceled last trial. In that case, we
+            % don't count that trial and reshuffle all the remaining
+            % conditions.
+            condList(presentation:end)=shuffle(condList(presentation:end));
+        else
+            presentation=presentation+1;
+        end
         blockTrial=presentation; % For DrawCounter
         blockTrials=length(condList); % For DrawCounter
         oi=condList(presentation);
@@ -3519,8 +3527,14 @@ try
                     end
                     trialData.reactionTimes(i)=secs-flipSecs;
                     if ismember(answer,[escapeChar graveAccentChar])
-                        oo(1).quitBlock=true;
-                        break;
+                        [oo(1).quitExperiment,oo(1).quitBlock,skipTrial]=...
+                            OfferEscapeOptions(window,oo,instructionalMarginPix);
+                        if oo(1).quitBlock || oo(1).quitExperiment
+                            break
+                        end
+                        if skipTrial
+                            continue
+                        end
                     end
                     if streq(upper(answer),' ')
                         responsesNumber=length(responseString);
@@ -4011,26 +4025,4 @@ keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
 ooOut=oo;
 % Termination of CriticalSpacing will automatically invoke
 % CloseWindowsAndCleanup via the onCleanup mechanism.
-end
-
-function DrawCounter(oo)
-global window scratchWindow
-global blockTrial blockTrials
-% Display counter in lower right corner.
-if isempty(blockTrial)
-    message=sprintf('Block %d of %d.',...
-        oo(1).block,oo(1).blocksDesired);
-else
-    message=sprintf('Trial %d of %d. Block %d of %d.',...
-        blockTrial,blockTrials,oo(1).block,oo(1).blocksDesired);
-end
-counterSize=round(0.6*oo(1).textSize);
-oldTextSize=Screen('TextSize',window,counterSize);
-Screen('TextSize',scratchWindow,counterSize);
-counterBounds=TextBounds(scratchWindow,message,1);
-counterBounds=AlignRect(counterBounds,InsetRect(oo(1).stimulusRect,counterSize/4,counterSize/4),'right','bottom');
-white=WhiteIndex(window);
-black=BlackIndex(window);
-Screen('DrawText',window,message,counterBounds(1),counterBounds(4),black,white,1);
-Screen('TextSize',window,oldTextSize);
 end
