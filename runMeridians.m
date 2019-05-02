@@ -134,11 +134,11 @@ o.fixationCrossDeg=20; % 0, 3, and inf are a typical values.
 %       o.oneFlanker=one;
 %       o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];;
 %       o=CriticalSpacing(o);
-%       if o.quitSession
+%       if o.quitExperiment
 %          break;
 %       end
 %    end
-%    if o.quitSession
+%    if o.quitExperiment
 %       break;
 %    end
 % end

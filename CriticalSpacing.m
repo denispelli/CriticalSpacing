@@ -309,8 +309,8 @@ function oo=CriticalSpacing(oIn)
 % save to disk) results so far, and ask whether you're quitting the whole
 % session or proceeding to the next block. Quitting this block sets the
 % flag o.quitBlock, and quitting the whole session also sets the flag
-% o.quitSession (and o.isLastBlock=true and isLastBlock=true).
-% If o.quitSession is already set when you call CriticalSpacing, the
+% o.quitExperiment (and o.isLastBlock=true and isLastBlock=true).
+% If o.quitExperiment is already set when you call CriticalSpacing, the
 % CriticalSpacing returns immediately after processing arguments.
 % (CriticalSpacing ignores o.quitBlock on input.)
 %
@@ -515,7 +515,7 @@ o.blocksDesired=1;
 o.condition=1; % Integer count of the condition, starting at 1.
 o.conditionName='';
 o.quitBlock=false;
-o.quitSession=false;
+o.quitExperiment=false;
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
@@ -698,7 +698,7 @@ o.deviceIndex=-3; % all keyboard and keypad devices
 o.easyCount=0; % Number of easy presentations
 o.guessCount=0; % Number of artificial guess responses
 o.quitBlock=false;
-o.quitSession=false;
+o.quitExperiment=false;
 o.script='';
 o.scriptFullFileName='';
 o.scriptName='';
@@ -759,7 +759,7 @@ unknownFields=unique(unknownFields);
 if ~isempty(unknownFields)
     error(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
 end
-if oo(1).quitSession
+if oo(1).quitExperiment
     % Quick return. We're skipping every block in the session.
     keepWindowOpen=false;
     return
@@ -3849,7 +3849,7 @@ catch e
     keepWindowOpen=false;
     rethrow(e);
 end
-keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
+keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitExperiment;
 return
 end % function CriticalSpacing
 
@@ -4028,13 +4028,13 @@ end
 % oo(1).quitBlock=true;
 % Screen('FillRect',window);
 % DrawCounter(oo);
-% oo(1).quitSession=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect,'dontClear');
-% if oo(1).quitSession
+% oo(1).quitExperiment=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect,'dontClear');
+% if oo(1).quitExperiment
 %     ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
 % else
 %     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
 % end
-keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitSession;
+keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitExperiment;
 ooOut=oo;
 % Termination of CriticalSpacing will automatically invoke
 % CloseWindowsAndCleanup via the onCleanup mechanism.

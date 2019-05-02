@@ -125,7 +125,7 @@ for i=1:length(oo)
     if ~o.quitBlock
         fprintf('Finished condition %d.\n',i);
     end
-    if o.quitSession
+    if o.quitExperiment
         break
     end
     oOld=o;

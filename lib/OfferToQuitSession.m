@@ -1,5 +1,5 @@
-function quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect,dontClear)
-% quitSession=OfferToQuitSession(window,oo,instructionalMargin,screenRect,dontClear)
+function quitExperiment=OfferToQuitSession(window,oo,instructionalMargin,screenRect,dontClear)
+% quitExperiment=OfferToQuitSession(window,oo,instructionalMargin,screenRect,dontClear)
 % Setting dontClear='dontClear' allows you to clear the screen yourself and
 % add annotations to our display before calling.
 global keepWindowOpen
@@ -26,9 +26,9 @@ Screen('DrawText',window,double(copyright),instructionalMargin,screenRect(4)-0.5
 Screen('TextSize',window,oo(1).textSize);
 Screen('Flip',window);
 answer=GetKeypress([returnKeyCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
-quitSession=ismember(answer,[escapeChar,graveAccentChar]);
+quitExperiment=ismember(answer,[escapeChar,graveAccentChar]);
 if oo(1).useSpeech
-    if quitSession
+    if quitExperiment
         Speak('Escape. Done.');
     elseif oo(1).isLastBlock
         Speak('Done.');
@@ -36,7 +36,7 @@ if oo(1).useSpeech
         Speak('Proceeding to next block.');
     end
 end
-if quitSession || oo(1).isLastBlock
+if quitExperiment || oo(1).isLastBlock
     keepWindowOpen=false;
 else
     keepWindowOpen=true;

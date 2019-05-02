@@ -126,7 +126,7 @@ o.eccentricityXYDeg=[0 0];
 for one=0:1
    o.oneFlanker=one;
    o=CriticalSpacing(o);
-   if o.quitSession
+   if o.quitExperiment
       break;
    end
 end
@@ -144,11 +144,11 @@ end
 %       o.oneFlanker=one;
 %       o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
 %       o=CriticalSpacing(o);
-%       if o.quitSession
+%       if o.quitExperiment
 %          break;
 %       end
 %    end
-%    if o.quitSession
+%    if o.quitExperiment
 %       break;
 %    end
 % end

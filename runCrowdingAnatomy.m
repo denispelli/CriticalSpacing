@@ -179,7 +179,7 @@ for i=1:length(conditions)
       Speak(sprintf('Change viewing distance to %.0f centimeters.',conditions(i).viewingDistanceCm));
    end
    o=CriticalSpacing([conditions(i) conditions(i)]); % Identical conditions, interleaved.
-   if o(1).quitSession
+   if o(1).quitExperiment
       break
    end
 end

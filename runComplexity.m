@@ -206,7 +206,7 @@ for i=1:length(ooo)
     if ~any([oo.quitBlock])
         fprintf('Finished block %d.\n',i);
     end
-    if any([oo.quitSession])
+    if any([oo.quitExperiment])
         break
     end
     old=oo(1); % Allow reuse of settings.

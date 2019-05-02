@@ -171,7 +171,7 @@ for i=1:length(ooo)
     [ooo{i}.isFirstBlock]=deal(i==1);
     [ooo{i}.isLastBlock]=deal(i==length(ooo));
     ooo{i}=CriticalSpacing(ooo{i});
-    if any([ooo{i}.quitSession])
+    if any([ooo{i}.quitExperiment])
         break
     end
 end

@@ -136,11 +136,11 @@ for ecc=[3 10 30 60]
       o.oneFlanker=one;
       o.eccentricityXYDeg=ecc*[sind(ori) cosd(ori)];
       o=CriticalSpacing(o);
-      if o.quitSession
+      if o.quitExperiment
          break;
       end
    end
-   if o.quitSession
+   if o.quitExperiment
       break;
    end
 end

@@ -4,7 +4,7 @@
 %% DEFINE CONDITIONS
 clear o
 % o.printSizeAndSpacing=true;
-o.useFractionOfScreenToDebug=0.3;
+% o.useFractionOfScreenToDebug=0.3;
 o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey3';
 o.experimenter='';
@@ -13,10 +13,10 @@ o.viewingDistanceCm=100;
 o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
-o.durationSec=0.2; % duration of display of target and flankers
+o.durationSec=0.15; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
 o.trials=35;
-o.brightnessSetting=0.77; % Default. Half luminance. Some observers find 1.0 painfully bright.
+o.brightnessSetting=0.77; % Half luminance. Some observers find 1.0 painfully bright.
 ooo={};
 
 for ecc=[2.5 5 10]
@@ -144,7 +144,7 @@ for i=1:length(ooo)
     [ooo{i}.isFirstBlock]=deal(i==1);
     [ooo{i}.isLastBlock]=deal(i==length(ooo));
     ooo{i}=CriticalSpacing(ooo{i});
-    if any([ooo{i}.quitSession])
+    if any([ooo{i}.quitExperiment])
         break
     end 
 end
