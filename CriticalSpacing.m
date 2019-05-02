@@ -52,6 +52,12 @@ function oo=CriticalSpacing(oIn)
 % data folder. runCriticalSpacing takes 5 min to test one observer (with 20
 % trials per threshold), measuring two thresholds, interleaved.
 %
+% ESCAPE & RESUME. Every command that accepts keyboard input accepts an
+% ESCAPE key. This brings up a dialog offering three choices: to quit the
+% whole experiment, to quit the block and begin the next block, to resume
+% back where you escaped from. If resuming, the remaining trials are
+% shuffled. May 1, 2019.
+%
 % PUBLICATION. You can read more about this program and its purpose in our
 % 2016 article:
 %
