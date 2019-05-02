@@ -5,7 +5,7 @@
 clear o
 % o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
-o.skipScreenCalibration=true; % Skip calibration to save time.
+% o.skipScreenCalibration=true; % Skip calibration to save time.
 o.experiment='CrowdingSurvey3';
 o.experimenter='';
 o.observer='';
