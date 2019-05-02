@@ -10,9 +10,9 @@ o=oo(1);
 if true
     % Set up default values for parameters from NoiseDiscrimination that
     % are not defined in CriticalSpacing.
-    o.speakEachLetter=false; % Temporary, as this parameter may not yet be implemented.
-    o.useSpeech=false; % Temporary, as this parameter may not yet be implemented.
-    o.gray1=255; % Temporary, as this parameter may not yet be implemented.
+    % o.useSpeech is defined in CriticalSpacing.
+    o.speakEachLetter=false; % Not used in CriticalSpacing.
+    o.gray1=255; % Not used in CriticalSpacing.
     if ~isfield(o,'textFont') || isempty(o.textFont)
         o.textFont='Arial';
     end
