@@ -1545,8 +1545,12 @@ try
         [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
             ,instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo=ProcessEscape(oo);
-            return
+            [oo,tryAgain]=ProcessEscape(oo);
+            if tryAgain
+                continue
+            else
+                return
+            end
         end
         if ~isempty(d)
             inputDistanceCm=str2num(d);
@@ -1623,7 +1627,7 @@ try
     ListenChar(2); % no echo
     
     % Ask experimenter name
-    if isempty(oo(1).experimenter)
+    while isempty(oo(1).experimenter)
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'Please slowly type the name of the Experimenter who is ',...
@@ -1647,10 +1651,14 @@ try
             oo(i).experimenter=name;
         end
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo=ProcessEscape(oo);
-            return
+            [oo,tryAgain]=ProcessEscape(oo);
+            if tryAgain
+                continue
+            else
+                return
+            end
         end
-    end % if isempty(oo(1).experimenter)
+    end % while isempty(oo(1).experimenter)
     
     % Ask observer name
     Screen('FillRect',window);
@@ -1679,8 +1687,12 @@ try
             instructionalMarginPix,0.82*screenRect(4),...
             black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
-            oo=ProcessEscape(oo);
-            return
+            [oo,tryAgain]=ProcessEscape(oo);
+            if tryAgain
+                continue
+            else
+                return
+            end
         end
         if length(name)<3
             Screen('FillRect',window);
@@ -2277,30 +2289,40 @@ try
         string=[string 'Look in the middle of the screen, ignoring the edges of the screen. '];
     end
     string=[string 'To continue, please hit RETURN. '];
-    Screen('TextFont',window,oo(oi).textFont,0);
-    Screen('TextSize',window,round(oo(oi).textSize*0.35));
-    Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
-    Screen('TextSize',window,oo(oi).textSize);
-    string=strrep(string,'letter',symbolName);
-    DrawFormattedText(window,string,...
-        instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
-        black,length(instructionalTextLineSample)+3,[],[],1.1);
-    DrawCounter(oo);
-    Screen('Flip',window,[],1);
-    if false && oo(oi).useSpeech
-        string=strrep(string,'\n','');
-        string=strrep(string,'eye(s)','eyes');
-        Speak(string);
-    end
-    SetMouse(screenRect(3),screenRect(4),window);
-    answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],...
-        oo(oi),window,oo(oi).stimulusRect);
+    tryAgain=true;
+    while tryAgain
+        Screen('TextFont',window,oo(oi).textFont,0);
+        Screen('TextSize',window,round(oo(oi).textSize*0.35));
+        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('TextSize',window,oo(oi).textSize);
+        string=strrep(string,'letter',symbolName);
+        DrawFormattedText(window,string,...
+            instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
+            black,length(instructionalTextLineSample)+3,[],[],1.1);
+        DrawCounter(oo);
+        Screen('Flip',window,[],1);
+        if false && oo(oi).useSpeech
+            string=strrep(string,'\n','');
+            string=strrep(string,'eye(s)','eyes');
+            Speak(string);
+        end
+        SetMouse(screenRect(3),screenRect(4),window);
+        answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],...
+            oo(oi),window,oo(oi).stimulusRect);
+        Screen('FillRect',window);
+        tryAgain=false;
+        if ismember(answer,[escapeChar graveAccentChar])
+            [oo,tryAgain]=ProcessEscape(oo);
+            if tryAgain
+                continue
+            else
+                return
+            end
+        end
+    end % while tryAgain
     
-    Screen('FillRect',window);
-    if ismember(answer,[escapeChar graveAccentChar])
-        oo=ProcessEscape(oo);
-        return
-    end
+%     tryAgain=true;
+%     while tryAgain
     if oo(oi).showProgressBar
         string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the block. ';
     else
@@ -2346,9 +2368,9 @@ try
         beginAfterKeypress=true;
     else
         beginAfterKeypress=false;
-        % In this case, we ought to do something to print the string about the
-        % progress bar, if there is a progress bar. Right now I'm focused on
-        % testing with fixation.
+        % In this case, we ought to do something to print the string about
+        % the progress bar, if there is a progress bar. Right now I'm
+        % focused on testing with fixation.
     end
     easeRequest=0; % Positive to request easier trials.
     easyCount=0; % Number of easy presentations
@@ -2707,62 +2729,73 @@ try
             oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
-                oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
-        % Prepare to draw fixation cross.
-        fixationLines=ComputeFixationLines2(oo(oi).fix);
-        % Set up fixation.
-        if ~oo(oi).repeatedTargets && oo(oi).useFixation
-            % Draw fixation.
-            if ~isempty(fixationLines)
-                Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
-            end
+        if oo(oi).printSizeAndSpacing;
+            fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
+                oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg);
         end
-        if oo(oi).showProgressBar
-            Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-            r=progressBarRect;
-            r(4)=round(r(4)*(1-presentation/length(condList)));
-            Screen('FillRect',window,[220 220 220],r); % grey background
-        end
-        DrawCounter(oo);
-        Screen('Flip',window,[],1); % Display instructions and fixation.
-        if oo(oi).useFixation
-            if beginAfterKeypress
-                SetMouse(screenRect(3),screenRect(4),window);
-                answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
-                if ismember(answer,[escapeChar graveAccentChar])
-                    oo=ProcessEscape(oo);
-                    return
-                end
-                beginAfterKeypress=false;
-            end
-            Screen('FillRect',window,white,oo(oi).stimulusRect);
-            Screen('FillRect',window,white,clearRect);
-            % Define fixation bounds during first trial, for rest of
-            % trials in block.
+        tryAgain=true;
+        while tryAgain
+            tryAgain=false;
+            DrawFormattedText(window,string,...
+                x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+            fixationLines=ComputeFixationLines2(oo(oi).fix);
+            % Set up fixation.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 % Draw fixation.
                 if ~isempty(fixationLines)
-                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
+            end
+            if oo(oi).showProgressBar
+                Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+                r=progressBarRect;
+                r(4)=round(r(4)*(1-presentation/length(condList)));
+                Screen('FillRect',window,[220 220 220],r); % grey background
             end
             DrawCounter(oo);
-            Screen('Flip',window,[],1); % Display fixation.
-            WaitSecs(1); % Duration of fixation display, before stimulus appears.
-            Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
-            Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
-            if ~oo(oi).repeatedTargets && oo(oi).useFixation
-                % Draw fixation.
-                if ~isempty(fixationLines)
-                    % Paint white border next to the black line.
-                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+            Screen('Flip',window,[],1); % Display instructions and fixation.
+            if oo(oi).useFixation
+                if beginAfterKeypress
+                    SetMouse(screenRect(3),screenRect(4),window);
+                    answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
+                    if ismember(answer,[escapeChar graveAccentChar])
+                        [oo,tryAgain]=ProcessEscape(oo);
+                        if tryAgain
+                            continue
+                        else
+                            return
+                        end
+                    end
+                    beginAfterKeypress=false;
                 end
+                Screen('FillRect',window,white,oo(oi).stimulusRect);
+                Screen('FillRect',window,white,clearRect);
+                % Define fixation bounds during first trial, for rest of
+                % trials in block.
+                if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                    % Draw fixation.
+                    if ~isempty(fixationLines)
+                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    end
+                end
+                DrawCounter(oo);
+                Screen('Flip',window,[],1); % Display fixation.
+                WaitSecs(1); % Duration of fixation display, before stimulus appears.
+                Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
+                Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
+                if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                    % Draw fixation.
+                    if ~isempty(fixationLines)
+                        % Paint white border next to the black line.
+                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    end
+                end
+            else
+                Screen('FillRect',window); % Clear screen.
             end
-        else
-            Screen('FillRect',window); % Clear screen.
-        end
+        end % while tryAgain
         switch oo(oi).task
             case 'read'
                 % Compute desired font size for the text to be read.
@@ -3460,7 +3493,7 @@ try
                     Screen('Flip',window);
                     choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
                     % Have yet to implement support for ESCAPE here.
-                    response=GetKeypress([choiceKeycodes ]); % escapeKeyCode graveAccentKeyCode
+                    response=GetKeypress(choiceKeycodes); % escapeKeyCode graveAccentKeyCode
                     if ismember(response,{'1' '2' '3'})
                         response=str2num(response);
                         answer=iWords(response); % Observer chose wCorpus{answer}.
@@ -3663,9 +3696,8 @@ try
     end % for presentation=1:length(condList)
     blockTrial=[]; % For DrawCounter
     blockTrials=[]; % For DrawCounter
-    % Quitting just this block or whole session?
+    % Quitting just this block or whole session.
     if oo(1).quitBlock || oo(1).quitExperiment
-%         oo=ProcessEscape(oo);
         return
     end
     Screen('FillRect',window);
@@ -4009,10 +4041,9 @@ else
 end
 end % function SetUpFixatiom
 
-
 function [ooOut,skipTrial]=ProcessEscape(oo)
 global window ff keepWindowOpen
-global instructionalMarginPix screenRect % For ProcessEscape
+global instructionalMarginPix % For ProcessEscape
 skipTrial=false;
 switch nargout
     case 2
@@ -4024,19 +4055,15 @@ switch nargout
     otherwise
         error('ProcessEscape requires 1 or 2 output arguments.');
 end
+keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitExperiment;
+ooOut=oo;
 
-% oo(1).quitBlock=true;
-% Screen('FillRect',window);
-% DrawCounter(oo);
-% oo(1).quitExperiment=OfferToQuitSession(window,oo,instructionalMarginPix,screenRect,'dontClear');
 % if oo(1).quitExperiment
 %     ffprintf(ff,'*** User typed ESCAPE twice. Session terminated.\n');
 % else
 %     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
 % end
 
-keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitExperiment;
-ooOut=oo;
 % Termination of CriticalSpacing will automatically invoke
 % CloseWindowsAndCleanup via the onCleanup mechanism.
 end
