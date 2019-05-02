@@ -60,8 +60,10 @@ else
 end
 % Set background color for DrawFormattedText.
 Screen('DrawText',window,' ',0,0,black,backgroundColor,1);
-lastBlock=isfield(o,'block') && isfield(o,'blocksDesired') && o.block>=o.blocksDesired;
-if lastBlock
+if ~isfield(o,'isLastBlock')
+    o.isLastBlock=isfield(o,'block') && isfield(o,'blocksDesired') && o.block>=o.blocksDesired;
+end
+if o.isLastBlock
     nextBlockMsg='';
 else
     nextBlockMsg='Or hit RETURN to proceed to the next block. ';
@@ -71,8 +73,8 @@ if nargout==3
 else
    nextTrialMsg='';
 end
+%     'Hit RETURN to proceed to the next block. ' 
 string=['You escaped. Any incomplete trial was canceled. ' ...
-    'Hit RETURN to proceed to next block. ' ...
     'Hit ESCAPE again to quit the whole experiment. '...
     nextBlockMsg nextTrialMsg];
 DrawFormattedText(window,string,textMarginPix,1*o.textSize+y,black,60,[],[],1.1);
