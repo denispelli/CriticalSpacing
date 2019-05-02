@@ -69,7 +69,7 @@ else
     nextBlockMsg='Or hit RETURN to proceed to the next block. ';
 end
 if nargout==3
-   nextTrialMsg='Or hit SPACE to proceed to the next trial.';
+   nextTrialMsg='Or hit SPACE to resume from where you escaped.';
 else
    nextTrialMsg='';
 end
