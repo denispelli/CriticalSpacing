@@ -949,14 +949,14 @@ try
         ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
         scratchWindow=Screen('OpenOffscreenWindow',-1,[],screenRect,8);
     else
-        windowOpen=~isempty(Screen('Windows'));
+        windowsNowOpen=length(Screen('Windows'));
         kind=Screen(window,'WindowKind');
         if kind~=1
-            error('Invalid "window" pointer. %d windows open.',windowOpen);
+            error('Not first block, yet "window" pointer is invalid. %d windows open.',windowsNowOpen);
         end
         kind=Screen(scratchWindow,'WindowKind');
         if kind~=-1
-            error('Invalid "scratchWindow" pointer. %d windows open.',windowOpen);
+            error('Not first block, yet "scratchWindow" pointer is invalid. %d windows open.',windowsNowOpen);
         end
     end
     white=WhiteIndex(window);
@@ -3529,8 +3529,7 @@ try
                     end
                     trialData.reactionTimes(i)=secs-flipSecs;
                     if ismember(answer,[escapeChar graveAccentChar])
-                        [oo(1).quitExperiment,oo(1).quitBlock,skipTrial]=...
-                            OfferEscapeOptions(window,oo,instructionalMarginPix);
+                        [oo,skipTrial]=ProcessEscape(oo);
                         if oo(1).quitBlock || oo(1).quitExperiment
                             break
                         end
@@ -3665,8 +3664,8 @@ try
     blockTrial=[]; % For DrawCounter
     blockTrials=[]; % For DrawCounter
     % Quitting just this block or whole session?
-    if oo(1).quitBlock
-        oo=ProcessEscape(oo);
+    if oo(1).quitBlock || oo(1).quitExperiment
+%         oo=ProcessEscape(oo);
         return
     end
     Screen('FillRect',window);
@@ -4014,12 +4013,13 @@ end % function SetUpFixatiom
 function [ooOut,skipTrial]=ProcessEscape(oo)
 global window ff keepWindowOpen
 global instructionalMarginPix screenRect % For ProcessEscape
+skipTrial=false;
 switch nargout
     case 2
         [oo(1).quitExperiment,oo(1).quitBlock,skipTrial]=...
             OfferEscapeOptions(window,oo,instructionalMarginPix);
     case 1
-        oo(1).quitExperiment,oo(1).quitBlock=...
+        [oo(1).quitExperiment,oo(1).quitBlock]=...
             OfferEscapeOptions(window,oo,instructionalMarginPix);
     otherwise
         error('ProcessEscape requires 1 or 2 output arguments.');
@@ -4034,6 +4034,7 @@ end
 % else
 %     ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
 % end
+
 keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitExperiment;
 ooOut=oo;
 % Termination of CriticalSpacing will automatically invoke
