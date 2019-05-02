@@ -218,7 +218,7 @@ for i=1:length(oo)
    if ~o.quitBlock
       fprintf('Finished row %d.\n',i);
    end
-   if o.quitSession
+   if o.quitExperiment
       break
    end
 end
