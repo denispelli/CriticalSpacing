@@ -21,7 +21,8 @@ black=0;
 white=255;
 DrawFormattedText(window,string,instructionalMargin,instructionalMargin-0.5*oo(1).textSize,black,65,[],[],1.1);
 Screen('TextSize',window,round(oo(1).textSize*0.35));
-Screen('DrawText',window,double('Crowding and Acuity Test, Copyright 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.'),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
+copyright=sprintf('Crowding and Acuity Test. Copyright %c 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.',169);
+Screen('DrawText',window,double(copyright),instructionalMargin,screenRect(4)-0.5*instructionalMargin,black,white,1);
 Screen('TextSize',window,oo(1).textSize);
 Screen('Flip',window);
 answer=GetKeypress([returnKeyCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
@@ -35,9 +36,7 @@ if oo(1).useSpeech
         Speak('Proceeding to next block.');
     end
 end
-if quitSession
-    keepWindowOpen=false;
-elseif oo(1).isLastBlock
+if quitSession || oo(1).isLastBlock
     keepWindowOpen=false;
 else
     keepWindowOpen=true;
