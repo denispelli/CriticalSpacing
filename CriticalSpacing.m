@@ -308,7 +308,7 @@ function oo=CriticalSpacing(oIn)
 % left of keyboard) as equivalent. CriticalSpacing will then print out (and
 % save to disk) results so far, and ask whether you're quitting the whole
 % session or proceeding to the next block. Quitting this block sets the
-% flag o.quitBlock, and quitting the whole session also sets the flag
+% flag o.quitBlock, and quitting the experiment also sets the flag
 % o.quitExperiment (and o.isLastBlock=true and isLastBlock=true).
 % If o.quitExperiment is already set when you call CriticalSpacing, the
 % CriticalSpacing returns immediately after processing arguments.
@@ -3696,7 +3696,7 @@ try
     end % for presentation=1:length(condList)
     blockTrial=[]; % For DrawCounter
     blockTrials=[]; % For DrawCounter
-    % Quitting just this block or whole session.
+    % Quitting just this block or experiment.
     if oo(1).quitBlock || oo(1).quitExperiment
         return
     end
