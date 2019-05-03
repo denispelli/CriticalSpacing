@@ -59,6 +59,7 @@ if 1
     for ecc=[ 2.5 ]
         o.conditionName='crowding';
         o.task='identify';
+        o.trials=40;
         o.targetDeg=2;
         o.spacingDeg=2;
         o.thresholdParameter='spacing';
@@ -107,7 +108,7 @@ if 1
     end
 end
 if 1
-    for ecc=[0 ]
+    for ecc=0
         o.conditionName='crowding';
         o.targetDeg=2;
         o.spacingDeg=2;
@@ -157,9 +158,9 @@ for i=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' ...
+disp(t(:,{'block' 'experiment' 'conditionName' 'trials' 'targetFont' 'observer' ...
     'targetDeg' 'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
-return
+% return
 
 %% Run.
 for i=1:length(ooo)
