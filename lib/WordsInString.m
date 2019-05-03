@@ -2,6 +2,8 @@ function words=WordsInString(string)
 % Parse text into a list of words.
 % denis.pelli@nyu.edu
 % April 18, 2019
+% May, 2019. Changed "newline" to char(10), because that symbol is not
+% defined in old versions of MATLAB. Introduced in R2016b.
 rem=string;
 words={};
 rem=strrep(rem,'"','');    % Remove double quote.
