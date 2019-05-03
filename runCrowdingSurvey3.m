@@ -19,12 +19,12 @@ o.trials=35;
 o.brightnessSetting=0.87; % Half luminance. Some observers find 1.0 painfully bright.
 ooo={};
 
-for ecc=[2.5 5 10]
+for ecc=[10 5 2.5]
     o.conditionName='crowding';
     o.targetDeg=2;
     o.spacingDeg=2;
     o.thresholdParameter='spacing';
-    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+    o.eccentricityXYDeg=[0 ecc]; % Distance of target from fixation. Positive up and to right.
     o.targetFont='Sloan';
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
@@ -37,6 +37,13 @@ for ecc=[2.5 5 10]
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     oo=[o o2];
+    if abs(oo(1).eccentricityXYDeg(2))>=10
+        oo(1).viewingDistanceCm=25;
+        oo(2).viewingDistanceCm=25;
+    else
+        oo(1).viewingDistanceCm=50;
+        oo(2).viewingDistanceCm=50;
+    end
     ooo{end+1}=oo;
     if ecc==5
         ooPelli=oo;
@@ -50,6 +57,13 @@ for ecc=[2.5 5 10]
     end
     oo(1).eccentricityXYDeg=flip(oo(1).eccentricityXYDeg);
     oo(2).eccentricityXYDeg=flip(oo(2).eccentricityXYDeg);
+    if abs(oo(1).eccentricityXYDeg(2))>=10
+        oo(1).viewingDistanceCm=25;
+        oo(2).viewingDistanceCm=25;
+    else
+        oo(1).viewingDistanceCm=50;
+        oo(2).viewingDistanceCm=50;
+    end
     ooo{end+1}=oo;
 end
 if 1
