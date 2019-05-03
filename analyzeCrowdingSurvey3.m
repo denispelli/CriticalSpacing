@@ -108,6 +108,7 @@ for i=1:length(observers)
     s(i).conditions=length(oo1);
     for oi=1:length(oo1) % Iterate over all conditions for this observer.
         s(i).eccentricityXYDeg(1:2,oi)=oo1(oi).eccentricityXYDeg;
+        s(i).radialDeg(oi)=norm(oo1(oi).eccentricityXYDeg);
         s(i).beginningTime=oo1(1).beginningTime;
         s(i).localHostName=oo1(1).localHostName;
         s(i).experimenter=oo1(1).experimenter;
@@ -165,6 +166,40 @@ if 1
     tableFile=fullfile(fileparts(mfilename('fullpath')),'data',[tableTitle '.csv']);
     writetable(t(:,{'observer' 'conditions' 'localHostName' 'date' 'beginningTime' ...
         'experimenter' }),tableFile);
+end
+% return
+% Plot crowding function for each observer.
+figure
+r=Screen('Rect',0);
+ratio=r(3)/r(4);
+m=ceil(sqrt(length(s)/ratio));
+n=ceil(length(s)/m);
+% oi indexs through the observers.
+for oi=1:length(s)
+    subplot(m,n,oi);
+    [~,jj]=sort(s(oi).radialDeg);
+    ecc=s(oi).radialDeg(jj);
+    spacing=s(oi).spacingDeg(jj);
+    color={'r' 'b'};
+    for k=1:length(color)
+        hv=s(oi).eccentricityXYDeg(k,jj)==0 & isfinite(spacing);
+        ec=ecc(hv);
+        sp=spacing(hv);
+        plot(ec,sp,[color{k} 'x']);
+        hold on
+        clear medsp
+        for j=1:length(ec)
+            medsp(j)=median(sp(ec==ec(j)));
+        end
+        plot(ec,medsp,[color{k} '-']);
+    end
+    title(s(oi).observer)
+    xlabel('Ecc (deg)');
+    ylabel('Spacing (deg)');
+    legend('horizontal','vertical');
+    legend('boxoff');
+    legend('Location','northwest');
+    ylim([0 4]);
 end
 return
 
