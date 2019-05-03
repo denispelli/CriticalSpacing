@@ -5,8 +5,8 @@
 clear o
 % o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
-o.skipScreenCalibration=true; % Skip calibration to save time.
-o.experiment='CrowdingSurvey';
+% o.skipScreenCalibration=true; % Skip calibration to save time.
+o.experiment='Reading';
 o.experimenter='';
 o.observer='';
 o.viewingDistanceCm=100;
@@ -21,7 +21,7 @@ o.spacingDeg=nan;
 o.fixationLineWeightDeg=0.03;
 o.fixationCrossDeg=3;
 o.fixationCrossBlankedNearTarget=false;
-
+o.brightnessSetting=0.87; % Half luminance. Some observers find 1.0 painfully bright.
 ooo={};
 
 if 1
