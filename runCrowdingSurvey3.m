@@ -45,16 +45,6 @@ for ecc=[10 5 2.5]
         oo(2).viewingDistanceCm=50;
     end
     ooo{end+1}=oo;
-    if ecc==5
-        ooPelli=oo;
-        ooPelli(1).targetFont='Pelli';
-        ooPelli(2).targetFont='Pelli';
-        ooPelli(1).alphabet='123456789';
-        ooPelli(2).alphabet='123456789';
-        ooPelli(1).borderLetter='$';
-        ooPelli(2).borderLetter='$';
-        ooo{end+1}=ooPelli;
-    end
     oo(1).eccentricityXYDeg=flip(oo(1).eccentricityXYDeg);
     oo(2).eccentricityXYDeg=flip(oo(2).eccentricityXYDeg);
     if abs(oo(1).eccentricityXYDeg(2))>=10
@@ -65,6 +55,16 @@ for ecc=[10 5 2.5]
         oo(2).viewingDistanceCm=50;
     end
     ooo{end+1}=oo;
+    if ecc==5
+        ooPelli=oo;
+        ooPelli(1).targetFont='Pelli';
+        ooPelli(2).targetFont='Pelli';
+        ooPelli(1).alphabet='123456789';
+        ooPelli(2).alphabet='123456789';
+        ooPelli(1).borderLetter='$';
+        ooPelli(2).borderLetter='$';
+        ooo{end+1}=ooPelli;
+    end
 end
 if 1
     for ecc=[0 5]
