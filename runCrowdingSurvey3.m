@@ -16,7 +16,7 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 
 o.durationSec=0.15; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
 o.trials=35;
-o.brightnessSetting=0.77; % Half luminance. Some observers find 1.0 painfully bright.
+o.brightnessSetting=0.87; % Half luminance. Some observers find 1.0 painfully bright.
 ooo={};
 
 for ecc=[2.5 5 10]
