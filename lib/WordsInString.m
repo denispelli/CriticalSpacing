@@ -11,7 +11,7 @@ rem=strrep(rem,' -',' ');  % Remove leading dash.
 rem=strrep(rem,'- ',' ');  % Remove trailing dash.
 % Spare embedded apostrophes and dashes.
 while ~isempty(rem)
-    [words{end+1},rem]=strtok(rem,[newline char(255) ' Ž,:;.?!"0123456789?']);
+    [words{end+1},rem]=strtok(rem,[char(10) char(255) ' ,:;.?!"0123456789?']);
 end
 if isempty(words{end})
     words={words{1:end-1}};
