@@ -531,7 +531,7 @@ o.speakEachLetter=true;
 o.speakEncouragement=false;
 o.speakViewingDistance=false;
 o.usePurring=false;
-o.useSpeech=true;
+o.useSpeech=false;
 
 % VISUAL STIMULUS
 o.contrast=1; % Nominal contrast, not calibrated.
@@ -2810,6 +2810,10 @@ try
                 boundsRect=Screen('TextBounds',window,'12345678901234567890');
                 widthPixPerSize=RectWidth(boundsRect)/20/oo(1).textSize;
                 oo(oi).readSize=round(oo(oi).targetDeg*pixPerDeg/widthPixPerSize);
+                if ~isfinite(oo(oi).readSize) || oo(oi).readSize<=0
+                    error(['Condition %d, o.readSize %.1f is not a positive integer. ' ...
+                        'Are you sure you want o.task=''read''? '],oi,oo(oi).readSize);
+                end
                 oo(oi).targetDeg=widthPixPerSize*oo(oi).readSize/pixPerDeg;
                 % Display instructions.
                 string=['When you''re ready, '...
