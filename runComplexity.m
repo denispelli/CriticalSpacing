@@ -35,7 +35,8 @@ o.thresholdParameter='size';
 o.flankingDirection='radial'; % Ignored
 o.minimumTargetPix=8;
 
-o.recordGaze=true;
+o.recordGaze=false;
+o.useSpeech=false;
 
 if 0
 if 1
@@ -174,19 +175,19 @@ for i=1:length(ooo)
 end
 t=struct2table(oo);
 disp(t); % Print the conditions in the Command Window.
-return
+%return
 
 for i=1:length(ooo)
     oo=ooo{i};
     for oi=1:length(oo)
 %         oo(oi).useFractionOfScreenToDebug=0.5; %% USE ONLY FOR DEBUGGING
 %         oo(oi).skipScreenCalibration=true; %% USE ONLY FOR DEBUGGING
-        oo(oi).isFirstBlock=false;
-        oo(oi).isLastBlock=false;
+        oo(oi).isFirstBlock= i==1;
+        oo(oi).isLastBlock= i==length(ooo);
+        oo(oi).block=i;
+        oo(oi).blocksDesired=length(ooo);
         if i==1
-            oo(oi).experimenter='Darshan';
             oo(oi).observer='';
-            oo(oi).isFirstBlock=true;
         else
             oo(oi).experimenter=old.experimenter;
             oo(oi).observer=old.observer;
@@ -200,7 +201,6 @@ for i=1:length(ooo)
         oo(oi).durationSec=0.2; % duration of display of target and flankers
         oo(oi).repeatedTargets=0;
     end
-    ooo{end}(1).isLastBlock=true;
     oo=CriticalSpacing(oo);
     ooo{i}=oo;
     if ~any([oo.quitBlock])
