@@ -58,6 +58,7 @@ end
 if 1
     for ecc=[ 2.5 ]
         o.conditionName='crowding';
+        o.task='identify';
         o.targetDeg=2;
         o.spacingDeg=2;
         o.thresholdParameter='spacing';
@@ -77,7 +78,7 @@ if 1
         ooo{end+1}=[o o2];
     end
 end
-if 0
+if 1
     for ecc=[0 5]
         o.conditionName='acuity';
         o.targetDeg=4;
@@ -158,7 +159,7 @@ t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'observer' ...
     'targetDeg' 'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
-% return
+return
 
 %% Run.
 for i=1:length(ooo)
