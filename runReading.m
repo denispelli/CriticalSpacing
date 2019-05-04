@@ -13,7 +13,7 @@ o.viewingDistanceCm=100;
 o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
-o.durationSec=0.2; % duration of display of target and flankers
+o.durationSec=0.15; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
 o.trials=40;
 o.readSpacingDeg=nan;
@@ -160,6 +160,8 @@ t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'experiment' 'conditionName' 'trials' 'targetFont' 'observer' ...
     'targetDeg' 'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
+trials=sum([oo.trials]);
+fprintf('Total of %d trials, which may take about %.0f minutes. But reading trials take longer.\n',trials,trials/10);
 % return
 
 %% Run.
