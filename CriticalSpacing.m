@@ -3068,7 +3068,6 @@ try
                     n=round((yMax-yMin)/ySpacing);
                     yMax=tXY(2)+ySpacing*n/2;
                     yMin=tXY(2)-ySpacing*n/2;
-                    
                     if oo(oi).speakSizeAndSpacing; Speak(sprintf('%.0f rows and %.0f columns',...
                             1+(yMax-yMin)/ySpacing,1+(xMax-xMin)/xSpacing));end
                     if oo(oi).printSizeAndSpacing; fprintf('%d: %d: %.1f rows and %.1f columns, target tXY [%.0f %.0f]\n',...
@@ -3634,7 +3633,7 @@ try
                 if ~skipping
                     easeRequest=0;
                 end
-        end
+        end % switch oo(oi).task
         if oo(oi).speakEncouragement && oo(oi).useSpeech && ~oo(1).quitBlock && ~skipping
             switch randi(3)
                 case 1
