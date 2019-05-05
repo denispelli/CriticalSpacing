@@ -15,7 +15,7 @@ vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime'...
-    'block' 'blocksDesired' 'brightnessSetting' 'trialData' };
+    'block' 'blocksDesired' 'brightnessSetting' 'trialData' 'targetFont' 'script' 'task'};
 oo1=ReadExperimentData(experiment,vars); 
 fprintf('%4.0f thresholds in experiment %s\n',length(oo1),experiment);
 % oo2=ReadExperimentData('CrowdingSurvey2',vars); 
@@ -26,12 +26,23 @@ fprintf('%4.0f thresholds all together\n',length(oo));
 
 %% CLEAN
 for oi=1:length(oo)
+    oo(oi).P=mean([oo(oi).trialData.targetScores]);
     switch oo(oi).thresholdParameter
         case 'size'
             oo(oi).spacingDeg=nan;
             oo(oi).flankingDirection='none';
         case 'spacing'
             oo(oi).targetDeg=nan;
+            m=max([oo(oi).trialData.spacingDeg]);
+            oo(oi).spacingDegMaxTested=m;
+            if m<1.1*oo(oi).spacingDeg
+                fprintf('%3d: o.spacingDeg %.1f yet max tested was %.1f deg. block%3d, ecc (%5.1f %5.1f), P %.2f\n',...
+                    oi,oo(oi).spacingDeg,m,oo(oi).block,oo(oi).eccentricityXYDeg,oo(oi).P);
+            end
+    end
+    if oo(oi).P<0.52
+        oo(oi).spacingDeg=nan;
+        oo(oi).targetDeg=nan;
     end
     oo(oi).radialDeg=norm(oo(oi).eccentricityXYDeg);
 end
@@ -51,6 +62,7 @@ if printFilenames
             disp(t(:,{'experiment' 'observer' 'localHostName' 'experimenter'...
                 'thresholdParameter' 'eccentricityXYDeg' ...
                 'flankingDirection' 'spacingDeg' 'targetDeg' ...
+                 'spacingDegMaxTested' 'P' 'targetFont' ...
                 'dataFilename' ...
                 }));
     end
@@ -64,27 +76,27 @@ writetable(t,fullfile(dataFolder,filename));
 %% SUMMARIZE WHAT WE HAVE FOR EACH OBSERVER
 observers=unique({oo.observer});
 s=[];
-for i=1:length(observers)
-    s(i).observer=observers{i};
-    tt=t(ismember(t.observer,{observers{i}}),:);
-    s(i).conditions=height(tt);
-    s(i).experimenter=unique(table2cell(tt(:,'experimenter')));
-    s(i).experiment=unique(table2cell(tt(:,'experiment')));
-    s(i).localHostName=unique(table2cell(tt(:,'localHostName')));
-    s(i).numberOfComputers=length(s(i).localHostName);
+for si=1:length(observers)
+    s(si).observer=observers{si};
+    tt=t(ismember(t.observer,{observers{si}}),:);
+    s(si).conditions=height(tt);
+    s(si).experimenter=unique(table2cell(tt(:,'experimenter')));
+    s(si).experiment=unique(table2cell(tt(:,'experiment')));
+    s(si).localHostName=unique(table2cell(tt(:,'localHostName')));
+    s(si).numberOfComputers=length(s(si).localHostName);
     params={'size' 'spacing'};
     for j=1:length(params)
         ttt=tt(ismember(tt.thresholdParameter,{params{j}}),:);
         ecc=table2array(ttt(:,'radialDeg'))';
-        s(i).([params{j} 'EccDeg'])=sprintf('%g ',ecc);
+        s(si).([params{j} 'EccDeg'])=sprintf('%g ',ecc);
         if height(ttt)>0
-            s(i).localHostName=table2array(ttt(1,'localHostName'));
+            s(si).localHostName=table2array(ttt(1,'localHostName'));
         else
-            s(i).localHostName='';
+            s(si).localHostName='';
         end
     end
-    s(i).beginningTime=min(table2array(tt(:,'beginningTime')));
-    s(i).date=datestr(datevec(s(i).beginningTime));
+    s(si).beginningTime=min(table2array(tt(:,'beginningTime')));
+    s(si).date=datestr(datevec(s(si).beginningTime));
 end
 sTable=struct2table(s);
 sTable=sortrows(sTable,{'beginningTime'});
@@ -99,48 +111,52 @@ disp(sTable(:,{'date' 'conditions' 'observer' 'localHostName' ...
 % Assume we are given a huge oo struct, and each row has one threshold, and
 % each row can be any observer.
 
-s=[]; % s(i) is an array struct, indexed across observers.
+s=[]; % s(si) is an array struct, indexed across observers.
 observers=unique({oo.observer});
-for i=1:length(observers)
-    s(i).observer=observers{i};
-    ok=ismember({oo.observer},observers{i}); % list of conditions for this observer.
+for si=1:length(observers)
+    s(si).observer=observers{si};
+    ok=ismember({oo.observer},observers{si}); % list of conditions for this observer.
     oo1=oo(ok); % All conditions for one observer.
-    s(i).conditions=length(oo1);
+    s(si).conditions=length(oo1);
     for oi=1:length(oo1) % Iterate over all conditions for this observer.
-        s(i).eccentricityXYDeg(1:2,oi)=oo1(oi).eccentricityXYDeg;
-        s(i).radialDeg(oi)=norm(oo1(oi).eccentricityXYDeg);
-        s(i).beginningTime=oo1(1).beginningTime;
-        s(i).localHostName=oo1(1).localHostName;
-        s(i).experimenter=oo1(1).experimenter;
-        s(i).experiment=oo1(1).experiment;
-        s(i).date=datestr(datevec(s(i).beginningTime));
+        s(si).eccentricityXYDeg(1:2,oi)=oo1(oi).eccentricityXYDeg;
+        s(si).radialDeg(oi)=norm(oo1(oi).eccentricityXYDeg);
+        s(si).beginningTime=oo1(1).beginningTime;
+        s(si).localHostName=oo1(1).localHostName;
+        s(si).experimenter=oo1(1).experimenter;
+        s(si).experiment=oo1(1).experiment;
+        s(si).date=datestr(datevec(s(si).beginningTime));
+        s(si).targetFont{oi}=oo1(oi).targetFont;
+        s(si).script{oi}=oo1(oi).script;
+        s(si).task{oi}=oo1(oi).task;
+        s(si).thresholdParameter{oi}=oo1(oi).thresholdParameter;
         switch oo1(oi).thresholdParameter
             case 'size'
-                s(i).sizeDeg(oi)=oo1(oi).targetDeg;
-                s(i).spacingDeg(oi)=nan;
-                s(i).sizeReNominal(oi)=oo1(oi).targetDeg/NominalAcuityDeg(oo1(oi).eccentricityXYDeg);
-                s(i).spacingReNominal(oi)=nan;
+                s(si).sizeDeg(oi)=oo1(oi).targetDeg;
+                s(si).spacingDeg(oi)=nan;
+                s(si).sizeReNominal(oi)=oo1(oi).targetDeg/NominalAcuityDeg(oo1(oi).eccentricityXYDeg);
+                s(si).spacingReNominal(oi)=nan;
             case 'spacing'
-                s(i).sizeDeg(oi)=nan;
-                s(i).spacingDeg(oi)=oo1(oi).spacingDeg;
-                s(i).sizeReNominal(oi)=nan;
-                s(i).spacingReNominal(oi)=...
+                s(si).sizeDeg(oi)=nan;
+                s(si).spacingDeg(oi)=oo1(oi).spacingDeg;
+                s(si).sizeReNominal(oi)=nan;
+                s(si).spacingReNominal(oi)=...
                     oo1(oi).spacingDeg/NominalCrowdingDistanceDeg(oo1(oi).eccentricityXYDeg);
         end
     end
-    ok=isfinite(s(i).eccentricityXYDeg(1,:));
-    s(i).meanLogSizeReNominal=mean(log10(s(i).sizeReNominal(ok)),'omitnan');
-    s(i).SDLogSizeReNominal=std(log10(s(i).sizeReNominal(ok)),'omitnan');
-    ok=s(i).eccentricityXYDeg(1,:)~=0;
-    s(i).meanLogPeripheralSpacingReNominal=mean(log10(s(i).spacingReNominal(ok)),'omitnan');
-    s(i).SDLogPeripheralSpacingReNominal=std(log10(s(i).spacingReNominal(ok)),'omitnan');
+    ok=isfinite(s(si).eccentricityXYDeg(1,:));
+    s(si).meanLogSizeReNominal=mean(log10(s(si).sizeReNominal(ok)),'omitnan');
+    s(si).SDLogSizeReNominal=std(log10(s(si).sizeReNominal(ok)),'omitnan');
+    ok=s(si).eccentricityXYDeg(1,:)~=0;
+    s(si).meanLogPeripheralSpacingReNominal=mean(log10(s(si).spacingReNominal(ok)),'omitnan');
+    s(si).SDLogPeripheralSpacingReNominal=std(log10(s(si).spacingReNominal(ok)),'omitnan');
     sortX=-10;
-    ii=find(s(i).eccentricityXYDeg(1,:)==sortX);
+    ii=find(s(si).eccentricityXYDeg(1,:)==sortX);
     if isempty(ii)
-        s(i).sort=nan;
+        s(si).sort=nan;
     else
         ii=ii(1);
-        s(i).sort=s(i).meanLogPeripheralSpacingReNominal;
+        s(si).sort=s(si).meanLogPeripheralSpacingReNominal;
     end
 end
 t=struct2table(s);
@@ -174,29 +190,36 @@ r=Screen('Rect',0);
 ratio=r(3)/r(4);
 m=ceil(sqrt(length(s)/ratio));
 n=ceil(length(s)/m);
-% oi indexs through the observers.
-for oi=1:length(s)
-    subplot(m,n,oi);
-    [~,jj]=sort(s(oi).radialDeg);
-    ecc=s(oi).radialDeg(jj);
-    spacing=s(oi).spacingDeg(jj);
+% si indexs through the observers.
+for si=1:length(s)
+    subplot(m,n,si);
+    [~,jj]=sort(s(si).radialDeg);
+    ecc=s(si).radialDeg(jj);
+    eccXY=s(si).eccentricityXYDeg(:,jj);
+    spacing=s(si).spacingDeg(jj);
+    pelli=ismember(s(si).targetFont(jj),{'Pelli'});
     color={'r' 'b'};
+    name={'vertical' 'horizontal' };
     for k=1:length(color)
-        hv=s(oi).eccentricityXYDeg(k,jj)==0 & isfinite(spacing);
+        hv=eccXY(k,:)==0 & isfinite(spacing);
         ec=ecc(hv);
         sp=spacing(hv);
-        plot(ec,sp,[color{k} 'x']);
         hold on
         clear medsp
         for j=1:length(ec)
             medsp(j)=median(sp(ec==ec(j)));
         end
-        plot(ec,medsp,[color{k} '-']);
+        p(k)=plot(ec,medsp,[color{k} '-'],'DisplayName',name{k});
+        plot(ecc(hv & ~pelli),spacing(hv & ~pelli),[color{k} 'x']);
+        if any(hv & pelli)
+            pe=plot(ecc(hv & pelli),spacing(hv & pelli),'gx','DisplayName','horizontal Pelli');
+        end
+        hold off
     end
-    title(s(oi).observer)
+    title(s(si).observer)
     xlabel('Ecc (deg)');
     ylabel('Spacing (deg)');
-    legend('horizontal','vertical');
+    legend([p pe]);
     legend('boxoff');
     legend('Location','northwest');
     ylim([0 4]);
@@ -205,19 +228,19 @@ return
 
 figure
 count=0;
-for i=1:length(s)
-    s(i).quantile=i/length(s);
-    s(i).color=[1 0 0]*s(i).quantile+[0 1 0]*(1-s(i).quantile);
-    if s(i).SDLogPeripheralSpacingReNominal>0.26
+for si=1:length(s)
+    s(si).quantile=si/length(s);
+    s(si).color=[1 0 0]*s(si).quantile+[0 1 0]*(1-s(si).quantile);
+    if s(si).SDLogPeripheralSpacingReNominal>0.26
         %         continue
     end
-    if s(i).meanLogPeripheralSpacingReNominal>-1 && s(i).meanLogPeripheralSpacingReNominal<0.2
+    if s(si).meanLogPeripheralSpacingReNominal>-1 && s(si).meanLogPeripheralSpacingReNominal<0.2
         % Plot only the extremes of crowding distance.
         %         continue
     end
     
     % Spacing
-    ok=ismember({oo.observer},s(i).observer); % list of conditions for this observer.
+    ok=ismember({oo.observer},s(si).observer); % list of conditions for this observer.
     ok=ok & ismember({oo.thresholdParameter},'spacing');
     oo1=oo(ok); % All conditions for this observer and measure.
     clear x y y2
@@ -232,7 +255,7 @@ for i=1:length(s)
     y=y(ii);
     y2=y2(ii);
     subplot(2,1,1)
-    semilogy(x,y,'-o','Color',s(i).color);
+    semilogy(x,y,'-o','Color',s(si).color);
     hold on
     ylabel('Crowding dist re nominal');
     xlabel('X eccentrity (deg)');
@@ -246,7 +269,7 @@ for i=1:length(s)
     count=count+1;
     
     % Acuity
-    ok=ismember({oo.observer},s(i).observer); % list of conditions for this observer.
+    ok=ismember({oo.observer},s(si).observer); % list of conditions for this observer.
     ok=ok & ismember({oo.thresholdParameter},'size');
     oo1=oo(ok); % All conditions for this observer and measure.
     if ~isempty(oo1)
@@ -260,7 +283,7 @@ for i=1:length(s)
         x=x(ii);
         y=y(ii);
         subplot(2,1,2)
-        semilogy(x,y,'-o','Color',s(i).color);
+        semilogy(x,y,'-o','Color',s(si).color);
         hold on
         xlim([-10 10]);
         ylim([.001 10]);
@@ -293,28 +316,28 @@ return
 % t=sortrows(t,{'eccentricityXYDeg','thresholdParameter','observer'});
 tmean=table();
 t(:,'n')={1}; % Number of thresholds represented by each row.
-i=1; % row index
+ti=1; % row index
 while ~isempty(t)
-    if i>1
-        tmean(i,:)=tmean(1,:); % Add a row.
+    if ti>1
+        tmean(ti,:)=tmean(1,:); % Add a row.
     end
-    tmean(i,t.Properties.VariableNames)=t(1,:);
+    tmean(ti,t.Properties.VariableNames)=t(1,:);
     tmean(:,{'spacingDeg' 'targetDeg'})=[];
     match=ismember(t{:,'observer'},t{1,'observer'}) ...
         & ismember(t.eccentricityXYDeg(:,1),t(1,:).eccentricityXYDeg(:,1)) ...
         & ismember(t.flankingDirection,t(1,:).flankingDirection);
-    tmean(i,'n')={sum(match)};
+    tmean(ti,'n')={sum(match)};
     if sum(match)==0
         error('No match.');
     end
-    tmean(i,'logSpacingDegMean')={mean(log10(t{match,'spacingDeg'}))};
-    tmean(i,'logSpacingDegSD')={std(log10(t{match,'spacingDeg'}))};
-    tmean(i,'logSpacingDegN')={length(log10(t{match,'spacingDeg'}))};
-    tmean(i,'logAcuityDegMean')={mean(log10(t{match,'targetDeg'}))};
-    tmean(i,'logAcuityDegSD')={std(log10(t{match,'targetDeg'}))};
-    tmean(i,'logAcuityDegN')={length(log10(t{match,'targetDeg'}))};
+    tmean(ti,'logSpacingDegMean')={mean(log10(t{match,'spacingDeg'}))};
+    tmean(ti,'logSpacingDegSD')={std(log10(t{match,'spacingDeg'}))};
+    tmean(ti,'logSpacingDegN')={length(log10(t{match,'spacingDeg'}))};
+    tmean(ti,'logAcuityDegMean')={mean(log10(t{match,'targetDeg'}))};
+    tmean(ti,'logAcuityDegSD')={std(log10(t{match,'targetDeg'}))};
+    tmean(ti,'logAcuityDegN')={length(log10(t{match,'targetDeg'}))};
     t(match,:)=[];
-    i=i+1;
+    ti=ti+1;
 end
 t=tmean;
 clear height
@@ -364,13 +387,13 @@ if false % SKIP HISTOGRAMS
         if sum(ok)==0
             continue
         end
-        i=find(ok);
+        ti=find(ok);
         parameter=name;
         subplot(3,1,type)
         histogram(x,'BinWidth',0.1);
         ylabel('Count');
         xlabel(parameter);
-        title(sprintf('Histogram of %d hemispheres at (%c%.0f,%.0f) deg',length(x),plusMinus,abs(t{i(1),'eccentricityXYDeg'})));
+        title(sprintf('Histogram of %d hemispheres at (%c%.0f,%.0f) deg',length(x),plusMinus,abs(t{ti(1),'eccentricityXYDeg'})));
         ax=gca;
         ax.FontSize=12;
         yticks(unique(round(ax.YTick)));
