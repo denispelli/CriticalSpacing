@@ -1,7 +1,11 @@
 function oo=CriticalSpacing(oIn)
-% BUGS:
+% BUGS: When runComplexity is testing acuity, after I hit letter response
+% the instuction Look at the cross as you type your response.' appears
+% briefly to the right of the alphabet at bottom of screen before it
+% proceeds to show next trial.
+%
 % Enforce first and last name. Consider asking two questions.
-% Some people insist on typing in 3 letters, not just the middle one.
+% Some people insist on typing in all 3 letters, not just the middle one.
 %
 % o=CriticalSpacing(o);
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
@@ -532,6 +536,7 @@ o.speakEncouragement=false;
 o.speakViewingDistance=false;
 o.usePurring=false;
 o.useSpeech=false;
+o.showCounter=true;
 
 % VISUAL STIMULUS
 o.contrast=1; % Nominal contrast, not calibrated.
@@ -1640,9 +1645,9 @@ try
             instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         Screen('DrawText',window,'supervising, followed by RETURN.',...
             instructionalMarginPix,screenRect(4)/2-3.9*oo(1).textSize,black,white);
-%         Screen('TextSize',window,round(0.55*oo(1).textSize));
-%         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
-%             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        %         Screen('TextSize',window,round(0.55*oo(1).textSize));
+        %         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
+        %             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
@@ -1672,7 +1677,7 @@ try
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-%         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
+        %         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
         DrawFormattedText(window,...
             'Hello Observer,\nPlease slowly type your first name, then SPACE, then your last name, followed by RETURN.',...
             instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,65,[],[],1.1);
@@ -2191,7 +2196,8 @@ try
                 % a few percent, which doesn't matter, so I increased the
                 % tolerance from 1% to 10%. DGP April 2019
                 if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.1
-                    error('Set brightness to %.2f, but read back %.2f',cal.brightnessSetting,cal.brightnessReading);
+                    error('Set brightness to %.2f, but read back %.2f',...
+                        cal.brightnessSetting,cal.brightnessReading);
                 end
             end
         else
@@ -2327,8 +2333,8 @@ try
         end
     end % while tryAgain
     
-%     tryAgain=true;
-%     while tryAgain
+    %     tryAgain=true;
+    %     while tryAgain
     if oo(oi).showProgressBar
         string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the block. ';
     else
@@ -2361,7 +2367,7 @@ try
                     where='below';
             end
         end
-        string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACEBAR. ',...
+        string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACE BAR. ',...
             string,where);
         string=strrep(string,'letter',symbolName);
         x=instructionalMarginPix;
@@ -2740,10 +2746,12 @@ try
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg);
         end
         tryAgain=true;
-        while tryAgain
+        while tryAgain % THIS IS WHERE SPURIOUS "LOOK" APPEARS. xxx
             tryAgain=false;
+            % This is flashed on and almost immediately overwritten.
+            % We use xSave and ySave because x and y have changed.
             DrawFormattedText(window,string,...
-                x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+                xSave,ySave,black,length(instructionalTextLineSample)+3,[],[],1.1);
             fixationLines=ComputeFixationLines2(oo(oi).fix);
             % Set up fixation.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -2758,7 +2766,9 @@ try
                 r(4)=round(r(4)*(1-presentation/length(condList)));
                 Screen('FillRect',window,[220 220 220],r); % grey background
             end
-            DrawCounter(oo);
+            if oo(1).showCounter
+                DrawCounter(oo);
+            end
             Screen('Flip',window,[],1); % Display instructions and fixation.
             if oo(oi).useFixation
                 if beginAfterKeypress
@@ -2785,7 +2795,9 @@ try
                         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                     end
                 end
-                DrawCounter(oo);
+                if oo(1).showCounter
+                    DrawCounter(oo);
+                end
                 Screen('Flip',window,[],1); % Display fixation.
                 WaitSecs(1); % Duration of fixation display, before stimulus appears.
                 Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
@@ -2880,7 +2892,9 @@ try
                         Screen('DrawTexture',window,letterStruct(i).texture,[],r);
                         Screen('FrameRect',window,0,r);
                     end
-                    DrawCounter(oo);
+                    if oo(1).showCounter
+                        DrawCounter(oo);
+                    end
                     Screen('Flip',window);
                     if oo(1).useSpeech
                         Speak('Alphabet. Click.');
@@ -3195,7 +3209,9 @@ try
         if oo(oi).usePurring
             Snd('Play',purr);
         end
-        DrawCounter(oo);
+        if oo(1).showCounter
+            DrawCounter(oo);
+        end
         [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1); % Display stimulus & fixation.
         stimulusFlipSecs=GetSecs;
         if oo(oi).recordGaze
@@ -3219,7 +3235,7 @@ try
             end
         end
         if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
-% WaitSecs(oo(oi).durationSec); % Display letters. OLD CODE before 4/30/2019
+            % WaitSecs(oo(oi).durationSec); % Display letters. OLD CODE before 4/30/2019
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
             %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-stimulusFlipSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -3228,22 +3244,25 @@ try
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
-            DrawCounter(oo);
-            % We request a duration that is half a frame short of that desired. Flip waits
-            % for the next flip after the requested time. This ought to extend our  
-            % interval by a random sample from the uniform distribution from 0 to 1 
-            % frame, with a mean of half a frame. This should give us a mean duration
-            % equal to that desired. We assess that in three ways, and print it out 
+            if oo(1).showCounter
+                DrawCounter(oo);
+            end
+            % We request a duration that is half a frame short of that
+            % desired. Flip waits for the next flip after the requested
+            % time. This ought to extend our interval by a random sample
+            % from the uniform distribution from 0 to 1 frame, with a mean
+            % of half a frame. This should give us a mean duration equal to
+            % that desired. We assess that in three ways, and print it out
             % at the end of the block.
             [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,stimulusBeginSec+oo(oi).durationSec-0.5/60,1); % Remove stimulus. Display fixation.
-            % We measure stimulus duration in three slightly different ways.
-            % We use the VBLTimestamp and StimulusOnsetTime values returned by our
-            % call to Screen Flip. And we time the interval between return times
-            % of our two calls to Flip. The first Flip displays the stimulus
-            % and the second call erases it.
-            % All of these have the same purpose of recording what the true 
-            % stimulus duration is. The documentation of Screen Flip is a bit
-            % vague, so we play safe by measuring in three ways.
+            % We measure stimulus duration in three slightly different
+            % ways. We use the VBLTimestamp and StimulusOnsetTime values
+            % returned by our call to Screen Flip. And we time the interval
+            % between return times of our two calls to Flip. The first Flip
+            % displays the stimulus and the second call erases it.
+            % All of these have the same purpose of recording what the true
+            % stimulus duration is. The documentation of Screen Flip is a
+            % bit vague, so we play safe by measuring in three ways.
             oo(oi).actualDurationSec(end+1)=stimulusEndSec-stimulusBeginSec;
             oo(oi).actualDurationVBLSec(end+1)=stimulusEndVBLSec-stimulusBeginVBLSec;
             oo(oi).actualDurationTimerSec(end+1)=GetSecs-stimulusFlipSecs;
@@ -3267,6 +3286,8 @@ try
             Screen('Close',texture);
             x=instructionalMarginPix;
             y=-bounds(2)+0.3*oo(oi).textSize;
+            xSave=x;
+            ySave=y;
             % Draw text.
             Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
@@ -3310,7 +3331,9 @@ try
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
             end
-            DrawCounter(oo);
+            if oo(1).showCounter
+                DrawCounter(oo);
+            end
             Screen('Flip',window,[],1); % Display fixation & response instructions.
             Screen('FillRect',window,white,oo(oi).stimulusRect);
         end
@@ -3464,7 +3487,7 @@ try
                         seq(i)=-seq(i-1);
                         seq(i+1)=seq(i-1)+1;
                     end
-                    % Unbiased direction, so that relative frequency of the 
+                    % Unbiased direction, so that relative frequency of the
                     % words is not a clue to which was present in page.
                     if rand>0.5
                         seq=-seq;
@@ -3498,7 +3521,7 @@ try
                     Screen('FillRect',window);
                     DrawFormattedText(window,msg,...
                         instructionalMarginPix,instructionalMarginPix,black,65);
-%                         instructionalMarginPix,screenRect(4)-3*oo(1).textSize,black,65);
+                    %                         instructionalMarginPix,screenRect(4)-3*oo(1).textSize,black,65);
                     Screen('Flip',window);
                     choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
                     % Have yet to implement support for ESCAPE here.
