@@ -2,6 +2,7 @@
 % Copyright 2019, Denis G. Pelli, denis.pelli@nyu.edu
 
 %% DEFINE CONDITIONS
+clear all
 clear o
 % o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
@@ -93,7 +94,7 @@ if 1
         ooo{end+1}=[o o2];
     end
 end
-for ecc=[0]
+for ecc=0
     o.conditionName='crowding';
     o.targetDeg=2;
     o.spacingDeg=2;
