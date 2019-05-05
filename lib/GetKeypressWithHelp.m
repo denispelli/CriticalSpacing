@@ -26,13 +26,13 @@ while 1
       end
       %% SAVE SCREEN
       switch savingMethod
-         case 'CopyWindow',
+         case 'CopyWindow'
             % CopyWindow copies the backbuffer.
             [width,height]=RectSize(Screen('Rect',window));
             m=zeros([height,width]);
             savedTexture=Screen('MakeTexture',window,m); % Black texture
             Screen('CopyWindow',window,savedTexture);
-         case 'GetImage',
+         case 'GetImage'
             saveScreen=Screen('GetImage',window);
             if o.flipScreenHorizontally
                saveScreen=fliplr(saveScreen);
