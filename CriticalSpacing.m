@@ -1,6 +1,6 @@
 function oo=CriticalSpacing(oIn)
 % BUGS: When runComplexity is testing acuity, after I hit letter response
-% the instuction Look at the cross as you type your response.' appears
+% the instuction 'Look at the cross as you type your response.' appears
 % briefly to the right of the alphabet at bottom of screen before it
 % proceeds to show next trial.
 %
@@ -2746,12 +2746,21 @@ try
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg);
         end
         tryAgain=true;
-        while tryAgain % THIS IS WHERE SPURIOUS "LOOK" APPEARS. xxx
+        while tryAgain
             tryAgain=false;
-            % This is flashed on and almost immediately overwritten.
-            % We use xSave and ySave because x and y have changed.
+            % xxx When o.targetKind='letter', this code causes a spurious
+            % extra display of the string 
+            % string='Look at the cross as you type your response.'
+            % When showing a letter, the string is shown correctly, and
+            % then flashed on spuriously and almost immediately
+            % overwritten. Compare line 2762 to similar and correct call to
+            % DrawText at line 3299. When o.targetKind='gabor'. This is the
+            % only display of the string. May 2019.
+            bounds=TextBounds(window,string,1); % This might mess up the screen.
+            x=instructionalMarginPix;
+            y=-bounds(2)+0.3*oo(oi).textSize;
             DrawFormattedText(window,string,...
-                xSave,ySave,black,length(instructionalTextLineSample)+3,[],[],1.1);
+                x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
             fixationLines=ComputeFixationLines2(oo(oi).fix);
             % Set up fixation.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -3286,8 +3295,6 @@ try
             Screen('Close',texture);
             x=instructionalMarginPix;
             y=-bounds(2)+0.3*oo(oi).textSize;
-            xSave=x;
-            ySave=y;
             % Draw text.
             Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
