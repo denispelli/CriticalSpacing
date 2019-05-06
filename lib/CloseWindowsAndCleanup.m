@@ -16,7 +16,7 @@ function CloseWindowsAndCleanup
 % the program that it's in.
 %
 % denis.pelli@nyu.edu, November 27, 2018
-global ff skipScreenCalibration keepWindowOpen % Set this in your main program. True on last block.
+global ff skipScreenCalibration keepWindowOpen % Copy to your main program. 
 
 if ~isempty(Screen('Windows')) && ~keepWindowOpen
     ffprintf(ff,'CloseWindowsAndCleanup. ... '); s=GetSecs;
