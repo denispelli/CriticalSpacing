@@ -3,9 +3,9 @@
 
 %% DEFINE CONDITIONS
 clear o
-% o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
+% o.printSizeAndSpacing=true;
 o.experiment='Reading';
 o.experimenter='';
 o.observer='';
@@ -41,10 +41,7 @@ if 1
     o.alphabet='abc';
     o.borderLetter='x';
     o.flankingDirection='horizontal';
-%     o.experimenter='...';
-%     o.observer='...';
     o.useFixation=false;
-%     o.useFractionOfScreenToDebug=0.3;
     o.readSpacingDeg=2;
     ooo{end+1}=o;
     o.readSpacingDeg=1;
