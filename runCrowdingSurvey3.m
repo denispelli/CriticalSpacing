@@ -119,21 +119,21 @@ if rand>0.5
 end
 
 %% Number the blocks.
-for i=1:length(ooo)
-    for oi=1:length(ooo{i})
-        ooo{i}(oi).block=i;
-        ooo{i}(oi).blocksDesired=length(ooo);
+for block=1:length(ooo)
+    for oi=1:length(ooo{block})
+        ooo{block}(oi).block=block;
+        ooo{block}(oi).blocksDesired=length(ooo);
     end
 end
 % ooo=Shuffle(ooo);
 
 %% Print as a table. One row per threshold.
-for i=1:length(ooo)
-    if i==1
+for block=1:length(ooo)
+    if block==1
         oo=ooo{1};
     else
         try
-            oo=[oo ooo{i}];
+            oo=[oo ooo{block}];
         catch e
             fprintf('Success building table with %d conditions in %d blocks, but failed on next block.\n',...
                 length(oo),max([oo.block]));
@@ -149,17 +149,17 @@ fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
 % return
 
 %% Run.
-for i=1:length(ooo)
-    if isempty(ooo{i}(1).experimenter) && i>1
-        [ooo{i}.experimenter]=deal(ooo{i-1}(1).experimenter);
+for block=1:length(ooo)
+    if isempty(ooo{block}(1).experimenter) && block>1
+        [ooo{block}.experimenter]=deal(ooo{block-1}(1).experimenter);
     end
-    if isempty(ooo{i}(1).observer) && i>1
-        [ooo{i}.observer]=deal(ooo{i-1}(1).observer);
+    if isempty(ooo{block}(1).observer) && block>1
+        [ooo{block}.observer]=deal(ooo{block-1}(1).observer);
     end
-    [ooo{i}.isFirstBlock]=deal(i==1);
-    [ooo{i}.isLastBlock]=deal(i==length(ooo));
-    ooo{i}=CriticalSpacing(ooo{i});
-    if any([ooo{i}.quitExperiment])
+    [ooo{block}.isFirstBlock]=deal(block==1);
+    [ooo{block}.isLastBlock]=deal(block==length(ooo));
+    ooo{block}=CriticalSpacing(ooo{block});
+    if any([ooo{block}.quitExperiment])
         break
     end 
 end
