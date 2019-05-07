@@ -3,14 +3,15 @@
 
 %% DEFINE CONDITIONS
 clear o
-% o.useFractionOfScreenToDebug=0.3;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
+% o.useFractionOfScreenToDebug=0.3; %% ONLY FOR DEBUGGING
+% o.skipScreenCalibration=true; %% ONLY FOR DEBUGGING
 % o.printSizeAndSpacing=true;
 o.experiment='Reading';
 o.experimenter='';
 o.observer='';
 o.viewingDistanceCm=100;
 o.useSpeech=false;
+o.speakViewingDistance=true;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.15; % duration of display of target and flankers
