@@ -28,6 +28,9 @@
 clear o oo ooo
 ooo={};
 o.experiment='Complexity';
+o.showCounter=false;
+% o.useFractionOfScreenToDebug=0.3;%% USE ONLY FOR DEBUGGING
+% o.skipScreenCalibration=true; %% USE ONLY FOR DEBUGGING
 
 % acuity
 o.conditionName='acuity';
@@ -37,8 +40,9 @@ o.minimumTargetPix=8;
 
 o.recordGaze=false;
 o.useSpeech=false;
+o.speakViewingDistance=true;
 
-if 0
+if 1
 if 1
     % Sloan
     o.targetFont='Sloan';
@@ -151,9 +155,9 @@ if 1
 end
 
 % Randomly interleave testing left and right.
-for i=1:length(ooo)
-    o=ooo{i};
-    o.block=i;
+for block=1:length(ooo)
+    o=ooo{block};
+    o.block=block;
     o.setNearPointEccentricityTo='fixation';
 %     o.nearPointXYInUnitSquare=[0.5 0.5];
     o.viewingDistanceCm=40;
@@ -161,32 +165,30 @@ for i=1:length(ooo)
     oo=o;
     o.eccentricityXYDeg=[10 0];
     oo(2)=o;
-    ooo{i}=oo;
+    ooo{block}=oo;
 end
 
 % Print as a table. One row per threshold.
 oo=[];
-for i=1:length(ooo)
+for block=1:length(ooo)
     if isempty(oo)
-        oo=ooo{i};
+        oo=ooo{block};
     else
-        oo(end+1:end+2)=ooo{i};
+        oo(end+1:end+2)=ooo{block};
     end
 end
 t=struct2table(oo);
 disp(t); % Print the conditions in the Command Window.
-%return
+% return
 
-for i=1:length(ooo)
-    oo=ooo{i};
+for block=1:length(ooo)
+    oo=ooo{block};
     for oi=1:length(oo)
-%         oo(oi).useFractionOfScreenToDebug=0.5; %% USE ONLY FOR DEBUGGING
-%         oo(oi).skipScreenCalibration=true; %% USE ONLY FOR DEBUGGING
-        oo(oi).isFirstBlock= i==1;
-        oo(oi).isLastBlock= i==length(ooo);
-        oo(oi).block=i;
+        oo(oi).isFirstBlock= block==1;
+        oo(oi).isLastBlock= block==length(ooo);
+        oo(oi).block=block;
         oo(oi).blocksDesired=length(ooo);
-        if i==1
+        if block==1
             oo(oi).observer='';
         else
             oo(oi).experimenter=old.experimenter;
@@ -202,9 +204,9 @@ for i=1:length(ooo)
         oo(oi).repeatedTargets=0;
     end
     oo=CriticalSpacing(oo);
-    ooo{i}=oo;
+    ooo{block}=oo;
     if ~any([oo.quitBlock])
-        fprintf('Finished block %d.\n',i);
+        fprintf('Finished block %d.\n',block);
     end
     if any([oo.quitExperiment])
         break
