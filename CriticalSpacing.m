@@ -1,8 +1,5 @@
 function oo=CriticalSpacing(oIn)
-% BUGS: When runComplexity is testing acuity, after I hit letter response
-% the instuction 'Look at the cross as you type your response.' appears
-% briefly to the right of the alphabet at bottom of screen before it
-% proceeds to show next trial.
+% BUGS:
 %
 % Enforce first and last name. Consider asking two questions.
 % Some people insist on typing in all 3 letters, not just the middle one.
@@ -2332,9 +2329,6 @@ try
             end
         end
     end % while tryAgain
-    
-    %     tryAgain=true;
-    %     while tryAgain
     if oo(oi).showProgressBar
         string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the block. ';
     else
@@ -2348,7 +2342,7 @@ try
                 string=[string 'On each trial, try to identify the target letter by typing that key. Please rest your eye on the crosshairs before each trial. '];
         end
         if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
-            string=[string 'When you see three letters, please report just the middle letter. '];
+            string=[string 'When you see three letters, please report just the middle one. '];
         end
         if oo(1).fixationOnScreen
             where='below';
@@ -2367,23 +2361,28 @@ try
                     where='below';
             end
         end
-        string=sprintf('%sTo begin, please fix your gaze at the center of the crosshairs %s, and, while fixating, press the SPACE BAR. ',...
+        string=sprintf(['%sTo begin, please fix your gaze at the center of the crosshairs %s,' ...
+            ' and, while fixating, press the SPACE BAR. '], ...
             string,where);
         string=strrep(string,'letter',symbolName);
         x=instructionalMarginPix;
         y=1.3*oo(1).textSize;
         Screen('TextSize',window,oo(oi).textSize);
+        Screen('DrawText',window,' ',x,y,black,white); % Set background.
         DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+%         string='2376';
         % Fixation mark should be visible after the Flip.
         DrawCounter(oo);
+        % Display the instruction "Notice the green ..." and the counter.
+        % No fixation.
         Screen('Flip',window,[],1); % Don't clear.
         beginAfterKeypress=true;
     else
         beginAfterKeypress=false;
-        % In this case, we ought to do something to print the string about
-        % the progress bar, if there is a progress bar. Right now I'm
-        % focused on testing with fixation.
-    end
+        % In this case, we ought to print a string about the progress bar,
+        % if there is a progress bar. Right now I'm focused on testing with
+        % fixation.
+    end % if any ([oo.useFixation])
     easeRequest=0; % Positive to request easier trials.
     easyCount=0; % Number of easy presentations
     guessCount=0; % Number of artificial guess responses
@@ -2748,19 +2747,20 @@ try
         tryAgain=true;
         while tryAgain
             tryAgain=false;
-            % xxx When o.targetKind='letter', this code causes a spurious
-            % extra display of the string 
-            % string='Look at the cross as you type your response.'
-            % When showing a letter, the string is shown correctly, and
-            % then flashed on spuriously and almost immediately
-            % overwritten. Compare line 2762 to similar and correct call to
-            % DrawText at line 3299. When o.targetKind='gabor'. This is the
-            % only display of the string. May 2019.
-            bounds=TextBounds(window,string,1); % This might mess up the screen.
+            % xxx When o.targetKind='letter', we draw the string 'Look at
+            % the cross as you type your response.' in three places. First,
+            % above at line 2375 (before the display loop), then here
+            % (2762) at the top of the loop, preceding the 1 s pause before
+            % displaying the stimulus, and then further below (3298), after
+            % displaying the stimulus, to request a response. However, when
+            % o.targetKind='gabor' this is the only display of the string.
+            % The redundancy is inelegant, but harmless.
+            % May 2019.
             x=instructionalMarginPix;
-            y=-bounds(2)+0.3*oo(oi).textSize;
+            y=1.3*oo(oi).textSize;
             DrawFormattedText(window,string,...
                 x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+%             string='2765';
             fixationLines=ComputeFixationLines2(oo(oi).fix);
             % Set up fixation.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -2778,6 +2778,10 @@ try
             if oo(1).showCounter
                 DrawCounter(oo);
             end
+            % THIS FLIP DISPLAYS THE TEXT "Notice the green ..." AND THE
+            % COUNTER, WITH FIXATION AND PROGRESS BAR. ARRIVING HERE ON
+            % FIRST TRIAL, ONLY THE TEXT AND COUNTER ARE ALREADY DISPLAYED.
+            % ON SUBSEQUENT TRIALS, IT'S ALL THERE PLUS THE ALPHABET.
             Screen('Flip',window,[],1); % Display instructions and fixation.
             if oo(oi).useFixation
                 if beginAfterKeypress
@@ -2807,7 +2811,7 @@ try
                 if oo(1).showCounter
                     DrawCounter(oo);
                 end
-                Screen('Flip',window,[],1); % Display fixation.
+                Screen('Flip',window,[],1); % Display just fixation.
                 WaitSecs(1); % Duration of fixation display, before stimulus appears.
                 Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
                 Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
@@ -3287,14 +3291,8 @@ try
             if oo(oi).repeatedTargets
                 string=strrep(string,'response','two responses');
             end
-            % Clear space for text.
-            texture=Screen('OpenOffscreenWindow',window);
-            Screen('TextFont',texture,oo(oi).textFont,0);
-            Screen('TextSize',texture,oo(oi).textSize);
-            bounds=TextBounds(texture,string,1);
-            Screen('Close',texture);
             x=instructionalMarginPix;
-            y=-bounds(2)+0.3*oo(oi).textSize;
+            y=1.3*oo(oi).textSize; % Originally 1.04*
             % Draw text.
             Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
@@ -3303,8 +3301,8 @@ try
             oo(oi).responseTextWidth=min(oo(oi).responseTextWidth,oo(oi).textSize); % But no bigger than our information text.
             Screen('TextSize',window,oo(oi).responseTextWidth);
             [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
-            % It won't be exactly the right size, so we scale it to exactly
-            % what we want.
+            % It won't be exactly the right size, so we scale it to be
+            % exactly the size we want.
             alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
             x=instructionalMarginPix;
             y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
@@ -3326,7 +3324,8 @@ try
                     % 0.5*labelTextSize, so horizontal midpoint is roughly
                     % 0.25*labelTextSize.
                     labelRect=OffsetRect(dstRect,RectWidth(dstRect)/2-0.25*labelTextSize,-RectHeight(dstRect)-0.4*labelTextSize);
-                    Screen('DrawText',window,double(oo(oi).validResponseLabels(i)),labelRect(1),labelRect(4),black,white,1);
+                    Screen('DrawText',window,...
+                        double(oo(oi).validResponseLabels(i)),labelRect(1),labelRect(4),black,white,1);
                 end
                 x=x+1.5*RectWidth(dstRect);
             end
@@ -3343,8 +3342,7 @@ try
             end
             Screen('Flip',window,[],1); % Display fixation & response instructions.
             Screen('FillRect',window,white,oo(oi).stimulusRect);
-        end
-        
+        end % if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
         if oo(oi).takeSnapshot
             mypath=oo(1).snapshotsFolder;
             filename=oo(1).dataFilename;
@@ -3366,7 +3364,6 @@ try
             imwrite(img,fullfile(mypath,filename),'png');
             ffprintf(ff,'Saving image to file "%s".\n',filename);
         end
-        
         switch oo(oi).task
             case 'read'
                 % The excerpt will be 12 lines of (up to) 50 characters
