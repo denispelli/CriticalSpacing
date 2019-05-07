@@ -1188,7 +1188,7 @@ try
             
         end
         minimumViewingDistanceCm=max([oo.minimumViewingDistanceCm]);
-        if oo(1).speakViewingDistance && oo(1).useSpeech
+        if oo(1).speakViewingDistance
             Speak(sprintf('Please move the screen to be %.0f centimeters from your eye.',oo(1).viewingDistanceCm));
         end
         minimumScreenSizeXYDeg=[0 0];
