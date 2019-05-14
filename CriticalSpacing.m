@@ -1669,18 +1669,21 @@ try
     end % while isempty(oo(1).experimenter)
     
     % Ask observer name
-    Screen('FillRect',window);
+    preface=['Hello Observer,\n' 'Please slowly type your full name. '];
     while isempty(oo(1).observer)
+        Screen('FillRect',window,white);
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
-        %         Screen('DrawText',window,'Hello Observer,',instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        DrawFormattedText(window,...
-            'Hello Observer,\nPlease slowly type your first name, then SPACE, then your last name, followed by RETURN.',...
+        text=[preface 'Type your first name followed by a SPACE and your last name. '...
+            'Then hit RETURN.'];
+        [~,y]=DrawFormattedText(window,text,...
             instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,65,[],[],1.1);
-        Screen('TextSize',window,round(0.55*oo(1).textSize));
-        Screen('DrawText',window,'Please include both your first name and your last name, like "Jane Doe" or "John Smith", in exactly the same way every time.',...
-            instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
+        Screen('TextSize',window,round(0.7*oo(1).textSize));
+        DrawFormattedText(window,...
+            ['Please include both your first name and your last name, like "Jane Doe" or "John Smith", '...
+            'in exactly the same way every time.'],...
+            instructionalMarginPix,y+1.5*0.7*oo(1).textSize,black,65/0.7,[],[],1.1);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double(copyright),...
             instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
@@ -1691,7 +1694,7 @@ try
             background=WhiteIndex(window);
         end
         DrawCounter(oo);
-        [name,terminatorChar]=GetEchoString(window,'Observer name:',...
+        [name,terminatorChar]=GetEchoString(window,'Observer name (First Last):',...
             instructionalMarginPix,0.82*screenRect(4),...
             black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
@@ -1702,11 +1705,8 @@ try
                 return
             end
         end
-        if length(name)<3
-            Screen('FillRect',window);
-            Screen('DrawText',window,['Sorry. ''' name ''' is too short. Please try again.'],...
-                instructionalMarginPix,screenRect(4)-6*instructionalMarginPix,...
-                [255 0 0],white,1);
+        if length(split(name))<2
+            preface=['Sorry. ''' name ''' is not enough. Please enter your first and last names. '];
             continue
         end
         for i=1:conditions
