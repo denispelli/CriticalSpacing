@@ -1,5 +1,9 @@
 function DrawCounter(oo)
 % DrawCounter(oo)
+
+% It would be great to display "INVALID DATA" when in debugging mode. I.e.
+% whenever o.useFractionOfScreenToDebug~=0 or o.skipScreenCalibration=true.
+
 global window scratchWindow
 global blockTrial blockTrials
 % Display counter in lower right corner.
