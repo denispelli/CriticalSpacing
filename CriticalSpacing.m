@@ -1390,7 +1390,7 @@ try
             string,oo(1).viewingDistanceCm);
         Screen('TextSize',window,oo(1).textSize);
         [~,y]=DrawFormattedText(window,string,...
-            instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
+            instructionalMarginPix,1.5*oo(1).textSize,...
             black,length(instructionalTextLineSample)+3-2*length(cmString),...
             [],[],1.1);
         Screen('TextSize',window,2*oo(1).textSize);
@@ -1520,7 +1520,7 @@ try
             for i=1:2*4
                 % 2 seconds of flicker at 8 Hz.
                 DrawFormattedText(window,alertString,...
-                    instructionalMarginPix,y+0*round(oo(1).textSize*0.6),...
+                    instructionalMarginPix,y+round(1.5*oo(1).textSize*0.6),...
                     [255 255 255],(1/0.6)*(length(instructionalTextLineSample)+3),...
                     [],[],1.1);
                 Screen('Flip',window,[],1);
@@ -1678,7 +1678,7 @@ try
         text=[preface 'Type your first name followed by a SPACE and your last name. '...
             'Then hit RETURN.'];
         [~,y]=DrawFormattedText(window,text,...
-            instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,65,[],[],1.1);
+            instructionalMarginPix,1.5*oo(1).textSize,black,65,[],[],1.1);
         Screen('TextSize',window,round(0.7*oo(1).textSize));
         DrawFormattedText(window,...
             ['Please include both your first name and your last name, like "Jane Doe" or "John Smith", '...
@@ -2306,7 +2306,7 @@ try
         Screen('TextSize',window,oo(oi).textSize);
         string=strrep(string,'letter',symbolName);
         DrawFormattedText(window,string,...
-            instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize,...
+            instructionalMarginPix,1.5*oo(1).textSize,...
             black,length(instructionalTextLineSample)+3,[],[],1.1);
         DrawCounter(oo);
         Screen('Flip',window,[],1);
@@ -2366,11 +2366,10 @@ try
             string,where);
         string=strrep(string,'letter',symbolName);
         x=instructionalMarginPix;
-        y=1.3*oo(1).textSize;
+        y=1.5*oo(1).textSize;
         Screen('TextSize',window,oo(oi).textSize);
-        Screen('DrawText',window,' ',x,y,black,white); % Set background.
+        Screen('DrawText',window,'',x,y,black,white); % Set background.
         DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
-%         string='2376';
         % Fixation mark should be visible after the Flip.
         DrawCounter(oo);
         % Display the instruction "Notice the green ..." and the counter.
@@ -2757,7 +2756,7 @@ try
             % The redundancy is inelegant, but harmless.
             % May 2019.
             x=instructionalMarginPix;
-            y=1.3*oo(oi).textSize;
+            y=1.5*oo(oi).textSize;
             DrawFormattedText(window,string,...
                 x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
 %             string='2765';
@@ -2857,7 +2856,7 @@ try
                 Screen('FillRect',window,[],clearRect);
                 Screen('TextFont',window,oo(oi).textFont);
                 DrawFormattedText(window,string,...
-                    oo(1).textSize,2*oo(1).textSize,...
+                    oo(1).textSize,1.5*oo(1).textSize,...
                     black,66,[],[],1.1);
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
@@ -3292,7 +3291,7 @@ try
                 string=strrep(string,'response','two responses');
             end
             x=instructionalMarginPix;
-            y=1.3*oo(oi).textSize; % Originally 1.04*
+            y=1.5*oo(oi).textSize; 
             % Draw text.
             Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
@@ -3423,7 +3422,7 @@ try
                 Screen('TextSize',window,oo(oi).readSize);
                 Screen('FillRect',window);
                 [~,y]=DrawFormattedText(window,string,...
-                    instructionalMarginPix,instructionalMarginPix,...
+                    instructionalMarginPix,1.5*oo(oi).textSize,...
                     black,screenLineChars,[],[],1.5);
                 Screen('Flip',window,[],1);
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
@@ -3524,8 +3523,7 @@ try
                         wCorpus{iWords});
                     Screen('FillRect',window);
                     DrawFormattedText(window,msg,...
-                        instructionalMarginPix,instructionalMarginPix,black,65);
-                    %                         instructionalMarginPix,screenRect(4)-3*oo(1).textSize,black,65);
+                        instructionalMarginPix,1.5*oo(oi).textSize,black,65);
                     Screen('Flip',window);
                     choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
                     % Have yet to implement support for ESCAPE here.
