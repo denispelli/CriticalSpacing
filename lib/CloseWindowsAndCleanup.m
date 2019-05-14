@@ -15,19 +15,22 @@ function CloseWindowsAndCleanup
 % "cleanup" is cleared, which occurs at termination (normal or abnormal) of
 % the program that it's in.
 %
-% denis.pelli@nyu.edu, November 27, 2018
-global ff skipScreenCalibration keepWindowOpen % Copy to your main program. 
+% denis.pelli@nyu.edu, May 5, 2019
+global skipScreenCalibration keepWindowOpen % Copy to your main program.
+global scratchWindow
 
 if ~isempty(Screen('Windows')) && ~keepWindowOpen
-    ffprintf(ff,'CloseWindowsAndCleanup. ... '); s=GetSecs;
+    fprintf('CloseWindowsAndCleanup. ... ');
+    s=GetSecs;
     Screen('CloseAll'); % May take a minute.
+    scratchWindow=[];
     if ~skipScreenCalibration
         if IsOSX
             AutoBrightness(0,1); % May take a minute.
         end
         RestoreCluts;
     end
-    ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+    fprintf('Done (%.1f s)\n',GetSecs-s);
 end
 % These are quick.
 ListenChar;
