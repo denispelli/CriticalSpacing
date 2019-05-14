@@ -562,7 +562,7 @@ o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
 o.isolatedTarget=false; % Set to true when measuring acuity for a single isolated letter. Not yet fully supported.
-o.brightnessSetting=0.87; % Default. Half luminance. Some observers find 1.0 painfully bright.
+o.brightnessSetting=0.87; % Default. Roughly half luminance. Some observers find 1.0 painfully bright.
 % READ TEXT
 o.readSpacingDeg=0.3;
 o.readString={}; % The string of text to be read.
