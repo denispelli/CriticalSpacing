@@ -33,16 +33,30 @@ for oi=1:length(oo)
             oo(oi).flankingDirection='none';
         case 'spacing'
             oo(oi).targetDeg=nan;
-            m=max([oo(oi).trialData.spacingDeg]);
-            oo(oi).spacingDegMaxTested=m;
-            if m<1.1*oo(oi).spacingDeg
-                fprintf('%3d: o.spacingDeg %.1f yet max tested was %.1f deg. block%3d, ecc (%5.1f %5.1f), P %.2f\n',...
-                    oi,oo(oi).spacingDeg,m,oo(oi).block,oo(oi).eccentricityXYDeg,oo(oi).P);
-            end
+            oo(oi).spacingDegMaxTested=max([oo(oi).trialData.spacingDeg]);
     end
     if oo(oi).P<0.52
-        oo(oi).spacingDeg=nan;
-        oo(oi).targetDeg=nan;
+%         oo(oi).spacingDeg=nan;
+%         oo(oi).targetDeg=nan;
+        fprintf('Setting to nan, %s %s at (%.0f %.0f) deg with %s font.\n',...
+            oo(oi).observer,oo(oi).thresholdParameter,oo(oi).eccentricityXYDeg,oo(oi).targetFont);
+    end
+    if ismember(oo(oi).observer,{'Delisia Cuebas'})
+        if ismember(oo(oi).thresholdParameter,{'spacing'})
+            % Foveal crowding collected with wrong font.
+            if all(oo(oi).eccentricityXYDeg==[0 0])
+                oo(oi).spacingDeg=nan;
+                fprintf('Setting to nan, %s crowding at (%.0f %.0f) deg with %s font.\n',...
+                    oo(oi).observer,oo(oi).eccentricityXYDeg,oo(oi).targetFont);
+            end
+            % Crowding at (0 5) with Pelli performed badly presumably
+            % because of lack of practice at (0 0).
+            if all(abs(oo(oi).eccentricityXYDeg)==[5 0]) && ismember(oo(oi).targetFont,{'Pelli'})
+                oo(oi).spacingDeg=nan;
+                fprintf('Setting to nan, %s crowding at (%.0f %.0f) deg with %s font.\n',...
+                    oo(oi).observer,oo(oi).eccentricityXYDeg,oo(oi).targetFont);
+            end
+        end
     end
     oo(oi).radialDeg=norm(oo(oi).eccentricityXYDeg);
 end
@@ -184,9 +198,18 @@ if 1
         'experimenter' }),tableFile);
 end
 % return
+
 % Plot crowding function for each observer.
-figure
+figureTitle=sprintf('%d-crowding-functions',length(s));
 r=Screen('Rect',0);
+r(3)=r(3)/2;
+r=r*0.8;
+figure('Position',r,'DefaultAxesFontSize',6,'DefaultFigurePaperPositionMode','auto')
+h=gcf;
+h.Name=figureTitle;
+% h.PaperOrientation='landscape';
+h.Units='inches';
+h.PaperPosition=[0.25 .25 8 10.5];
 ratio=r(3)/r(4);
 m=ceil(sqrt(length(s)/ratio));
 n=ceil(length(s)/m);
@@ -212,18 +235,29 @@ for si=1:length(s)
         p(k)=plot(ec,medsp,[color{k} '-'],'DisplayName',name{k});
         plot(ecc(hv & ~pelli),spacing(hv & ~pelli),[color{k} 'x']);
         if any(hv & pelli)
-            pe=plot(ecc(hv & pelli),spacing(hv & pelli),'gx','DisplayName','horizontal Pelli');
+            pe=plot(ecc(hv & pelli),spacing(hv & pelli),'gx');
         end
         hold off
     end
     title(s(si).observer)
     xlabel('Ecc (deg)');
     ylabel('Spacing (deg)');
-    legend([p pe]);
+    legend(p);
     legend('boxoff');
     legend('Location','northwest');
     ylim([0 4]);
+    xlim([0 10]);
 end
+set(findall(gcf,'-property','FontSize'),'FontSize',7);
+annotation('textbox','String','x',...
+    'Position',[0.75 0 .1 .1],'Color','green',...
+    'LineStyle','none','FontSize',10);
+annotation('textbox','String','   indicates Pelli font',...
+    'Position',[0.75 0 .1 .1],...
+    'LineStyle','none','FontSize',10);
+figureTitle=sprintf('%d-crowding-functions',length(s));
+graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.pdf']);
+saveas(gcf,graphFile,'pdf')
 return
 
 figure
