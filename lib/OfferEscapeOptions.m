@@ -41,23 +41,9 @@ Screen('TextSize',window,o.textSize);
 black=0;
 Screen('Preference','TextAntiAliasing',0);
 Screen('FillRect',window);
-y=0;
-if isfield(o,'trials') && isfield(o,'trialsPerBlock')
-    % Used by NoiseDiscrimination. I prefer DrawCounter.
-    trials=sum([oo.trials]);
-    trialsDesired=sum([oo.trialsPerBlock]);
-    if isfield(o,'block') && isfield(o,'blocksDesired') && isfield(o,'textSize')
-        message=sprintf('Trial %d of %d. Block %d of %d.',trials,trialsDesired,o.block,o.blocksDesired);
-        if isfield(o,'experiment')
-            message=[message ' Experiment "' o.experiment '".'];
-        end
-        Screen('DrawText',window,message,o.textSize/2,o.textSize/2,black,backgroundColor);
-        y=o.textSize;
-    end
-else
-    % Used by CriticalSpacing.
-    DrawCounter(oo);
-end
+
+DrawCounter(oo);
+
 % Set background color for DrawFormattedText.
 Screen('DrawText',window,' ',0,0,black,backgroundColor,1);
 if ~isfield(o,'isLastBlock')
@@ -77,7 +63,7 @@ end
 string=['You escaped. Any incomplete trial was canceled. ' ...
     'Hit ESCAPE again to quit the whole experiment. '...
     nextBlockMsg nextTrialMsg];
-DrawFormattedText(window,string,textMarginPix,1*o.textSize+y,black,60,[],[],1.1);
+DrawFormattedText(window,string,textMarginPix,1.5*o.textSize,black,60,[],[],1.1);
 Screen('Flip',window);
 answer=GetKeypress([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],o.deviceIndex);
 quitExperiment=ismember(answer,[escapeChar,graveAccentChar]);
