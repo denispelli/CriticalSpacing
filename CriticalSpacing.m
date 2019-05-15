@@ -1,7 +1,6 @@
 function oo=CriticalSpacing(oIn)
 % BUGS:
 %
-% Enforce first and last name. Consider asking two questions.
 % Some people insist on typing in all 3 letters, not just the middle one.
 %
 % o=CriticalSpacing(o);
@@ -1357,20 +1356,21 @@ try
         stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
         maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
         
-        % Look for wireless keyboard.
+        % LOOK FOR WIRELESS KEYBOARD.
         
-        clear PsychHID; % Force new enumeration of devices to detect external keyboard.
-        clear KbCheck; % Clear cache of keyboard devices.
-        [~,~,devices]=GetKeyboardIndices;
-        for i=1:length(devices)
-            oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
-        end
-        oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>100 ...
-            && length(GetKeyboardIndices)<2 ...
-            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'wireless')) ...
-            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Wireless')) ...
-            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'bluetooth')) ...
-            && isempty(strfind(oo(1).keyboardNameAndTransport{1},'Bluetooth'));
+        % clear PsychHID; % Force new enumeration of devices to detect external keyboard.
+        % clear KbCheck; % Clear cache of keyboard devices.
+        % [~,~,devices]=GetKeyboardIndices;
+        % for i=1:length(devices)
+        %     oo(1).keyboardNameAndTransport{i}=sprintf('%s (%s)',devices{i}.product,devices{i}.transport);
+        % end
+        % oo(1).needWirelessKeyboard = oo(1).viewingDistanceCm>=100 ...
+        %     && length(GetKeyboardIndices)<2 ...
+        %     && isempty(strfind(lower(oo(1).keyboardNameAndTransport{1}),'wireless')) ...
+        %     && isempty(strfind(lower(oo(1).keyboardNameAndTransport{1}),'bluetooth'));
+        
+        [hasWirelessKeyboard,oo(1).keyboardNameAndTransport]=HasWirelessKeyboard;
+        oo(1).needWirelessKeyboard=oo(1).viewingDistanceCm>=100 && ~hasWirelessKeyboard;
         if oo(1).needWirelessKeyboard
             warning backtrace off
             warning('The long viewing distance may demand an external keyboard,');
