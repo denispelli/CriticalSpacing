@@ -2,6 +2,7 @@ function oo=CriticalSpacing(oIn)
 % BUGS:
 %
 % Some people insist on typing in all 3 letters, not just the middle one.
+% We should warn about need for wireless keyboard before the first block.
 %
 % o=CriticalSpacing(o);
 % CriticalSpacing measures an observer's critical spacing and acuity (i.e.
