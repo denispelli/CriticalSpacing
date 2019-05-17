@@ -5,7 +5,6 @@ makePlotLinear=false;
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(fullfile(myPath,'lib')); % Folder in same directory as this M file.
 dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
-% dataFolder='/Users/denispelli/Dropbox/MATLAB/CriticalSpacing/data/';
 cd(dataFolder);
 close all
 
@@ -25,6 +24,7 @@ oo=oo1;
 fprintf('%4.0f thresholds all together\n',length(oo));
 
 %% CLEAN
+nanCounter=0;
 for oi=1:length(oo)
     oo(oi).P=mean([oo(oi).trialData.targetScores]);
     switch oo(oi).thresholdParameter
@@ -35,11 +35,27 @@ for oi=1:length(oo)
             oo(oi).targetDeg=nan;
             oo(oi).spacingDegMaxTested=max([oo(oi).trialData.spacingDeg]);
     end
-    if oo(oi).P<0.52
-%         oo(oi).spacingDeg=nan;
-%         oo(oi).targetDeg=nan;
-        fprintf('Setting to nan, %s %s at (%.0f %.0f) deg with %s font.\n',...
-            oo(oi).observer,oo(oi).thresholdParameter,oo(oi).eccentricityXYDeg,oo(oi).targetFont);
+    mate=[];
+    for ii=[oi-1 oi+1]
+        if ii<1 || ii>length(oo)
+            continue
+        end
+        if all(oo(oi).eccentricityXYDeg==-oo(ii).eccentricityXYDeg) && ...
+              streq(oo(oi).thresholdParameter,oo(ii).thresholdParameter) &&...
+              streq(oo(oi).targetFont,oo(ii).targetFont) &&...
+              streq(oo(oi).observer,oo(ii).observer)
+          mate=ii;
+          break
+        end
+    end
+    if isempty(mate)
+        warning('Found point %d at (%.1f %.1f) with no mate at -eccentricityXYDeg.',...
+            oi,oo(oi).eccentricityXYDeg);
+        list=oi;
+    else
+        list=[oi mate];
+        oo(oi).mate=mate;
+        oo(mate).mate=oi;
     end
     if ismember(oo(oi).observer,{'Delisia Cuebas'})
         if ismember(oo(oi).thresholdParameter,{'spacing'})
@@ -49,8 +65,7 @@ for oi=1:length(oo)
                 fprintf('Setting to nan, %s crowding at (%.0f %.0f) deg with %s font.\n',...
                     oo(oi).observer,oo(oi).eccentricityXYDeg,oo(oi).targetFont);
             end
-            % Crowding at (0 5) with Pelli performed badly presumably
-            % because of lack of practice at (0 0).
+            % Crowding at (0 5) with Pelli performed badly.
             if all(abs(oo(oi).eccentricityXYDeg)==[5 0]) && ismember(oo(oi).targetFont,{'Pelli'})
                 oo(oi).spacingDeg=nan;
                 fprintf('Setting to nan, %s crowding at (%.0f %.0f) deg with %s font.\n',...
@@ -59,7 +74,30 @@ for oi=1:length(oo)
         end
     end
     oo(oi).radialDeg=norm(oo(oi).eccentricityXYDeg);
+    oo(oi).P=mean([oo(oi).trialData.targetScores]);
 end
+% These are the exclusion criteria. In testing every threshold has a mate,
+% because we measured each eccentricity with the opposite eccentricity,
+% interleaved. When we exclude a threshold we also exclude its mate.
+% We exclude any point with proportion correct less that 0.55 (about 20% of
+% data), and we exclude any pair of points for which the absolute log ratio
+% exceeds 0.2. 10^0.2=1.6.
+bad=[oo.P]<0.55 | abs(log10([oo.spacingDeg] ./ [oo([oo.mate]).spacingDeg]))>0.2;
+bad=bad | bad([oo.mate]);
+for oi=find(bad)
+    fprintf('%d: P %.2f, log ratio %.1f, setting to nan, %s %s at %c(%.0f %.0f) deg with %s font.\n',...
+        oi,oo(oi).P,...
+        abs(log10(oo(oi).spacingDeg/oo(oo(oi).mate).spacingDeg)),...
+        oo(oi).observer,oo(oi).thresholdParameter,...
+        char(177),oo(oi).eccentricityXYDeg,oo(oi).targetFont);
+end
+nanCounter=0;
+for oi=find(bad)
+        nanCounter=nanCounter+1;
+        oo(oi).spacingDeg=nan;
+        oo(oi).targetDeg=nan;
+end
+fprintf('<strong>Replaced %d of %d data points (%.0f%%) by nan.</strong>\n',nanCounter,length(oo),100*nanCounter/length(oo));
 
 %% SELECT CONDITION(S)
 if isempty(oo)
@@ -213,6 +251,7 @@ h.PaperPosition=[0.25 .25 8 10.5];
 ratio=r(3)/r(4);
 m=ceil(sqrt(length(s)/ratio));
 n=ceil(length(s)/m);
+p=[];
 % si indexs through the observers.
 for si=1:length(s)
     subplot(m,n,si);
@@ -222,9 +261,12 @@ for si=1:length(s)
     spacing=s(si).spacingDeg(jj);
     pelli=ismember(s(si).targetFont(jj),{'Pelli'});
     color={'r' 'b'};
-    name={'vertical' 'horizontal' };
+    name={'vertical' 'horizontal'};
     for k=1:length(color)
         hv=eccXY(k,:)==0 & isfinite(spacing);
+        if sum(hv)==0
+            continue
+        end
         ec=ecc(hv);
         sp=spacing(hv);
         hold on
@@ -242,19 +284,32 @@ for si=1:length(s)
     title(s(si).observer)
     xlabel('Ecc (deg)');
     ylabel('Spacing (deg)');
-    legend(p);
-    legend('boxoff');
-    legend('Location','northwest');
+%     legend(p);
+%     legend('boxoff');
+%     legend('Location','northwest');
     ylim([0 4]);
     xlim([0 10]);
 end
 set(findall(gcf,'-property','FontSize'),'FontSize',7);
 annotation('textbox','String','x',...
-    'Position',[0.75 0 .1 .1],'Color','green',...
+    'Position',[0.75 .9 .1 .1],'Color','green',...
     'LineStyle','none','FontSize',10);
 annotation('textbox','String','   indicates Pelli font',...
-    'Position',[0.75 0 .1 .1],...
+    'Position',[0.75 .9 .1 .1],...
     'LineStyle','none','FontSize',10);
+annotation('textbox','String','--',...
+    'Position',[.1 0.88 .1 .1],'Color','blue',...
+    'LineStyle','none','FontSize',10);
+annotation('textbox','String','   horizontal',...
+    'Position',[.1 0.88 .1 .1],...
+    'LineStyle','none','FontSize',10);
+annotation('textbox','String','--',...
+    'Position',[.1 0.9 .1 .1],'Color','red',...
+    'LineStyle','none','FontSize',10);
+annotation('textbox','String','   vertical',...
+    'Position',[.1 0.9 .1 .1],...
+    'LineStyle','none','FontSize',10);
+
 figureTitle=sprintf('%d-crowding-functions',length(s));
 graphFile=fullfile(fileparts(mfilename('fullpath')),'data',[figureTitle '.pdf']);
 saveas(gcf,graphFile,'pdf')
@@ -364,12 +419,16 @@ while ~isempty(t)
     if sum(match)==0
         error('No match.');
     end
-    tmean(ti,'logSpacingDegMean')={mean(log10(t{match,'spacingDeg'}))};
-    tmean(ti,'logSpacingDegSD')={std(log10(t{match,'spacingDeg'}))};
-    tmean(ti,'logSpacingDegN')={length(log10(t{match,'spacingDeg'}))};
-    tmean(ti,'logAcuityDegMean')={mean(log10(t{match,'targetDeg'}))};
-    tmean(ti,'logAcuityDegSD')={std(log10(t{match,'targetDeg'}))};
-    tmean(ti,'logAcuityDegN')={length(log10(t{match,'targetDeg'}))};
+    v=log10(t{match,'spacingDeg'});
+    v=vector(isfinite(v));
+    tmean(ti,'logSpacingDegMean')={mean(v)};
+    tmean(ti,'logSpacingDegSD')={std(v)};
+    tmean(ti,'logSpacingDegN')={length(v)};
+    v=log10(t{match,'targetDeg'});
+    v=vector(isfinite(v));
+    tmean(ti,'logAcuityDegMean')={mean(v)};
+    tmean(ti,'logAcuityDegSD')={std(v)};
+    tmean(ti,'logAcuityDegN')={length(v)};
     t(match,:)=[];
     ti=ti+1;
 end
@@ -395,6 +454,7 @@ if false % SKIP HISTOGRAMS
                 ok=streq(t.thresholdParameter,'size');
                 x=t(ok,:).logAcuityDegMean;
                 name='Acuity (deg)';
+                x=x(isfinite(x)); % Remove nans.
                 m=mean(x);
                 sd=std(x);
                 se=mean(t(ok,:).logAcuityDegSD./sqrt(t(ok,:).logAcuityDegN))/sqrt(length(x));
@@ -404,6 +464,7 @@ if false % SKIP HISTOGRAMS
                     (streq(t.flankingDirection,'radial') | streq(t.flankingDirection,'horizontal'));
                 x=t{ok,'logSpacingDegMean'};
                 name='log Radial or Horizontal crowding distance (deg)';
+                x=x(isfinite(x)); % Remove nans.
                 m=mean(x);
                 sd=std(x);
                 se=mean(t(ok,:).logSpacingDegSD./sqrt(t(ok,:).logSpacingDegN))/sqrt(length(x));
@@ -412,10 +473,11 @@ if false % SKIP HISTOGRAMS
                 ok=streq(t.thresholdParameter,'spacing') & streq(t.flankingDirection,'tangential');
                 x=t{ok,'logSpacingDegMean'};
                 name='log Tangential crowding distance (deg)';
+                x=x(isfinite(x)); % Remove nans.
                 m=mean(x);
                 sd=std(x);
                 okPositive=ok & t.logSpacingDegSD>0;
-                se=mean(t(okPositive,:).logSpacingDegSD./sqrt(t(okPositive,:).logSpacingDegN))/sqrt(length(x));
+                se=mean(t(okPositive,:).logSpacingDegSD ./ sqrt(t(okPositive,:).logSpacingDegN))/sqrt(length(x));
                 name=sprintf('%s, mean %.1f%c%.1f, Retest SE %.2f',name,m,plusMinus,sd,se);                
       end
         if sum(ok)==0
