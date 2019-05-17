@@ -2353,7 +2353,7 @@ try
             end
         end
         string=sprintf(['%sTo begin, please fix your gaze at the center of the crosshairs %s,' ...
-            ' and, while fixating, press the SPACE BAR. '], ...
+            ' and, while fixating, press the SPACE bar. '], ...
             string,where);
         string=strrep(string,'letter',symbolName);
         x=instructionalMarginPix;
@@ -2366,6 +2366,9 @@ try
         % Display the instruction "Notice the green ..." and the counter.
         % No fixation.
         Screen('Flip',window,[],1); % Don't clear.
+        if oo(oi).takeSnapshot
+            TakeSnapshot(oo);
+        end
         beginAfterKeypress=true;
     else
         beginAfterKeypress=false;
@@ -3250,6 +3253,10 @@ try
             if oo(1).showCounter
                 DrawCounter(oo);
             end
+            if oo(oi).takeSnapshot
+                % Beware that taking a snapshot will screw up timing.
+                TakeSnapshot(oo);
+            end
             % We request a duration that is half a frame short of that
             % desired. Flip waits for the next flip after the requested
             % time. This ought to extend our interval by a random sample
@@ -3334,33 +3341,15 @@ try
             Screen('FillRect',window,white,oo(oi).stimulusRect);
         end % if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
         if oo(oi).takeSnapshot
-            mypath=oo(1).snapshotsFolder;
-            filename=oo(1).dataFilename;
-            saveSnapshotFid=fopen(fullfile(mypath,[filename '.png']),'rt');
-            if saveSnapshotFid~=-1
-                for suffix='a':'z'
-                    saveSnapshotFid=fopen(fullfile(mypath,[filename suffix '.png']),'rt');
-                    if saveSnapshotFid==-1
-                        filename=[filename suffix];
-                        break
-                    end
-                end
-                if saveSnapshotFid~=-1
-                    error('Can''t save file. Already 26 files with that name plus a-z');
-                end
-            end
-            filename=[filename '.png'];
-            img=Screen('GetImage',window);
-            imwrite(img,fullfile(mypath,filename),'png');
-            ffprintf(ff,'Saving image to file "%s".\n',filename);
+            TakeSnapshot(oo);
         end
         switch oo(oi).task
-            case 'read'
-                % The excerpt will be 12 lines of (up to) 50 characters
-                % each. That's about ten words per line.
-                screenLines=12;
-                screenLineChars=50;
-                if isempty(wCorpus)
+        case 'read'
+            % The excerpt will be 12 lines of (up to) 50 characters
+            % each. That's about ten words per line.
+            screenLines=12;
+            screenLineChars=50;
+            if isempty(wCorpus)
                     % Corpus stats.
                     % wCorpus{i} lists all words in the corpus in order of
                     % descending frequency. fCorpus(i) is
@@ -4091,4 +4080,40 @@ ooOut=oo;
 
 % Termination of CriticalSpacing will automatically invoke
 % CloseWindowsAndCleanup via the onCleanup mechanism.
+end
+
+function TakeSnapshot(oo)
+% TakeSnapshot(oo)
+global window ff
+mypath=oo(1).snapshotsFolder;
+filename=oo(1).dataFilename;
+suffixList={''};
+for a='a':'z'
+    suffixList{end+1}=a;
+end
+for a='a':'z'
+    for b='a':'z'
+        suffixList{end+1}=[a b];
+    end
+end
+for suffix=suffixList
+    % Has filename already been used?
+    snapshotFid=fopen(fullfile(mypath,[filename suffix{1} '.png']),'rt');
+    if snapshotFid==-1
+        % No. Use it.
+        filename=[filename suffix{1}];
+        break
+    else
+        % Yes. Skip it.
+        fclose(snapshotFid);
+    end
+end
+if snapshotFid~=-1
+    error('Can''t save file. Already %d PNG files with that name plus short suffixs.',...
+        length(suffixList));
+end
+filename=[filename '.png'];
+img=Screen('GetImage',window);
+imwrite(img,fullfile(mypath,filename),'png');
+ffprintf(ff,'Saved image to file "%s".\n',filename);
 end
