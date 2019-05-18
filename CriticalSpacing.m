@@ -2753,7 +2753,7 @@ try
             y=1.5*oo(oi).textSize;
             DrawFormattedText(window,string,...
                 x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
-%             string='2765';
+            %             string='2765';
             fixationLines=ComputeFixationLines2(oo(oi).fix);
             % Set up fixation.
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -3289,7 +3289,7 @@ try
                 string=strrep(string,'response','two responses');
             end
             x=instructionalMarginPix;
-            y=1.5*oo(oi).textSize; 
+            y=1.5*oo(oi).textSize;
             % Draw text.
             Screen('DrawText',window,double(string),x,y,black,white,1);
             n=length(letterStruct); % Number of letters to display.
@@ -3344,12 +3344,12 @@ try
             TakeSnapshot(oo);
         end
         switch oo(oi).task
-        case 'read'
-            % The excerpt will be 12 lines of (up to) 50 characters
-            % each. That's about ten words per line.
-            screenLines=12;
-            screenLineChars=50;
-            if isempty(wCorpus)
+            case 'read'
+                % The excerpt will be 12 lines of (up to) 50 characters
+                % each. That's about ten words per line.
+                screenLines=12;
+                screenLineChars=50;
+                if isempty(wCorpus)
                     % Corpus stats.
                     % wCorpus{i} lists all words in the corpus in order of
                     % descending frequency. fCorpus(i) is
