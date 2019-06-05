@@ -22,7 +22,7 @@ o.task='identify';
 o.textFont='Arial';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
-o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 
 % SOUND & FEEDBACK
@@ -100,7 +100,7 @@ o.useFractionOfScreenToDebug=0;
 % TO MEASURE BETA
 % o.measureBeta=0;
 % o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
-% o.trials=200;
+% o.trialsDesired=200;
 
 
 %% CUSTOM CODE: crowdingAnatomy project, psychophysics testing script
@@ -108,7 +108,7 @@ o.useFractionOfScreenToDebug=0;
 % Use "Pelli" font for foveal, and Sloan for peripheral.
 % Test left and right visual fields in separate runs
 clear conditions
-o.trials=40; 
+o.trialsDesired=40; 
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.

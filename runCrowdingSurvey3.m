@@ -16,7 +16,7 @@ o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.15; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trials=35;
+o.trialsDesired=35;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 ooo={};
@@ -146,7 +146,7 @@ t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'viewingDistanceCm' 'trials'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
-    sum([oo.trials]),sum([oo.trials])/10);
+    sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 % return
 
 %% Run.

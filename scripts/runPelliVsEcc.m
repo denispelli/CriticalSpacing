@@ -23,7 +23,7 @@ else
 end
 
 o.setTargetHeightOverWidth=0;
-o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=40;
 o.flipScreenHorizontally=0; % Set to 1 when using a mirror.
 o.useSpeech=1;

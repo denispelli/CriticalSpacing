@@ -68,7 +68,7 @@ o.useFractionOfScreen=0;
 % targets.
 
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing.
-o.trials=4; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=4; % Number of trials (i.e. responses) for the threshold estimate.
 
 o.takeSnapshot=1;
 o.viewingDistanceCm=200;

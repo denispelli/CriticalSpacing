@@ -156,7 +156,7 @@ fprintf('Read %d thresholds from %d files. Now discarding empties and duplicates
 if ~isfield(oo,'trials')
     error('No data');
 end
-oo=oo([oo.trials]>0); % Discard conditions with no data.
+oo=oo([oo.trialsDesired]>0); % Discard conditions with no data.
 if isempty(oo)
     return;
 end
@@ -170,7 +170,7 @@ if ~isempty(missingFields)
 end
 s=sprintf('condition.conditionName(trials):');
 for oi=length(oo):-1:1
-    if isempty(oo(oi).trials)
+    if isempty(oo(oi).trialsDesired)
         oo(oi)=[];
     end
 end
@@ -180,12 +180,12 @@ for oi=1:length(oo)
 end
 tt=struct2table(oo,'AsArray',true);
 minimumTrials=30; % 25 DGP
-if sum(tt.trials<minimumTrials)>0
-    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than %d trials:\n',sum(tt.trials<minimumTrials),minimumTrials);
-    disp(tt(tt.trials<minimumTrials,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trials'})) % 'experiment'  'conditionName'
+if sum(tt.trialsDesired<minimumTrials)>0
+    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than %d trials:\n',sum(tt.trialsDesired<minimumTrials),minimumTrials);
+    disp(tt(tt.trialsDesired<minimumTrials,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trials'})) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
-    if oo(oi).trials<minimumTrials
+    if oo(oi).trialsDesired<minimumTrials
         oo(oi)=[];
         tt(oi,:)=[];
     end

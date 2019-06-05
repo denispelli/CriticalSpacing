@@ -18,7 +18,7 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 
 % deliver the requested duration, and reduced the request to 150 m.
 o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trials=40;
+o.trialsDesired=40;
 ooo={};
 
 for ecc=[2.5 5 10]

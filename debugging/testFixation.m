@@ -22,7 +22,7 @@ o.task='identify';
 o.textFont='Arial';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
-o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 
 % SOUND & FEEDBACK
@@ -101,7 +101,7 @@ o.useFractionOfScreen=0;
 % TO MEASURE BETA
 % o.measureBeta=0;
 % o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
-% o.trials=200;
+% o.trialsDesired=200;
 
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
@@ -121,7 +121,7 @@ o.radialOrTangential='tangential'; % horizontally arranged flankers for single t
 o.eccentricityDeg=20;
 o.durationSec=0.2;
 o.fourFlankers=0;
-o.trials=40; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=40; % Number of trials (i.e. responses) for the threshold estimate.
 o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 o.useFractionOfScreen=0.2;
 

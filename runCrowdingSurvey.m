@@ -18,7 +18,7 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 
 % deliver the requested duration, and reduced the request to 150 m.
 o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trials=40;
+o.trialsDesired=40;
 ooo={};
 
 if 0
@@ -28,7 +28,7 @@ if 0
     o.targetFont='Monaco';
     o.getAlphabetFromDisk=false;
     o.targetDeg=nan;
-    o.trials=40;
+    o.trialsDesired=40;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at

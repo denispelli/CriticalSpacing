@@ -16,7 +16,7 @@ o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.15; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trials=40;
+o.trialsDesired=40;
 o.readSpacingDeg=nan;
 o.spacingDeg=nan;
 o.fixationLineWeightDeg=0.03;
@@ -32,13 +32,13 @@ if 1
     o.targetFont='Monaco';
     o.targetDeg=nan;
     o.getAlphabetFromDisk=false;
-    o.trials=2;
+    o.trialsDesired=2;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
     % 50 cm. Larger letters require proportionally smaller viewing
     % distance.
-    o.viewingDistanceCm=25;
+    o.viewingDistanceCm=18;
     o.alphabet='abc';
     o.borderLetter='x';
     o.flankingDirection='horizontal';
@@ -57,7 +57,7 @@ if 1
     for ecc=[ 2.5 ]
         o.conditionName='crowding';
         o.task='identify';
-        o.trials=40;
+        o.trialsDesired=40;
         o.targetDeg=2;
         o.spacingDeg=2;
         o.thresholdParameter='spacing';
@@ -158,9 +158,9 @@ t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'experiment' 'conditionName' 'trials' 'targetFont' 'observer' ...
     'targetDeg' 'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
-trials=sum([oo.trials]);
+trials=sum([oo.trialsDesired]);
 fprintf('Total of %d trials, which may take about %.0f minutes. But reading trials take longer.\n',trials,trials/10);
-% return
+return
 
 %% Run.
 for i=1:length(ooo)

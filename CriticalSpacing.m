@@ -510,7 +510,7 @@ o.task='identify'; % identify, read
 o.textFont='Arial';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
-o.trials=20; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
 
 % THIS SEEMS A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
@@ -614,6 +614,8 @@ o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 o.recordGaze=false;
+o.fixationTest=false; % True designates condition as a fixation test.
+o.fixationTestMakeupTrials=2; % After a mistake, how many right answers to require.
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
@@ -660,7 +662,7 @@ skipScreenCalibration=o.skipScreenCalibration; % Global for CloseWindowsAndClean
 % TO MEASURE BETA
 % o.measureBeta=false;
 % o.offsetToMeasureBeta=-0.4:0.1:0.2; % offset of t, i.e. log signal intensity
-% o.trials=200;
+% o.trialsDesired=200;
 
 % TO HELP CHILDREN
 % o.fractionEasyTrials=0.2; % 0.2 adds 20% easy trials. 0 adds none.
@@ -1797,10 +1799,12 @@ try
     end
     for oi=1:conditions % Prepare all the conditions.
         if oo(oi).repeatedTargets
-            oo(oi).presentations=ceil(oo(oi).trials/2)+oo(oi).practicePresentations;
-            oo(oi).trials=2*oo(oi).presentations;
+            % The observer reports two targets on each presentation, so we
+            % get two trials per presentation.
+            oo(oi).presentations=ceil(oo(oi).trialsDesired/2)+oo(oi).practicePresentations;
+            oo(oi).trialsDesired=2*oo(oi).presentations;
         else
-            oo(oi).presentations=oo(oi).trials;
+            oo(oi).presentations=oo(oi).trialsDesired;
         end
         ecc=norm(oo(oi).eccentricityXYDeg);
         if isempty(oo(oi).flankingDegVector) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
@@ -1841,10 +1845,10 @@ try
         if isempty(oo(oi).flankingDegVector)
             error('o.flankingDegVector is empty.');
         end
-        % From here on we consider o.flankingDegVector primary, and derive a
-        % rough o.flankingDirection. I need the rough o.flankingDirection for
-        % print outs and to keep old code that I don't have time to update
-        % right now.
+        % From here on we consider o.flankingDegVector primary, and derive
+        % frfom it a rough o.flankingDirection. I need the rough
+        % o.flankingDirection for print outs and to keep old code that I
+        % don't have time to update right now.
         if ecc==0
             if abs(oo(oi).flankingDegVector(1)/oo(oi).flankingDegVector(2))>1
                 oo(oi).flankingDirection='horizontal';
@@ -1933,9 +1937,9 @@ try
                 end
         end % switch oo(oi).thresholdParameter
         if oo(oi).useQuest
-            ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',oi,oo(oi).trials,ori,oo(oi).thresholdParameter);
+            ffprintf(ff,'%d: %.0f trials of QUEST will measure threshold %s %s.\n',oi,oo(oi).trialsDesired,ori,oo(oi).thresholdParameter);
         else
-            ffprintf(ff,'%d: %.0f trials of "method of constant stimuli" with fixed list of %s spacings [',oi,oo(oi).trials,ori);
+            ffprintf(ff,'%d: %.0f trials of "method of constant stimuli" with fixed list of %s spacings [',oi,oo(oi).trialsDesired,ori);
             ffprintf(ff,'%.1f ',oo(oi).spacings);
             ffprintf(ff,'] deg\n');
         end

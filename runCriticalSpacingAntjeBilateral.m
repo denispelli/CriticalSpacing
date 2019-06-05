@@ -5,7 +5,7 @@
 clear o
 % boilerplate;
 % o.useFractionOfScreenToDebug=0.3; 
-o.trials=40;
+o.trialsDesired=40;
 o.practicePresentations=0;
 o.experiment='CriticalSpacingAntjeBilateral';
 o.condition='CrowdingDistance';
