@@ -606,7 +606,7 @@ o.setNearPointEccentricityTo='target'; % 'target' or 'fixation' or 'value'
 
 % FIXATION
 o.fixationCrossBlankedNearTarget=true;
-% o.fixationCrossBlankedUntilSecAfterTarget=0; % This value is reported, but not used. Haven't yet needed it.
+o.fixationCrossBlankedUntilSecsAfterTarget=0; 
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
 o.fixationLineMinimumLengthDeg=0.2;
@@ -616,7 +616,7 @@ o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 o.recordGaze=false;
 o.fixationTest=false; % True designates condition as a fixation test.
-o.fixationTestMakeupTrials=2; % After a mistake, how many right answers to require.
+o.fixationTestMakeupPresentations=2; % After a mistake, how many right answers to require.
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
@@ -2345,10 +2345,16 @@ try
             end
         end
     end % while tryAgain
-    if oo(oi).showProgressBar
-        string='Notice the green progress bar on the right. It will rise as you proceed, and reach the top when you finish the block. ';
+    encourageFixation=false; %%% THIS CODE SHOULD BE INSIDE STIMULUS/RESPONSE LOOP. xxx
+    if encourageFixation
+        string=encourageFixationString;
     else
         string='';
+    end
+    if oo(oi).showProgressBar
+        string=[string 'Notice the green progress bar on the right. '...
+            'It will rise as you proceed, and reach the top '...
+            'when you finish the block. '];
     end
     if any([oo.useFixation])
         switch oo(1).task
@@ -2390,7 +2396,7 @@ try
         DrawCounter(oo);
         % Display the instruction "Notice the green ..." and the counter.
         % No fixation.
-        Screen('Flip',window,[],1); % Don't clear.
+        Screen('Flip',window,[],1); % Don't clear buffer.
         if oo(oi).takeSnapshot
             TakeSnapshot(oo);
         end
@@ -2406,23 +2412,48 @@ try
     guessCount=0; % Number of artificial guess responses
     skipCount=0;
     skipping=false;
+    
+    %% SET UP condList
+    % For all conditions we include the specified number of presentations,
+    % o.presentations, for that condition. For most conditions we simply
+    % shuffle the list of conditions. The exception is that we always
+    % begin with one trial of each condition for which oo(oi).fixationTest
+    % is true.
     condList=[];
     for oi=1:conditions
         % Run the specified number of presentations of each condition, in
         % random order
-        condList=[condList repmat(oi,1,oo(oi).presentations)];
+        if ~oo(oi).fixationTest
+            condList=[condList repmat(oi,1,oo(oi).presentations)];
+        else
+            % Hold back one instance to place at beginning.
+            condList=[condList repmat(oi,1,oo(oi).presentations-1)];
+        end
         oo(oi).spacingsSequence=shuffle(oo(oi).spacingsSequence);
         oo(oi).q=QuestCreate(oo(oi).tGuess,oo(oi).tGuessSd,oo(oi).pThreshold,oo(oi).beta,delta,gamma,grain,range);
         oo(oi).trialData=struct([]);
     end % for oi=1:conditions
     condList=shuffle(condList);
+    for oi=1:conditions
+        if oo(oi).fixationTest
+            % Insert one instance at beginning.
+            condList=[oi condList];
+        end
+    end
     presentation=0;
     skipTrial=false;
+    encourageFixation=false;
+    fixationTestPresentationsOwed=0;
     while presentation<length(condList)
+        if fixationTestPresentationsOwed>0
+            % Repeat the fixationTest.
+            assert(oo(oi).fixationTest);
+            condList(presentation+1:end+1)=oo(1).condList(presentation:end);
+        end
         if skipTrial
             % We arrive here if user canceled last trial. In that case, we
             % don't count that trial and reshuffle all the remaining
-            % conditions.
+            % conditions, including that of the last trial.
             condList(presentation:end)=shuffle(condList(presentation:end));
         else
             presentation=presentation+1;
@@ -2621,8 +2652,8 @@ try
             % dealing with o.fourFlankers, we could analyze only with one
             % pair of flankers or iterate to analyze both pairs.
             %
-            % 3/4/19 LIMITATION. Currently, we allow
-            % 'horizontal' or 'vertical' iff eccentricity is zero.
+            % 3/4/19 LIMITATION. Currently, we allow 'horizontal' or
+            % 'vertical' only if eccentricity is zero.
             switch(oo(oi).flankingDirection)
                 case {'horizontal' 'fourFlankers'}
                     flankingDegVector=[1 0];
@@ -2765,7 +2796,7 @@ try
         tryAgain=true;
         while tryAgain
             tryAgain=false;
-            % xxx When o.targetKind='letter', we draw the string 'Look at
+            % When o.targetKind='letter', we draw the string 'Look at
             % the cross as you type your response.' in three places. First,
             % above at line 2375 (before the display loop), then here
             % (2762) at the top of the loop, preceding the 1 s pause before
@@ -2835,7 +2866,7 @@ try
                 Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
                 if ~oo(oi).repeatedTargets && oo(oi).useFixation
                     % Draw fixation.
-                    if ~isempty(fixationLines)
+                     if ~isempty(fixationLines) && oo(oi).fixationCrossBlankedUntilSecsAfterTarget==0
                         % Paint white border next to the black line.
                         Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
                         Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
@@ -3243,7 +3274,7 @@ try
         if oo(1).showCounter
             DrawCounter(oo);
         end
-        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1); % Display stimulus & fixation.
+        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1); % Display stimulus & optional fixation.
         stimulusFlipSecs=GetSecs;
         if oo(oi).recordGaze
             img=snapshot(cam);
@@ -3270,7 +3301,7 @@ try
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
             %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-stimulusFlipSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
-                if ~isempty(fixationLines)
+                if ~isempty(fixationLines) && oo(oi).fixationCrossBlankedUntilSecsAfterTarget==0
                     Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
                     Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
                 end
@@ -3289,7 +3320,7 @@ try
             % of half a frame. This should give us a mean duration equal to
             % that desired. We assess that in three ways, and print it out
             % at the end of the block.
-            [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,stimulusBeginSec+oo(oi).durationSec-0.5/60,1); % Remove stimulus. Display fixation.
+            [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,stimulusBeginSec+oo(oi).durationSec-0.5/60,1); % Remove stimulus. Eventually display fixation.
             % We measure stimulus duration in three slightly different
             % ways. We use the VBLTimestamp and StimulusOnsetTime values
             % returned by our call to Screen Flip. And we time the interval
@@ -3302,7 +3333,12 @@ try
             oo(oi).actualDurationVBLSec(end+1)=stimulusEndVBLSec-stimulusBeginVBLSec;
             oo(oi).actualDurationTimerSec(end+1)=GetSecs-stimulusFlipSecs;
             Screen('FillRect',window,white,oo(oi).stimulusRect);
-            WaitSecs(0.2); % pause before response screen
+            WaitSecs(max([0.2 oo(oi).fixationCrossBlankedUntilSecsAfterTarget])); % Pause before response screen.
+            if ~isempty(fixationLines)
+                % Paint white border next to the black line.
+                Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+            end
             Screen('TextFont',window,oo(oi).textFont,0);
             Screen('TextSize',window,oo(oi).textSize);
             if oo(oi).useFixation
@@ -3732,6 +3768,33 @@ try
         if oo(1).quitBlock
             break;
         end
+        if fixationTestPresentationsOwed>0
+            % Presentation was not canceled, so count it.
+            fixationTestPresentationsOwed=fixationTestPresentationsOwed-1;
+        end
+        if ~all(responseScores) && oo(oi).fixationTest
+            % The observer failed to correctly identify an easy foveal
+            % target. Before the next trial, encourage them to always have
+            % their eye on the center of the fixation mark when they hit
+            % the response key, which initiates the next trial. We insist
+            % that the observer get right several
+            % (o.fixationTestMakeupPresentations) consecutive trials of this
+            % condition before proceeding with the rest of the condition
+            % list.
+            % This requests showing of a message before the next trial.
+            encourageFixation=true;
+            encourageFixationString=['Oops. Wrong response. '...
+                'Perhaps you didn''t have your eye on the center '...
+                'of the cross. Please always place your eye '...
+                'at the center of the cross '...
+                'before initiating the next trial. '];
+            % Repeat the current condition for several trials.
+            assert(oo(oi).fixationTestMakeupPresentations>=0,...
+                'o.fixationTestMakeupPresentations must be a nonnegative integer.');
+            fixationTestPresentationsOwed=oo(oi).fixationTestMakeupPresentations;
+        else
+            encourageFixation=false;
+        end
     end % for presentation=1:length(condList)
     blockTrial=[]; % For DrawCounter
     blockTrials=[]; % For DrawCounter
@@ -4075,7 +4138,8 @@ oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
 if oo(oi).fixationCrossBlankedNearTarget
     ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
-    %     ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',oi,oo(oi).fixationCrossBlankedUntilSecAfterTarget);
+        ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',...
+            oi,oo(oi).fixationCrossBlankedUntilSecsAfterTarget);
     ffprintf(ff,'%d: Fixation cross is not blanked.\n');
 end
 end % function SetUpFixatiom
