@@ -490,6 +490,7 @@ global scratchWindow
 global instructionalMarginPix screenRect % For ProcessEscape
 persistent drawTextWarning
 persistent textCorpus fCorpus wCorpus
+persistent oldViewingDistanceCm
 global blockTrial blockTrials % used in DrawCounter.
 keepWindowOpen=false; % Enable only in normal return.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
@@ -1119,7 +1120,7 @@ try
             'This won''t affect the experimental stimuli, but small print in the instructions may be ugly.\n']);
     end
     
-    % Ask about viewing distance, keyboard, etc.
+    % In endless loop, ask about viewing distance, keyboard, etc.
     while true
         screenRect=Screen('Rect',window);
         screenWidthPix=RectWidth(screenRect);
@@ -1358,39 +1359,87 @@ try
         end % for oi=1:conditions
         stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
         maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
-        
-        % LOOK FOR WIRELESS KEYBOARD.
-        [oo(1).hasWirelessKeyboard,oo(1).keyboardNameAndTransport]=HasWirelessKeyboard;
-        if oo(1).viewingDistanceCm>=100 && ~oo(1).hasWirelessKeyboard
-            warning backtrace off
-            warning('The long viewing distance may demand an external keyboard,');
-            warning('yet your only keyboard is not "wireless" or "bluetooth".');
-            warning backtrace on
-        end
-        
+                
         % BIG TEXT
-        % Say hello, and get viewing distance.
+        % Say hello.
         Screen('FillRect',window,white);
-        cmString=sprintf('%.0f cm',oo(1).viewingDistanceCm);
+        cmString=sprintf('%.0f cmx',oo(1).viewingDistanceCm); 
+        % We remove the trailing x from cmString after we compute its
+        % bounding box. This gives a nice white border.
         string=sprintf('Block %d of %d.',oo(1).block,oo(1).blocksDesired);
-        string=sprintf(['%s Welcome to CriticalSpacing. ' ...
-            'If you want a viewing distance of %.0f cm, ' ...
-            'please move me to that distance from your eye, and hit RETURN. ' ...
-            'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
-            string,oo(1).viewingDistanceCm);
+        string=sprintf('%s Welcome to CriticalSpacing.',string);
         Screen('TextSize',window,oo(1).textSize);
-        [~,y]=DrawFormattedText(window,string,...
+        [~,y]=Screen('DrawText',window,string,...
             instructionalMarginPix,1.5*oo(1).textSize,...
-            black,length(instructionalTextLineSample)+3-2*length(cmString),...
-            [],[],1.1);
-        Screen('TextSize',window,2*oo(1).textSize);
-        bounds=Screen('TextBounds',window,cmString,[],[],1);
-        x=screenRect(3)-bounds(3)-bounds(3)/length(cmString);
+            black,white,1);
+        Screen('TextSize',window,1.5*oo(1).textSize);
+        bounds=Screen('TextBounds',window,cmString,[],[]);
+        x=screenRect(3)-bounds(3);
+        cmString=cmString(1:end-1);
         Screen('DrawText',window,cmString,x,y,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         
-        % SIZE LIMITS
+        % VIEWING DISTANCE
+        red=[255 0 0];
+        newViewingDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
+        if newViewingDistance
+            color=red;
+            string=sprintf(['\n\nDISTANCE: %.0f cm. '...
+                'Please use a ruler or tape measure to move the display and ' ...
+                'yourself to achieve the new viewing distance of %.0f cm '...
+                'from your eye to the screen. '...
+                '(Experts can type in a new distance.)'],...
+                oo(1).viewingDistanceCm,oo(1).viewingDistanceCm);
+            if isempty(oldViewingDistanceCm)
+                speech=sprintf('%.0f centimeters. Please use a ruler to adjust your viewing distance to be %.0f centimeters.',...
+                    oo(1).viewingDistanceCm,oo(1).viewingDistanceCm);
+            else
+                speech=sprintf(['%.0f centimeters. The necessary viewing distance has changed. '...
+                    'Please use a ruler to adjust your distance to %.0f centimeters.'],...
+                    oo(1).viewingDistanceCm,oo(1).viewingDistanceCm);
+            end
+        else
+            color=black;
+            string=sprintf(['\n\nDISTANCE: If you want a viewing distance of %.0f cm, ' ...
+                'please move me to that distance from your eye, and hit RETURN. ' ...
+                'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
+                oo(1).viewingDistanceCm);
+            speech='';
+        end
+        Screen('TextSize',window,round(oo(1).textSize*0.55));
+        [~,y]=DrawFormattedText(window,string,...
+            instructionalMarginPix,y,...
+            color,(1/0.55)*(length(instructionalTextLineSample)+3),...
+            [],[],1.1);
+        oldViewingDistanceCm=oo(1).viewingDistanceCm;
         string='';
+        
+        % WIRELESS KEYBOARD?
+        [oo(1).hasWirelessKeyboard,oo(1).keyboardNameAndTransport]=HasWirelessKeyboard;
+        if oo(1).viewingDistanceCm>=80
+            if ~oo(1).hasWirelessKeyboard
+                color=red;
+                string=sprintf(['\n\nKEYBOARD: At this distance you may need a wireless keyboard, ' ...
+                    'but I can''t detect any. After connecting a new keyboard, ' ...
+                    'use your old keyboard to type "k" below, followed by RETURN, ' ...
+                    'and I''ll recreate the keyboard list.']);
+                warning backtrace off
+                warning('The long viewing distance may demand an external keyboard,');
+                warning('yet your only keyboard is not "wireless" or "bluetooth".');
+                warning backtrace on
+            else
+                color=black;
+                string='\n\nKEYBOARD: At this distance you may want to use your wireless keyboard.';
+            end
+            Screen('TextSize',window,round(oo(1).textSize*0.55));
+            [~,y]=DrawFormattedText(window,string,...
+                instructionalMarginPix,y,...
+                color,(1/0.55)*(length(instructionalTextLineSample)+3),...
+                [],[],1.1);
+        end
+        string='';
+        
+        % SIZE LIMITS
         for oi=1:conditions
             oo(oi).minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
             if oo(oi).fixedSpacingOverSize
@@ -1401,8 +1450,7 @@ try
         end
         sizeDeg=max([oo.minimumSizeDeg]);
         spacingDeg=max([oo.minimumSpacingDeg]);
-        
-        string=sprintf(['%sSIZE LIMITS: At the current <strong>%.0f cm</strong> viewing distance, '...
+        string=sprintf(['%s\n\nSIZE LIMITS: At the current <strong>%.0f cm</strong> viewing distance, '...
             'the screen is %.0fx%.0f deg, and can display characters'...
             ' as small as %.3f deg with spacing as small as %.3f deg. '],...
             string,oo(1).viewingDistanceCm,rectSizeDeg,...
@@ -1462,67 +1510,40 @@ try
                 string);
         end
         
-        % Draw all the plain small text onto the screen.
-        Screen('TextSize',window,round(oo(1).textSize*0.6));
+        % Draw the rest of the plain small text onto the screen.
+        Screen('TextSize',window,round(oo(1).textSize*0.55));
         [~,y]=DrawFormattedText(window,string,...
-            instructionalMarginPix,y+1.5*oo(1).textSize,...
-            black,(1/0.6)*(length(instructionalTextLineSample)+3),...
+            instructionalMarginPix,y,...
+            black,(1/0.55)*(length(instructionalTextLineSample)+3),...
             [],[],1.1);
         
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         copyright=sprintf('Crowding and Acuity Test. Copyright %c 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.',169);
         Screen('DrawText',window,double(copyright),...
-            instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,...
+            instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,...
             black,white,1);
-        
-        % KEYBOARD
-        alertString='';
-        if oo(1).viewingDistanceCm>=100 && ~oo(1).hasWirelessKeyboard
-            alertString=sprintf(['%sKEYBOARD: At this distance you may need a wireless keyboard, ' ...
-                'but I can''t detect any. After connecting a new keyboard, ' ...
-                'use your old keyboard to type "k" below, followed by RETURN, ' ...
-                'and I''ll recreate the keyboard list.\n\n'],alertString);
-        end
-        
-        % CHANGE IN VIEWING DISTANCE.
-        global oldViewingDistanceCm
-        newViewingDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
-        if newViewingDistance
-            alertString=sprintf(['%sDISTANCE: %.0f cm. Please use a ruler or tape measure to move the display and ' ...
-                'yourself to achieve the new viewing distance of %.0f cm from your eye to the screen.\n\n'],...
-                alertString,oo(1).viewingDistanceCm,oo(1).viewingDistanceCm);
-            if isempty(oldViewingDistanceCm)
-                speech=sprintf('Please use a ruler to adjust your viewing distance to be %.0f centimeters.',...
-                    oo(1).viewingDistanceCm);
-            else
-                speech=sprintf(['The necessary viewing distance has changed. '...
-                    'Please use a ruler to adjust your distance to %.0f centimeters.'],oo(1).viewingDistanceCm);
-            end
-        else
-            speech='';
-        end
-        oldViewingDistanceCm=oo(1).viewingDistanceCm;
-        
-        if ~isempty(alertString)
-            Screen('TextSize',window,round(oo(1).textSize*0.6));
-            DrawCounter(oo);
-            for i=1:2*4
-                % 2 seconds of flicker at 8 Hz.
-                DrawFormattedText(window,alertString,...
-                    instructionalMarginPix,y+round(1.5*oo(1).textSize*0.6),...
-                    [255 255 255],(1/0.6)*(length(instructionalTextLineSample)+3),...
-                    [],[],1.1);
-                Screen('Flip',window,[],1);
-                WaitSecs(1/16);
-                DrawFormattedText(window,alertString,...
-                    instructionalMarginPix,y+0*round(oo(1).textSize*0.6),...
-                    [255 0 0],(1/0.6)*(length(instructionalTextLineSample)+3),...
-                    [],[],1.1);
-                Screen('Flip',window,[],1);
-                WaitSecs(1/16);
-            end
-        end
+                       
+        % CLUMSY WAY TO PRODUCE FLICKER. NOT USED.
+        %         if ~isempty(alertString)
+        %             Screen('TextSize',window,round(oo(1).textSize*0.55));
+        %             DrawCounter(oo);
+        %             for i=1:2*4
+        %                 % 2 seconds of flicker at 8 Hz.
+        %                 DrawFormattedText(window,alertString,...
+        %                     instructionalMarginPix,y+round(1.5*oo(1).textSize*0.55),...
+        %                     [255 255 255],(1/0.55)*(length(instructionalTextLineSample)+3),...
+        %                     [],[],1.1);
+        %                 Screen('Flip',window,[],1);
+        %                 WaitSecs(1/16);
+        %                 DrawFormattedText(window,alertString,...
+        %                     instructionalMarginPix,y+0*round(oo(1).textSize*0.55),...
+        %                     [255 0 0],(1/0.55)*(length(instructionalTextLineSample)+3),...
+        %                     [],[],1.1);
+        %                 Screen('Flip',window,[],1);
+        %                 WaitSecs(1/16);
+        %             end
+        %         end
         
         % Get typed response
         Screen('TextSize',window,oo(1).textSize);
@@ -1536,7 +1557,7 @@ try
             black,white);
         DrawCounter(oo);
         Screen('Flip',window,[],1);
-        if ~isempty(alertString) && oo(oi).useSpeech
+        if ~isempty(speech) && oo(oi).useSpeech
             Speak(speech);
         end
         DrawCounter(oo);
@@ -1620,7 +1641,7 @@ try
         else
             break;
         end
-    end
+    end % while true
     ListenChar(0); % flush
     ListenChar(2); % no echo
     
@@ -1636,7 +1657,7 @@ try
         %         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
         %             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1679,7 +1700,7 @@ try
             instructionalMarginPix,y+1.5*0.7*oo(1).textSize,black,65/0.7,[],[],1.1);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double(copyright),...
-            instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+            instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -2297,7 +2318,7 @@ try
     while tryAgain
         Screen('TextFont',window,oo(oi).textFont,0);
         Screen('TextSize',window,round(oo(oi).textSize*0.35));
-        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.5*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
         Screen('TextSize',window,oo(oi).textSize);
         string=strrep(string,'letter',symbolName);
         DrawFormattedText(window,string,...
