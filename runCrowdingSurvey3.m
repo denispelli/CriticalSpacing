@@ -7,26 +7,54 @@ clear o
 % o.printSizeAndSpacing=true;
 % o.useFractionOfScreenToDebug=0.3;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
-o.experiment='CrowdingSurvey3';
+o.experiment='CrowdingSurvey';
 o.experimenter='';
 o.observer='';
 o.viewingDistanceCm=100;
 o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
-o.durationSec=0.15; % duration of display of target and flankers
+% For 2018-April 2019 this was nominally 200 ms, but actually delivered 280
+% ms when tested in April. I've now improved the code to more accurately
+% deliver the requested duration, and reduced the request to 150 m.
+o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trialsDesired=35;
+o.trialsDesired=40;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
+o.fixationTest=false;
 ooo={};
 
+if 0
+    o.conditionName='reading';
+    o.task='read';
+    o.thresholdParameter='spacing';
+    o.targetFont='Monaco';
+    o.getAlphabetFromDisk=false;
+    o.targetDeg=nan;
+    o.trialsDesired=40;
+    o.minimumTargetPix=8;
+    o.eccentricityXYDeg=[0 0];
+    % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
+    % 50 cm. Larger letters require proportionally smaller viewing
+    % distance.
+    o.viewingDistanceCm=25;
+    o.readSpacingDeg=2;
+    o.alphabet='abc';
+    o.borderLetter='x';
+    o.flankingDirection='horizontal';
+    o.experimenter='...';
+    o.observer='...';
+    o.useFixation=false;
+%     o.useFractionOfScreenToDebug=0.3;
+    ooo{end+1}=o;
+end
 for ecc=[10 5 2.5]
     o.conditionName='crowding';
     o.targetDeg=2;
     o.spacingDeg=2;
     o.thresholdParameter='spacing';
-    o.eccentricityXYDeg=[0 ecc]; % Distance of target from fixation. Positive up and to right.
+        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
     o.targetFont='Sloan';
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
@@ -47,6 +75,7 @@ for ecc=[10 5 2.5]
         oo(2).viewingDistanceCm=50;
     end
     ooo{end+1}=oo;
+    % Flip x and y, so we go from horizontal to vertical meridian.
     oo(1).eccentricityXYDeg=flip(oo(1).eccentricityXYDeg);
     oo(2).eccentricityXYDeg=flip(oo(2).eccentricityXYDeg);
     if abs(oo(1).eccentricityXYDeg(2))>=10
@@ -113,6 +142,31 @@ for ecc=0
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
+    end
+end
+for block=1:length(ooo)
+    oo=ooo{block};
+    if all([oo.eccentricityXYDeg]==0)
+        continue
+    else
+        o=oo(1);
+        o.conditionName='Fixation test';
+        o.fixationTest=true;
+        o.eccentricityXYDeg=[0 0];
+        o.thresholdParameter='spacing';
+        o.targetDeg=0.4;
+        o.spacingDeg=1.4*o.targetDeg;
+%         o.contrast=-1;
+        o.targetFont='Sloan';
+%         o.minimumTargetHeightChecks=8;
+        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+%         o.targetKind='letter';
+%         o.labelAnswers=false;
+%         o.readAlphabetFromDisk=false;
+%         o.alternatives=length(o.alphabet);
+        oo(end+1)=o;
+        ooo{end}=oo;
+    end
 end
 
 if rand>0.5
