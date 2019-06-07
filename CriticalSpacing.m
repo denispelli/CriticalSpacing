@@ -513,7 +513,7 @@ o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
 o.viewingDistanceCm=400; % Default for runtime question.
-
+o.maxViewingDistanceCm=0; % Max over remining blocks.
 % THIS SEEMS A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
 o.measureViewingDistanceToTargetNotFixation=true;
 
@@ -1358,12 +1358,15 @@ try
             end
         end % for oi=1:conditions
         stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
+        % This refers to max possible, for this condition. Don't confuse it
+        % with o.maxViewingDistanceCm which is max of o.viewingDistanceCm
+        % across remaining blocks.
         maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
-                
+        
         % BIG TEXT
         % Say hello.
         Screen('FillRect',window,white);
-        cmString=sprintf('%.0f cmx',oo(1).viewingDistanceCm); 
+        cmString=sprintf('%.0f cmx',oo(1).viewingDistanceCm);
         % We remove the trailing x from cmString after we compute its
         % bounding box. This gives a nice white border.
         string=sprintf('Block %d of %d.',oo(1).block,oo(1).blocksDesired);
@@ -1372,7 +1375,7 @@ try
         [~,y]=Screen('DrawText',window,string,...
             instructionalMarginPix,1.5*oo(1).textSize,...
             black,white,1);
-        Screen('TextSize',window,1.5*oo(1).textSize);
+        Screen('TextSize',window,round(1.5*oo(1).textSize));
         bounds=Screen('TextBounds',window,cmString,[],[]);
         x=screenRect(3)-bounds(3);
         cmString=cmString(1:end-1);
@@ -1400,9 +1403,10 @@ try
             end
         else
             color=black;
-            string=sprintf(['\n\nDISTANCE: If you want a viewing distance of %.0f cm, ' ...
+            string=sprintf(['\n\nDISTANCE: The viewing distance is %.0f cm. ' ...
+                'If you''re not aleady there, '...
                 'please move me to that distance from your eye, and hit RETURN. ' ...
-                'Otherwise, please enter the desired distance below, and hit RETURN.'], ...
+                '(Experts can enter the new distance.)'], ...
                 oo(1).viewingDistanceCm);
             speech='';
         end
@@ -1415,29 +1419,36 @@ try
         string='';
         
         % WIRELESS KEYBOARD?
+        % Now check if any block needs wireless, and alert observer ahead of time.
         [oo(1).hasWirelessKeyboard,oo(1).keyboardNameAndTransport]=HasWirelessKeyboard;
-        if oo(1).viewingDistanceCm>=80
-            if ~oo(1).hasWirelessKeyboard
+        if ~oo(1).hasWirelessKeyboard
+            if oo(1).maxViewingDistanceCm>=80
                 color=red;
-                string=sprintf(['\n\nKEYBOARD: At this distance you may need a wireless keyboard, ' ...
+                string=sprintf(['\n\nKEYBOARD: ' ...
+                    'The maximum viewing distance required '...
+                    'in the remaining blocks is %.0f cm. '...
+                    'At that distance you may need a wireless keyboard, ' ...
                     'but I can''t detect any. After connecting a new keyboard, ' ...
                     'use your old keyboard to type "k" below, followed by RETURN, ' ...
-                    'and I''ll recreate the keyboard list.']);
+                    'and I''ll recreate the keyboard list.'],...
+                    oo(1).maxViewingDistanceCm);
+                Screen('TextSize',window,round(oo(1).textSize*0.55));
+                [~,y]=DrawFormattedText(window,string,...
+                    instructionalMarginPix,y,...
+                    color,(1/0.55)*(length(instructionalTextLineSample)+3),...
+                    [],[],1.1);
+                string='';
                 warning backtrace off
-                warning('The long viewing distance may demand an external keyboard,');
+                warning('The long o.maxViewingDistanceCm %.0f cm may demand an external keyboard,',...
+                    oo(1).maxViewingDistanceCm);
                 warning('yet your only keyboard is not "wireless" or "bluetooth".');
                 warning backtrace on
-            else
-                color=black;
+            end
+        else
+            if oo(1).viewingDistanceCm>=80
                 string='\n\nKEYBOARD: At this distance you may want to use your wireless keyboard.';
             end
-            Screen('TextSize',window,round(oo(1).textSize*0.55));
-            [~,y]=DrawFormattedText(window,string,...
-                instructionalMarginPix,y,...
-                color,(1/0.55)*(length(instructionalTextLineSample)+3),...
-                [],[],1.1);
         end
-        string='';
         
         % SIZE LIMITS
         for oi=1:conditions
@@ -1451,8 +1462,8 @@ try
         sizeDeg=max([oo.minimumSizeDeg]);
         spacingDeg=max([oo.minimumSpacingDeg]);
         string=sprintf(['%s\n\nSIZE LIMITS: At the current <strong>%.0f cm</strong> viewing distance, '...
-            'the screen is %.0fx%.0f deg, and can display characters'...
-            ' as small as %.3f deg with spacing as small as %.3f deg. '],...
+            'the screen is %.0fx%.0f deg, and can display characters '...
+            'as small as %.3f deg with spacing as small as %.3f deg. '],...
             string,oo(1).viewingDistanceCm,rectSizeDeg,...
             sizeDeg,spacingDeg);
         if any([oo(:).eccentricityXYDeg]~=0)
