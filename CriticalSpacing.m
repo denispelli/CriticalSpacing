@@ -612,7 +612,7 @@ o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 o.recordGaze=false;
-o.fixationTest=false; % True designates condition as a fixation test.
+o.fixationCheck=false; % True designates condition as a fixation test.
 o.fixationTestMakeupPresentations=2; % After a mistake, how many right answers to require.
 
 % RESPONSE SCREEN
@@ -2439,13 +2439,13 @@ try
     % For all conditions we include the specified number of presentations,
     % o.presentations, for that condition. For most conditions we simply
     % shuffle the list of conditions. The exception is that we always
-    % begin with one trial of each condition for which oo(oi).fixationTest
+    % begin with one trial of each condition for which oo(oi).fixationCheck
     % is true.
     condList=[];
     for oi=1:conditions
         % Run the specified number of presentations of each condition, in
         % random order
-        if ~oo(oi).fixationTest
+        if ~oo(oi).fixationCheck
             condList=[condList repmat(oi,1,oo(oi).presentations)];
         else
             % Hold back one instance to place at beginning.
@@ -2457,8 +2457,8 @@ try
     end % for oi=1:conditions
     condList=shuffle(condList);
     for oi=1:conditions
-        if oo(oi).fixationTest
-            % Insert a fixationTest at the beginning.
+        if oo(oi).fixationCheck
+            % Insert a fixationCheck at the beginning.
             condList=[oi condList];
         end
     end
@@ -2471,8 +2471,8 @@ try
     % THIS IS THE MAIN LOOP
     while presentation<length(condList)
         if fixationTestPresentationsOwed>0
-            % Repeat the fixationTest.
-            assert(oo(oi).fixationTest);
+            % Repeat the fixationCheck.
+            assert(oo(oi).fixationCheck);
             condList(presentation+1:end+1)=condList(presentation:end);
         end
         if skipTrial
@@ -2532,7 +2532,7 @@ try
                         case 'read'
                             oo(oi).spacingDeg=oo(oi).readSpacingDeg;
                         otherwise
-                            if ~oo(oi).fixationTest
+                            if ~oo(oi).fixationCheck
                                 oo(oi).spacingDeg=min(10^intensity,maxSpacingDeg);
                             end
                     end
@@ -2542,7 +2542,7 @@ try
                         oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
                     end
                 case 'size'
-                    if ~oo(oi).fixationTest
+                    if ~oo(oi).fixationCheck
                         oo(oi).targetDeg=10^intensity;
                     end
             end
@@ -2827,7 +2827,7 @@ try
         % observer to press space. If there is fixation we ask the observer
         % to fixate while pressing space. There are three occasions for
         % using this code: 1. First trial; 2. Encourage fixation after
-        % observer missed a fixationTest; 3. After escaping the last
+        % observer missed a fixationCheck; 3. After escaping the last
         % presentation and hitting SPACE to resume.
     
         % Before the first trial, when we skip a trial, and when we
@@ -3824,7 +3824,7 @@ try
             % Presentation was not canceled, so count it.
             fixationTestPresentationsOwed=fixationTestPresentationsOwed-1;
         end
-        if ~all(responseScores) && oo(oi).fixationTest
+        if ~all(responseScores) && oo(oi).fixationCheck
             % The observer failed to correctly identify an easy foveal
             % target. Before the next trial, encourage them to always have
             % their eye on the center of the fixation mark when they hit

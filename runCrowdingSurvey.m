@@ -23,7 +23,7 @@ o.getAlphabetFromDisk=true;
 o.trialsDesired=40;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
-o.fixationTest=false;
+o.fixationCheck=false;
 o.flankingDirection='radial';
 o.fixationCrossBlankedUntilSecsAfterTarget=0;
 ooo={};
@@ -152,7 +152,7 @@ for block=1:length(ooo)
     else
         o=oo(1);
         o.conditionName='Fixation test';
-        o.fixationTest=true;
+        o.fixationCheck=true;
         o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
