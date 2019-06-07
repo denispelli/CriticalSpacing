@@ -5,7 +5,7 @@
 clear all
 clear o
 % o.useFractionOfScreenToDebug=0.4;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
+o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.experimenter='';
@@ -51,7 +51,7 @@ if 0
     o.useFixation=false;
     ooo{end+1}=o;
 end
-for ecc=[10 5 2.5]
+for ecc=[ 5 2.5]
     o.conditionName='crowding';
     o.targetDeg=2;
     o.spacingDeg=2;
@@ -157,8 +157,11 @@ for block=1:length(ooo)
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
-        o.targetDeg=0.4;
+        o.targetDeg=0.2;
         o.spacingDeg=1.4*o.targetDeg;
+        o.spacingDeg=nan;
+        o.spacingGuessDeg=o.spacingDeg;
+        o.targetGuessDeg=o.targetDeg;
         o.targetFont='Sloan';
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         oo(end+1)=o;
@@ -170,7 +173,7 @@ if rand>0.5
     %         ooo=fliplr(ooo);
 end
 
-%% Number the blocks.
+%% NUMBER THE BLOCKS
 for block=1:length(ooo)
     for oi=1:length(ooo{block})
         ooo{block}(oi).block=block;
@@ -179,11 +182,18 @@ for block=1:length(ooo)
 end
 % ooo=Shuffle(ooo);
 
-% COMPUTE MAX VIEWING DISTANCE IN REMAINING BLOCKS
+%% COMPUTE MAX VIEWING DISTANCE IN REMAINING BLOCKS
 maxCm=0;
 for block=length(ooo):-1:1
     maxCm=max([maxCm ooo{block}(1).viewingDistanceCm]);
-    ooo{block}(1).maxViewingDistanceCm=maxCm;
+    [ooo{block}(:).maxViewingDistanceCm]=deal(maxCm);
+end
+
+%% ESTIMATED TIME OF ARRIVAL (ETA)
+etaMin=0;
+for block=1:length(ooo)
+    etaMin=etaMin+sum([ooo{block}.trialsDesired])/10;
+    [ooo{block}(:).etaMin]=deal(etaMin);
 end
 
 %% Print as a table. One row per threshold.
@@ -202,7 +212,7 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'experiment' 'conditionName' 'fixationCrossBlankedUntilSecsAfterTarget' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'maxViewingDistanceCm' 'trialsDesired'}));
+disp(t(:,{'block' 'etaMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
 fprintf('Total of %d trialsDesired should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 % return
