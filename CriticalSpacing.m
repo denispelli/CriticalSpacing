@@ -612,8 +612,8 @@ o.useFixation=true;
 o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 o.recordGaze=false;
-o.fixationCheck=false; % True designates condition as a fixation test.
-o.fixationTestMakeupPresentations=2; % After a mistake, how many right answers to require.
+o.fixationCheck=false; % True designates condition as a fixation check.
+o.fixationCheckMakeupPresentations=2; % After a mistake, how many correct presentation to require.
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
@@ -3830,7 +3830,7 @@ try
             % their eye on the center of the fixation mark when they hit
             % the response key, which initiates the next trial. We insist
             % that the observer get right several
-            % (o.fixationTestMakeupPresentations) consecutive trials of this
+            % (o.fixationCheckMakeupPresentations) consecutive trials of this
             % condition before proceeding with the rest of the condition
             % list.
             % This requests showing of a message before the next trial.
@@ -3841,9 +3841,9 @@ try
                 'at the center of the cross '...
                 'before initiating the next trial. '];
             % Repeat the current condition for several trials.
-            assert(oo(oi).fixationTestMakeupPresentations>=0,...
-                'o.fixationTestMakeupPresentations must be a nonnegative integer.');
-            fixationTestPresentationsOwed=oo(oi).fixationTestMakeupPresentations;
+            assert(oo(oi).fixationCheckMakeupPresentations>=0,...
+                'o.fixationCheckMakeupPresentations must be a nonnegative integer.');
+            fixationTestPresentationsOwed=oo(oi).fixationCheckMakeupPresentations;
         else
             encourageFixation=false;
             encourageFixationString='';

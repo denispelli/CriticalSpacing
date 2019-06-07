@@ -151,7 +151,7 @@ for block=1:length(ooo)
         continue
     else
         o=oo(1);
-        o.conditionName='Fixation test';
+        o.conditionName='Fixation check';
         o.fixationCheck=true;
         o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
         o.eccentricityXYDeg=[0 0];
