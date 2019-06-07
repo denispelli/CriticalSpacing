@@ -4,12 +4,13 @@
 %% DEFINE CONDITIONS
 clear all
 clear o
-% o.printSizeAndSpacing=true;
-% o.useFractionOfScreenToDebug=0.3;
+% o.useFractionOfScreenToDebug=0.4;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
+% o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.experimenter='';
 o.observer='';
+o.showProgressBar=false;
 o.viewingDistanceCm=100;
 o.useSpeech=false;
 o.setNearPointEccentricityTo='fixation';
@@ -23,6 +24,8 @@ o.trialsDesired=40;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 o.fixationTest=false;
+o.flankingDirection='radial';
+o.fixationCrossBlankedUntilSecsAfterTarget=0;
 ooo={};
 
 if 0
@@ -46,7 +49,6 @@ if 0
     o.experimenter='...';
     o.observer='...';
     o.useFixation=false;
-%     o.useFractionOfScreenToDebug=0.3;
     ooo{end+1}=o;
 end
 for ecc=[10 5 2.5]
@@ -54,7 +56,7 @@ for ecc=[10 5 2.5]
     o.targetDeg=2;
     o.spacingDeg=2;
     o.thresholdParameter='spacing';
-        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
     o.targetFont='Sloan';
     o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
     o.borderLetter='X';
@@ -142,7 +144,6 @@ for ecc=0
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
-    end
 end
 for block=1:length(ooo)
     oo=ooo{block};
@@ -152,25 +153,21 @@ for block=1:length(ooo)
         o=oo(1);
         o.conditionName='Fixation test';
         o.fixationTest=true;
+        o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
+        o.flankingDirection='horizontal';
         o.targetDeg=0.4;
         o.spacingDeg=1.4*o.targetDeg;
-%         o.contrast=-1;
         o.targetFont='Sloan';
-%         o.minimumTargetHeightChecks=8;
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-%         o.targetKind='letter';
-%         o.labelAnswers=false;
-%         o.readAlphabetFromDisk=false;
-%         o.alternatives=length(o.alphabet);
         oo(end+1)=o;
-        ooo{end}=oo;
+        ooo{block}=oo;
     end
 end
 
 if rand>0.5
-%         ooo=fliplr(ooo);
+    %         ooo=fliplr(ooo);
 end
 
 %% Number the blocks.
@@ -181,6 +178,13 @@ for block=1:length(ooo)
     end
 end
 % ooo=Shuffle(ooo);
+
+% COMPUTE MAX VIEWING DISTANCE IN REMAINING BLOCKS
+maxCm=0;
+for block=length(ooo):-1:1
+    maxCm=max([maxCm ooo{block}(1).viewingDistanceCm]);
+    ooo{block}(1).maxViewingDistanceCm=maxCm;
+end
 
 %% Print as a table. One row per threshold.
 for block=1:length(ooo)
@@ -198,8 +202,8 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'viewingDistanceCm' 'trials'}));
-fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
+disp(t(:,{'block' 'experiment' 'conditionName' 'fixationCrossBlankedUntilSecsAfterTarget' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'maxViewingDistanceCm' 'trialsDesired'}));
+fprintf('Total of %d trialsDesired should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 % return
 
@@ -216,5 +220,5 @@ for block=1:length(ooo)
     ooo{block}=CriticalSpacing(ooo{block});
     if any([ooo{block}.quitExperiment])
         break
-    end 
+    end
 end
