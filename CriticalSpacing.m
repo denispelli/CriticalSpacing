@@ -1,23 +1,19 @@
 function oo=CriticalSpacing(oIn)
-% BUGS:
-%
-% Some people insist on typing in all 3 letters, not just the middle one.
-% We should warn about need for wireless keyboard before the first block.
-%
 % o=CriticalSpacing(o);
-% CriticalSpacing measures an observer's critical spacing and acuity (i.e.
-% threshold spacing and size) to help characterize the observer's vision.
-% This program takes over your screen to measure the observer's size or
-% spacing threshold for letter identification. It takes about 5 minutes to
-% measure two thresholds. It's meant to be called by a short user-written
-% script, and should work well in clinical environments. All results are
-% returned in the "o" struct and also saved to disk in two files whose file
-% names include your script name, the experimenter and observer names, and
-% the date. One of those files is plain text .txt and easy for you to read;
-% the other is a MATLAB save file .MAT and easily read by MATLAB programs.
-% It's best to keep both. The filenames are unique and easy to sort, so
-% it's fine to let all your data files accumulate in your
-% CriticalSpacing/data/ folder.
+% BUGS: none
+% CriticalSpacing measures an observer's crowding distance (formerly
+% critical spacing) and acuity (i.e. threshold spacing and size) to help
+% characterize the observer's vision. This program takes over your screen
+% to measure the observer's size or spacing threshold for letter
+% identification. It takes about 5 minutes to measure two thresholds. It's
+% meant to be called by a short user-written script, and should work well
+% in clinical environments. All results are returned in the "o" struct and
+% also saved to disk in two files whose file names include your script
+% name, the experimenter and observer names, and the date. One of those
+% files is plain text .txt and easy for you to read; the other is a MATLAB
+% save file .MAT and easily read by MATLAB programs. It's best to keep
+% both. The filenames are unique and easy to sort, so it's fine to let all
+% your data files accumulate in your CriticalSpacing/data/ folder.
 %
 % THE "o" ARGUMENT, INPUT AND OUTPUT. You define a condition by creating an
 % "o" struct and setting its fields to specify your testing condition. Call
@@ -606,7 +602,7 @@ o.setNearPointEccentricityTo='target'; % 'target' or 'fixation' or 'value'
 
 % FIXATION
 o.fixationCrossBlankedNearTarget=true;
-o.fixationCrossBlankedUntilSecsAfterTarget=0; 
+o.fixationCrossBlankedUntilSecsAfterTarget=0;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.02;
 o.fixationLineMinimumLengthDeg=0.2;
@@ -1484,9 +1480,13 @@ try
                     'half of typical crowding distance, view screen from <strong>at least %.0f cm</strong>.\n\n'], ...
                     string,smallestDeg,minimumViewingDistanceCm);
         end
+        string=strrep(string,'<strong>','%B'); % Minimize for line breaking.
+        string=strrep(string,'</strong>','%b');
         s=regexprep(string,'.{1,80}\s','$0\n');
+        string=strrep(string,'%B','<strong>'); % Restore.
+        string=strrep(string,'%b','</strong>');
         ffprintf(ff,'%s',s(1:end-2)); % Print wrapped text including <strong> and </strong>.
-        string=strrep(string,'<strong>',''); % Strip out <strong> and </strong>.
+        string=strrep(string,'<strong>',''); % Remove <strong> and </strong>.
         string=strrep(string,'</strong>','');
         
         % RESOLUTION
@@ -1534,7 +1534,7 @@ try
         Screen('DrawText',window,double(copyright),...
             instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,...
             black,white,1);
-                       
+        
         % CLUMSY WAY TO PRODUCE FLICKER. NOT USED.
         %         if ~isempty(alertString)
         %             Screen('TextSize',window,round(oo(1).textSize*0.55));
@@ -2356,68 +2356,77 @@ try
             end
         end
     end % while tryAgain
-    encourageFixation=false; %%% THIS CODE SHOULD BE INSIDE STIMULUS/RESPONSE LOOP. xxx
-    if encourageFixation
-        string=encourageFixationString;
-    else
-        string='';
-    end
-    if oo(oi).showProgressBar
-        string=[string 'Notice the green progress bar on the right. '...
-            'It will rise as you proceed, and reach the top '...
-            'when you finish the block. '];
-    end
-    if any([oo.useFixation])
-        switch oo(1).task
-            case 'read'
-                string=[string 'On each trial, you''ll read a paragraph. '];
-            otherwise
-                string=[string 'On each trial, try to identify the target letter by typing that key. Please rest your eye on the crosshairs before each trial. '];
+    string=''; % DGP June 2019
+    
+    % This tryAgain loop presents instructions and waits for RETURN.
+    tryAgain=true;
+    while tryAgain
+        if oo(oi).showProgressBar
+            string=[string 'Notice the green progress bar on the right. '...
+                'It will rise as you proceed, and reach the top '...
+                'when you finish the block. '];
         end
-        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
-            string=[string 'When you see three letters, please report just the middle one. '];
-        end
-        if oo(1).fixationOnScreen
-            where='below';
-        else
-            polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
-            quadrant=round(polarDeg/90);
-            quadrant=mod(quadrant,4);
-            switch quadrant
-                case 0
-                    where='to the right';
-                case 1
-                    where='above';
-                case 2
-                    where='to the left';
-                case 3
-                    where='below';
+        if any([oo.useFixation])
+            switch oo(1).task
+                case 'read'
+                    string=[string 'On each trial, you''ll read a paragraph. '];
+                otherwise
+                    string=[string 'On each trial, try to identify the target letter by typing that key. Please rest your eye on the crosshairs before each trial. '];
             end
-        end
-        string=sprintf(['%sTo begin, please fix your gaze at the center of the crosshairs %s,' ...
-            ' and, while fixating, press the SPACE bar. '], ...
-            string,where);
-        string=strrep(string,'letter',symbolName);
-        x=instructionalMarginPix;
-        y=1.5*oo(1).textSize;
-        Screen('TextSize',window,oo(oi).textSize);
-        Screen('DrawText',window,'',x,y,black,white); % Set background.
-        DrawFormattedText(window,string,x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
-        % Fixation mark should be visible after the Flip.
-        DrawCounter(oo);
-        % Display the instruction "Notice the green ..." and the counter.
-        % No fixation.
-        Screen('Flip',window,[],1); % Don't clear buffer.
-        if oo(oi).takeSnapshot
-            TakeSnapshot(oo);
-        end
-        beginAfterKeypress=true;
-    else
-        beginAfterKeypress=false;
-        % In this case, we ought to print a string about the progress bar,
-        % if there is a progress bar. Right now I'm focused on testing with
-        % fixation.
-    end % if any ([oo.useFixation])
+            if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
+                string=[string 'When you see three letters, please report just the middle one. '];
+            end
+            if oo(1).fixationOnScreen
+                where='below';
+            else
+                polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
+                quadrant=round(polarDeg/90);
+                quadrant=mod(quadrant,4);
+                switch quadrant
+                    case 0
+                        where='to the right';
+                    case 1
+                        where='above';
+                    case 2
+                        where='to the left';
+                    case 3
+                        where='below';
+                end
+            end
+            string=[string 'To continue hit RETURN. '];
+            string=strrep(string,'letter',symbolName);
+            x=instructionalMarginPix;
+            y=1.5*oo(1).textSize;
+            Screen('TextSize',window,oo(oi).textSize);
+            Screen('DrawText',window,'',x,y,black,white); % Set background.
+            % 'Notice the green progress bar ... hit RETURN.
+            DrawFormattedText(window,string,x,y,...
+                black,length(instructionalTextLineSample)+3,[],[],1.1);
+            string='';
+            DrawCounter(oo);
+            % 'Notice the green progress bar ... hit RETURN.
+            Screen('Flip',window,[],1); % Don't clear buffer.
+            if oo(oi).takeSnapshot
+                TakeSnapshot(oo);
+            end
+            answer=GetKeypressWithHelp([returnKeyCode escapeKeyCode graveAccentKeyCode],...
+                oo(oi),window,oo(oi).stimulusRect);
+            Screen('FillRect',window);
+            tryAgain=false;
+            if ismember(answer,[escapeChar graveAccentChar])
+                [oo,tryAgain]=ProcessEscape(oo);
+                if tryAgain
+                    continue
+                else
+                    return
+                end
+            end
+        else
+            % In this case, we ought to print a string about the progress bar,
+            % if there is a progress bar. Right now I'm focused on testing with
+            % fixation.
+        end % if any ([oo.useFixation])
+    end % while tryAgain
     easeRequest=0; % Positive to request easier trials.
     easyCount=0; % Number of easy presentations
     guessCount=0; % Number of artificial guess responses
@@ -2447,24 +2456,28 @@ try
     condList=shuffle(condList);
     for oi=1:conditions
         if oo(oi).fixationTest
-            % Insert one instance at beginning.
+            % Insert a fixationTest at the beginning.
             condList=[oi condList];
         end
     end
     presentation=0;
     skipTrial=false;
     encourageFixation=false;
+    encourageFixationString='';
     fixationTestPresentationsOwed=0;
+    
+    % THIS IS THE MAIN LOOP
     while presentation<length(condList)
         if fixationTestPresentationsOwed>0
             % Repeat the fixationTest.
             assert(oo(oi).fixationTest);
-            condList(presentation+1:end+1)=oo(1).condList(presentation:end);
+            condList(presentation+1:end+1)=condList(presentation:end);
         end
         if skipTrial
-            % We arrive here if user canceled last trial. In that case, we
-            % don't count that trial and reshuffle all the remaining
-            % conditions, including that of the last trial.
+            % We arrive here if user canceled last presentation. In that
+            % case, we don't count that presentation and reshuffle all the
+            % remaining conditions, including that of the last
+            % presentation.
             condList(presentation:end)=shuffle(condList(presentation:end));
         else
             presentation=presentation+1;
@@ -2517,7 +2530,9 @@ try
                         case 'read'
                             oo(oi).spacingDeg=oo(oi).readSpacingDeg;
                         otherwise
-                            oo(oi).spacingDeg=min(10^intensity,maxSpacingDeg);
+                            if ~oo(oi).fixationTest
+                                oo(oi).spacingDeg=min(10^intensity,maxSpacingDeg);
+                            end
                     end
                     if oo(oi).fixedSpacingOverSize
                         oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
@@ -2525,7 +2540,9 @@ try
                         oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
                     end
                 case 'size'
-                    oo(oi).targetDeg=10^intensity;
+                    if ~oo(oi).fixationTest
+                        oo(oi).targetDeg=10^intensity;
+                    end
             end
         else
             oo(oi).spacingDeg=oo(oi).spacingsSequence(ceil(oo(oi).responseCount/2));
@@ -2800,51 +2817,67 @@ try
             oo(oi).targetPix=min(oo(oi).targetPix,RectHeight(oo(oi).stimulusRect)/oo(oi).targetHeightOverWidth);
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        if oo(oi).printSizeAndSpacing;
+        if oo(oi).printSizeAndSpacing
             fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg);
         end
-        tryAgain=true;
-        while tryAgain
-            tryAgain=false;
-            % When o.targetKind='letter', we draw the string 'Look at
-            % the cross as you type your response.' in three places. First,
-            % above at line 2375 (before the display loop), then here
-            % (2762) at the top of the loop, preceding the 1 s pause before
-            % displaying the stimulus, and then further below (3298), after
-            % displaying the stimulus, to request a response. However, when
-            % o.targetKind='gabor' this is the only display of the string.
-            % The redundancy is inelegant, but harmless.
-            % May 2019.
-            x=instructionalMarginPix;
-            y=1.5*oo(oi).textSize;
-            DrawFormattedText(window,string,...
-                x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
-            %             string='2765';
-            fixationLines=ComputeFixationLines2(oo(oi).fix);
-            % Set up fixation.
-            if ~oo(oi).repeatedTargets && oo(oi).useFixation
+        % This tryAgain loop presents instructions and waits for the
+        % observer to press space. If there is fixation we ask the observer
+        % to fixate while pressing space. There are three occasions for
+        % using this code: 1. First trial; 2. Encourage fixation after
+        % observer missed a fixationTest; 3. After escaping the last
+        % presentation and hitting SPACE to resume.
+    
+        % Before the first trial, when we skip a trial, and when we
+        % encourageFixation, we display a screen of text with fixation, and
+        % wait for the observer to fixate and press space.
+        if oo(oi).useFixation && ...
+                (presentation==1 || skipTrial || encourageFixation)
+            tryAgain=true;
+            while tryAgain
+                tryAgain=false;
+                % When o.targetKind='letter', we draw the string 'Look at
+                % the cross as you type your response.' in three places. First,
+                % above at line 2375 (before the display loop), then here
+                % (2762) at the top of the loop, preceding the 1 s pause before
+                % displaying the stimulus, and then further below (3298), after
+                % displaying the stimulus, to request a response. However, when
+                % o.targetKind='gabor' this is the only display of the string.
+                % The redundancy is inelegant, but harmless.
+                % May 2019.
+                Screen('FillRect',window); % DGP June 6, 2019.
+                x=instructionalMarginPix;
+                y=1.5*oo(oi).textSize;
+                string=[string 'Now, while fixating the cross, hit SPACE. '];
+                % ' ... press SPACE.'
+                DrawFormattedText(window,...
+                    double([encourageFixationString string]),...
+                    x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+                string='';
+                encourageFixation=false;
+                encourageFixationString='';
+                % Compute fixation lines during first trial, for rest of
+                % trials in block.
+                fixationLines=ComputeFixationLines2(oo(oi).fix);
                 % Draw fixation.
-                if ~isempty(fixationLines)
-                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                    % Draw fixation.
+                    if ~isempty(fixationLines)
+                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    end
                 end
-            end
-            if oo(oi).showProgressBar
-                Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
-                r=progressBarRect;
-                r(4)=round(r(4)*(1-presentation/length(condList)));
-                Screen('FillRect',window,[220 220 220],r); % grey background
-            end
-            if oo(1).showCounter
-                DrawCounter(oo);
-            end
-            % THIS FLIP DISPLAYS THE TEXT "Notice the green ..." AND THE
-            % COUNTER, WITH FIXATION AND PROGRESS BAR. ARRIVING HERE ON
-            % FIRST TRIAL, ONLY THE TEXT AND COUNTER ARE ALREADY DISPLAYED.
-            % ON SUBSEQUENT TRIALS, IT'S ALL THERE PLUS THE ALPHABET.
-            Screen('Flip',window,[],1); % Display instructions and fixation.
-            if oo(oi).useFixation
-                if beginAfterKeypress
+                if oo(oi).showProgressBar
+                    Screen('FillRect',window,[0 220 0],progressBarRect); % green bar
+                    r=progressBarRect;
+                    r(4)=round(r(4)*(1-presentation/length(condList)));
+                    Screen('FillRect',window,[220 220 220],r); % grey background
+                end
+                if oo(1).showCounter
+                    DrawCounter(oo);
+                end
+                % 'Now, while fixating the cross, hit SPACE.'
+                Screen('Flip',window,[],1); % Display instructions and fixation.
+                if oo(oi).useFixation
                     SetMouse(screenRect(3),screenRect(4),window);
                     answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
                     if ismember(answer,[escapeChar graveAccentChar])
@@ -2855,38 +2888,36 @@ try
                             return
                         end
                     end
-                    beginAfterKeypress=false;
-                end
-                Screen('FillRect',window,white,oo(oi).stimulusRect);
-                Screen('FillRect',window,white,clearRect);
-                % Define fixation bounds during first trial, for rest of
-                % trials in block.
-                if ~oo(oi).repeatedTargets && oo(oi).useFixation
-                    % Draw fixation.
-                    if ~isempty(fixationLines)
-                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    Screen('FillRect',window,white,oo(oi).stimulusRect);
+                    Screen('FillRect',window,white,clearRect);
+                    if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                        % Draw fixation.
+                        if ~isempty(fixationLines)
+                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        end
                     end
-                end
-                if oo(1).showCounter
-                    DrawCounter(oo);
-                end
-                Screen('Flip',window,[],1); % Display just fixation.
-                WaitSecs(1); % Duration of fixation display, before stimulus appears.
-                Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
-                Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
-                if ~oo(oi).repeatedTargets && oo(oi).useFixation
-                    % Draw fixation.
-                     if ~isempty(fixationLines) && oo(oi).fixationCrossBlankedUntilSecsAfterTarget==0
-                        % Paint white border next to the black line.
-                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    if oo(1).showCounter
+                        DrawCounter(oo);
                     end
+                    Screen('Flip',window,[],1); % Display just fixation.
+                    WaitSecs(1); % Duration of fixation display, before stimulus appears.
+                    Screen('FillRect',window,[],oo(oi).stimulusRect); % Clear screen; keep progress bar.
+                    Screen('FillRect',window,[],clearRect); % Clear screen; keep progress bar.
+                    if ~oo(oi).repeatedTargets && oo(oi).useFixation
+                        % Draw fixation.
+                        if ~isempty(fixationLines) && oo(oi).fixationCrossBlankedUntilSecsAfterTarget==0
+                            % Paint white border next to the black line.
+                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        end
+                    end
+                else
+                    Screen('FillRect',window); % Clear screen.
                 end
-            else
-                Screen('FillRect',window); % Clear screen.
-            end
-        end % while tryAgain
+            end % while tryAgain
+        end % if o.useFixation && (presentation==1 || skipTrial || encourageFixation)
+        skipTrial=false;
         switch oo(oi).task
             case 'read'
                 % Compute desired font size for the text to be read.
@@ -2923,9 +2954,10 @@ try
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
                 if length(stimulus)>=3
+                    % If possible, three random letters, independent samples, without replacement.
                     stimulus=stimulus(1:3); % Three random letters, all different.
                 else
-                    % three random letters, independent samples, with replacement.
+                    % Otherwise, three random letters, independent samples, with replacement.
                     b=shuffle(stimulus);
                     c=shuffle(stimulus);
                     stimulus(2)=b(1);
@@ -3353,17 +3385,22 @@ try
             Screen('TextFont',window,oo(oi).textFont,0);
             Screen('TextSize',window,oo(oi).textSize);
             if oo(oi).useFixation
-                string='Look at the cross as you type your response. Or ESCAPE to quit.   ';
+                string=[string 'Look at the cross as you type your response. '];
             else
-                string='Type your response, or ESCAPE to quit.   ';
+                string=[string 'Type your response, or ESCAPE to quit. '];
             end
             if oo(oi).repeatedTargets
                 string=strrep(string,'response','two responses');
             end
             x=instructionalMarginPix;
             y=1.5*oo(oi).textSize;
+            Screen('TextSize',window,round(0.8*oo(oi).textSize));
             % Draw text.
-            Screen('DrawText',window,double(string),x,y,black,white,1);
+            wrapat=60/0.8;
+            Screen('DrawText',window,' ',x,y,black,white,1); % Set background.
+            % Request response.
+            DrawFormattedText(window,double(string),x,y,black,wrapat,[],[],1.1);
+            string='';
             n=length(letterStruct); % Number of letters to display.
             w=RectWidth(screenRect)-2*instructionalMarginPix; % Usable width of display.
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
@@ -3476,6 +3513,7 @@ try
                 [~,y]=DrawFormattedText(window,string,...
                     instructionalMarginPix,1.5*oo(oi).textSize,...
                     black,screenLineChars,[],[],1.5);
+                string='';
                 Screen('Flip',window,[],1);
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
                     warning('The text does not fit on screen.'); % DGP temporary.
@@ -3576,6 +3614,7 @@ try
                     Screen('FillRect',window);
                     DrawFormattedText(window,msg,...
                         instructionalMarginPix,1.5*oo(oi).textSize,black,65);
+                    msg='';
                     Screen('Flip',window);
                     choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
                     % Have yet to implement support for ESCAPE here.
@@ -3805,8 +3844,9 @@ try
             fixationTestPresentationsOwed=oo(oi).fixationTestMakeupPresentations;
         else
             encourageFixation=false;
+            encourageFixationString='';
         end
-    end % for presentation=1:length(condList)
+    end % while presentation<length(condList)
     blockTrial=[]; % For DrawCounter
     blockTrials=[]; % For DrawCounter
     % Quitting just this block or experiment.
@@ -4119,6 +4159,7 @@ else
             string=strrep(string,'.0','');
             Speak(string);
         end
+        string='';
         response=GetKeypress([escapeKeyCode,returnKeyCode,graveAccentKeyCode]);
         answer=[];
         if ismember(response,[escapeChar graveAccentChar])
@@ -4149,8 +4190,8 @@ oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
 if oo(oi).fixationCrossBlankedNearTarget
     ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
-        ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',...
-            oi,oo(oi).fixationCrossBlankedUntilSecsAfterTarget);
+    ffprintf(ff,'%d: Fixation cross is blanked during and until %.2f s after target. No selective blanking near target. \n',...
+        oi,oo(oi).fixationCrossBlankedUntilSecsAfterTarget);
     ffprintf(ff,'%d: Fixation cross is not blanked.\n');
 end
 end % function SetUpFixatiom
