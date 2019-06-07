@@ -23,14 +23,16 @@ if ~isempty(Screen('Windows')) && ~keepWindowOpen
     fprintf('CloseWindowsAndCleanup. ... ');
     s=GetSecs;
     Screen('CloseAll'); % May take a minute.
+    fprintf('(SCA done %.0f s.) ',GetSecs-s);
     scratchWindow=[];
     if ~skipScreenCalibration
         if IsOSX
             AutoBrightness(0,1); % May take a minute.
+            fprintf('(AutoB done %.0f s). ',GetSecs-s);
         end
         RestoreCluts;
     end
-    fprintf('Done (%.1f s)\n',GetSecs-s);
+    fprintf('Done (%.0f s)\n',GetSecs-s);
 end
 % These are quick.
 ListenChar;
