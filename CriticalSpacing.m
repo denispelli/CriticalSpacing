@@ -551,8 +551,9 @@ o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to
 o.practicePresentations=0; % 0 for none. Adds easy trials at the beginning that are not recorded.
 o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
+o.spacingGuessDeg=nan;
 o.targetDeg=nan;
-o.targetDegGuess=nan;
+o.targetGuessDeg=nan;
 o.stimulusMarginFraction=0.0; % White margin around stimulusRect.
 o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetDeg height.
 o.textSizeDeg = 0.6;
@@ -640,6 +641,7 @@ o.showBounds=false;
 o.showLineOfLetters=false;
 o.speakSizeAndSpacing=false;
 o.useFractionOfScreenToDebug=false;
+o.etaMin=0;
 
 % BLOCKS AND BRIGHTNESS
 % To save time, we set brightness only before the first block, and restore
@@ -1908,8 +1910,8 @@ try
         
         oo(oi).responseCount=1; % When we have two targets we get two responses for each display.
         if streq(oo(oi).thresholdParameter,'size')
-            if isfield(oo(oi),'targetDegGuess') && isfinite(oo(oi).targetDegGuess)
-                oo(oi).targetDeg=oo(oi).targetDegGuess;
+            if isfield(oo(oi),'targetGuessDeg') && isfinite(oo(oi).targetGuessDeg)
+                oo(oi).targetDeg=oo(oi).targetGuessDeg;
             else
                 oo(oi).targetDeg=2*oo(oi).normalAcuityDeg; % initial guess for threshold size.
             end
