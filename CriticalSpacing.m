@@ -466,6 +466,10 @@ function oo=CriticalSpacing(oIn)
 if v.major*10000 + v.minor*100 + v.point < 30012
     error('CriticalSpacing: Your Psychtoolbox is too old. Please run "UpdatePsychtoolbox".');
 end
+if verLessThan('matlab','9.1')
+    % https://en.wikipedia.org/wiki/MATLAB#Release_history
+    error('%s requires MATLAB 9.1 (R2016b) or later, for "split" function.',mfilename);
+end
 if nargin<1 || ~exist('oIn','var')
     oIn.script=[];
 end
@@ -520,6 +524,7 @@ o.condition=1; % Integer count of the condition, starting at 1.
 o.conditionName='';
 o.quitBlock=false;
 o.quitExperiment=false;
+o.trialsSkipped=0;
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
@@ -561,6 +566,7 @@ o.measuredScreenWidthCm = []; % Allow users to provide their own measurement whe
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
 o.isolatedTarget=false; % Set to true when measuring acuity for a single isolated letter. Not yet fully supported.
 o.brightnessSetting=0.87; % Default. Roughly half luminance. Some observers find 1.0 painfully bright.
+
 % READ TEXT
 o.readSpacingDeg=0.3;
 o.readString={}; % The string of text to be read.
@@ -1482,11 +1488,11 @@ try
                     'half of typical crowding distance, view screen from <strong>at least %.0f cm</strong>.\n\n'], ...
                     string,smallestDeg,minimumViewingDistanceCm);
         end
-        string=strrep(string,'<strong>','%B'); % Minimize for line breaking.
-        string=strrep(string,'</strong>','%b');
-        s=regexprep(string,'.{1,80}\s','$0\n');
-        string=strrep(string,'%B','<strong>'); % Restore.
-        string=strrep(string,'%b','</strong>');
+        s=strrep(string,'<strong>','!B'); % Minimize for line breaking.
+        s=strrep(s,'</strong>','!b');
+        s=regexprep(s,'.{1,80}\s','$0\n'); % Break lines.
+        s=strrep(s,'!B','<strong>'); % Restore.
+        s=strrep(s,'!b','</strong>');
         ffprintf(ff,'%s',s(1:end-2)); % Print wrapped text including <strong> and </strong>.
         string=strrep(string,'<strong>',''); % Remove <strong> and </strong>.
         string=strrep(string,'</strong>','');
@@ -2480,6 +2486,10 @@ try
             % case, we don't count that presentation and reshuffle all the
             % remaining conditions, including that of the last
             % presentation.
+            % Strictly speaking, the presentation might have represented
+            % two trials, but it's still one cancellation. Perhaps this
+            % should be called presentationsSkipped.
+            oo(oi).trialsSkipped=oo(oi).trialsSkipped+1;
             condList(presentation:end)=shuffle(condList(presentation:end));
         else
             presentation=presentation+1;
