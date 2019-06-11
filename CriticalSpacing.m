@@ -2435,6 +2435,48 @@ try
             % fixation.
         end % if any ([oo.useFixation])
     end % while tryAgain
+    
+
+    % Remind to fixate, then wait for RETURN.
+    if any([oo.useFixation]) && ~ismember(oo(1).task,{'read'}) && ~oo(1).repeatedTargets
+        tryAgain=true;
+        while tryAgain
+            string=['IMPORTANT: It is tempting to type your response as '...
+                'soon as you find a matching response letter. '...
+                'Please resist that temptation. '...
+                'Instead, please hold off responding until your eye is back on the cross. '...
+                'Always wait until you''re fixating the cross before responding. '...
+                'To continue hit RETURN. '];
+            x=instructionalMarginPix;
+            y=1.5*oo(1).textSize;
+            Screen('TextSize',window,oo(oi).textSize);
+            Screen('DrawText',window,'',x,y,black,white); % Set background.
+            % 'IMPORTANT: ... hit RETURN.
+            DrawFormattedText(window,string,x,y,...
+                [255 0 0],length(instructionalTextLineSample)+3,[],[],1.1);
+            string='';
+            DrawCounter(oo);
+            % 'IMPORTANT: ... hit RETURN.
+            Screen('Flip',window,[],1); % Don't clear buffer.
+            if oo(oi).takeSnapshot
+                TakeSnapshot(oo);
+            end
+            answer=GetKeypressWithHelp([returnKeyCode escapeKeyCode graveAccentKeyCode],...
+                oo(oi),window,oo(oi).stimulusRect);
+            Screen('FillRect',window);
+            tryAgain=false;
+            if ismember(answer,[escapeChar graveAccentChar])
+                [oo,tryAgain]=ProcessEscape(oo);
+                if tryAgain
+                    continue
+                else
+                    return
+                end
+            end
+        end % while tryAgain
+    end % if any ([oo.useFixation])
+    
+    
     easeRequest=0; % Positive to request easier trials.
     easyCount=0; % Number of easy presentations
     guessCount=0; % Number of artificial guess responses
@@ -2544,6 +2586,8 @@ try
                         otherwise
                             if ~oo(oi).fixationCheck
                                 oo(oi).spacingDeg=min(10^intensity,maxSpacingDeg);
+                            else
+                                oo(oi).spacingDeg=0.3;
                             end
                     end
                     if oo(oi).fixedSpacingOverSize
@@ -2839,7 +2883,7 @@ try
         % using this code: 1. First trial; 2. Encourage fixation after
         % observer missed a fixationCheck; 3. After escaping the last
         % presentation and hitting SPACE to resume.
-    
+        
         % Before the first trial, when we skip a trial, and when we
         % encourageFixation, we display a screen of text with fixation, and
         % wait for the observer to fixate and press space.
@@ -3803,6 +3847,8 @@ try
             switch oo(oi).thresholdParameter
                 case 'spacing'
                     intensity=log10(oo(oi).spacingDeg);
+                    ffprintf(ff,'presentation %d, oi %d, oo(oi).spacingDeg %.2f, oo(oi).targetDeg %.2f\n',...
+                        presentation,oi,oo(oi).spacingDeg,oo(oi).targetDeg);
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
             end
