@@ -5,7 +5,7 @@
 clear all
 clear o
 % o.useFractionOfScreenToDebug=0.4;
-o.skipScreenCalibration=true; % Skip calibration to save time.
+% o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.experimenter='';
@@ -20,12 +20,15 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 
 % deliver the requested duration, and reduced the request to 150 m.
 o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trialsDesired=40;
+o.trialsDesired=35;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 o.fixationCheck=false;
 o.flankingDirection='radial';
 o.fixationCrossBlankedUntilSecsAfterTarget=0;
+o.spacingGuessDeg=nan;
+o.targetGuessDeg=nan;
+o.fixedSpacingOverSize=1.4;
 ooo={};
 
 if 0
@@ -89,7 +92,7 @@ for ecc=[ 5 2.5]
     end
     ooo{end+1}=oo;
     if ecc==5
-        ooPelli=oo;
+        ooPelli=ooo{end-1};
         ooPelli(1).targetFont='Pelli';
         ooPelli(2).targetFont='Pelli';
         ooPelli(1).alphabet='123456789';
@@ -151,19 +154,21 @@ for block=1:length(ooo)
         continue
     else
         o=oo(1);
-        o.conditionName='Fixation check';
+        o.conditionName='fixation check';
         o.fixationCheck=true;
         o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
-        o.targetDeg=0.2;
+        o.fixedSpacingOverSize=1.4;
+        o.targetDeg=0.3;
         o.spacingDeg=1.4*o.targetDeg;
         o.spacingDeg=nan;
         o.spacingGuessDeg=o.spacingDeg;
         o.targetGuessDeg=o.targetDeg;
         o.targetFont='Sloan';
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+        o.borderLetter='X';
         oo(end+1)=o;
         ooo{block}=oo;
     end
@@ -192,7 +197,12 @@ end
 %% ESTIMATED TIME OF ARRIVAL (ETA)
 etaMin=0;
 for block=1:length(ooo)
-    etaMin=etaMin+sum([ooo{block}.trialsDesired])/10;
+    oo=ooo{block};
+    for oi=1:length(oo)
+        if ~ismember(oo(oi).observer,{'ideal'})
+            etaMin=etaMin+[oo(oi).trialsDesired]/10;
+        end
+    end
     [ooo{block}(:).etaMin]=deal(etaMin);
 end
 
