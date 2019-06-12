@@ -1137,8 +1137,8 @@ try
         for oi=1:conditions
             % Adjust textSize so our string fits on screen.
             instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
-            oo(oi).textSize=40; % Rough guess.
-            Screen('TextSize',window,oo(oi).textSize);
+%             oo(oi).textSize=40; % Rough guess.
+%             Screen('TextSize',window,oo(oi).textSize);
             Screen('TextFont',window,oo(oi).textFont,0);
             font=Screen('TextFont',window);
             if ~streq(font,oo(oi).textFont)
@@ -1146,11 +1146,12 @@ try
                 warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
                 warning on backtrace
             end
-            instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
-            boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
-            fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMarginPix);
-            % Adjust textSize so our line fits perfectly.
-            oo(oi).textSize=round(oo(oi).textSize/fraction);
+%             instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
+%             boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
+%             fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMarginPix);
+%             % Adjust textSize so our line fits perfectly.
+%             oo(oi).textSize=round(oo(oi).textSize/fraction);
+            [oo(oi).textSize,oo(oi).textLineLength]=TextSizeToFit(window);
         end
         %       fprintf(':: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
         pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
@@ -1419,8 +1420,8 @@ try
         end
         Screen('TextSize',window,round(oo(1).textSize*0.55));
         [~,y]=DrawFormattedText(window,string,...
-            instructionalMarginPix,y,...
-            color,(1/0.55)*(length(instructionalTextLineSample)+3),...
+            instructionalMarginPix,y,color,...
+            (1/0.55)*oo(oi).textLineLength,...
             [],[],1.1);
         oldViewingDistanceCm=oo(1).viewingDistanceCm;
         string='';
@@ -1441,8 +1442,8 @@ try
                     oo(1).maxViewingDistanceCm);
                 Screen('TextSize',window,round(oo(1).textSize*0.55));
                 [~,y]=DrawFormattedText(window,string,...
-                    instructionalMarginPix,y,...
-                    color,(1/0.55)*(length(instructionalTextLineSample)+3),...
+                    instructionalMarginPix,y,color,...
+                    (1/0.55)*oo(oi).textLineLength,...
                     [],[],1.1);
                 string='';
                 warning backtrace off
@@ -1535,8 +1536,8 @@ try
         % Draw the rest of the plain small text onto the screen.
         Screen('TextSize',window,round(oo(1).textSize*0.55));
         [~,y]=DrawFormattedText(window,string,...
-            instructionalMarginPix,y,...
-            black,(1/0.55)*(length(instructionalTextLineSample)+3),...
+            instructionalMarginPix,y,black,...
+            (1/0.55)*oo(oi).textLineLength,...
             [],[],1.1);
         
         % COPYRIGHT
@@ -1554,13 +1555,13 @@ try
         %                 % 2 seconds of flicker at 8 Hz.
         %                 DrawFormattedText(window,alertString,...
         %                     instructionalMarginPix,y+round(1.5*oo(1).textSize*0.55),...
-        %                     [255 255 255],(1/0.55)*(length(instructionalTextLineSample)+3),...
+        %                     [255 255 255],(1/0.55)*oo(oi).textLineLength,...
         %                     [],[],1.1);
         %                 Screen('Flip',window,[],1);
         %                 WaitSecs(1/16);
         %                 DrawFormattedText(window,alertString,...
         %                     instructionalMarginPix,y+0*round(oo(1).textSize*0.55),...
-        %                     [255 0 0],(1/0.55)*(length(instructionalTextLineSample)+3),...
+        %                     [255 0 0],(1/0.55)*oo(oi).textLineLength,...
         %                     [],[],1.1);
         %                 Screen('Flip',window,[],1);
         %                 WaitSecs(1/16);
@@ -1711,7 +1712,8 @@ try
         text=[preface 'Type your first and last names, separated by a SPACE. '...
             'Then hit RETURN.'];
         [~,y]=DrawFormattedText(window,text,...
-            instructionalMarginPix,1.5*oo(1).textSize,black,65,[],[],1.1);
+            instructionalMarginPix,1.5*oo(1).textSize,black,...
+            oo(1).textLineLength,[],[],1.1);
         Screen('TextSize',window,round(0.7*oo(1).textSize));
         DrawFormattedText(window,...
             ['Please type your full name, like "Jane Doe" or "John Smith", '...
@@ -1719,7 +1721,8 @@ try
             'If you don''t have a first name, '...
             'you still need the SPACE before your last name. '...
             'In the following blocks, I''ll remember your answers and skip these questions.'],...
-            instructionalMarginPix,y+1.5*0.7*oo(1).textSize,black,65/0.7,[],[],1.1);
+            instructionalMarginPix,y+1.5*0.7*oo(1).textSize,black,...
+            oo(1).textLineLength/0.7,[],[],1.1);
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         Screen('DrawText',window,double(copyright),...
             instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
@@ -2344,8 +2347,8 @@ try
         Screen('TextSize',window,oo(oi).textSize);
         string=strrep(string,'letter',symbolName);
         DrawFormattedText(window,string,...
-            instructionalMarginPix,1.5*oo(1).textSize,...
-            black,length(instructionalTextLineSample)+3,[],[],1.1);
+            instructionalMarginPix,1.5*oo(1).textSize,black,...
+            oo(oi).textLineLength,[],[],1.1);
         DrawCounter(oo);
         Screen('Flip',window,[],1);
         if false && oo(oi).useSpeech
@@ -2411,8 +2414,9 @@ try
             Screen('TextSize',window,oo(oi).textSize);
             Screen('DrawText',window,'',x,y,black,white); % Set background.
             % 'Notice the green progress bar ... hit RETURN.
-            DrawFormattedText(window,string,x,y,...
-                black,length(instructionalTextLineSample)+3,[],[],1.1);
+            DrawFormattedText(window,string,...
+                x,y,black,...
+                oo(oi).textLineLength,[],[],1.1);
             string='';
             DrawCounter(oo);
             % 'Notice the green progress bar ... hit RETURN.
@@ -2444,9 +2448,8 @@ try
     if any([oo.useFixation]) && ~ismember(oo(1).task,{'read'}) && ~oo(1).repeatedTargets
         tryAgain=true;
         while tryAgain
-            string=['IMPORTANT: It is tempting to type your response as '...
+            string=['IMPORTANT: Please resist the temptation to type your response as '...
                 'soon as you find a matching response letter. '...
-                'Please resist that temptation. '...
                 'Instead, please hold off responding until your eye is back on the cross. '...
                 'Always wait until you''re fixating the cross before responding. '...
                 'To continue hit RETURN. '];
@@ -2455,8 +2458,11 @@ try
             Screen('TextSize',window,oo(oi).textSize);
             Screen('DrawText',window,'',x,y,black,white); % Set background.
             % 'IMPORTANT: ... hit RETURN.
-            DrawFormattedText(window,string,x,y,...
-                [255 0 0],length(instructionalTextLineSample)+3,[],[],1.1);
+            Screen('TextStyle',window,1); % Bold
+            DrawFormattedText(window,string,...
+                x,y,[255 0 0],...
+                0.9*oo(1).textLineLength,[],[],1.1);
+            Screen('TextStyle',window,0); % Plain
             string='';
             DrawCounter(oo);
             % 'IMPORTANT: ... hit RETURN.
@@ -2911,7 +2917,8 @@ try
                 % ' ... press SPACE.'
                 DrawFormattedText(window,...
                     double([encourageFixationString string]),...
-                    x,y,black,length(instructionalTextLineSample)+3,[],[],1.1);
+                    x,y,black,...
+                    oo(oi).textLineLength,[],[],1.1);
                 string='';
                 encourageFixation=false;
                 encourageFixationString='';
@@ -3007,8 +3014,8 @@ try
                 Screen('FillRect',window,[],clearRect);
                 Screen('TextFont',window,oo(oi).textFont);
                 DrawFormattedText(window,string,...
-                    oo(1).textSize,1.5*oo(1).textSize,...
-                    black,66,[],[],1.1);
+                    oo(1).textSize,1.5*oo(1).textSize,black,...
+                    oo(1).textLineLength,[],[],1.1);
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
@@ -3455,10 +3462,11 @@ try
             y=1.5*oo(oi).textSize;
             Screen('TextSize',window,round(0.8*oo(oi).textSize));
             % Draw text.
-            wrapat=60/0.8;
             Screen('DrawText',window,' ',x,y,black,white,1); % Set background.
             % Request response.
-            DrawFormattedText(window,double(string),x,y,black,wrapat,[],[],1.1);
+            DrawFormattedText(window,double(string),...
+                x,y,black,...
+                oo(oi).textLineLength/0.8,[],[],1.1);
             string='';
             n=length(letterStruct); % Number of letters to display.
             w=RectWidth(screenRect)-2*instructionalMarginPix; % Usable width of display.
@@ -3570,8 +3578,8 @@ try
                 Screen('TextSize',window,oo(oi).readSize);
                 Screen('FillRect',window);
                 [~,y]=DrawFormattedText(window,string,...
-                    instructionalMarginPix,1.5*oo(oi).textSize,...
-                    black,screenLineChars,[],[],1.5);
+                    instructionalMarginPix,1.5*oo(oi).textSize,black,...
+                    screenLineChars,[],[],1.5);
                 string='';
                 Screen('Flip',window,[],1);
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
@@ -3672,7 +3680,8 @@ try
                         wCorpus{iWords});
                     Screen('FillRect',window);
                     DrawFormattedText(window,msg,...
-                        instructionalMarginPix,1.5*oo(oi).textSize,black,65);
+                        instructionalMarginPix,1.5*oo(oi).textSize,black,...
+                        oo(oi).textLineLength);
                     msg='';
                     Screen('Flip',window);
                     choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
@@ -4207,7 +4216,9 @@ else
         Screen('TextSize',window,oo(oi).textSize);
         Screen('TextFont',window,'Verdana');
         Screen('FillRect',window,white);
-        DrawFormattedText(window,string,oo(oi).textSize,1.5*oo(oi).textSize,black,oo(oi).textLineLength,[],[],1.3);
+        DrawFormattedText(window,string,...
+            oo(oi).textSize,1.5*oo(oi).textSize,black,...
+            oo(oi).textLineLength,[],[],1.3);
         x=oo(oi).nearPointXYPix(1);
         y=oo(oi).nearPointXYPix(2);
         a=0.1*RectHeight(oo(oi).stimulusRect);
