@@ -1005,8 +1005,11 @@ try
             oo(1).textSize=round(0.02*RectWidth(r)); % Rough guess.
             Screen('TextSize',window,oo(1).textSize);
             instructionalMarginPix=round(0.08*min(RectWidth(r),RectHeight(r)));
-            Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
-                instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+            if false
+                % Appears too briefly to be read. Annoying.
+                Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
+                    instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+            end
             Screen('Flip',window);
         end
         ffprintf(ff,'Testing DrawText (and caching fonts) ... '); s=GetSecs;
