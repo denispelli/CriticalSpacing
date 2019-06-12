@@ -30,20 +30,11 @@ if ~streq(actualFont,font)
     warning on backtrace
     font=actualFont;
 end
-% fprintf('window [%.0f %.0f %.0f %.0f]\n',screenRect);
 boundsRect=Screen('TextBounds',window,lineOfText);
-% fprintf('%d pt, [%.0f %.0f %.0f %.0f], %.0fx%.0f\n',textSize,boundsRect,RectWidth(boundsRect),RectWidth(boundsRect));
-% Screen('DrawText',window,lineOfText,0,100,0);
 fraction=RectWidth(boundsRect)/RectWidth(screenRect);
 % Adjust textSize so the line fits perfectly across the screen width.
 textSize=floor(textSize/fraction);
 Screen('TextSize',window,textSize);
-% boundsRect=Screen('TextBounds',window,lineOfText);
-% fprintf('%d pt, [%.0f %.0f %.0f %.0f], %.0fx%.0f\n',textSize,boundsRect,RectWidth(boundsRect),RectWidth(boundsRect));
-% Screen('DrawText',window,lineOfText,0,200,0);
-% Screen('Flip',window);
-% boundsRect=Screen('TextBounds',window,'ZZZZ');
-% fprintf('%d pt, ZZZZ [%.0f %.0f %.0f %.0f], %.0fx%.0f\n',textSize,boundsRect,RectWidth(boundsRect),RectWidth(boundsRect));
 lineOfText=strrep(lineOfText,'z',''); % Remove the margin.
 lineOfText=strrep(lineOfText,'Z',''); % Remove the margin.
 textLineLength=round(length(lineOfText));
