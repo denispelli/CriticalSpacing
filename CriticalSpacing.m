@@ -487,7 +487,7 @@ cleanup=onCleanup(@() CloseWindowsAndCleanup);
 global skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
 global scratchWindow
-global instructionalMarginPix screenRect % For ProcessEscape
+global screenRect % For ProcessEscape
 persistent drawTextWarning
 persistent textCorpus fCorpus wCorpus
 persistent oldViewingDistanceCm
@@ -508,7 +508,7 @@ o.getAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=false; % To illustrate your talk or paper.
 o.task='identify'; % identify, read
-o.textFont='Arial';
+o.textFont='Verdana';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
@@ -561,7 +561,6 @@ o.targetDeg=nan;
 o.targetGuessDeg=nan;
 o.stimulusMarginFraction=0.0; % White margin around stimulusRect.
 o.targetMargin = 0.25; % Minimum from edge of target to edge of o.stimulusRect, as fraction of targetDeg height.
-o.textSizeDeg = 0.6;
 o.measuredScreenWidthCm = []; % Allow users to provide their own measurement when the OS gives wrong value.
 o.measuredScreenHeightCm = [];% Allow users to provide their own measurement when the OS gives wrong value.
 o.isolatedTarget=false; % Set to true when measuring acuity for a single isolated letter. Not yet fully supported.
@@ -1004,11 +1003,10 @@ try
             r=Screen('Rect',window);
             oo(1).textSize=round(0.02*RectWidth(r)); % Rough guess.
             Screen('TextSize',window,oo(1).textSize);
-            instructionalMarginPix=round(0.08*min(RectWidth(r),RectHeight(r)));
             if false
                 % Appears too briefly to be read. Annoying.
                 Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
-                    instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+                    2*oo(1).textSize,2.5*oo(1).textSize);
             end
             Screen('Flip',window);
         end
@@ -1136,9 +1134,6 @@ try
         pixPerCm=screenWidthPix/screenWidthCm;
         for oi=1:conditions
             % Adjust textSize so our string fits on screen.
-            instructionalMarginPix=round(0.08*min(RectWidth(screenRect),RectHeight(screenRect)));
-%             oo(oi).textSize=40; % Rough guess.
-%             Screen('TextSize',window,oo(oi).textSize);
             Screen('TextFont',window,oo(oi).textFont,0);
             font=Screen('TextFont',window);
             if ~streq(font,oo(oi).textFont)
@@ -1146,14 +1141,8 @@ try
                 warning('The o.textFont "%s" is not available. Using %s instead.',oo(oi).textFont,font);
                 warning on backtrace
             end
-%             instructionalTextLineSample='Please slowly type your name followed by RETURN. more.....more';
-%             boundsRect=Screen('TextBounds',window,instructionalTextLineSample);
-%             fraction=RectWidth(boundsRect)/(screenWidthPix-2*instructionalMarginPix);
-%             % Adjust textSize so our line fits perfectly.
-%             oo(oi).textSize=round(oo(oi).textSize/fraction);
-            [oo(oi).textSize,oo(oi).textLineLength]=TextSizeToFit(window);
+            [oo(oi).textSize,oo(oi).textLineLength]=TextSizeToFit(window,oo(oi).textFont);
         end
-        %       fprintf(':: textSize %.0f, textFont %s.\n',oo(1).textSize,font);
         pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
         for oi=1:conditions
             oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
@@ -1381,9 +1370,12 @@ try
         string=sprintf('%s Welcome to CriticalSpacing.',string);
         Screen('TextSize',window,oo(1).textSize);
         [~,y]=Screen('DrawText',window,string,...
-            instructionalMarginPix,1.5*oo(1).textSize,...
+            2*oo(1).textSize,2.5*oo(1).textSize,...
             black,white,1);
-        Screen('TextSize',window,round(1.5*oo(1).textSize));
+        scalar=1.5;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
         bounds=Screen('TextBounds',window,cmString,[],[]);
         x=screenRect(3)-bounds(3);
         cmString=cmString(1:end-1);
@@ -1418,10 +1410,13 @@ try
                 oo(1).viewingDistanceCm);
             speech='';
         end
-        Screen('TextSize',window,round(oo(1).textSize*0.55));
+        scalar=0.55;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
         [~,y]=DrawFormattedText(window,string,...
-            instructionalMarginPix,y,color,...
-            (1/0.55)*oo(oi).textLineLength,...
+            2*oo(1).textSize,y,color,...
+            oo(oi).textLineLength/scalar,...
             [],[],1.1);
         oldViewingDistanceCm=oo(1).viewingDistanceCm;
         string='';
@@ -1440,10 +1435,10 @@ try
                     'use your old keyboard to type "k" below, followed by RETURN, ' ...
                     'and I''ll recreate the keyboard list.'],...
                     oo(1).maxViewingDistanceCm);
-                Screen('TextSize',window,round(oo(1).textSize*0.55));
+                Screen('TextSize',window,round(oo(1).textSize*scalar));
                 [~,y]=DrawFormattedText(window,string,...
-                    instructionalMarginPix,y,color,...
-                    (1/0.55)*oo(oi).textLineLength,...
+                    2*oo(1).textSize,y,color,...
+                    oo(oi).textLineLength/scalar,...
                     [],[],1.1);
                 string='';
                 warning backtrace off
@@ -1534,34 +1529,34 @@ try
         end
         
         % Draw the rest of the plain small text onto the screen.
-        Screen('TextSize',window,round(oo(1).textSize*0.55));
+        Screen('TextSize',window,round(oo(1).textSize*scalar));
         [~,y]=DrawFormattedText(window,string,...
-            instructionalMarginPix,y,black,...
-            (1/0.55)*oo(oi).textLineLength,...
+            2*oo(1).textSize,y,black,...
+            oo(oi).textLineLength/scalar,...
             [],[],1.1);
         
         % COPYRIGHT
         Screen('TextSize',window,round(oo(1).textSize*0.35));
         copyright=sprintf('Crowding and Acuity Test. Copyright %c 2016, 2017, 2018, 2019, Denis Pelli. All rights reserved.',169);
         Screen('DrawText',window,double(copyright),...
-            instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,...
+            2*oo(1).textSize,screenRect(4)-0.2*oo(1).textSize,...
             black,white,1);
         
         % CLUMSY WAY TO PRODUCE FLICKER. NOT USED.
         %         if ~isempty(alertString)
-        %             Screen('TextSize',window,round(oo(1).textSize*0.55));
+        %             Screen('TextSize',window,round(oo(1).textSize*scalar));
         %             DrawCounter(oo);
         %             for i=1:2*4
         %                 % 2 seconds of flicker at 8 Hz.
         %                 DrawFormattedText(window,alertString,...
-        %                     instructionalMarginPix,y+round(1.5*oo(1).textSize*0.55),...
-        %                     [255 255 255],(1/0.55)*oo(oi).textLineLength,...
+        %                     2*oo(1).textSize,y+round(1.5*oo(1).textSize*scalar),...
+        %                     [255 255 255],oo(oi).textLineLength/scalar,...
         %                     [],[],1.1);
         %                 Screen('Flip',window,[],1);
         %                 WaitSecs(1/16);
         %                 DrawFormattedText(window,alertString,...
-        %                     instructionalMarginPix,y+0*round(oo(1).textSize*0.55),...
-        %                     [255 0 0],(1/0.55)*oo(oi).textLineLength,...
+        %                     2*oo(1).textSize,y+0*round(oo(1).textSize*scalar),...
+        %                     [255 0 0],oo(oi).textLineLength/scalar,...
         %                     [],[],1.1);
         %                 Screen('Flip',window,[],1);
         %                 WaitSecs(1/16);
@@ -1569,23 +1564,31 @@ try
         %         end
         
         % Get typed response
-        Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
         else
             background=WhiteIndex(window);
         end
+        %         Screen('DrawText',window,...
+        %             'ZZZPlease slowly type the name of the Experimenter who is sup.ZZZ',...
+        %             0,screenRect(4)/2,black,[],1);
+        scalar=0.95;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
+        Screen('TextFont',window,oo(1).textFont);
         Screen('DrawText',window,'To continue, just hit RETURN. To make a change, enter numerical',...
-            instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*(0.5-1.1),...
+            2*oo(1).textSize,0.86*screenRect(4)+scalar*oo(1).textSize*(0.5-1.1),...
             black,white);
         DrawCounter(oo);
         Screen('Flip',window,[],1);
-        if ~isempty(speech) && oo(oi).useSpeech
+        if ~isempty(speech) && oo(1).useSpeech
             Speak(speech);
         end
         DrawCounter(oo);
         [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
-            ,instructionalMarginPix,0.86*screenRect(4)+oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
+            ,2*oo(1).textSize,0.86*screenRect(4)+scalar*oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
+        Screen('TextSize',window,oo(1).textSize);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
             [oo,tryAgain]=ProcessEscape(oo);
             if tryAgain
@@ -1636,7 +1639,7 @@ try
                             screenBufferRect=Screen('Rect',oo(1).screen);
                             screenRect=Screen('Rect',oo(1).screen,1);
                             %                      fprintf('%d: NEW RES: actualScreenRect %.0f, screenBufferRect %.0f, screenRect %.0f\n',...
-                            %                          oi,actualScreenRect(3),screenBufferRect(3),screenRect(3));
+                            %                          1,actualScreenRect(3),screenBufferRect(3),screenRect(3));
                             
                             for ii=1:conditions
                                 oo(ii).stimulusRect=screenRect;
@@ -1672,15 +1675,20 @@ try
     while isempty(oo(1).experimenter)
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
-        Screen('DrawText',window,'Please slowly type the name of the Experimenter who is ',...
-            instructionalMarginPix,screenRect(4)/2-5*oo(1).textSize,black,white);
-        Screen('DrawText',window,'supervising, followed by RETURN.',...
-            instructionalMarginPix,screenRect(4)/2-3.9*oo(1).textSize,black,white);
-        %         Screen('TextSize',window,round(0.55*oo(1).textSize));
-        %         Screen('DrawText',window,['Please type your name in exactly the same way every time.' ...
-        %             'in your script.'],instructionalMarginPix,screenRect(4)/2-1.5*oo(1).textSize,black,white);
-        Screen('TextSize',window,round(oo(1).textSize*0.35));
-        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
+        Screen('TextSize',window,oo(1).textSize);
+        [x,y]=DrawFormattedText(window,...
+            ['Please slowly type the name of the Experimenter '...
+            'who is supervising, followed by RETURN.'],...
+            2*oo(1).textSize,2.5*oo(1).textSize,black,...
+            oo(1).textLineLength,[],[],1.3);
+        %         [x,y]=Screen('DrawText',window,...
+        %             'ZZZPlease slowly type the name of the Experimenter who is sup.ZZZ',...
+        %             0,y+1.3*oo(1).textSize,black,[],1);
+        scalar=0.35;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
+        Screen('DrawText',window,double(copyright),2*oo(1).textSize,screenRect(4)-0.5*scalar*oo(1).textSize,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1688,7 +1696,9 @@ try
             background=WhiteIndex(window);
         end
         DrawCounter(oo);
-        [name,terminatorChar]=GetEchoString(window,'Experimenter name:',instructionalMarginPix,0.82*screenRect(4),black,background,1,oo(1).deviceIndex);
+        [name,terminatorChar]=GetEchoString(window,'Experimenter name:',...
+            2*oo(1).textSize,0.82*screenRect(4),black,...
+            background,1,oo(1).deviceIndex);
         for i=1:conditions
             oo(i).experimenter=name;
         end
@@ -1703,29 +1713,36 @@ try
     end % while isempty(oo(1).experimenter)
     
     % Ask observer name
-    preface=['Hello Observer,\n' 'Please slowly type your full name. '];
+    preface=['Hello Observer. Please slowly type your full name. '];
     while isempty(oo(1).observer)
         Screen('FillRect',window,white);
         Screen('TextSize',window,oo(1).textSize);
         Screen('TextFont',window,oo(1).textFont,0);
-        Screen('DrawText',window,'',instructionalMarginPix,screenRect(4)/2-4.5*oo(1).textSize,black,white);
+        Screen('DrawText',window,'',2*oo(1).textSize,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         text=[preface 'Type your first and last names, separated by a SPACE. '...
             'Then hit RETURN.'];
         [~,y]=DrawFormattedText(window,text,...
-            instructionalMarginPix,1.5*oo(1).textSize,black,...
-            oo(1).textLineLength,[],[],1.1);
-        Screen('TextSize',window,round(0.7*oo(1).textSize));
+            2*oo(1).textSize,2.5*oo(1).textSize,black,...
+            oo(1).textLineLength,[],[],1.3);
+        scalar=0.7;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
         DrawFormattedText(window,...
             ['Please type your full name, like "Jane Doe" or "John Smith", '...
             'in exactly the same way every time. '...
             'If you don''t have a first name, '...
             'you still need the SPACE before your last name. '...
             'In the following blocks, I''ll remember your answers and skip these questions.'],...
-            instructionalMarginPix,y+1.5*0.7*oo(1).textSize,black,...
-            oo(1).textLineLength/0.7,[],[],1.1);
-        Screen('TextSize',window,round(oo(1).textSize*0.35));
+            2*oo(1).textSize,y+1.5*scalar*oo(1).textSize,black,...
+            oo(1).textLineLength/scalar,[],[],1.3);
+        scalar=0.35;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
+        Screen('TextSize',window,sz);
         Screen('DrawText',window,double(copyright),...
-            instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
+            2*oo(1).textSize,screenRect(4)-0.5*scalar*oo(1).textSize,black,white,1);
         Screen('TextSize',window,oo(1).textSize);
         if IsWindows
             background=[];
@@ -1734,7 +1751,7 @@ try
         end
         DrawCounter(oo);
         [name,terminatorChar]=GetEchoString(window,'Observer name:',...
-            instructionalMarginPix,0.82*screenRect(4),...
+            2*oo(1).textSize,0.82*screenRect(4),...
             black,background,1,oo(1).deviceIndex);
         if ismember(terminatorChar,[escapeChar graveAccentChar])
             [oo,tryAgain]=ProcessEscape(oo);
@@ -1753,9 +1770,13 @@ try
         end
         Screen('FillRect',window);
     end % while isempty(oo(1).observer)
+    
+    %% START TIMER
     oo(1).beginSecs=GetSecs;
     oo(1).beginningTime=now;
     timeVector=datevec(oo(1).beginningTime);
+    
+    %% SAVE SCRIPT
     stack=dbstack;
     assert(~isempty(stack));
     if length(stack)==1
@@ -1772,6 +1793,8 @@ try
     else
         oo(1).script=[];
     end
+    
+    %% CREATE SNAPSHOT FOLDER
     oo(1).snapshotsFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
     if ~exist(oo(1).snapshotsFolder,'dir')
         [success,msg]=mkdir(oo(1).snapshotsFolder);
@@ -1779,6 +1802,8 @@ try
             error('%s. Could not create snapshots folder: %s',msg,oo(1).snapshotsFolder);
         end
     end
+    
+    %% CREATE DATA FILE
     oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',...
         oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
     oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
@@ -1799,6 +1824,9 @@ try
     assert(dataFid>-1);
     ff=[1 dataFid];
     ffError=[2 dataFid];
+    
+    
+    %% WRITE LOG
     ffprintf(ff,'<strong>o.experiment ''%s''</strong>, block %d of %d\n',...
         oo(1).experiment,oo(1).block,oo(1).blocksDesired);
     ffprintf(ff,'%s %s. ',oo(1).functionNames,datestr(now));
@@ -1934,15 +1962,14 @@ try
                     oo(ii).useFixation=false;
                 end
                 oo(ii).textSizeDeg = oo(ii).textSize/oo(1).pixPerDeg;
-                oo(ii).textLineLength=floor(1.9*RectWidth(screenRect)/oo(ii).textSize);
                 oo(ii).speakInstructions=oo(ii).useSpeech;
             end
         end
         
-        % Location of near point, fixation, and target.
+        %% Location of near point, fixation, and target.
         oo=SetUpFixation(window,oo,oi,ff); %  o.targetXYPix, fixationOffsetXYCm, o.nearPointXYPix
         
-        % Crowding distances.
+        %% Crowding distances.
         addOnDeg=0.15;
         addOnPix=pixPerDeg*addOnDeg;
         oo(oi).normalCrowdingDistanceDeg=0.3*(ecc+0.15); % from Pelli et al. (2017).
@@ -1990,7 +2017,7 @@ try
             ffprintf(ff,'] deg\n');
         end
         
-        % Measure targetHeightOverWidth
+        %% Measure targetHeightOverWidth
         oo(oi).targetFontHeightOverNominalPtSize=nan;
         oo(oi).targetPix=200;
         % Get bounds.
@@ -2214,7 +2241,7 @@ try
                 Screen('FillRect',window);
                 Screen('TextSize',window,oo(1).textSize);
                 Screen('DrawText',window,'Setting brightness ...',...
-                    instructionalMarginPix,instructionalMarginPix-0.5*oo(1).textSize);
+                    2*oo(1).textSize,2.5*oo(1).textSize);
                 DrawCounter(oo);
                 Screen('Flip',window);
                 ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
@@ -2341,14 +2368,17 @@ try
     string=[string 'To continue, please hit RETURN. '];
     tryAgain=true;
     while tryAgain
+        scalar=0.35;
+        sz=round(scalar*oo(1).textSize);
+        scalar=sz/oo(1).textSize;
+        Screen('TextSize',window,sz);
         Screen('TextFont',window,oo(oi).textFont,0);
-        Screen('TextSize',window,round(oo(oi).textSize*0.35));
-        Screen('DrawText',window,double(copyright),instructionalMarginPix,screenRect(4)-0.1*instructionalMarginPix,black,white,1);
+        Screen('DrawText',window,double(copyright),2*oo(1).textSize,screenRect(4)-0.5*scalar*oo(1).textSize,black,white,1);
         Screen('TextSize',window,oo(oi).textSize);
         string=strrep(string,'letter',symbolName);
         DrawFormattedText(window,string,...
-            instructionalMarginPix,1.5*oo(1).textSize,black,...
-            oo(oi).textLineLength,[],[],1.1);
+            2*oo(1).textSize,2.5*oo(1).textSize,black,...
+            oo(oi).textLineLength,[],[],1.3);
         DrawCounter(oo);
         Screen('Flip',window,[],1);
         if false && oo(oi).useSpeech
@@ -2409,14 +2439,12 @@ try
             end
             string=[string 'To continue hit RETURN. '];
             string=strrep(string,'letter',symbolName);
-            x=instructionalMarginPix;
-            y=1.5*oo(1).textSize;
             Screen('TextSize',window,oo(oi).textSize);
             Screen('DrawText',window,'',x,y,black,white); % Set background.
             % 'Notice the green progress bar ... hit RETURN.
             DrawFormattedText(window,string,...
-                x,y,black,...
-                oo(oi).textLineLength,[],[],1.1);
+                2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
+                oo(oi).textLineLength,[],[],1.3);
             string='';
             DrawCounter(oo);
             % 'Notice the green progress bar ... hit RETURN.
@@ -2443,7 +2471,7 @@ try
         end % if any ([oo.useFixation])
     end % while tryAgain
     
-
+    
     % Remind to fixate, then wait for RETURN.
     if any([oo.useFixation]) && ~ismember(oo(1).task,{'read'}) && ~oo(1).repeatedTargets
         tryAgain=true;
@@ -2453,16 +2481,19 @@ try
                 'Instead, please hold off responding until your eye is back on the cross. '...
                 'Always wait until you''re fixating the cross before responding. '...
                 'To continue hit RETURN. '];
-            x=instructionalMarginPix;
-            y=1.5*oo(1).textSize;
             Screen('TextSize',window,oo(oi).textSize);
             Screen('DrawText',window,'',x,y,black,white); % Set background.
             % 'IMPORTANT: ... hit RETURN.
-            Screen('TextStyle',window,1); % Bold
+            %             Screen('TextStyle',window,1); % Bold
+            Screen('TextFont',window,oo(oi).textFont,1);
+            [f,n,s]=Screen('TextFont',window);
+            fprintf('Red text is %s style %d at %d.\n',f,s,Screen('TextSize',window));
+            % 0.9* because bold is wider, so fewer fit in line.
             DrawFormattedText(window,string,...
-                x,y,[255 0 0],...
-                0.9*oo(1).textLineLength,[],[],1.1);
-            Screen('TextStyle',window,0); % Plain
+                2*oo(oi).textSize,2.5*oo(oi).textSize,[255 0 0],...
+                0.9*oo(1).textLineLength,[],[],1.3);
+            Screen('TextFont',window,oo(oi).textFont,0);
+            %             Screen('TextStyle',window,0); % Plain
             string='';
             DrawCounter(oo);
             % 'IMPORTANT: ... hit RETURN.
@@ -2911,14 +2942,14 @@ try
                 % The redundancy is inelegant, but harmless.
                 % May 2019.
                 Screen('FillRect',window); % DGP June 6, 2019.
-                x=instructionalMarginPix;
-                y=1.5*oo(oi).textSize;
                 string=[string 'Now, while fixating the cross, hit SPACE. '];
                 % ' ... press SPACE.'
+                Screen('TextSize',window,oo(oi).textSize);
+                Screen('TextFont',window,oo(oi).textFont);
                 DrawFormattedText(window,...
                     double([encourageFixationString string]),...
-                    x,y,black,...
-                    oo(oi).textLineLength,[],[],1.1);
+                    2*oo(1).textSize,1.5*oo(oi).textSize,black,...
+                    oo(oi).textLineLength,[],[],1.3);
                 string='';
                 encourageFixation=false;
                 encourageFixationString='';
@@ -3015,7 +3046,7 @@ try
                 Screen('TextFont',window,oo(oi).textFont);
                 DrawFormattedText(window,string,...
                     oo(1).textSize,1.5*oo(1).textSize,black,...
-                    oo(1).textLineLength,[],[],1.1);
+                    oo(1).textLineLength,[],[],1.3);
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
@@ -3458,18 +3489,21 @@ try
             if oo(oi).repeatedTargets
                 string=strrep(string,'response','two responses');
             end
-            x=instructionalMarginPix;
+            x=2*oo(1).textSize;
             y=1.5*oo(oi).textSize;
-            Screen('TextSize',window,round(0.8*oo(oi).textSize));
+            scalar=1;
+            sz=round(scalar*oo(1).textSize);
+            scalar=sz/oo(1).textSize;
+            Screen('TextSize',window,sz);
             % Draw text.
             Screen('DrawText',window,' ',x,y,black,white,1); % Set background.
             % Request response.
             DrawFormattedText(window,double(string),...
                 x,y,black,...
-                oo(oi).textLineLength/0.8,[],[],1.1);
+                oo(oi).textLineLength/scalar,[],[],1.3);
             string='';
             n=length(letterStruct); % Number of letters to display.
-            w=RectWidth(screenRect)-2*instructionalMarginPix; % Usable width of display.
+            w=RectWidth(screenRect)-2*2*oo(oi).textSize; % Usable width of display.
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
             oo(oi).responseTextWidth=min(oo(oi).responseTextWidth,oo(oi).textSize); % But no bigger than our information text.
             Screen('TextSize',window,oo(oi).responseTextWidth);
@@ -3477,7 +3511,7 @@ try
             % It won't be exactly the right size, so we scale it to be
             % exactly the size we want.
             alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
-            x=instructionalMarginPix;
+            x=2*oo(oi).textSize;
             y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
             if oo(oi).labelAnswers
                 labelTextSize=oo(oi).textSize;
@@ -3578,7 +3612,7 @@ try
                 Screen('TextSize',window,oo(oi).readSize);
                 Screen('FillRect',window);
                 [~,y]=DrawFormattedText(window,string,...
-                    instructionalMarginPix,1.5*oo(oi).textSize,black,...
+                    2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                     screenLineChars,[],[],1.5);
                 string='';
                 Screen('Flip',window,[],1);
@@ -3680,7 +3714,7 @@ try
                         wCorpus{iWords});
                     Screen('FillRect',window);
                     DrawFormattedText(window,msg,...
-                        instructionalMarginPix,1.5*oo(oi).textSize,black,...
+                        2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                         oo(oi).textLineLength);
                     msg='';
                     Screen('Flip',window);
@@ -4269,16 +4303,13 @@ end
 end % function SetUpFixatiom
 
 function [ooOut,skipTrial]=ProcessEscape(oo)
-global window ff keepWindowOpen
-global instructionalMarginPix % For ProcessEscape
+global window keepWindowOpen
 skipTrial=false;
 switch nargout
     case 2
-        [oo(1).quitExperiment,oo(1).quitBlock,skipTrial]=...
-            OfferEscapeOptions(window,oo,instructionalMarginPix);
+        [oo(1).quitExperiment,oo(1).quitBlock,skipTrial]=OfferEscapeOptions(window,oo);
     case 1
-        [oo(1).quitExperiment,oo(1).quitBlock]=...
-            OfferEscapeOptions(window,oo,instructionalMarginPix);
+        [oo(1).quitExperiment,oo(1).quitBlock]=OfferEscapeOptions(window,oo);
     otherwise
         error('ProcessEscape requires 1 or 2 output arguments.');
 end
