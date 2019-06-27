@@ -78,8 +78,9 @@ if o.getAlphabetFromDisk
         error('Folder missing: "%s"',alphabetsFolder);
     end
     folder=fullfile(alphabetsFolder,EncodeFilename(o.targetFont));
-    if ~exist(folder,'dir')
-        error('Folder missing: "%s". Target font "%s" has not been saved.',folder,o.targetFont);
+    if exist(folder,'dir')~=7
+        error('Missing font folder "%s". Please use SaveAlphabetToDisk to save font "%s".',...
+        folder,o.targetFont);
     end
     d=dir(folder);
     ok=~[d.isdir];
@@ -101,10 +102,10 @@ if o.getAlphabetFromDisk
         filename=fullfile(folder,d(i).name);
         try
             savedAlphabet.images{i}=imread(filename);
-        catch
+        catch me
             sca;
             error('Cannot read image file "%s".',filename);
-            psychrethrow(psychlasterror);
+            rethrow(me);
         end
         if isempty(savedAlphabet.images{i})
             error('Cannot read image file "%s".',filename);
