@@ -205,6 +205,19 @@ for block=1:length(ooo)
     end
     [ooo{block}(:).etaMin]=deal(etaMin);
 end
+%% MAKE SURE NEEDED FONTS ARE AVAILABLE
+if isfield(ooo{1}(1),'targetFont')
+    fonts={};
+    for block=1:length(ooo)
+        for oi=1:length(ooo{block})
+            fonts{end+1}=ooo{block}(oi).targetFont;
+        end
+    end
+    fonts=unique(fonts);
+    if any(~IsFontAvailable(fonts,'warn'))
+        error('Please install missing fonts.');
+    end
+end
 
 %% Print as a table. One row per threshold.
 for block=1:length(ooo)
