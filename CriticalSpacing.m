@@ -838,7 +838,8 @@ graveAccentChar='`';
 for oi=1:conditions
     if oo(oi).labelAnswers
         if length(oo(oi).alphabet)>length(oo(oi).responseLabels)
-            error('o.labelAnswers is true, but o.alphabet is longer than o.responseLabels: %d > %d.',length(oo(oi).alphabet),length(oo(oi).responseLabels));
+            error('o.labelAnswers is true, but o.alphabet is longer than o.responseLabels: %d > %d.',...
+                length(oo(oi).alphabet),length(oo(oi).responseLabels));
         end
         oo(oi).validResponseLabels=oo(oi).responseLabels(1:length(oo(oi).alphabet));
         oo(oi).validKeyNames=KeyNamesOfCharacters(oo(oi).validResponseLabels);
@@ -883,7 +884,8 @@ end
 for oi=1:conditions
     if ismember(oo(oi).borderLetter,oo(oi).alphabet)
         ListenChar(0);
-        error('The o.borderLetter "%c" should not be included in the o.alphabet "%s".',oo(oi).borderLetter,oo(oi).alphabet);
+        error('The o.borderLetter "%c" should not be included in the o.alphabet "%s".',...
+            oo(oi).borderLetter,oo(oi).alphabet);
     end
     assert(oo(oi).viewingDistanceCm==oo(1).viewingDistanceCm);
     assert(oo(oi).useFractionOfScreenToDebug==oo(1).useFractionOfScreenToDebug);
@@ -2165,7 +2167,8 @@ try
         ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(oi).alphabet,oo(oi).borderLetter);
     end
     for oi=1:conditions
-        ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',oi,oo(oi).targetHeightOverWidth,oo(oi).targetFontHeightOverNominalPtSize);
+        ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',...
+            oi,oo(oi).targetHeightOverWidth,oo(oi).targetFontHeightOverNominalPtSize);
     end
     for oi=1:conditions
         ffprintf(ff,'%d: durationSec %.2f, eccentricityXYDeg [%.1f %.1f]\n',...
