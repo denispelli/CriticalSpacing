@@ -1,5 +1,5 @@
 % MATLAB script to run CriticalSpacing.m
-% Copyright 2019, Denis G. Pelli, denis.pelli@nyu.edu
+% Copyright 2019, denis.pelli@nyu.edu
 
 %% DEFINE CONDITIONS
 clear all
@@ -205,6 +205,7 @@ for block=1:length(ooo)
     end
     [ooo{block}(:).etaMin]=deal(etaMin);
 end
+
 %% MAKE SURE NEEDED FONTS ARE AVAILABLE
 if isfield(ooo{1}(1),'targetFont')
     fonts={};
@@ -244,7 +245,7 @@ for i=1:length(diskFonts)
 end
 fprintf('\n\n');
 
-%% Print as a table. One row per threshold.
+%% PRINT TABLE OF CONDITIONS, ONE ROW PER THRESHOLD.
 for block=1:length(ooo)
     if block==1
         oo=ooo{1};
@@ -265,7 +266,7 @@ fprintf('Total of %d trialsDesired should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 % return
 
-%% Run.
+%% RUN.
 for block=1:length(ooo)
     if isempty(ooo{block}(1).experimenter) && block>1
         [ooo{block}.experimenter]=deal(ooo{block-1}(1).experimenter);
