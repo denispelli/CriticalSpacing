@@ -1569,9 +1569,6 @@ try
         else
             background=WhiteIndex(window);
         end
-        %         Screen('DrawText',window,...
-        %             'ZZZPlease slowly type the name of the Experimenter who is sup.ZZZ',...
-        %             0,screenRect(4)/2,black,[],1);
         scalar=0.95;
         sz=round(scalar*oo(1).textSize);
         scalar=sz/oo(1).textSize;
@@ -1672,18 +1669,16 @@ try
     ListenChar(2); % no echo
     
     % Ask experimenter name
-    while isempty(oo(1).experimenter)
+    preface='';
+    while length(oo(1).experimenter)<3
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('TextSize',window,oo(1).textSize);
         [x,y]=DrawFormattedText(window,...
-            ['Please slowly type the name of the Experimenter '...
+            [preface 'Please slowly type the name of the Experimenter '...
             'who is supervising, followed by RETURN.'],...
             2*oo(1).textSize,2.5*oo(1).textSize,black,...
             oo(1).textLineLength,[],[],1.3);
-        %         [x,y]=Screen('DrawText',window,...
-        %             'ZZZPlease slowly type the name of the Experimenter who is sup.ZZZ',...
-        %             0,y+1.3*oo(1).textSize,black,[],1);
         scalar=0.35;
         sz=round(scalar*oo(1).textSize);
         scalar=sz/oo(1).textSize;
@@ -1699,6 +1694,10 @@ try
         [name,terminatorChar]=GetEchoString(window,'Experimenter name:',...
             2*oo(1).textSize,0.82*screenRect(4),black,...
             background,1,oo(1).deviceIndex);
+       if length(name)<3
+            preface=['Sorry. ''' name ''' is not enough. This name must have at least 3 characters. '];
+            continue
+        end
         for i=1:conditions
             oo(i).experimenter=name;
         end
@@ -1710,7 +1709,7 @@ try
                 return
             end
         end
-    end % while isempty(oo(1).experimenter)
+    end % while length(oo(1).experimenter)<3
     
     % Ask observer name
     preface=['Hello Observer. Please slowly type your full name. '];
@@ -2487,10 +2486,10 @@ try
             %             Screen('TextStyle',window,1); % Bold
             Screen('TextFont',window,oo(oi).textFont,1);
             [f,n,s]=Screen('TextFont',window);
-            fprintf('Red text is %s style %d at %d.\n',f,s,Screen('TextSize',window));
+            fprintf('The "IMPORTANT" text has %s style %d at %d.\n',f,s,Screen('TextSize',window));
             % 0.9* because bold is wider, so fewer fit in line.
             DrawFormattedText(window,string,...
-                2*oo(oi).textSize,2.5*oo(oi).textSize,[255 0 0],...
+                2*oo(oi).textSize,2.5*oo(oi).textSize,[0 0 0],...
                 0.9*oo(1).textLineLength,[],[],1.3);
             Screen('TextFont',window,oo(oi).textFont,0);
             %             Screen('TextStyle',window,0); % Plain
