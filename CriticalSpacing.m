@@ -474,8 +474,10 @@ if nargin<1 || ~exist('oIn','var')
     oIn.script=[];
 end
 
-addpath(fullfile(fileparts(mfilename('fullpath')),'lib')); % "lib" folder in same directory as this file
-addpath(fullfile(fileparts(mfilename('fullpath')),'AutoBrightness')); % "AutoBrightness" folder in same directory as this file
+mainFolder=fileparts(mfilename('fullpath'));
+addpath(fullfile(mainFolder,'lib')); 
+addpath(fullfile(mainFolder,'utilities'));
+addpath(fullfile(mainFolder,'AutoBrightness'));
 plusMinus=char(177);
 
 % Once we call onCleanup, until CriticalSpacing ends,
@@ -992,7 +994,7 @@ try
         % external drawtext plugin".
         Screen('Preference','SuppressAllWarnings',0);
         Screen('Preference','Verbosity',2); % Print WARNINGs
-        oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+        oo(1).dataFolder=fullfile(mainFolder,'data');
         if ~exist(oo(1).dataFolder,'dir')
             [success,msg]=mkdir(oo(1).dataFolder);
             if ~success
@@ -1796,7 +1798,7 @@ try
     end
     
     %% CREATE SNAPSHOT FOLDER
-    oo(1).snapshotsFolder=fullfile(fileparts(mfilename('fullpath')),'snapshots');
+    oo(1).snapshotsFolder=fullfile(mainFolder,'snapshots');
     if ~exist(oo(1).snapshotsFolder,'dir')
         [success,msg]=mkdir(oo(1).snapshotsFolder);
         if ~success
@@ -1807,7 +1809,7 @@ try
     %% CREATE DATA FILE
     oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',...
         oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
-    oo(1).dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
+    oo(1).dataFolder=fullfile(mainFolder,'data');
     if ~exist(oo(1).dataFolder,'dir')
         [success,msg]=mkdir(oo(1).dataFolder);
         if ~success
@@ -3566,7 +3568,7 @@ try
                     % wCorpus{i} lists all words in the corpus in order of
                     % descending frequency. fCorpus(i) is
                     % frequency in the corpus.
-                    readFolder=fullfile(fileparts(mfilename('fullpath')),'read');
+                    readFolder=fullfile(mainFolder,'read');
                     oo(oi).readFilename='MHC928.txt';
                     readFile=fullfile(readFolder,oo(oi).readFilename);
                     textCorpus=fileread(readFile);
@@ -4331,7 +4333,6 @@ end
 function TakeSnapshot(oo)
 % TakeSnapshot(oo)
 global window ff
-mypath=oo(1).snapshotsFolder;
 filename=oo(1).dataFilename;
 suffixList={''};
 for a='a':'z'
@@ -4344,7 +4345,7 @@ for a='a':'z'
 end
 for suffix=suffixList
     % Has filename already been used?
-    snapshotFid=fopen(fullfile(mypath,[filename suffix{1} '.png']),'rt');
+    snapshotFid=fopen(fullfile(oo(1).snapshotsFolder,[filename suffix{1} '.png']),'rt');
     if snapshotFid==-1
         % No. Use it.
         filename=[filename suffix{1}];
@@ -4360,6 +4361,6 @@ if snapshotFid~=-1
 end
 filename=[filename '.png'];
 img=Screen('GetImage',window);
-imwrite(img,fullfile(mypath,filename),'png');
+imwrite(img,fullfile(oo(1).snapshotsFolder,filename),'png');
 ffprintf(ff,'Saved image to file "%s".\n',filename);
 end
