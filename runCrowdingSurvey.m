@@ -29,6 +29,8 @@ o.fixationCrossBlankedUntilSecsAfterTarget=0;
 o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
+mainFolder=fileparts(mfilename('fullpath'));
+addpath(fullfile(mainFolder,'lib'));
 ooo={};
 
 if 0
