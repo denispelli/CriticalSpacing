@@ -2,7 +2,7 @@
 % Copyright 2019, denis.pelli@nyu.edu
 
 %% DEFINE CONDITIONS
-clear all
+clear KbWait
 clear o
 % o.useFractionOfScreenToDebug=0.4;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
