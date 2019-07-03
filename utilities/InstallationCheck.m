@@ -12,7 +12,7 @@ if nargin<1
 else
     o.screen=screen;
 end
-o.useFractionOfScreenToDebug=0.5;
+o.useFractionOfScreenToDebug=0.3;
 o.clutMapLength=2048; % enough for 11-bit precision.
 o.enableClutMapping=true; % Required. Using software CLUT.
 o.useNative10Bit=false;
@@ -420,7 +420,7 @@ try
             test(end).ok=test(end).value;
             fprintf('Psychtoolbox kernel driver loaded %s. Should be true for best timing.\n',mat2str(test(end).value));
             if ~test(end).ok
-                warning('IMPORTANT: You should install the Psychtoolbox kernel driver, as explained by "*Install NoiseDiscrimination.docx" step B.13.');
+                warning('IMPORTANT: You should install the Psychtoolbox kernel driver, as explained by the Word document "*Install CriticalSpacing & NoiseDiscrimination.docx" step B.13.');
             end
             test(end).help='web http://psychtoolbox.org/docs/PsychtoolboxKernelDriver';
         end
@@ -448,7 +448,7 @@ try
     
     %% USE CAMERA
     o.recordGaze=true;
-    test(end+1).name='Can use camera';
+    test(end+1).name='Camera';
     if o.recordGaze
         videoExtension='.avi'; % '.avi', '.mp4' or '.mj2'
         clear cam
@@ -547,8 +547,9 @@ try
     if ~isempty(tErr)
         fprintf('\n<strong>This computer failed %d tests:</strong>\n\n',height(tErr));
         disp(tErr);
-        fprintf(['\n<strong>Please consult "*Install NoiseDiscrimination.docx" to \n'...
-            'fix these problems before testing observers.</strong>\n']);
+        fprintf(['\n<strong>Please consult the Word document \n'...
+            '"*Install CriticalSpacing & NoiseDiscrimination.docx"\n'...
+            'to fix these problems before testing observers.</strong>\n']);
     end
     
 catch e
