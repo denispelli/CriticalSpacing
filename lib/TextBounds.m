@@ -1,5 +1,5 @@
 function bounds=TextBounds(w,text,yPositionIsBaseline,centerTheText)
-% bounds=TextBounds(window, string [, yPositionIsBaseline=0][, centerTheText=0])
+% bounds=TextBounds(window,string [,yPositionIsBaseline=0][,centerTheText=0])
 %
 % Returns the smallest enclosing rect for the drawn text, relative to the
 % current location. This bound is based on the actual pixels drawn, so it
