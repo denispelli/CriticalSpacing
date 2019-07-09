@@ -1,8 +1,12 @@
-function line = MFileLineNr()
+function line=MFileLineNr()
 % line=MFileLineNr;
-% MFILELINENR returns the current linenumber
-    Stack  = dbstack;
-    line = Stack(2).line;   % the line number of the calling function
+% MFILELINENR returns the current line number
+line=[];
+stack=dbstack;
+if length(stack)<2
+    return
+end
+line=stack(2).line; % line number of the calling function
 end
 
 % Downloaded from MATLAB Central in November 2015
