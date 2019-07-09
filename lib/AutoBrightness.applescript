@@ -130,7 +130,7 @@
 
 on run argv
 	-- INPUT ARGUMENTS
-	-- integer screenNumber. Zero for main screen. Default is zero.
+	--  integer screenNumber. Zero for main screen. Default is zero.
 	--  integer newSetting : state of the System Preferences:Displays:checkbox "Automatically adjust brightness"
 	--     0 : off (unchecked)  
 	--     1 : on (checked)  
