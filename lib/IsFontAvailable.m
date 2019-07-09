@@ -3,8 +3,10 @@ function ok=IsFontAvailable(font,warn)
 % "font" is a string or a cell array of strings. Each string is a font
 % name. Returns a logical array, one element per font, indicating true if
 % the font is available. If the optional argument "warn" is the string
-% 'warn' then a warning is printed for each missing font.
-% Denis Pelli, June 26, 2019
+% 'warn' then a warning is printed for each missing font. There is some
+% overhead in opening and closing a window, so it's best to call this once
+% with a list of fonts, rather than multiple times, once for each font.
+% Denis Pelli, July 6, 2019
 % denis.pelli@nyu.edu
 if nargin<1 || isempty(font)
     ok=logical([]);
@@ -25,25 +27,24 @@ o.screen=0;
 screenBufferRect=Screen('Rect',o.screen);
 r=round(o.useFractionOfScreenToDebug*screenBufferRect);
 r=AlignRect(r,screenBufferRect,'right','bottom');
-windows=Screen('Windows');
 oldVerbosity=Screen('Preference','Verbosity',0);
-if isempty(windows)
+windows=Screen('Windows');
+window=[];
+for i=1:length(windows)
+    if Screen(windows(i),'WindowKind')==1
+        % A window is already open, so open an offscreen window.
+        window=Screen('OpenOffscreenWindow',o.screen,1.0,r);
+        if Screen(window,'WindowKind')~=-1
+            error('Failed attempt to open an offscreen window.');
+        end
+        break;
+    end
+end
+if isempty(window)
     % Nothing's open, so open a window.
     window=Screen('OpenWindow',o.screen,1.0,r);
     if Screen(window,'WindowKind')~=1
         error('Failed attempt to open a window.');
-    end
-else
-    % There already is an open window, so open an offscreen window.
-    window=[];
-    for i=1:length(windows)
-        if Screen(windows(i),'WindowKind')==1
-            window=Screen('OpenOffscreenWindow',o.screen,1.0,r);
-            break;
-        end
-    end
-    if Screen(window,'WindowKind')~=-1
-        error('Failed attempt to open an offscreen window.');
     end
 end
 
