@@ -1,7 +1,8 @@
 function fixationLines=ComputeFixationLines(fix)
-%ComputeFixationLines returns an array suitable for Screen('Drawlines')
-% to draw a fixation cross and target cross specified by the parameters in
-% the struct argument "fix".
+%ComputeFixationLines returns an array fixationLines so that calling
+% Screen('DrawLines',window,fixationLines); 
+% will draw fixation cross and mark target location as specified by the
+% parameters in the struct argument "fix".
 % fix.x=50;                             % x location of fixation on screen.
 % fix.y=screenHeight/2;                 % y location of fixation on screen.
 % fix.eccentricityXYPix=eccentricityXYPix;  % Offset of target from fixation.
@@ -16,7 +17,7 @@ function fixationLines=ComputeFixationLines(fix)
 %                                       % target location, left and right,
 %                                       % i.e. from (1-bouma)*ecc to
 %                                       % (1+bouma)*ecc, where ecc is
-%                                       % target eccentricity We also
+%                                       % target eccentricity. We also
 %                                       % blank a radius proportional to
 %                                       % target radius.
 % fix.blankingRadiusReTargetHeight=1.5; % Make vertical blanking radius 1.5
