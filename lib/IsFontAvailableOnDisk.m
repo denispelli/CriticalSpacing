@@ -31,7 +31,7 @@ for i=1:length(fonts)
         if ismember(warn,{'warn'})
             s=warning('QUERY','BACKTRACE');
             warning OFF BACKTRACE
-            warning('Folder missing: "%s"',alphabetsFolder);
+            warning('Folder missing: <strong>%s</strong>',alphabetsFolder);
             warning(s);
         end
         continue
@@ -41,7 +41,7 @@ for i=1:length(fonts)
     if ~ok(i) && ismember(warn,{'warn'})
         s=warning('QUERY','BACKTRACE');
         warning OFF BACKTRACE
-        warning('Font folder "%s" is missing. Please use SaveAlphabetToDisk to save font "%s".',folder,font);
+        warning('Font folder <strong>%s</strong> is missing. Please use SaveAlphabetToDisk to save font <strong>%s</strong> .',folder,font);
         warning(s);
     end
 end
