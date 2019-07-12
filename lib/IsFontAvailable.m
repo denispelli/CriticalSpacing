@@ -3,7 +3,10 @@ function ok=IsFontAvailable(font,warn)
 % "font" is a string or a cell array of strings. Each string is a font
 % name. Returns a logical array, one element per font, indicating true if
 % the font is available. If the optional argument "warn" is the string
-% 'warn' then a warning is printed for each missing font. There is some
+% 'warn' then a warning is printed for each missing font. If there is a 
+% /fonts/ folder where we expect it, then we suggest the user look there 
+% for the missing font to be installed. 
+% There is some
 % overhead in opening and closing a window, so it's best to call this once
 % with a list of fonts, rather than multiple times, once for each font.
 % Denis Pelli, July 6, 2019
@@ -59,9 +62,21 @@ for i=1:length(fonts)
     Screen('TextFont',window,oldFont); % Restore old font.
     ok(i)=streq(newFont,font);
     if ~ok(i) && ismember(warn,{'warn'})
+        if true
+            mainFolderPath=fileparts(fileparts(mfilename('fullpath'))); % Assume we're in /lib folder.
+            [~,mainFolder]=fileparts(mainFolderPath);
+            fontsFolderPath=fullfile(mainFolderPath,'fonts');
+            if exist(fontsFolderPath,'dir')
+                msg=sprintf(' Look in folder <strong>%s%s%s%s</strong> .',mainFolder,filesep,'fonts',filesep);
+            else
+                msg='';
+            end
+        else
+            msg='';
+        end
         s=warning('QUERY','BACKTRACE');
         warning OFF BACKTRACE
-        warning('The font ''%s'' is not available. Please install it.',font);
+        warning('The font <strong>%s</strong> is not installed in your OS. Please install it.%s',font,msg);
         warning(s);
     end
 end
