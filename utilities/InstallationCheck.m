@@ -60,19 +60,6 @@ for i=1:length(letterNumberChars)
     letterNumberCharString(i)=letterNumberChars{i}(1);
 end
 
-%% PREPARE SOUNDS
-rightBeep=MakeBeep(2000,0.05);
-rightBeep(end)=0;
-wrongBeep=MakeBeep(500,0.5);
-wrongBeep(end)=0;
-temp=zeros(size(wrongBeep));
-temp(1:length(rightBeep))=rightBeep;
-rightBeep=temp; % extend rightBeep with silence to same length as wrongBeep
-okBeep=[0.03*MakeBeep(1000,0.1) 0*MakeBeep(1000,0.3)];
-purr=MakeBeep(200,0.6);
-purr(end)=0;
-Snd('Open');
-
 %% OnCleanup
 % Once we call onCleanup, when this program terminates,
 % CloseWindowsAndCleanup will run  and close any open windows. It runs when
@@ -180,13 +167,13 @@ test(end).min='';
 test(end).ok=true;
 
 test(end+1).name='Screen pixels';
-test(end).value=sprintf('%.0fx%.0f',...
+test(end).value=sprintf('%.0fx%.0f pixel',...
     RectWidth(o.screenRect),RectHeight(o.screenRect));
 test(end).min='';
 test(end).ok=true;
 
 test(end+1).name='Screen cm';
-test(end).value=sprintf('%.1fx%.1f',screenWidthMm/10,screenHeightMm/10);
+test(end).value=sprintf('%.1fx%.1f cm^2',screenWidthMm/10,screenHeightMm/10);
 test(end).min='';
 test(end).ok=true;
 
@@ -245,29 +232,19 @@ if ~verLessThan('matlab','8.1')
     if ok
         test(end).value='true';
         test(end).ok=true;
-        fprintf('Good! PsychJava appears in javaclasspath.txt.\n');
+%         fprintf('Good! PsychJava appears in javaclasspath.txt.\n');
     else
         test(end).value='false';
         test(end).ok=false;
-        warning('Boo! PsychJava does not appear in javaclasspath.txt. Please read "help PsychJavaTrouble".');
+%         warning('Boo! PsychJava does not appear in javaclasspath.txt. Please read "help PsychJavaTrouble".');
     end
     test(end).help='help PsychJavaTrouble';
 end
 
-e=Snd('Play',MakeBeep(1000,0.5));
-test(end+1).name='Snd';
-if e==0
-    test(end).value='true';
-else
-    test(end).value=e;
-end
-test(end).min='true';
-test(end).ok= e==0;
-
 try
     test(end+1).name='Speak';
     test(end).min='true';
-    Speak('Hello');
+    Speak('Two beeps');
     test(end).value='true';
     test(end).ok=true;
 catch me
@@ -276,12 +253,26 @@ catch me
     warning(me.message)
 end
 
+%% TEST SOUND
+Snd('Open');
+e=Snd('Play',MakeBeep(1000,0.4));
+test(end+1).name='Snd';
+if e==0
+    test(end).value='true';
+else
+    test(end).value=e;
+end
+test(end).min='true';
+test(end).ok= e==0;
+WaitSecs(0.5);
+Snd('Play',MakeBeep(1000,0.5));
+
 if IsOSX
     % Copied from InitializePsychSound, abbreviating the error messages.
     try
         test(end+1).name='PsychPortAudio';
         d=PsychPortAudio('GetDevices');
-        fprintf('PsychPortAudio driver loaded. \n');
+%         fprintf('PsychPortAudio driver loaded. \n');
         test(end).value='true';
         test(end).ok=true;
     catch em
@@ -332,7 +323,7 @@ try
     Screen('Preference','SkipSyncTests',1);
     Screen('Preference','TextAntiAliasing',1);
     if o.useFractionOfScreenToDebug
-        fprintf('Using tiny window for debugging.\n');
+%         fprintf('Using tiny window for debugging.\n');
     end
     if isempty(window)
         fprintf('Opening the window. ...\n'); % Newline for Screen warnings.
@@ -385,9 +376,9 @@ try
         test(end).min=true;
         test(end).ok=test(end).value;
         Screen('DrawText',window,' ',0,0,0,1,1);
-        fprintf('Loaded DrawText Plugin %s. Needed for accurate text rendering.\n',mat2str(value));
+%         fprintf('Loaded DrawText Plugin %s. Needed for accurate text rendering.\n',mat2str(value));
         if ~value
-            warning('The DrawText plugin failed to load. We need it. See warning above. Read "Install NoiseDiscrimination.docx" B.7 to learn how to install it.');
+%             warning('The DrawText plugin failed to load. We need it. See warning above. Read "Install NoiseDiscrimination.docx" B.7 to learn how to install it.');
         end
         test(end).help='help DrawTextPlugin';
         
@@ -406,7 +397,20 @@ try
         windowInfo=Screen('GetWindowInfo',window);
         test(end+1).name='Beam position queries available';
         test(end).value=windowInfo.Beamposition ~= -1 && windowInfo.VBLEndline ~= -1;
-        fprintf('Beam position queries %s, and should be true for best timing.\n',mat2str(test(end).value));
+%         fprintf('Beam position queries %s, and should be true for best timing.\n',mat2str(test(end).value));
+        test(end).min='';
+        test(end).ok=true;
+        test(end).help='Screen GetWindowInfo?';
+   
+        %% VIDEO CARD VENDOR
+        windowInfo=Screen('GetWindowInfo',window);
+        test(end+1).name='Built-in display DisplayCoreId';
+        test(end).value=windowInfo.DisplayCoreId;
+        test(end).min='';
+        test(end).ok=true;
+        test(end).help='Screen GetWindowInfo?';
+        test(end+1).name='Built-in display GLRenderer';
+        test(end).value=windowInfo.GLRenderer;
         test(end).min='';
         test(end).ok=true;
         test(end).help='Screen GetWindowInfo?';
@@ -414,13 +418,20 @@ try
         %% PSYCHTOOLBOX KERNEL DRIVER
         if ismac
             test(end+1).name='Psychtoolbox kernel driver';
-            % Rec by microfish@fishmonkey.com.au, July 22, 2017
             test(end).value=~system('kextstat -l -k | grep PsychtoolboxKernelDriver > /dev/null');
-            test(end).min=true;
+            test(end).min=true; % Helpful only if AMD driver.
             test(end).ok=test(end).value;
-            fprintf('Psychtoolbox kernel driver loaded %s. Should be true for best timing.\n',mat2str(test(end).value));
-            if ~test(end).ok
-                warning('IMPORTANT: You should install the Psychtoolbox kernel driver, as explained by the Word document "*Install CriticalSpacing & NoiseDiscrimination.docx" step B.13.');
+            test(end).help='web http://psychtoolbox.org/docs/PsychtoolboxKernelDriver';
+            
+            test(end+1).name='Psychtoolbox kernel driver version';
+            [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
+            v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
+            test(end).value=v{1};
+            test(end).min='1.1';
+            if ~isempty(test(end).value)
+                test(end).ok= str2num(test(end).value)>=str2num(test(end).min);
+            else
+                test(end).ok=true;
             end
             test(end).help='web http://psychtoolbox.org/docs/PsychtoolboxKernelDriver';
         end
@@ -461,7 +472,7 @@ try
             fprintf('Recording gaze (of conditions %s) in %s file:\n',num2str(find([o.recordGaze])),videoExtension);
             test(end).value=true;
         else
-            fprintf('Cannot record gaze. Lack webcam link. Set o.recordGaze=false.\n');
+%             fprintf('Cannot record gaze. Lack webcam link. Set o.recordGaze=false.\n');
             test(end).value=false;
             o.recordGaze=false;
         end
