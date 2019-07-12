@@ -3898,7 +3898,7 @@ try
             switch oo(oi).thresholdParameter
                 case 'spacing'
                     intensity=log10(oo(oi).spacingDeg);
-                    ffprintf(ff,'presentation %d, oi %d, oo(oi).spacingDeg %.2f, oo(oi).targetDeg %.2f\n',...
+                    ffprintf(ff,'presentation %d, condition %d, o.spacingDeg %.2f, o.targetDeg %.2f\n',...
                         presentation,oi,oo(oi).spacingDeg,oo(oi).targetDeg);
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
