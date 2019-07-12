@@ -26,11 +26,14 @@ message='';
 if ~isempty(blockTrial)
     message=sprintf('Trial %d of %d. ',blockTrial,blockTrials);
 end
-message=sprintf('%sBlock %d of %d.',message,o.block,o.blocksDesired);
+if isfield(o,'block') && isfield(o,'blocksDesired')
+    message=sprintf('%sBlock %d of %d.',message,o.block,o.blocksDesired);
+end
 if isfield(o,'viewingDistanceCm')
     message=sprintf('%s At %.0f cm.',message,o.viewingDistanceCm);
 end
-if o.useFractionOfScreenToDebug~=0 || o.skipScreenCalibration
+if (isfield(o,'useFractionOfScreenToDebug') && o.useFractionOfScreenToDebug~=0)...
+        || (isfield(o,'skipScreenCalibration') && o.skipScreenCalibration)
     message=['WARNING: This debugging mode invalidates data. ' message];
 end
 % Set size and font.
@@ -44,7 +47,11 @@ Screen('TextSize',scratchWindow,counterSize);
 oldFont=Screen('TextFont',window,'Verdana');
 Screen('TextFont',scratchWindow,Screen('TextFont',window));
 counterBounds=TextBounds(scratchWindow,message,1);
-r=o.screenRect;
+if isfield(o,'screenRect')
+    r=o.screenRect;
+else
+    r=Screen('Rect',window);
+end
 if isfield(o,'stimulusRect') && isfield(o,'alphabetPlacement')
     switch o.alphabetPlacement
         case 'left'
