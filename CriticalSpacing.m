@@ -2039,9 +2039,9 @@ try
         end
         
         % Make list of valid response key codes.
-        for cd=1:conditions
-            for i=1:length(oo(cd).validKeyNames)
-                oo(cd).responseKeyCodes(i)=KbName(oo(cd).validKeyNames{i}); % this returns keyCode as integer
+        for cond=1:conditions
+            for i=1:length(oo(cond).validKeyNames)
+                oo(cond).responseKeyCodes(i)=KbName(oo(cond).validKeyNames{i}); % this returns keyCode as integer
             end
         end
         
@@ -2415,31 +2415,38 @@ try
                 'It will rise as you proceed, and reach the top '...
                 'when you finish the block. '];
         end
-        if any([oo.useFixation])
+        if true
             switch oo(1).task
                 case 'read'
                     string=[string 'On each trial, you''ll read a paragraph. '];
                 otherwise
-                    string=[string 'On each trial, try to identify the target letter by typing that key. Please rest your eye on the crosshairs before each trial. '];
+                    string=[string 'On each trial, '...
+                        'try to identify the target letter by typing that key. '];
+                        
+            end
+            if any(oo.useFixation)
+                string=[string 'Please rest your eye on the cross before each trial. '];
             end
             if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
                 string=[string 'When you see three letters, please report just the middle one. '];
             end
-            if oo(1).fixationOnScreen
-                where='below';
-            else
-                polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
-                quadrant=round(polarDeg/90);
-                quadrant=mod(quadrant,4);
-                switch quadrant
-                    case 0
-                        where='to the right';
-                    case 1
-                        where='above';
-                    case 2
-                        where='to the left';
-                    case 3
-                        where='below';
+            if false
+                if oo(1).fixationOnScreen
+                    where='below';
+                else
+                    polarDeg=atan2d(-oo(1).nearPointXYDeg(2),-oo(1).nearPointXYDeg(1));
+                    quadrant=round(polarDeg/90);
+                    quadrant=mod(quadrant,4);
+                    switch quadrant
+                        case 0
+                            where='to the right';
+                        case 1
+                            where='above';
+                        case 2
+                            where='to the left';
+                        case 3
+                            where='below';
+                    end
                 end
             end
             string=[string 'To continue hit RETURN. '];
@@ -2470,9 +2477,7 @@ try
                 end
             end
         else
-            % In this case, we ought to print a string about the progress bar,
-            % if there is a progress bar. Right now I'm focused on testing with
-            % fixation.
+            tryAgain=false;
         end % if any ([oo.useFixation])
     end % while tryAgain
     
@@ -2491,8 +2496,10 @@ try
             % 'IMPORTANT: ... hit RETURN.
             %             Screen('TextStyle',window,1); % Bold
             Screen('TextFont',window,oo(oi).textFont,1);
-            [f,n,s]=Screen('TextFont',window);
-            fprintf('The "IMPORTANT" text has %s style %d at %d.\n',f,s,Screen('TextSize',window));
+            [fontName,fontNumber,fontStyle]=Screen('TextFont',window);
+            fontSize=Screen('TextSize',window);
+            fprintf('Important text is in %d-pt %s style %d.\n',...
+                fontSize,fontName,fontStyle);
             % 0.9* because bold is wider, so fewer fit in line.
             DrawFormattedText(window,string,...
                 2*oo(oi).textSize,2.5*oo(oi).textSize,[0 0 0],...
@@ -2519,8 +2526,7 @@ try
                 end
             end
         end % while tryAgain
-    end % if any ([oo.useFixation])
-    
+    end % if any([oo.useFixation])
     
     easeRequest=0; % Positive to request easier trials.
     easyCount=0; % Number of easy presentations
@@ -3595,17 +3601,34 @@ try
                     oo(oi).targetFont,oo(oi).readSize,round(1.5*oo(oi).readSize),...
                     oo(oi).viewingDistanceCm);
                 lineEndings=find(WrapString(textCorpus,screenLineChars)==newline);
-                % Pick starting point that leaves enough lines.
-                % The newlines will move when we re-wrap, but their density
-                % won't change much.
+                % Pick starting point that leaves enough lines. The
+                % newlines will move when we re-wrap, but their density
+                % won't change much. n is the largest acceptable line
+                % number in the wrapped text for the beginning of our
+                % excerpt.
                 n=length(lineEndings)-screenLines-1;
+                % maxBegin is the largest acceptable character position in
+                % the not-yet-wrapped text for the beginning of our
+                % excerpt.
                 maxBegin=lineEndings(n)-n; % Discount the newlines added by wrapping.
+                % sentenceBegins lists the character positions where
+                % sentences begin. For this purpose, we suppose that the
+                % corpus begins with a sentence, and that the character
+                % after period space space is always a sentence beginning.
                 sentenceBegins=[1 strfind(textCorpus,'.  ')+3];
+                % Restrict that list to exclude beginnings that are too
+                % near the end.
                 sentenceBegins=sentenceBegins(sentenceBegins<=maxBegin);
+                % Randomly pick one of the acceptable first sentences.
                 begin=sentenceBegins(randi(end));
+                % Grab the rest of corpus, beginning at the selected
+                % sentence.
                 string=textCorpus(begin:end);
+                % Wrap it.
                 string=WrapString(string,screenLineChars);
                 lineEndings=find(string==newline);
+                % Keep just the desired number (screenlines) of lines,
+                % omitting the (superfluous) final newline.
                 string=string(1:lineEndings(screenLines)-1);
                 oo(oi).readString{end+1}=string;
                 
@@ -3619,7 +3642,6 @@ try
                 [~,y]=DrawFormattedText(window,string,...
                     2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                     screenLineChars,[],[],1.5);
-                string='';
                 Screen('Flip',window,[],1);
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
                     warning('The text does not fit on screen.'); % DGP temporary.
@@ -3659,19 +3681,19 @@ try
                         iUsed=[]; % Clear list of words not be be reused.
                     end
                     % The test will show three words (matched in corpus
-                    % frequency) only one of which was present in the page.
-                    % Thus knowledge of corpus frequency won't help assess
-                    % which is present in the page, so it's a more pure
-                    % test of recall from the page. I've got the corpus
-                    % words sorted by frequency. So I randomly pick a word
-                    % that appeared exactly once in the page and find it in
-                    % the corpus list. As the two foils, I pick the nearest
-                    % neighbors (randomly higher or lower) in the list
-                    % sorted by frequency.
+                    % frequency) only one of which was present in the text
+                    % read. Thus knowledge of corpus frequency won't help
+                    % assess which is present in the page, so it's a more
+                    % pure test of recall from the page. I've got the
+                    % corpus words sorted by frequency. So I randomly pick
+                    % a word that appeared exactly once in the page and
+                    % find it in the corpus list. As the two foils, I pick
+                    % the nearest neighbors (randomly higher or lower) in
+                    % the list sorted by frequency.
                     iiNotUsed=~ismember(wPage,wCorpus(iUsed));
                     freq=fPage(find(iiNotUsed,1));
-                    words=wPage(fPage==freq & iiNotUsed); % Rarest unused words on page.
-                    assert(~isempty(words));
+                    words=wPage(fPage==freq & iiNotUsed); % Unused words with right frequency.
+                    assert(~isempty(words),'Oops. Failed to find words with right frequency.');
                     word=words{randi(length(words))}; % Random choice.
                     % iPresent is index in wCorpus of a word that appeared
                     % in page. iAbsent(1:2) are indices in wCorpus of
@@ -3708,15 +3730,15 @@ try
                     end
                     assert(length(iAbsent)>=2);
                     % Ask the observer.
-                    iWords=[iPresent iAbsent(1:2)];
-                    iUsed=[iUsed iWords]; % Don't reuse for recent page.
-                    iWords=Shuffle(iWords);
+                    iTest=[iPresent iAbsent(1:2)];
+                    iUsed=[iUsed iTest]; % Don't reuse for recent page.
+                    iTest=Shuffle(iTest);
                     msg=sprintf(['Which of these three words was present on the page you just read?\n'...
                         '1. %s\n2. %s\n3. %s\n\n'...
                         'Type 1, 2 or 3.\n\n\n'...
                         '(The words can include contractions and proper names. '...
                         'Upper/lower case matters.)'],...
-                        wCorpus{iWords});
+                        wCorpus{iTest});
                     Screen('FillRect',window);
                     DrawFormattedText(window,msg,...
                         2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
@@ -3728,7 +3750,7 @@ try
                     response=GetKeypress(choiceKeycodes); % escapeKeyCode graveAccentKeyCode
                     if ismember(response,{'1' '2' '3'})
                         response=str2num(response);
-                        answer=iWords(response); % Observer chose wCorpus{answer}.
+                        answer=iTest(response); % Observer chose wCorpus{answer}.
                         right=answer==iPresent;
                         if iQuestion==1
                             oo(oi).readNumberOfResponses=1;
@@ -4115,8 +4137,25 @@ try
             end
         end
     end % for oi=1:conditions
-    save(fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']),'oo');
-    if exist('dataFid','file')
+    % The user notes are saved in the first condition of the first block.
+    % Here that block was likely saved long ago, so we read it back in and
+    % add the notes.
+    if oo(1).askForPartingComments && (block==blockList(end) || oo(oi).quitExperiment)
+        query='Done. Thank you. Any thoughts or suggestions? Click OK when done.';
+        if isfield(oo(1),'textSize')
+            fontSize=oo(1).textSize;
+        else
+            fontSize=24;
+        end
+        fontSize=min(36,fontSize);
+        reply=inputdlg2({query},'Comments?',[5 50],{''},'on','FontSize',fontSize);
+        load first block
+        oo(1).partingComments=reply;
+        save first block
+    end
+    dataFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']);
+    save(dataFile,'oo');
+    if exist(dataFile,'file')
         fclose(dataFid);
         dataFid=-1;
     end
@@ -4131,7 +4170,7 @@ catch e
     % One or more of these functions spoils rethrow, so I don't use them.
     %     Snd('Close');
     %     ShowCursor;
-    if exist('dataFid','file') && dataFid~=-1
+    if exist('dataFid','var') && dataFid~=-1
         fclose(dataFid);
         dataFid=-1;
     end
