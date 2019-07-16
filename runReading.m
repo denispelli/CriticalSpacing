@@ -2,16 +2,16 @@
 % Copyright 2019, Denis G. Pelli, denis.pelli@nyu.edu
 
 %% DEFINE CONDITIONS
-clear o
-% o.useFractionOfScreenToDebug=0.3; %% ONLY FOR DEBUGGING
-% o.skipScreenCalibration=true; %% ONLY FOR DEBUGGING
+clear o ooo
+o.useFractionOfScreenToDebug=0.3; %% ONLY FOR DEBUGGING
+o.skipScreenCalibration=true; %% ONLY FOR DEBUGGING
 % o.printSizeAndSpacing=true;
 o.experiment='Reading';
 o.experimenter='';
 o.observer='';
 o.viewingDistanceCm=100;
 o.useSpeech=false;
-o.speakViewingDistance=true;
+o.speakViewingDistance=false;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 o.durationSec=0.15; % duration of display of target and flankers
@@ -156,11 +156,11 @@ for i=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'experiment' 'conditionName' 'trials' 'targetFont' 'observer' ...
+disp(t(:,{'block' 'experiment' 'conditionName' 'trialsDesired' 'targetFont' 'observer' ...
     'targetDeg' 'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
 trials=sum([oo.trialsDesired]);
 fprintf('Total of %d trials, which may take about %.0f minutes. But reading trials take longer.\n',trials,trials/10);
-return
+% return
 
 %% Run.
 for i=1:length(ooo)
