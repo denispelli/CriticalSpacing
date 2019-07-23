@@ -396,10 +396,6 @@ function oo=CriticalSpacing(oIn)
 % edge when we display it at the end of a trial. I think we should break it
 % into two lines.
 %
-% The user currently types the response. For non-Roman letters (eg
-% Checkers) we should display the roman equivalent next to each possible
-% target letter.
-%
 % I'd like the viewing-distance page to respond to a new command: "o" to
 % set up offscreen fixation.
 %
@@ -409,16 +405,7 @@ function oo=CriticalSpacing(oIn)
 % of spaces. We might want to center between two targets to show an odd
 % number of spaces.
 %
-% The software currently assumes that you want it to place fixation so as
-% to put the target close to the near point. That is fine when all
-% targets in the block have the same eccentricity, but it's weird to have a
-% different fixation on every trial, and this spoils position uncertainty.
-% I added a new flag o.fixationCenterOnScreen to lock fixation down. This
-% is fine for now, but it seems clunky, as I can imagine wanting to fix
-% fixation at some other location. I'm not sure what might be the elegant
-% way to specify that fixation should be at the same screen position for
-% all interleaved conditions.
-%
+
 %% HELPFUL PROGRAMMING ADVICE FOR KEYBOARD INPUT IN PSYCHTOOLBOX
 % [PPT]Introduction to PsychToolbox in MATLAB - Jonas Kaplan
 % www.jonaskaplan.com/files/psych599/Week6.pptx
@@ -1214,7 +1201,7 @@ try
             % user's designation the near point's location on the screen.
             %
             % If the user selects setNearPointEccentricityTo='target' then,
-            % if necessary,we adjust the visual coordinate of the near
+            % if necessary, we adjust the visual coordinate of the near
             % point to allow fixation to be on-screen. If the eccentricity
             % is too large to allow both the target and fixation to be
             % on-screen, then the fixation mark is placed off-screen.
@@ -1337,7 +1324,8 @@ try
                 case 'value'
                     % Assume user has set oo(1).nearPointXYDeg.
                 otherwise
-                    error('o.setNearPointEccentricityTo has illegal value ''%s''.',...
+                    error(['o.setNearPointEccentricityTo has illegal value ''%s''. '...
+                        'It must be ''target'', ''fixation'', or ''value''.'],...
                         oo(oi).setNearPointEccentricityTo);
             end
             if oo(oi).fixationOnScreen
