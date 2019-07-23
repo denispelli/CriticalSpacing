@@ -527,6 +527,8 @@ o.conditionName='';
 o.quitBlock=false;
 o.quitExperiment=false;
 o.trialsSkipped=0;
+o.askForPartingComments=true;
+o.partingComments='';
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
@@ -728,6 +730,7 @@ o.actualDurationVBLSec=[];
 % o is a single struct, and oIn may be an array of structs.
 % Create oo, which replicates o for each condition.
 conditions=length(oIn);
+clear oo
 oo(1:conditions)=o;
 inputFields=fieldnames(o);
 clear o; % Thus MATLAB will flag an error if we accidentally try to use "o".
@@ -1606,8 +1609,8 @@ try
             else
                 switch d
                     case 'm'
-                        oldFlipScreenHorizontally=oo(1).flipScreenHorizontally;
                         oo(1).flipScreenHorizontally=~oo(1).flipScreenHorizontally;
+                        ffprintf(ff,'Flipping screen\n');
                         if oo(1).useSpeech
                             Speak('Now flipping the display.');
                         end
@@ -2354,7 +2357,7 @@ try
         end
     end
     for oi=1:conditions
-        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
+        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing') && ~streq(oo(oi).task,'read')
             string=[string 'When you see three letters, please report just the middle letter. '];
             break;
         end
@@ -2422,12 +2425,11 @@ try
                 otherwise
                     string=[string 'On each trial, '...
                         'try to identify the target letter by typing that key. '];
-                        
             end
-            if any(oo.useFixation)
+            if any([oo.useFixation])
                 string=[string 'Please rest your eye on the cross before each trial. '];
             end
-            if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing')
+            if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing') && ~streq(oo(oi).task,'read')
                 string=[string 'When you see three letters, please report just the middle one. '];
             end
             if false
@@ -2452,7 +2454,7 @@ try
             string=[string 'To continue hit RETURN. '];
             string=strrep(string,'letter',symbolName);
             Screen('TextSize',window,oo(oi).textSize);
-            Screen('DrawText',window,'',x,y,black,white); % Set background.
+            Screen('TextBackgroundColor',window,white); % Set background.
             % 'Notice the green progress bar ... hit RETURN.
             DrawFormattedText(window,string,...
                 2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
@@ -2492,7 +2494,7 @@ try
                 'Always wait until you''re fixating the cross before responding. '...
                 'To continue hit RETURN. '];
             Screen('TextSize',window,oo(oi).textSize);
-            Screen('DrawText',window,'',x,y,black,white); % Set background.
+            Screen('TextBackgroundColor',window,white); % Set background.
             % 'IMPORTANT: ... hit RETURN.
             %             Screen('TextStyle',window,1); % Bold
             Screen('TextFont',window,oo(oi).textFont,1);
@@ -3040,7 +3042,7 @@ try
                 end
                 oo(oi).targetDeg=widthPixPerSize*oo(oi).readSize/pixPerDeg;
                 % Display instructions.
-                string=['When you''re ready, '...
+                readInstructions=['When you''re ready, '...
                     'press and hold down the SPACE bar to reveal ' ...
                     'the story and immediately begin reading. '...
                     'While holding down the space bar, '...
@@ -3055,9 +3057,10 @@ try
                     'when you reach the end.'];
                 Screen('FillRect',window,[],clearRect);
                 Screen('TextFont',window,oo(oi).textFont);
-                DrawFormattedText(window,string,...
+                DrawFormattedText(window,readInstructions,...
                     oo(1).textSize,1.5*oo(1).textSize,black,...
                     oo(1).textLineLength,[],[],1.3);
+                % Reuse readInstructions if user escapes and resumes.
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
@@ -3507,7 +3510,7 @@ try
             scalar=sz/oo(1).textSize;
             Screen('TextSize',window,sz);
             % Draw text.
-            Screen('DrawText',window,' ',x,y,black,white,1); % Set background.
+            Screen('TextBackgroundColor',window,white); % Set background.
             % Request response.
             DrawFormattedText(window,double(string),...
                 x,y,black,...
@@ -3633,9 +3636,26 @@ try
                 oo(oi).readString{end+1}=string;
                 
                 % Time the interval from press to release of spacebar.
-                oldEnableKeyCodes=RestrictKeysForKbCheck(spaceKeyCode);
-                [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
-                answer=KbName(keyCode);
+                oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
+                while true
+                    [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
+                    answer=KbName(keyCode);
+                    if ismember(answer,{'ESCAPE' '`~'})
+                        [oo,tryAgain]=ProcessEscape(oo);
+                        if tryAgain
+                            Screen('FillRect',window,white);
+                            DrawFormattedText(window,readInstructions,...
+                                2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
+                                oo(oi).textLineLength,[],[],1.3);
+                            Screen('Flip',window);
+                            continue
+                        else
+                            return
+                        end
+                    else
+                        break
+                    end
+                end
                 Screen('TextFont',window,oo(oi).targetFont);
                 Screen('TextSize',window,oo(oi).readSize);
                 Screen('FillRect',window);
@@ -3739,15 +3759,26 @@ try
                         '(The words can include contractions and proper names. '...
                         'Upper/lower case matters.)'],...
                         wCorpus{iTest});
-                    Screen('FillRect',window);
-                    DrawFormattedText(window,msg,...
-                        2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
-                        oo(oi).textLineLength);
+                    while true
+                        Screen('FillRect',window);
+                        DrawFormattedText(window,msg,...
+                            2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
+                            oo(oi).textLineLength);
+                        DrawCounter(oo);
+                        Screen('Flip',window);
+                        choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#') escapeKeyCode graveAccentKeyCode];
+                        response=GetKeypress(choiceKeycodes);
+                        if ismember(response,[escapeChar graveAccentChar])
+                            [oo,tryAgain]=ProcessEscape(oo);
+                            if tryAgain
+                                continue
+                            else
+                                return
+                            end
+                        end
+                        break
+                    end
                     msg='';
-                    Screen('Flip',window);
-                    choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#')];
-                    % Have yet to implement support for ESCAPE here.
-                    response=GetKeypress(choiceKeycodes); % escapeKeyCode graveAccentKeyCode
                     if ismember(response,{'1' '2' '3'})
                         response=str2num(response);
                         answer=iTest(response); % Observer chose wCorpus{answer}.
@@ -4137,10 +4168,8 @@ try
             end
         end
     end % for oi=1:conditions
-    % The user notes are saved in the first condition of the first block.
-    % Here that block was likely saved long ago, so we read it back in and
-    % add the notes.
-    if oo(1).askForPartingComments && (block==blockList(end) || oo(oi).quitExperiment)
+    % The user notes are saved in the first condition of the last block.
+    if oo(1).askForPartingComments && (oo(1).isLastBlock || any([oo.quitExperiment]))
         query='Done. Thank you. Any thoughts or suggestions? Click OK when done.';
         if isfield(oo(1),'textSize')
             fontSize=oo(1).textSize;
@@ -4149,13 +4178,12 @@ try
         end
         fontSize=min(36,fontSize);
         reply=inputdlg2({query},'Comments?',[5 50],{''},'on','FontSize',fontSize);
-        load first block
+        oo.partingComments=deal('');
         oo(1).partingComments=reply;
-        save first block
     end
     dataFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']);
     save(dataFile,'oo');
-    if exist(dataFile,'file')
+    if exist('dataFid','var') && dataFid~=-1
         fclose(dataFid);
         dataFid=-1;
     end
