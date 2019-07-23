@@ -8,6 +8,7 @@ clear o
 % o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
+o.permissionToChangeResolution=true;
 o.experimenter='';
 o.observer='';
 o.showProgressBar=false;
@@ -20,7 +21,7 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 
 % deliver the requested duration, and reduced the request to 150 m.
 o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=true;
-o.trialsDesired=35;
+o.trialsDesired=30;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 o.fixationCheck=false;
@@ -50,16 +51,15 @@ if 1
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
     % 50 cm. Larger letters require proportionally smaller viewing
     % distance.
-    o.viewingDistanceCm=25;
+    o.viewingDistanceCm=40;
     o.readSpacingDeg=2;
     o.alphabet='abc';
     o.borderLetter='x';
     o.flankingDirection='horizontal';
-    o.experimenter='...';
-    o.observer='...';
     o.useFixation=false;
     ooo{end+1}=o;
 end
+o.trialsDesired=30;
 if 1
 for ecc=[5 2.5]
     o.conditionName='crowding';
@@ -76,7 +76,7 @@ for ecc=[5 2.5]
     o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
     o.fixationCrossBlankedNearTarget=false;
     o.flankingDirection='radial';
-    o.viewingDistanceCm=50;
+    o.viewingDistanceCm=40;
     o2=o; % Copy the condition
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     oo=[o o2];
@@ -84,19 +84,19 @@ for ecc=[5 2.5]
         oo(1).viewingDistanceCm=25;
         oo(2).viewingDistanceCm=25;
     else
-        oo(1).viewingDistanceCm=50;
-        oo(2).viewingDistanceCm=50;
+        oo(1).viewingDistanceCm=40;
+        oo(2).viewingDistanceCm=40;
     end
     ooo{end+1}=oo;
-    % Flip x and y, so we go from horizontal to vertical meridian.
+    % Exchange x and y, so we go from horizontal to vertical meridian.
     oo(1).eccentricityXYDeg=flip(oo(1).eccentricityXYDeg);
     oo(2).eccentricityXYDeg=flip(oo(2).eccentricityXYDeg);
     if abs(oo(1).eccentricityXYDeg(2))>=10
         oo(1).viewingDistanceCm=25;
         oo(2).viewingDistanceCm=25;
     else
-        oo(1).viewingDistanceCm=50;
-        oo(2).viewingDistanceCm=50;
+        oo(1).viewingDistanceCm=40;
+        oo(2).viewingDistanceCm=40;
     end
     ooo{end+1}=oo;
     if ecc==5
@@ -248,7 +248,7 @@ end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'etaMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
-fprintf('Total of %d trialsDesired should take about %.0f minutes to run.\n',...
+fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 % return
 
