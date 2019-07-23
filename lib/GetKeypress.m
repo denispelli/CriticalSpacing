@@ -80,7 +80,6 @@ if returnOneChar
     % modifier keys like shift, shift lock, option, and control, and do not
     % distinguish between a number key on a number pad and a number key on
     % the main keyboard.
-    
     if length(response)==2
         response=response(1);
     end
