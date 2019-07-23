@@ -2,8 +2,10 @@
 % Copyright 2019, denis.pelli@nyu.edu
 
 %% DEFINE CONDITIONS
-clear KbWait
-clear o
+clear KbWait o
+mainFolder=fileparts(mfilename('fullpath'));
+addpath(fullfile(mainFolder,'lib'));
+
 % o.useFractionOfScreenToDebug=0.4;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
@@ -12,8 +14,8 @@ o.permissionToChangeResolution=true;
 o.experimenter='';
 o.observer='';
 o.showProgressBar=false;
-o.viewingDistanceCm=100;
 o.useSpeech=false;
+o.viewingDistanceCm=100;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
 % For 2018-April 2019 this was nominally 200 ms, but actually delivered 280
@@ -34,8 +36,7 @@ o.spacingDeg=[];
 o.fixationLineWeightDeg=0.02;
 o.fixationCrossDeg=inf;
 o.fixationCrossBlankedNearTarget=true;
-mainFolder=fileparts(mfilename('fullpath'));
-addpath(fullfile(mainFolder,'lib'));
+
 ooo={};
 
 if 1
@@ -61,55 +62,55 @@ if 1
 end
 o.trialsDesired=30;
 if 1
-for ecc=[5 2.5]
-    o.conditionName='crowding';
-    o.task='identify';
-    o.targetDeg=2;
-    o.spacingDeg=2;
-    o.thresholdParameter='spacing';
-    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
-    o.targetFont='Sloan';
-    o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
-    o.borderLetter='X';
-    o.minimumTargetPix=8;
-    o.fixationLineWeightDeg=0.03;
-    o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-    o.fixationCrossBlankedNearTarget=false;
-    o.flankingDirection='radial';
-    o.viewingDistanceCm=40;
-    o2=o; % Copy the condition
-    o2.eccentricityXYDeg=-o.eccentricityXYDeg;
-    oo=[o o2];
-    if abs(oo(1).eccentricityXYDeg(2))>=10
-        oo(1).viewingDistanceCm=25;
-        oo(2).viewingDistanceCm=25;
-    else
-        oo(1).viewingDistanceCm=40;
-        oo(2).viewingDistanceCm=40;
+    for ecc=[5 2.5]
+        o.conditionName='crowding';
+        o.task='identify';
+        o.targetDeg=2;
+        o.spacingDeg=2;
+        o.thresholdParameter='spacing';
+        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+        o.targetFont='Sloan';
+        o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
+        o.borderLetter='X';
+        o.minimumTargetPix=8;
+        o.fixationLineWeightDeg=0.03;
+        o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
+        o.fixationCrossBlankedNearTarget=false;
+        o.flankingDirection='radial';
+        o.viewingDistanceCm=40;
+        o2=o; % Copy the condition
+        o2.eccentricityXYDeg=-o.eccentricityXYDeg;
+        oo=[o o2];
+        if abs(oo(1).eccentricityXYDeg(2))>=10
+            oo(1).viewingDistanceCm=25;
+            oo(2).viewingDistanceCm=25;
+        else
+            oo(1).viewingDistanceCm=40;
+            oo(2).viewingDistanceCm=40;
+        end
+        ooo{end+1}=oo;
+        % Exchange x and y, so we go from horizontal to vertical meridian.
+        oo(1).eccentricityXYDeg=flip(oo(1).eccentricityXYDeg);
+        oo(2).eccentricityXYDeg=flip(oo(2).eccentricityXYDeg);
+        if abs(oo(1).eccentricityXYDeg(2))>=10
+            oo(1).viewingDistanceCm=25;
+            oo(2).viewingDistanceCm=25;
+        else
+            oo(1).viewingDistanceCm=40;
+            oo(2).viewingDistanceCm=40;
+        end
+        ooo{end+1}=oo;
+        if ecc==5
+            ooPelli=ooo{end-1};
+            ooPelli(1).targetFont='Pelli';
+            ooPelli(2).targetFont='Pelli';
+            ooPelli(1).alphabet='123456789';
+            ooPelli(2).alphabet='123456789';
+            ooPelli(1).borderLetter='$';
+            ooPelli(2).borderLetter='$';
+            ooo{end+1}=ooPelli;
+        end
     end
-    ooo{end+1}=oo;
-    % Exchange x and y, so we go from horizontal to vertical meridian.
-    oo(1).eccentricityXYDeg=flip(oo(1).eccentricityXYDeg);
-    oo(2).eccentricityXYDeg=flip(oo(2).eccentricityXYDeg);
-    if abs(oo(1).eccentricityXYDeg(2))>=10
-        oo(1).viewingDistanceCm=25;
-        oo(2).viewingDistanceCm=25;
-    else
-        oo(1).viewingDistanceCm=40;
-        oo(2).viewingDistanceCm=40;
-    end
-    ooo{end+1}=oo;
-    if ecc==5
-        ooPelli=ooo{end-1};
-        ooPelli(1).targetFont='Pelli';
-        ooPelli(2).targetFont='Pelli';
-        ooPelli(1).alphabet='123456789';
-        ooPelli(2).alphabet='123456789';
-        ooPelli(1).borderLetter='$';
-        ooPelli(2).borderLetter='$';
-        ooo{end+1}=ooPelli;
-    end
-end
 end
 if 1
     for ecc=[0 5]
@@ -140,26 +141,26 @@ if 1
     end
 end
 if 1
-for ecc=0
-    o.conditionName='crowding';
-    o.task='identify';
-    o.targetDeg=2;
-    o.spacingDeg=2;
-    o.thresholdParameter='spacing';
-    o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
-    o.targetFont='Pelli';
-    o.alphabet='123456789';
-    o.borderLetter='$';
-    o.minimumTargetPix=4;
-    o.fixationLineWeightDeg=0.02;
-    o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
-    o.fixationCrossBlankedNearTarget=true;
-    o.flankingDirection='horizontal';
-    o.viewingDistanceCm=250;
-    o2=o; % Copy the condition
-    o2.eccentricityXYDeg=-o.eccentricityXYDeg;
-    ooo{end+1}=[o o2];
-end
+    for ecc=0
+        o.conditionName='crowding';
+        o.task='identify';
+        o.targetDeg=2;
+        o.spacingDeg=2;
+        o.thresholdParameter='spacing';
+        o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+        o.targetFont='Pelli';
+        o.alphabet='123456789';
+        o.borderLetter='$';
+        o.minimumTargetPix=4;
+        o.fixationLineWeightDeg=0.02;
+        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
+        o.fixationCrossBlankedNearTarget=true;
+        o.flankingDirection='horizontal';
+        o.viewingDistanceCm=250;
+        o2=o; % Copy the condition
+        o2.eccentricityXYDeg=-o.eccentricityXYDeg;
+        ooo{end+1}=[o o2];
+    end
 end
 for block=1:length(ooo)
     oo=ooo{block};
