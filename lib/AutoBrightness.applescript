@@ -57,10 +57,10 @@
 -- observer's time waiting 30 s for System Preferences to open every time
 -- you call AutoBrightness.
 --
--- AutoBrightness screenNumber newSetting
--- The parameter "newSetting" (integer 0 or 1) indicates whether you want to
--- turn the autobrightness feature on (newSetting==1) or off (newSetting==0).
--- If  the newSetting argument is omitted (or anything other than 0 or 1)
+-- AutoBrightness screenNumber newIsEnabled
+-- The parameter "newIsEnabled" (integer 0 or 1) indicates whether you want to
+-- turn the autobrightness feature on (newIsEnabled==1) or off (newIsEnabled==0).
+-- If  the newIsEnabled argument is omitted (or anything other than 0 or 1)
 -- then nothing is changed, and the current state is reported in the
 -- returned value (0 or 1). However, the returned value is -99 if your 
 -- application (e.g. MATLAB) does not have permission to control your computer 
@@ -69,7 +69,7 @@
 -- In MATLAB, use the corresponding MATLAB Psychtoolbox function, which calls 
 -- this script:
 --
--- oldSetting=AutoBrightness(newSetting);
+-- oldIsEnabled=AutoBrightness(newIsEnabled);
 --
 -- To call this directly from MATLAB, 
 -- [status,oldAuto]=system('osascript AutoBrightness.applescript 0'); % to disable
@@ -82,7 +82,7 @@
 -- "Autobrightness.applescript". When I don't specify a path for the
 -- applescript file, it appears that system() assumes
 -- that it's in /User/denispelli/Documents/MATLAB/
--- I succeeded in using my applescript from an arbitrary location by
+-- I succeeded in having MATLAB call this applescript at an arbitrary location by
 -- specifying its full path. (See AutoBrightness.m.) 
 --
 -- BEWARE OF DELAY: This script uses the "System Preferences: Displays" panel,
@@ -131,13 +131,13 @@
 on run argv
 	-- INPUT ARGUMENTS
 	--  integer screenNumber. Zero for main screen. Default is zero.
-	--  integer newSetting : state of the System Preferences:Displays:checkbox "Automatically adjust brightness"
+	--  integer newIsEnabled : state of the System Preferences:Displays:checkbox "Automatically adjust brightness"
 	--     0 : off (unchecked)  
 	--     1 : on (checked)  
 	-- If missing then the setting is left unchanged.
 	-- windowIsOpen
 	--OUTPUT ARGUMENTS
-	-- oldSetting
+	-- oldIsEnabled
 	--In success, this will be the old setting (0 for unchecked; 1 for checked). 
 	--We fail only if MATLAB lacks permission. In that case we open the relevant System Preference panel.
 	--If windowIsOpen is false, when we show an alert with instructions and return -99. If windowIsOpen
@@ -149,9 +149,9 @@ on run argv
 		set windowIsOpen to 1 -- Unspecified value, so assume open window.
 	end try
 	try
-		set newSetting to item 2 of argv as integer
+		set newIsEnabled to item 2 of argv as integer
 	on error
-		set newSetting to -1 -- Unspecified value, so don't change the setting.
+		set newIsEnabled to -1 -- Unspecified value, so don't change the setting.
 	end try
 	try
 		set screenNumber to item 1 of argv as integer
@@ -187,28 +187,28 @@ on run argv
 			tell tab group 1 of window windowNumber
 				--click radio button "Display"-- commented out because it won't work in non-English installations
 				try
-					tell group 1 -- works on macOS 10.9 Mavericks and sometimes Yosemite
+					tell group 2 -- Works on macOS 10.11 and later, and sometimes 10.10.
 						--set slider 1's value to 0.5 -- Set brightness
 						tell checkbox 1 -- Automatically adjust brightness  
-							set oldSetting to value
-							if newSetting is in {0, 1} and newSetting is not oldSetting then
+							set oldIsEnabled to value
+							if newIsEnabled is in {0, 1} and newIsEnabled is not oldIsEnabled then
 								click -- It's wrong, so change it.
 							end if
 						end tell
 					end tell
 				on error
 					try
-						tell group 2 -- works other times on macOS 10.10 Yosemite
+						tell group 1 -- Works on macOS 10.9  and sometimes 10.10.
 							--set slider 1's value to 0.5 -- Set brightness
 							tell checkbox 1 -- Automatically adjust brightness  
-								set oldSetting to value
-								if newSetting is in {0, 1} and newSetting is not oldSetting then
+								set oldIsEnabled to value
+								if newIsEnabled is in {0, 1} and newIsEnabled is not oldIsEnabled then
 									click -- It's wrong, so change it.
 								end if
 							end tell
 						end tell
 					on error
-						set oldSetting to 0
+						set oldIsEnabled to 0
 					end try
 				end try
 			end tell
@@ -219,5 +219,5 @@ on run argv
 	else
 		quit application "System Preferences"
 	end if
-	return oldSetting
+	return oldIsEnabled
 end run
