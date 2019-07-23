@@ -29,18 +29,22 @@ o.fixationCrossBlankedUntilSecsAfterTarget=0;
 o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
+o.spacingDeg=[];
+o.fixationLineWeightDeg=0.02;
+o.fixationCrossDeg=inf;
+o.fixationCrossBlankedNearTarget=true;
 mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
 ooo={};
 
-if 0
+if 1
     o.conditionName='reading';
     o.task='read';
     o.thresholdParameter='spacing';
     o.targetFont='Monaco';
     o.getAlphabetFromDisk=false;
     o.targetDeg=nan;
-    o.trialsDesired=40;
+    o.trialsDesired=4;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
@@ -56,8 +60,10 @@ if 0
     o.useFixation=false;
     ooo{end+1}=o;
 end
-for ecc=[ 5 2.5]
+if 1
+for ecc=[5 2.5]
     o.conditionName='crowding';
+    o.task='identify';
     o.targetDeg=2;
     o.spacingDeg=2;
     o.thresholdParameter='spacing';
@@ -104,9 +110,11 @@ for ecc=[ 5 2.5]
         ooo{end+1}=ooPelli;
     end
 end
+end
 if 1
     for ecc=[0 5]
         o.conditionName='acuity';
+        o.task='identify';
         o.targetDeg=4;
         o.thresholdParameter='size';
         o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
@@ -131,8 +139,10 @@ if 1
         ooo{end+1}=[o o2];
     end
 end
+if 1
 for ecc=0
     o.conditionName='crowding';
+    o.task='identify';
     o.targetDeg=2;
     o.spacingDeg=2;
     o.thresholdParameter='spacing';
@@ -150,6 +160,7 @@ for ecc=0
     o2.eccentricityXYDeg=-o.eccentricityXYDeg;
     ooo{end+1}=[o o2];
 end
+end
 for block=1:length(ooo)
     oo=ooo{block};
     if all([oo.eccentricityXYDeg]==0)
@@ -157,6 +168,7 @@ for block=1:length(ooo)
     else
         o=oo(1);
         o.conditionName='fixation check';
+        o.task='identify';
         o.fixationCheck=true;
         o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
         o.eccentricityXYDeg=[0 0];
@@ -255,8 +267,16 @@ for block=1:length(ooo)
         try
             oo=[oo ooo{block}];
         catch e
-            fprintf('Success building table with %d conditions in %d blocks, but failed on next block.\n',...
-                length(oo),max([oo.block]));
+            fprintf('Success building table with %d conditions in %d blocks, but failed on block %d.\n',...
+                length(oo),max([oo.block]),block);
+            one=fieldnames(oo);
+            two=fieldnames(ooo{block});
+            oneMissing=~ismember(one,two);
+            twoMissing=~ismember(two,one);
+            fprintf('<strong>ERROR: The following fields are not consistently present: </strong>');
+            fprintf('%s, ',one{oneMissing});
+            fprintf('%s, ',two{twoMissing});
+            fprintf('\n');
             throw(e)
         end
     end
