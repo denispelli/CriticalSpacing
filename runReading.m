@@ -3,8 +3,8 @@
 
 %% DEFINE CONDITIONS
 clear o ooo
-o.useFractionOfScreenToDebug=0.3; %% ONLY FOR DEBUGGING
-o.skipScreenCalibration=true; %% ONLY FOR DEBUGGING
+% o.useFractionOfScreenToDebug=0.3; %% ONLY FOR DEBUGGING
+% o.skipScreenCalibration=true; %% ONLY FOR DEBUGGING
 % o.printSizeAndSpacing=true;
 o.experiment='Reading';
 o.experimenter='';
