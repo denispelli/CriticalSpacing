@@ -36,7 +36,7 @@ function [oo,tt]=ReadExperimentData(experiment,vars)
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
 % THe lib and data folders are in the same folder.
-dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data'); 
+dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data');
 matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
 
 % Each block has a unique identifier: o.dataFilename. It is created
@@ -77,7 +77,7 @@ if nargin<2
 %         'targetFontNumber' 'targetHeightOverWidth' 'targetMargin'  ...
 %         'targetPix' 'targetSizeIsHeight' 'targetXYPix' 'task'  ...
 %         'textFont' 'textLineLength' 'textSize' 'textSizeDeg'  ...
-%         'thresholdParameter' 'totalSecs' 'trialData' 'trials' ...
+%         'thresholdParameter' 'totalSecs' 'trialData' 'trialsDesired' ...
 %         'unknownFields' 'useFixation' 'useFractionOfScreenToDebug'  ...
         };
 end
@@ -140,6 +140,12 @@ for iFile=1:length(matFiles) % One file per iteration.
                 else
                     oldField=strrep(field,'Secs','Sec');
                 end
+                switch oldField
+                    case 'trialsDesired'
+                        if isfield(o,'trials')
+                            oldField='trials';
+                        end
+                end
                 if isfield(o,oldField)
                     oo(end).(field)=o.(oldField);
                 else
@@ -152,8 +158,8 @@ end
 fprintf('Read %d thresholds from %d files. Now discarding empties and duplicates.\n',length(oo),length(matFiles));
 
 %% CLEAN UP THE LIST, DISCARDING WHAT WE DON'T WANT.
-% We've now gotten all the thresholds into oo. 
-if ~isfield(oo,'trials')
+% We've now gotten all the thresholds into oo.
+if ~isfield(oo,'trialsDesired')
     error('No data');
 end
 oo=oo([oo.trialsDesired]>0); % Discard conditions with no data.
@@ -182,7 +188,7 @@ tt=struct2table(oo,'AsArray',true);
 minimumTrials=30; % 25 DGP
 if sum(tt.trialsDesired<minimumTrials)>0
     fprintf('\nWARNING: Discarding %d threshold(s) with fewer than %d trials:\n',sum(tt.trialsDesired<minimumTrials),minimumTrials);
-    disp(tt(tt.trialsDesired<minimumTrials,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trials'})) % 'experiment'  'conditionName'
+    disp(tt(tt.trialsDesired<minimumTrials,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trialsDesired'})) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
     if oo(oi).trialsDesired<minimumTrials
