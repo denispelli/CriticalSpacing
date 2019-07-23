@@ -31,6 +31,8 @@ function [oldLevel,status] = Brightness(screenNumber,newLevel)
 % December 1, 2018. Put try-catch block around the code, to gracefully cope
 % with error while Screen window obscures the MATLAB Command Window.
 % Elimited the check for Screen window, which is no longer an issue.
+% July 16,2019 Improved by looking at code here: 
+% https://apple.stackexchange.com/questions/272531/dim-screen-brightness-of-mbp-using-applescript-and-while-using-a-secondary-mon/285907
 %
 % This MATLAB function calls my Brightness applescript. The applescript is
 % equivalent to manually opening the System Preferences:Displays panel and
@@ -109,10 +111,6 @@ if ~IsOSX
     status = 1; % Signal failure on this unsupported OS:
     return;
 end
-% if length(Screen('Windows')) > 0
-%     error(['"Brightness" called while onscreen windows are open. '...
-%        'Only call this function before opening the first onscreen window!']);
-% end
 try
     scriptPath = which('Brightness.applescript');
     command = ['osascript "' scriptPath '"']; % Double quotes cope with spaces in scriptPath.
@@ -122,13 +120,13 @@ try
     if nargin > 1
         command = [command ' ' num2str(newLevel)];
     end
-    [status,oldString]=system(command); % THIS LINE TAKES 4.7 s ON MY MACBOOK PRO!
+    [status,oldString]=system(command); % THIS LINE TAKES 11 s ON MY MACBOOK!
     oldLevel=str2double(oldString);
-    if isempty(oldLevel)
+    if isempty(oldLevel) || oldLevel==-1
         error('Make sure you have admin privileges, and that System Preferences is not tied up in a dialog. Brightness applescript error: %s. ',oldString);
     end
 catch e
     sca;
-    error(e);
+    rethrow(e);
 end
 
