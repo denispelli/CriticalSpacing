@@ -12,7 +12,7 @@ close all
 
 %% READ ALL DATA OF EXPERIMENT FILES INTO A LIST OF THRESHOLDS "oo".
 vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
-    'experimenter' 'observer' 'localHostName' 'trials' 'thresholdParameter' ...
+    'experimenter' 'observer' 'localHostName' 'trialsDesired' 'thresholdParameter' ...
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' };
@@ -50,7 +50,7 @@ end
 % Report the relevant fields of each file.
 t=struct2table(oo,'AsArray',true);
 t=sortrows(t,{'observer' 'thresholdParameter'  'xDeg' });
-% t(:,{'dataFilename' 'targetDeg' 'trials' 'eccentricityXYDeg' 'observer' 'beginningTime'})
+% t(:,{'dataFilename' 'targetDeg' 'trialsDesired' 'eccentricityXYDeg' 'observer' 'beginningTime'})
 % return
 if printFilenames
     fprintf('Ready to analyze %d thresholds:\n',length(oo));
@@ -398,7 +398,7 @@ if false % SKIP HISTOGRAMS
     printConditions=true;
     saveSpreadsheet=true;
     vars={'thresholdParameter' 'observer' 'eccentricityXYDeg' 'flankingDirection' ...
-        'experiment' 'experimenter' 'trials' 'contrast'  ...
+        'experiment' 'experimenter' 'trialsDesired' 'contrast'  ...
         'targetDeg' 'spacingDeg' 'durationSec' ...
         'viewingDistanceCm' 'dataFilename'};
     t=struct2table(oo,'AsArray',true);
