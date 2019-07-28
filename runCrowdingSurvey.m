@@ -54,6 +54,27 @@ if 1
     % distance.
     o.viewingDistanceCm=40;
     o.readSpacingDeg=2;
+    o.printSizeAndSpacing=true;
+    if true
+        % Adjust viewing distance.
+        screenLines=12;
+        screenLineChars=50;
+        screen=0;
+        [screenWidthMm,screenHeightMm]=Screen('DisplaySize',screen);
+        screenSizeCm=[screenWidthMm screenHeightMm]/10;
+        maxSpacingSizeCm=screenSizeCm ./ [screenLineChars+3 screenLines];
+        maxCmPerDeg=min(maxSpacingSizeCm/o.readSpacingDeg);
+        maxViewingDistanceCm=0.1/tand(0.1/maxCmPerDeg); % 1 mm subtense.
+        maxViewingDistanceCm=round(maxViewingDistanceCm);
+        if o.viewingDistanceCm>maxViewingDistanceCm
+            fprintf('Reducing viewing distance from %.1f to %.1f cm.\n',...
+                o.viewingDistanceCm,maxViewingDistanceCm);
+            o.viewingDistanceCm=maxViewingDistanceCm;
+            cmPerDeg=0.1/atand(0.1/o.viewingDistanceCm); % 1 mm subtense.
+            fprintf('%.2f cm/deg at %.1f cm.\n',...
+                cmPerDeg,o.viewingDistanceCm);
+        end
+    end
     o.alphabet='abc';
     o.borderLetter='x';
     o.flankingDirection='horizontal';
