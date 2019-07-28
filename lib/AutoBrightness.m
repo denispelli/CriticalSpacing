@@ -155,7 +155,7 @@ for i=1:3
     % Occasionally oldSetting is empty, possibly because that's how we
     % initialized it. I don't know why or what that means.
     if failed
-        msg=sprintf('%s The applescript failed with the following error, trying again.\n%s'...
+        msg=sprintf('%s Will try again. The applescript failed with the following error:\n%s'...
             ,s,oldSetting);
         warning(msg);
         continue
