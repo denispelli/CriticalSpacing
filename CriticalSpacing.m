@@ -462,7 +462,7 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 mainFolder=fileparts(mfilename('fullpath'));
-addpath(fullfile(mainFolder,'lib')); 
+addpath(fullfile(mainFolder,'lib'));
 addpath(fullfile(mainFolder,'utilities'));
 addpath(fullfile(mainFolder,'AutoBrightness'));
 plusMinus=char(177);
@@ -535,9 +535,10 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0]  lower right, [
 o.durationSec=inf; % Duration of display of target and flankers
 % o.fixedSpacingOverSize=0; % Disconnect size & spacing.
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
+o.relationOfSpacingToSize='fixed ratio'; % 'none' 'fixed by font'
 o.fourFlankers=0;
 o.oneFlanker=0;
-o.targetSizeIsHeight=nan; % 0,1 (or nan to depend on o.thresholdParameter)
+o.targetSizeIsHeight=nan; % false, true (or nan to depend on o.thresholdParameter)
 o.minimumTargetPix=6; % Minimum viewing distance depends soley on this & pixPerCm.
 o.flankingDirection='radial'; % 'radial' or 'tangential' or 'horizontal' or 'vertical'.
 o.flankingDegVector=[]; % Specify x,y vector, or [] to specify named o.flankingDirection.
@@ -784,6 +785,10 @@ for oi=1:conditions
     end
 end
 for oi=1:conditions
+    switch oo(oi).task
+        case 'read'
+            o.relationOfSpacingToSize='fixed by font';
+    end
     if ~isfinite(oo(oi).targetSizeIsHeight)
         switch oo(oi).thresholdParameter
             case 'size'
@@ -943,7 +948,7 @@ try
             % Do this BEFORE opening the window, so user can see any alerts.
             ffprintf(ff,'%d: Turning AutoBrightness off. ... ',MFileLineNr);
             s=GetSecs;
-            AutoBrightness(oo(1).screen,0); % Takes 26 s.
+            %             AutoBrightness(oo(1).screen,0); % Takes 26 s.
             ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
         end
     end
@@ -1155,22 +1160,31 @@ try
                     oo(oi).normalCrowdingDistanceDeg=0.5*oo(oi).normalCrowdingDistanceDeg;
             end
             oo(oi).typicalThesholdSizeDeg=oo(oi).normalAcuityDeg;
-            if oo(oi).fixedSpacingOverSize && streq(oo(oi).thresholdParameter,'spacing')
-                % Observer fails if size or spacing is below threshold, so
-                % we care only about the bigger size of failure.
-                oo(oi).typicalThesholdSizeDeg= ...
-                    max(oo(oi).typicalThesholdSizeDeg, oo(oi).normalCrowdingDistanceDeg/oo(oi).fixedSpacingOverSize);
+            switch oo(oi).thresholdParameter
+                case 'spacing'
+                    switch oo(oi).relationOfSpacingToSize
+                        case 'fixed ratio'
+                            % Observer fails if size or spacing is below threshold, so
+                            % we care only about the bigger size of failure.
+                            oo(oi).typicalThesholdSizeDeg= ...
+                                max(oo(oi).typicalThesholdSizeDeg, ...
+                                oo(oi).normalCrowdingDistanceDeg/oo(oi).fixedSpacingOverSize);
+                        case 'none'
+                        case 'fixed by font'
+                    end
             end
             minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg; % Limited by display resolution.
-            if oo(oi).fixedSpacingOverSize
-                minimumSpacingDeg=oo(oi).fixedSpacingOverSize*minimumSizeDeg;
-            else
-                minimumSpacingDeg=1.4*oo(oi).targetDeg;
-                switch oo(oi).targetFont
-                    case 'Pelli'
-                        minimumSpacingDeg=minimumSpacingDeg/5; % For Pelli font.
-                    otherwise
-                end
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    minimumSpacingDeg=oo(oi).fixedSpacingOverSize*minimumSizeDeg;
+                case 'none'
+                    minimumSpacingDeg=1.4*oo(oi).targetDeg;
+                    switch oo(oi).targetFont
+                        case 'Pelli'
+                            minimumSpacingDeg=minimumSpacingDeg/5; % For Pelli font.
+                        otherwise
+                    end
+                case 'fixed by font'
             end
             % Distance at which minimum size is half the typical threshold
             % whther due to size or spacing.
@@ -1452,10 +1466,12 @@ try
         % SIZE LIMITS
         for oi=1:conditions
             oo(oi).minimumSizeDeg=oo(oi).minimumTargetPix/pixPerDeg;
-            if oo(oi).fixedSpacingOverSize
-                oo(oi).minimumSpacingDeg=oo(oi).fixedSpacingOverSize*oo(oi).minimumSizeDeg;
-            else
-                oo(oi).minimumSpacingDeg=1.1*oo(oi).minimumTargetPix/pixPerDeg;
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    oo(oi).minimumSpacingDeg=oo(oi).fixedSpacingOverSize*oo(oi).minimumSizeDeg;
+                case 'none'
+                    oo(oi).minimumSpacingDeg=1.1*oo(oi).minimumTargetPix/pixPerDeg;
+                case 'fixed by font'
             end
         end
         sizeDeg=max([oo.minimumSizeDeg]);
@@ -1690,7 +1706,7 @@ try
         [name,terminatorChar]=GetEchoString(window,'Experimenter name:',...
             2*oo(1).textSize,0.82*screenRect(4),black,...
             background,1,oo(1).deviceIndex);
-       if length(name)<3
+        if length(name)<3
             preface=['Sorry. ''' name ''' is not enough. This name must have at least 3 characters. '];
             continue
         end
@@ -1881,15 +1897,16 @@ try
                 oo(oi).flankingDirection);
         end
         if isempty(oo(oi).flankingDegVector) && ecc>0 && ismember(oo(oi).flankingDirection,{'horizontal' 'vertical'})
-            % Currently, allowing 'horizonal' at nonzero ecc +10 deg results in
-            % tangential (i.e. vertical) flankers, which is reported as
-            % "horizontal". So we insist on just 'radial' or 'tangential'.
+            % Currently, allowing 'horizonal' at nonzero ecc +10 deg would
+            % result in tangential (i.e. vertical) flankers, which would be
+            % reported as "horizontal". So we insist on just 'radial' or
+            % 'tangential'.
             error('At nonzero o.eccentricityXYDeg, o.flankingDirection must be "radial'' or ''tangential'', not ''%s''.',...
                 oo(oi).flankingDirection);
         end
         oo(oi).eccentricityDegVector=oo(oi).eccentricityXYDeg/norm(oo(oi).eccentricityXYDeg);
-        % We consult the o.flankingDirection string only if the user has not
-        % provided o.flankingDegVector.
+        % We consult the o.flankingDirection string only if the user has
+        % not provided o.flankingDegVector.
         if isempty(oo(oi).flankingDegVector)
             switch oo(oi).flankingDirection
                 case 'radial'
@@ -1980,8 +1997,9 @@ try
         else
             oo(oi).spacingDeg=oo(oi).normalCrowdingDistanceDeg; % initial guess for distance from center of middle letter
         end
-        if streq(oo(oi).task,'read')
-            oo(oi).spacingDeg=oo(oi).readSpacingDeg;
+        switch oo(oi).task
+            case 'read'
+                oo(oi).spacingDeg=oo(oi).readSpacingDeg;
         end
         oo(oi).spacings=oo(oi).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
         oo(oi).spacingsSequence=repmat(oo(oi).spacings,1,...
@@ -2014,10 +2032,12 @@ try
         
         %% Measure targetHeightOverWidth
         oo(oi).targetFontHeightOverNominalPtSize=nan;
-        oo(oi).targetPix=200;
+        oo(oi).targetPix=200; % Font size.
         % Get bounds.
         [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
         DestroyLetterTextures(letterStruct);
+        % This aspect ratio is based on bounding box of the whole alphabet.
+        % It may not be typical of individual characters.
         oo(oi).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
         if ~oo(oi).getAlphabetFromDisk
             oo(oi).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(oi).targetPix;
@@ -2094,20 +2114,22 @@ try
         ffprintf(ff,'%s',string);
     end
     for oi=1:conditions
-        if oo(oi).fixedSpacingOverSize
-            ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',oi,oo(oi).fixedSpacingOverSize);
-        else
-            switch oo(oi).thresholdParameter
-                case 'size'
-                    ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',oi);
-                case 'spacing'
-                    ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',oi,oo(oi).targetDeg,oo(oi).targetDeg*pixPerDeg);
-                    if ~isfinite(oo(oi).targetDeg)
-                        error('To measure spacing threshold you must define either o.fixedSpacingOverSize or o.targetDeg.');
-                    end
-            end
+        switch oo(oi).relationOfSpacingToSize
+            case 'fixed ratio'
+                ffprintf(ff,'%d: Fixed ratio of spacing over size %.2f.\n',oi,oo(oi).fixedSpacingOverSize);
+            case 'none'
+                switch oo(oi).thresholdParameter
+                    case 'size'
+                        ffprintf(ff,'%d: Measuring threshold size, with no flankers.\n',oi);
+                    case 'spacing'
+                        ffprintf(ff,'%d: Target size %.2f deg, %.1f pixels.\n',oi,oo(oi).targetDeg,oo(oi).targetDeg*pixPerDeg);
+                        if ~isfinite(oo(oi).targetDeg)
+                            error('To measure threshold spacing you must specify either o.fixedSpacingOverSize or o.targetDeg.');
+                        end
+                end
+            case 'fixed by font'
         end
-    end
+    end % for oi=1:conditions
     for oi=1:conditions
         switch oo(oi).thresholdParameter
             case 'size'
@@ -2135,19 +2157,21 @@ try
         sizesPix=oo(oi).minimumTargetPix*[oo(oi).targetHeightOverWidth 1];
         ffprintf(ff,'%d: Minimum letter size %.0fx%.0f pix, %.3fx%.3f deg. ',...
             oi,sizesPix,sizesPix/pixPerDeg);
-        if oo(oi).fixedSpacingOverSize
-            spacingPix=round(oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
-            ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',...
-                spacingPix,spacingPix/pixPerDeg);
-        else
-            switch oo(oi).thresholdParameter
-                case 'size'
-                    ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',...
-                        oo(oi).spacingPix,oo(oi).spacingDeg);
-                case 'spacing'
-                    ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',...
-                        oo(oi).targetPix,oo(oi).targetDeg);
-            end
+        switch oo(oi).relationOfSpacingToSize
+            case 'fixed ratio'
+                spacingPix=round(oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
+                ffprintf(ff,'Minimum spacing %.0f pix, %.3f deg.\n',...
+                    spacingPix,spacingPix/pixPerDeg);
+            case 'none'
+                switch oo(oi).thresholdParameter
+                    case 'size'
+                        ffprintf(ff,'Spacing %.0f pixels, %.3f deg.\n',...
+                            oo(oi).spacingPix,oo(oi).spacingDeg);
+                    case 'spacing'
+                        ffprintf(ff,'Size %.0f pixels, %.3f deg.\n',...
+                            oo(oi).targetPix,oo(oi).targetDeg);
+                end
+            case 'fixed by font'
         end
     end
     for oi=1:conditions
@@ -2631,10 +2655,12 @@ try
                                 oo(oi).spacingDeg=0.3;
                             end
                     end
-                    if oo(oi).fixedSpacingOverSize
-                        oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
-                    else
-                        oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
+                    switch oo(oi).relationOfSpacingToSize
+                        case 'fixed ratio'
+                            oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
+                        case 'none'
+                            oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
+                        case 'fixed by font'
                     end
                 case 'size'
                     if ~oo(oi).fixationCheck
@@ -2650,12 +2676,20 @@ try
             oo(oi).targetPix=max(oo(oi).targetPix,oo(oi).minimumTargetPix*oo(oi).targetHeightOverWidth);
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
-        if streq(oo(oi).thresholdParameter,'size') && oo(oi).fixedSpacingOverSize
-            oo(oi).spacingDeg=oo(oi).targetDeg*oo(oi).fixedSpacingOverSize;
+        if streq(oo(oi).thresholdParameter,'size')
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    oo(oi).spacingDeg=oo(oi).targetDeg*oo(oi).fixedSpacingOverSize;
+                case 'none'
+                case 'fixed by font'
+            end
         end
         spacingPix=oo(oi).spacingDeg*pixPerDeg; % Now spacingPix is master.
-        if oo(oi).fixedSpacingOverSize
-            spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
+        switch oo(oi).relationOfSpacingToSize
+            case 'fixed ratio'
+                spacingPix=max(spacingPix,oo(oi).minimumTargetPix*oo(oi).fixedSpacingOverSize);
+            case 'none'
+            case 'fixed by font'
         end
         if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
                 oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
@@ -2739,24 +2773,28 @@ try
         if oo(oi).targetSizeIsHeight
             % targetSizeIsHeight==true, so spacingPix is vertical. It is
             % scaled by heightOverWidth in the orthogonal direction.
-            if oo(oi).fixedSpacingOverSize
-                spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
-                spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
-                oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
-            else
-                spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesY));
-                spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)));
+                    spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
+                    oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
+                case 'none'
+                    spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesY));
+                    spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix/oo(oi).targetHeightOverWidth)/minSpacesX));
+                case 'fixed by font'
             end
         else
             % targetSizeIsHeight==false, so spacingPix is horizontal. It is
             % scaled by heightOverWidth in the orthogonal direction.
-            if oo(oi).fixedSpacingOverSize
-                spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
-                spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
-                oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
-            else
-                spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX));
-                spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetHeightOverWidth*oo(oi).targetPix)/4));
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    spacingPix=min(spacingPix,floor(RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize)));
+                    spacingPix=min(spacingPix,floor(RectHeight(oo(oi).stimulusRect)/(minSpacesY+1/oo(oi).fixedSpacingOverSize)/oo(oi).targetHeightOverWidth));
+                    oo(oi).targetPix=spacingPix/oo(oi).fixedSpacingOverSize;
+                case 'none'
+                    spacingPix=min(spacingPix,floor((RectHeight(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX));
+                    spacingPix=min(spacingPix,floor(oo(oi).targetHeightOverWidth*(RectWidth(oo(oi).stimulusRect)-oo(oi).targetHeightOverWidth*oo(oi).targetPix)/4));
+                case 'fixed by font'
             end
         end
         oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
@@ -2788,10 +2826,12 @@ try
                     flankingDegVector=oo(oi).eccentricityDegVector*rotate90;
             end
             flankingPixVector=flankingDegVector.*[1 -1]; % Because Apple Y coordinate increases downward.
-            if oo(oi).fixedSpacingOverSize
-                pix=spacingPix/oo(oi).fixedSpacingOverSize;
-            else
-                pix=oo(oi).targetPix;
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    pix=spacingPix/oo(oi).fixedSpacingOverSize;
+                case 'none'
+                    pix=oo(oi).targetPix;
+                case 'fixed by font'
             end
             if oo(oi).targetSizeIsHeight
                 height=pix;
@@ -2815,28 +2855,30 @@ try
             end
             assert(length(spacingPix)==1);
             fXY=zeros(2,2);
-            if oo(oi).fixedSpacingOverSize
-                % Clip the nominal spacingPix, allowing for half a letter
-                % beyond the spacing, clipped by the stimulusRect.
-                fXY(1,:)=tXY+spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
-                fXY(2,:)=tXY-spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
-                [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                v=fXY;
-                for i=1:size(fXY,1)
-                    v(i,1:2)=fXY(i,1:2)-tXY;
-                end
-                spacingPix=min(norm(v(1,:)),norm(v(2,:)))/(1+0.5/oo(oi).fixedSpacingOverSize);
-            else
-                % Clip the nominal spacingPix, allowing for half a letter
-                % beyond the spacing, clipped by the stimulusRect.
-                fXY(1,:)=tXY+(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
-                fXY(2,:)=tXY-(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
-                [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
-                v=fXY;
-                for i=1:size(fXY,1)
-                    v(i,1:2)=fXY(i,1:2)-tXY;
-                end
-                spacingPix=min(norm(v(1,:)),norm(v(2,:)))-0.5*oo(oi).targetPix;
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    % Clip the nominal spacingPix, allowing for half a letter
+                    % beyond the spacing, clipped by the stimulusRect.
+                    fXY(1,:)=tXY+spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                    fXY(2,:)=tXY-spacingPix*(1+0.5/oo(oi).fixedSpacingOverSize)*flankingPixVector;
+                    [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
+                    v=fXY;
+                    for i=1:size(fXY,1)
+                        v(i,1:2)=fXY(i,1:2)-tXY;
+                    end
+                    spacingPix=min(norm(v(1,:)),norm(v(2,:)))/(1+0.5/oo(oi).fixedSpacingOverSize);
+                case 'none'
+                    % Clip the nominal spacingPix, allowing for half a letter
+                    % beyond the spacing, clipped by the stimulusRect.
+                    fXY(1,:)=tXY+(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
+                    fXY(2,:)=tXY-(spacingPix+0.5*oo(oi).targetPix)*flankingPixVector;
+                    [fXY(1,:),fXY(2,:)]=ClipLineSegment2(fXY(1,:),fXY(2,:),oo(oi).stimulusRect);
+                    v=fXY;
+                    for i=1:size(fXY,1)
+                        v(i,1:2)=fXY(i,1:2)-tXY;
+                    end
+                    spacingPix=min(norm(v(1,:)),norm(v(2,:)))-0.5*oo(oi).targetPix;
+                case 'fixed by font'
             end
             assert(length(spacingPix)==1);
             spacingPix=max(0,spacingPix);
@@ -2851,10 +2893,12 @@ try
             eccentricityPix=norm(oo(oi).eccentricityXYPix);
             if eccentricityPix==0
                 % Target at fixation. Symmetric flankers must fit on screen.
-                if oo(oi).fixedSpacingOverSize
-                    spacingPix=min(spacingPix,RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
-                else
-                    spacingPix=min(spacingPix,(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX);
+                switch oo(oi).relationOfSpacingToSize
+                    case 'fixed ratio'
+                        spacingPix=min(spacingPix,RectWidth(oo(oi).stimulusRect)/(minSpacesX+1/oo(oi).fixedSpacingOverSize));
+                    case 'none'
+                        spacingPix=min(spacingPix,(RectWidth(oo(oi).stimulusRect)-oo(oi).targetPix)/minSpacesX);
+                    case 'fixed by font'
                 end
                 assert(spacingPix>=0);
                 fXY(end+1,1:2)=tXY+spacingPix*flankingPixVector;
@@ -2867,30 +2911,32 @@ try
                 assert(spacingPix>=0);
                 spacingPix=min(eccentricityPix,spacingPix); % Inner flanker must be between fixation and target.
                 assert(spacingPix>=0);
-                if oo(oi).fixedSpacingOverSize
-                    spacingPix=min(spacingPix,norm(tXY)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
-                    assert(spacingPix>=0);
-                    for i=1:100
-                        % Our goal is:
-                        % (outerSpacingPix+eccentricityPix+addOnPix)/(eccentricityPix+addOnPix)==(eccentricityPix+addOnPix)/(eccentricityPix+addOnPix-spacingPix);
-                        % So we solve for outerSpacingPix:
-                        outerSpacingPix=(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix-spacingPix)-(eccentricityPix+addOnPix);
-                        assert(outerSpacingPix>=0);
-                        flankerRadius=spacingPix/oo(oi).fixedSpacingOverSize/2;
-                        if IsXYInRect(tXY+flankingPixVector*(outerSpacingPix+flankerRadius),oo(oi).stimulusRect)
-                            break;
-                        else
-                            spacingPix=0.9*spacingPix;
+                switch oo(oi).relationOfSpacingToSize
+                    case 'fixed ratio'
+                        spacingPix=min(spacingPix,norm(tXY)/(1+1/oo(oi).fixedSpacingOverSize/2)); % Inner flanker is on screen.
+                        assert(spacingPix>=0);
+                        for i=1:100
+                            % Our goal is:
+                            % (outerSpacingPix+eccentricityPix+addOnPix)/(eccentricityPix+addOnPix)==(eccentricityPix+addOnPix)/(eccentricityPix+addOnPix-spacingPix);
+                            % So we solve for outerSpacingPix:
+                            outerSpacingPix=(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix-spacingPix)-(eccentricityPix+addOnPix);
+                            assert(outerSpacingPix>=0);
+                            flankerRadius=spacingPix/oo(oi).fixedSpacingOverSize/2;
+                            if IsXYInRect(tXY+flankingPixVector*(outerSpacingPix+flankerRadius),oo(oi).stimulusRect)
+                                break;
+                            else
+                                spacingPix=0.9*spacingPix;
+                            end
                         end
-                    end
-                    if i==100
-                        ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-tXY(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
-                        error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
-                    end
-                else
-                    spacingPix=min(spacingPix,tXY(1)-oo(oi).targetPix/2); % inner flanker on screen
-                    outerSpacingPix=(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix-spacingPix)-(eccentricityPix+addOnPix);
-                    outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-tXY(1)-oo(oi).targetPix/2); % outer flanker on screen
+                        if i==100
+                            ffprintf(ff,'ERROR: spacingPix %.2f, outerSpacingPix %.2f exceeds max %.2f pix.\n',spacingPix,outerSpacingPix,RectWidth(oo(oi).stimulusRect)-tXY(1)-spacingPix/oo(oi).fixedSpacingOverSize/2);
+                            error('Could not make spacing small enough. Right flanker will be off screen. If possible, try using off-screen fixation.');
+                        end
+                    case 'none'
+                        spacingPix=min(spacingPix,tXY(1)-oo(oi).targetPix/2); % inner flanker on screen
+                        outerSpacingPix=(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix-spacingPix)-(eccentricityPix+addOnPix);
+                        outerSpacingPix=min(outerSpacingPix,RectWidth(oo(oi).stimulusRect)-tXY(1)-oo(oi).targetPix/2); % outer flanker on screen
+                    case 'fixed by font'
                 end
                 assert(outerSpacingPix>=0);
                 spacingPix=eccentricityPix+addOnPix-(eccentricityPix+addOnPix)^2/(eccentricityPix+addOnPix+outerSpacingPix);
@@ -2902,8 +2948,13 @@ try
             end
         end % if streq(oo(oi).flankingDirection,'radial') || (oo(oi).fourFlankers && streq(oo(oi).thresholdParameter,'spacing'))
         oo(oi).spacingDeg=spacingPix/pixPerDeg;
-        if streq(oo(oi).thresholdParameter,'spacing') && oo(oi).fixedSpacingOverSize
-            oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
+        if streq(oo(oi).thresholdParameter,'spacing')
+            switch oo(oi).relationOfSpacingToSize
+                case 'fixed ratio'
+                    oo(oi).targetDeg=oo(oi).spacingDeg/oo(oi).fixedSpacingOverSize;
+                case 'none'
+                case 'fixed by font'
+            end
         end
         oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
         if oo(oi).targetSizeIsHeight
@@ -3018,22 +3069,44 @@ try
         skipTrial=false;
         switch oo(oi).task
             case 'read'
-                % Compute desired font size for the text to be read.
+                % Compute desired font size o.readSize for the text to be read.
                 Screen('TextFont',window,oo(oi).targetFont);
                 Screen('TextSize',window,oo(1).textSize);
-                boundsRect=Screen('TextBounds',window,'12345678901234567890');
-                widthPixPerSize=RectWidth(boundsRect)/20/oo(1).textSize;
-                oo(oi).readSize=round(oo(oi).targetDeg*pixPerDeg/widthPixPerSize);
+                switch oo(oi).thresholdParameter
+                    case 'spacing'
+                        % Driven by o.readSpacingDeg.
+                        string='abcdefghijklmnopqrstuvwxyz';
+                        boundsRect=Screen('TextBounds',window,string);
+                        spacingPerNominal=RectWidth(boundsRect)/length(string)/oo(1).textSize;
+                        oo(oi).readSize=oo(oi).readSpacingDeg*pixPerDeg/spacingPerNominal;
+                        oo(oi).readSize=round(oo(oi).readSize);
+                        oo(oi).spacingDeg=oo(oi).readSize*spacingPerNominal/pixPerDeg;
+                        oo(oi).targetDeg=oo(oi).targetFontHeightOverNominalPtSize*oo(oi).readSize;
+                        if ~oo(oi).targetSizeIsHeight
+                            oo(oi).targetDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
+                        end
+                    case 'size'
+                        % Driven by o.targetDeg.
+                        oo(oi).readSize=oo(oi).targetDeg*pixPerDeg/...
+                            oo(oi).targetFontHeightOverNominalPtSize;
+                        if ~oo(oi).targetSizeIsHeight
+                            oo(oi).readSize=oo(oi).readSize/oo(oi).targetHeightOverWidth;
+                        end
+                        oo(oi).readSize=round(oo(oi).readSize);
+                        oo(oi).targetDeg=oo(oi).readSize*oo(oi).targetFontHeightOverNominalPtSize/pixPerDeg;
+                        if  ~oo(oi).targetSizeIsHeight
+                            oo(oi).targetDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
+                        end
+                end
                 if ~isfinite(oo(oi).readSize) || oo(oi).readSize<=0
                     error(['Condition %d, o.readSize %.1f is not a positive integer. ' ...
                         'Are you sure you want o.task=''read''? '],oi,oo(oi).readSize);
                 end
-                oo(oi).targetDeg=widthPixPerSize*oo(oi).readSize/pixPerDeg;
                 % Display instructions.
                 readInstructions=['When you''re ready, '...
                     'press and hold down the SPACE bar to reveal ' ...
                     'the story and immediately begin reading. '...
-                    'While holding down the space bar, '...
+                    'While still holding down the space bar, '...
                     'read as fast as you can '...
                     'while maintaining full comprehension. '...
                     'Read every word. ' ...
@@ -3651,6 +3724,12 @@ try
                     2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                     screenLineChars,[],[],1.5);
                 Screen('Flip',window,[],1);
+                if true
+                    cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
+                    fprintf('%.2f cm/deg at %.1f cm, size %.0f.\n',...
+                        cmPerDeg,oo(oi).viewingDistanceCm,oo(oi).readSize);
+                end
+                
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
                     warning('The text does not fit on screen.'); % DGP temporary.
                     oo(oi).readError='The text does not fit on screen.';
