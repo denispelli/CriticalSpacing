@@ -53,8 +53,8 @@ if 1
     % 50 cm. Larger letters require proportionally smaller viewing
     % distance.
     o.viewingDistanceCm=40;
-    o.readSpacingDeg=2;
-    o.printSizeAndSpacing=true;
+    o.readSpacingDeg=.8;
+    o.printSizeAndSpacing=false;
     if true
         % Adjust viewing distance.
         screenLines=12;
