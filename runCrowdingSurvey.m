@@ -5,7 +5,7 @@
 clear KbWait o
 mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
-
+% 
 % o.useFractionOfScreenToDebug=0.4;
 % o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
@@ -57,12 +57,15 @@ if 1
     o.printSizeAndSpacing=false;
     if true
         % Adjust viewing distance.
-        screenLines=12;
-        screenLineChars=50;
+        o.readLines=12;
+        o.readCharsPerLine=50;
         screen=0;
         [screenWidthMm,screenHeightMm]=Screen('DisplaySize',screen);
         screenSizeCm=[screenWidthMm screenHeightMm]/10;
-        maxSpacingSizeCm=screenSizeCm ./ [screenLineChars+3 screenLines];
+        % The leadingOverSpacing scalar is needs to correctly adjust
+        % viewing distance to prevent overflow at bottom of screen.
+        leadingOverSpacing=2.7; % For Monaco font.
+        maxSpacingSizeCm=screenSizeCm ./ [o.readCharsPerLine+3 o.readLines*leadingOverSpacing];
         maxCmPerDeg=min(maxSpacingSizeCm/o.readSpacingDeg);
         maxViewingDistanceCm=0.1/tand(0.1/maxCmPerDeg); % 1 mm subtense.
         maxViewingDistanceCm=round(maxViewingDistanceCm);
