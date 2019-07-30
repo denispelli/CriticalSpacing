@@ -3073,9 +3073,9 @@ try
                         oo(oi).readSize=oo(oi).readSpacingDeg*pixPerDeg/spacingPerNominal;
                         oo(oi).readSize=round(oo(oi).readSize);
                         oo(oi).spacingDeg=oo(oi).readSize*spacingPerNominal/pixPerDeg;
-                        oo(oi).targetDeg=oo(oi).targetFontHeightOverNominal*oo(oi).readSize;
+                        oo(oi).targetDeg=oo(oi).readSize*oo(oi).targetFontHeightOverNominal/pixPerDeg;
                         if ~oo(oi).targetSizeIsHeight
-                            oo(oi).targetDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
+                            oo(oi).targetDeg=oo(oi).targetDeg/oo(oi).targetHeightOverWidth;
                         end
                     case 'size'
                         % Driven by o.targetDeg.
