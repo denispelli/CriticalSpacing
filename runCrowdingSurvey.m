@@ -58,7 +58,7 @@ if 1
     if true
         % Adjust viewing distance so text fits on screen.
         o.readLines=12;
-        o.readCharsPerLine=50;
+        o.readCharPerLine=50;
         o.screen=0;
         maxViewingDistanceCm=MaxViewingDistanceCmForReading(o);
         if o.viewingDistanceCm>maxViewingDistanceCm
@@ -264,7 +264,7 @@ t=struct2table(oo,'AsArray',true);
 disp(t(:,{'block' 'etaMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
-return
+% return
 
 %% RUN.
 for block=1:length(ooo)
