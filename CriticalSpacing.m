@@ -478,7 +478,7 @@ global window keepWindowOpen % Keep window open until end of last block.
 global scratchWindow
 global screenRect % For ProcessEscape
 persistent drawTextWarning
-persistent textCorpus fCorpus wCorpus
+persistent corpusFilename corpusText corpusFrequency corpusWord
 persistent oldViewingDistanceCm
 global blockTrial blockTrials % used in DrawCounter.
 keepWindowOpen=false; % Enable only in normal return.
@@ -559,17 +559,20 @@ o.isolatedTarget=false; % Set to true when measuring acuity for a single isolate
 o.brightnessSetting=0.87; % Default. Roughly half luminance. Some observers find 1.0 painfully bright.
 
 % READ TEXT
+o.readLines=12;
+o.readCharsPerLine=50;
 o.readSpacingDeg=0.3;
 o.readString={}; % The string of text to be read.
 o.readSecs=[]; % Time spent reading (from press to release of space bar).
 o.readChars=[]; % Length of string.
 o.readWords=[]; % Words in string.
-o.readCharPerSec=[]; % Speed, a ratio.
-o.readWordPerMin=[]; % Speed, a ratio.
+o.readCharPerSec=[]; % Speed.
+o.readWordPerMin=[]; % Speed.
 o.readMethod='';
 o.readError='';
 o.readQuestions=3;
-o.readFilename='MHC928.txt';
+% o.readFilename='MHC928.txt';
+o.readFilename='the phantom tollbooth.txt'; % Norton Juster (1961). The Phantom Tollbooth. Random House.
 o.readNumberOfResponses=[];
 o.readNumberCorrect=[];
 
@@ -764,7 +767,7 @@ for oi=1:conditions
 end % for oi=1:conditions
 unknownFields=unique(unknownFields);
 if ~isempty(unknownFields)
-    error(['Ignoring unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
+    error(['Unknown o fields:' sprintf(' %s',unknownFields{:}) '.']);
 end
 if oo(1).quitExperiment
     % Quick return. We're skipping every block in the session.
@@ -948,7 +951,7 @@ try
             % Do this BEFORE opening the window, so user can see any alerts.
             ffprintf(ff,'%d: Turning AutoBrightness off. ... ',MFileLineNr);
             s=GetSecs;
-            %             AutoBrightness(oo(1).screen,0); % Takes 26 s.
+            AutoBrightness(oo(1).screen,0); % Takes 25 s.
             ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
         end
     end
@@ -2407,7 +2410,7 @@ try
             Speak(string);
         end
         SetMouse(screenRect(3),screenRect(4),window);
-        answer=GetKeypressWithHelp([spaceKeyCode returnKeyCode escapeKeyCode graveAccentKeyCode],...
+        answer=GetKeypressWithHelp([returnKeyCode escapeKeyCode graveAccentKeyCode],...
             oo(oi),window,oo(oi).stimulusRect);
         Screen('FillRect',window);
         tryAgain=false;
@@ -3632,26 +3635,39 @@ try
             case 'read'
                 % The excerpt will be 12 lines of (up to) 50 characters
                 % each. That's about ten words per line.
-                screenLines=12;
-                screenLineChars=50;
-                if isempty(wCorpus)
-                    % Corpus stats.
-                    % wCorpus{i} lists all words in the corpus in order of
-                    % descending frequency. fCorpus(i) is
-                    % frequency in the corpus.
+                if isempty(corpusWord) || ~streq(corpusFilename,oo(oi).readFilename)
+                    % corpusWord{i} lists each word in the corpus in order
+                    % of descending frequency. corpusFrequency(i) is
+                    % frequency of each word in the corpus.
+                    ffprintf(ff,'Computing stats of text corpus in ''%s''.',...
+                        oo(oi).readFilename);
+                    s=GetSecs;
                     readFolder=fullfile(mainFolder,'read');
-                    oo(oi).readFilename='MHC928.txt';
-                    readFile=fullfile(readFolder,oo(oi).readFilename);
-                    textCorpus=fileread(readFile);
-                    words=WordsInString(textCorpus);
-                    % fCorpus(i) is frequency of word wCorpus(i) in our corpus.
-                    wCorpus=unique(words);
-                    fCorpus=zeros(size(wCorpus));
-                    for i=1:length(wCorpus)
-                        fCorpus(i)=sum(find(streq(wCorpus{i},words)));
+                    corpusFilename=oo(oi).readFilename;
+                    readFile=fullfile(readFolder,corpusFilename);
+                    % MATLAB's textscan and readfile both failed to read
+                    % the unicode characters from my UTF-8 file. 
+                    % This user-written textscanu works.
+                    % The file type must be UTF-8, which BBEdit allows when
+                    % you do a Save As. I suppose this is a text file with
+                    % the first byte indicating the encoding.
+                    % We specify nonexistent delimiter and linefeed, so the
+                    % text will come through as one long string.
+                    corpusText=textscanu(readFile,'UTF-8',2,2);
+                    if length(corpusText)>1
+                        assert(isempty(corpusText{2}),'The corpus is broken up into parts.');
                     end
-                    [fCorpus,ii]=sort(fCorpus,'descend');
-                    wCorpus=wCorpus(ii);
+                    corpusText=corpusText{1};
+                    words=WordsInString(corpusText);
+                    % corpusFrequency(i) is frequency of word corpusWord(i) in our corpus.
+                    corpusWord=unique(words);
+                    corpusFrequency=zeros(size(corpusWord));
+                    for i=1:length(corpusWord)
+                        corpusFrequency(i)=sum(ismember(words,corpusWord{i}));
+                    end
+                    [corpusFrequency,ii]=sort(corpusFrequency,'descend');
+                    corpusWord=corpusWord(ii);
+                    ffprintf(ff,' (%.0f words took %.0f s).\n',length(words),GetSecs-s);
                 end
                 oo(oi).readMethod=sprintf(...
                     ['Random block of text from %s, ' ...
@@ -3660,17 +3676,17 @@ try
                     '%.1f deg spacing. \n'...
                     '%s font set to %d point with %d point leading. '...
                     'Viewed from %.0f cm.'],...
-                    oo(oi).readFilename,screenLines,screenLineChars,...
+                    oo(oi).readFilename,oo(oi).readLines,oo(oi).readCharsPerLine,...
                     oo(oi).spacingDeg, ...
                     oo(oi).targetFont,oo(oi).readSize,round(1.5*oo(oi).readSize),...
                     oo(oi).viewingDistanceCm);
-                lineEndings=find(WrapString(textCorpus,screenLineChars)==newline);
+                lineEndings=find(WrapString(corpusText,oo(oi).readCharsPerLine)==newline);
                 % Pick starting point that leaves enough lines. The
                 % newlines will move when we re-wrap, but their density
                 % won't change much. n is the largest acceptable line
                 % number in the wrapped text for the beginning of our
                 % excerpt.
-                n=length(lineEndings)-screenLines-1;
+                n=length(lineEndings)-oo(oi).readLines-1;
                 % maxBegin is the largest acceptable character position in
                 % the not-yet-wrapped text for the beginning of our
                 % excerpt.
@@ -3678,8 +3694,8 @@ try
                 % sentenceBegins lists the character positions where
                 % sentences begin. For this purpose, we suppose that the
                 % corpus begins with a sentence, and that the character
-                % after period space space is always a sentence beginning.
-                sentenceBegins=[1 strfind(textCorpus,'.  ')+3];
+                % after period space is always a sentence beginning.
+                sentenceBegins=[1 strfind(corpusText,'. ')+2];
                 % Restrict that list to exclude beginnings that are too
                 % near the end.
                 sentenceBegins=sentenceBegins(sentenceBegins<=maxBegin);
@@ -3687,13 +3703,14 @@ try
                 begin=sentenceBegins(randi(end));
                 % Grab the rest of corpus, beginning at the selected
                 % sentence.
-                string=textCorpus(begin:end);
+                string=corpusText(begin:end);
+
                 % Wrap it.
-                string=WrapString(string,screenLineChars);
+                string=WrapString(string,oo(oi).readCharsPerLine);
                 lineEndings=find(string==newline);
-                % Keep just the desired number (screenlines) of lines,
+                % Keep just the desired number (oo(oi).readLines) of lines,
                 % omitting the (superfluous) final newline.
-                string=string(1:lineEndings(screenLines)-1);
+                string=string(1:lineEndings(oo(oi).readLines)-1);
                 oo(oi).readString{end+1}=string;
                 
                 % Time the interval from press to release of spacebar.
@@ -3720,18 +3737,20 @@ try
                 Screen('TextFont',window,oo(oi).targetFont);
                 Screen('TextSize',window,oo(oi).readSize);
                 Screen('FillRect',window);
-                [~,y]=DrawFormattedText(window,string,...
+                [~,y]=DrawFormattedText(window,double(string),...
                     2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
-                    screenLineChars,[],[],1.5);
+                    oo(oi).readCharsPerLine,[],[],1.5);
                 Screen('Flip',window,[],1);
-                if true
+                if false
                     cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
                     fprintf('%.2f cm/deg at %.1f cm, size %.0f.\n',...
                         cmPerDeg,oo(oi).viewingDistanceCm,oo(oi).readSize);
                 end
-                
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
-                    warning('The text does not fit on screen.'); % DGP temporary.
+                    warning('The text extends below the screen. %d lines of %d chars.',...
+                        oo(oi).readLines,oo(oi).readCharsPerLine); 
+                    ffprintf(ff,'y %.0f, stimulusRect [%.0f %.0f %.0f %.0f], screenRect [%.0f %.0f %.0f %.0f]\n',...
+                        y,oo(oi).stimulusRect,screenRect);
                     oo(oi).readError='The text does not fit on screen.';
                 end
                 Screen('TextSize',window,oo(1).textSize);
@@ -3777,21 +3796,23 @@ try
                     % find it in the corpus list. As the two foils, I pick
                     % the nearest neighbors (randomly higher or lower) in
                     % the list sorted by frequency.
-                    iiNotUsed=~ismember(wPage,wCorpus(iUsed));
+                    iiNotUsed=~ismember(wPage,corpusWord(iUsed));
                     freq=fPage(find(iiNotUsed,1));
                     words=wPage(fPage==freq & iiNotUsed); % Unused words with right frequency.
                     assert(~isempty(words),'Oops. Failed to find words with right frequency.');
                     word=words{randi(length(words))}; % Random choice.
-                    % iPresent is index in wCorpus of a word that appeared
-                    % in page. iAbsent(1:2) are indices in wCorpus of
+                    % iPresent is index in corpusWord of a word that appeared
+                    % in page. iAbsent(1:2) are indices in corpusWord of
                     % similar frequency words that did not appear in page.
                     % We use them as foils for the word that was present.
-                    iPresent=find(ismember(wCorpus,word),1);
-                    assert(isfinite(iPresent));
+                    iPresent=find(ismember(corpusWord,word),1);
+                    if isempty(iPresent)
+                        error('Word "%s" not in corpus.\n',word);
+                    end
                     % Find nearest neighbors in list that are absent from the page.
                     clear seq
                     seq=1;
-                    for i=2:2:length(wCorpus)-1
+                    for i=2:2:length(corpusWord)-1
                         seq(i)=-seq(i-1);
                         seq(i+1)=seq(i-1)+1;
                     end
@@ -3803,10 +3824,10 @@ try
                     iAbsent=[];
                     for i=1:length(seq)
                         iCandidate=iPresent+seq(i);
-                        if iCandidate<1 || iCandidate>length(wCorpus)
+                        if iCandidate<1 || iCandidate>length(corpusWord)
                             continue
                         end
-                        if ~ismember(wCorpus(iCandidate),wPage) && ~ismember(iCandidate,iUsed)
+                        if ~ismember(corpusWord(iCandidate),wPage) && ~ismember(iCandidate,iUsed)
                             % This word is present in corpus, absent from
                             % page, and unused.
                             iAbsent(end+1)=iCandidate;
@@ -3825,12 +3846,12 @@ try
                         'Type 1, 2 or 3.\n\n\n'...
                         '(The words can include contractions and proper names. '...
                         'Upper/lower case matters.)'],...
-                        wCorpus{iTest});
+                        corpusWord{iTest});
                     while true
                         Screen('FillRect',window);
                         DrawFormattedText(window,msg,...
                             2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
-                            oo(oi).textLineLength);
+                            oo(oi).textLineLength,[],[],1.5);
                         DrawCounter(oo);
                         Screen('Flip',window);
                         choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#') escapeKeyCode graveAccentKeyCode];
@@ -3848,7 +3869,7 @@ try
                     msg='';
                     if ismember(response,{'1' '2' '3'})
                         response=str2num(response);
-                        answer=iTest(response); % Observer chose wCorpus{answer}.
+                        answer=iTest(response); % Observer chose corpusWord{answer}.
                         right=answer==iPresent;
                         if iQuestion==1
                             oo(oi).readNumberOfResponses=1;
@@ -3873,12 +3894,12 @@ try
                     end
                     % Print question words in Command Window
                     ffprintf(ff,'Present  <strong>%10s</strong>,  corpus freq %d/%d\n',...
-                        wCorpus{iPresent},fCorpus(iPresent),sum(fCorpus));
+                        corpusWord{iPresent},corpusFrequency(iPresent),sum(corpusFrequency));
                     for i=1:length(iAbsent)
                         ffprintf(ff,'Absent   <strong>%10s</strong>,  corpus freq %d/%d\n',...
-                            wCorpus{iAbsent(i)},fCorpus(iAbsent(i)),sum(fCorpus));
+                            corpusWord{iAbsent(i)},corpusFrequency(iAbsent(i)),sum(corpusFrequency));
                     end
-                    ffprintf(ff,'Response %10s\n',wCorpus{answer});
+                    ffprintf(ff,'Response %10s\n',corpusWord{answer});
                 end % for iQuestion= ...
             case 'identify'
                 responseString='';
