@@ -24,7 +24,7 @@ o.fixationCrossDeg=3;
 o.fixationCrossBlankedNearTarget=false;
 o.brightnessSetting=0.87; % Half luminance. Some observers find 1.0 painfully bright.
 o.readLines=12;
-o.readCharsPerLine=50;
+o.readCharPerLine=50;
 o.screen=0;
 ooo={};
 
@@ -141,7 +141,7 @@ for block=1:length(ooo)
         switch o.task
             case 'read'
                 o.readLines=12;
-                o.readCharsPerLine=50;
+                o.readCharPerLine=50;
                 o.screen=0;
                 maxViewingDistanceCm=MaxViewingDistanceCmForReading(o);
                 if o.viewingDistanceCm>maxViewingDistanceCm
