@@ -1,6 +1,8 @@
 function C = textscanu(filename, encoding, del_sym, eol_sym, wb)
 % C = textscanu(filename, encoding, del_sym, eol_sym, wb);
-% TEXTSCANU Reads Unicode strings from a file and outputs a cell array of strings
+% TEXTSCANU Reads Unicode strings from a file and outputs a cell array of
+% strings.
+% https://www.mathworks.com/matlabcentral/fileexchange/18956-read-unicode-files
 % 
 % -------------
 % INPUT
