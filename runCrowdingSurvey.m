@@ -5,9 +5,9 @@
 clear KbWait o
 mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
-% 
-% o.useFractionOfScreenToDebug=0.4;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
+%
+o.useFractionOfScreenToDebug=0.4;
+o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.permissionToChangeResolution=true;
@@ -56,26 +56,15 @@ if 1
     o.readSpacingDeg=.8;
     o.printSizeAndSpacing=false;
     if true
-        % Adjust viewing distance.
+        % Adjust viewing distance so text fits on screen.
         o.readLines=12;
         o.readCharsPerLine=50;
-        screen=0;
-        [screenWidthMm,screenHeightMm]=Screen('DisplaySize',screen);
-        screenSizeCm=[screenWidthMm screenHeightMm]/10;
-        % The leadingOverSpacing scalar is needs to correctly adjust
-        % viewing distance to prevent overflow at bottom of screen.
-        leadingOverSpacing=2.7; % For Monaco font.
-        maxSpacingSizeCm=screenSizeCm ./ [o.readCharsPerLine+3 o.readLines*leadingOverSpacing];
-        maxCmPerDeg=min(maxSpacingSizeCm/o.readSpacingDeg);
-        maxViewingDistanceCm=0.1/tand(0.1/maxCmPerDeg); % 1 mm subtense.
-        maxViewingDistanceCm=round(maxViewingDistanceCm);
+        o.screen=0;
+        maxViewingDistanceCm=MaxViewingDistanceCmForReading(o);
         if o.viewingDistanceCm>maxViewingDistanceCm
-            fprintf('Reducing viewing distance from %.1f to %.1f cm.\n',...
+            fprintf('Reducing viewing distance from %.0f to %.0f cm.\n',...
                 o.viewingDistanceCm,maxViewingDistanceCm);
             o.viewingDistanceCm=maxViewingDistanceCm;
-            cmPerDeg=0.1/atand(0.1/o.viewingDistanceCm); % 1 mm subtense.
-            fprintf('%.2f cm/deg at %.1f cm.\n',...
-                cmPerDeg,o.viewingDistanceCm);
         end
     end
     o.alphabet='abc';
