@@ -560,7 +560,7 @@ o.brightnessSetting=0.87; % Default. Roughly half luminance. Some observers find
 
 % READ TEXT
 o.readLines=12;
-o.readCharsPerLine=50;
+o.readCharPerLine=50;
 o.readSpacingDeg=0.3;
 o.readString={}; % The string of text to be read.
 o.readSecs=[]; % Time spent reading (from press to release of space bar).
@@ -2244,7 +2244,7 @@ try
         % and use Screen to read (since my Brightness is failing to read).
         % By the way, the Screen function is quick writing and reading
         % while my function is very slow (20 s) writing and reading.
-        useBrightnessFunction=ismac;
+        useBrightnessFunction=0;
         if useBrightnessFunction
             if ~IsWin
                 Screen('FillRect',window);
@@ -2254,7 +2254,7 @@ try
                 DrawCounter(oo);
                 Screen('Flip',window);
                 ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
-                Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
+%                 Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
                 for i=1:5
                     % cal.brightnessReading=Brightness(cal.screen); % Read brightness.
                     cal.brightnessReading=Screen('ConfigureDisplay',...
@@ -3648,7 +3648,7 @@ try
                     '%.1f deg spacing. \n'...
                     '%s font set to %d point with %d point leading. '...
                     'Viewed from %.0f cm.'],...
-                    oo(oi).readFilename,oo(oi).readLines,oo(oi).readCharsPerLine,...
+                    oo(oi).readFilename,oo(oi).readLines,oo(oi).readCharPerLine,...
                     oo(oi).spacingDeg, ...
                     oo(oi).targetFont,oo(oi).readSize,round(1.5*oo(oi).readSize),...
                     oo(oi).viewingDistanceCm);
@@ -3671,9 +3671,9 @@ try
                 % Grab some of the corpus, beginning at the selected
                 % sentence. We take twice what we roughly need, because
                 % taking the whole remainder can take a long time to wrap.
-                last=min(begin+2*oo(oi).readLines*oo(oi).readCharsPerLine,length(corpusText));
+                last=min(begin+2*oo(oi).readLines*oo(oi).readCharPerLine,length(corpusText));
                 string=corpusText(begin:last);
-                string=WrapString(string,oo(oi).readCharsPerLine); % Wrap it.
+                string=WrapString(string,oo(oi).readCharPerLine); % Wrap it.
                 lineEndings=find(string==newline);
                 % Keep just the desired number, oo(oi).readLines, of lines,
                 % omitting the (superfluous) final newline.
@@ -3709,7 +3709,7 @@ try
                 % Display page of text to be read.
                 [~,y]=DrawFormattedText(window,double(string),...
                     2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
-                    oo(oi).readCharsPerLine,[],[],1.5);
+                    oo(oi).readCharPerLine,[],[],1.5);
                 Screen('Flip',window,[],1);
                 if false
                     cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
@@ -3718,7 +3718,7 @@ try
                 end
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
                     warning('The text extends below the screen. %d lines of %d chars.',...
-                        oo(oi).readLines,oo(oi).readCharsPerLine);
+                        oo(oi).readLines,oo(oi).readCharPerLine);
                     ffprintf(ff,'y %.0f, stimulusRect [%.0f %.0f %.0f %.0f], screenRect [%.0f %.0f %.0f %.0f]\n',...
                         y,oo(oi).stimulusRect,screenRect);
                     oo(oi).readError='The text does not fit on screen.';
@@ -3742,18 +3742,10 @@ try
                 % Query about words shown to test comprehension.
                 for iQuestion=1:oo(oi).readQuestions
                     if iQuestion==1
-                        % Page stats.
-                        % wPage{i} lists all words on the page in order of
-                        % ascending frequency on the page. fPage(i) is frequency on
-                        % the page.
-                        words=WordsInString(string);
-                        wPage=unique(words);
-                        fPage=zeros(size(wPage));
-                        for i=1:length(wPage)
-                            fPage(i)=sum(find(streq(wPage{i},words)));
-                        end
-                        [fPage,ii]=sort(fPage,'ascend');
-                        wPage=wPage(ii);
+                        % Page stats. pageWord{i} lists all words on the
+                        % page in order of ascending frequency on the page.
+                        % pageFrequency(i) is frequency on the page.
+                        [pageWord,pageFrequency]=WordFrequency(string);
                         iUsed=[]; % Clear list of words not be be reused.
                     end
                     % The reading comprehension test will show three words
@@ -3766,9 +3758,9 @@ try
                     % in the page and find it in the corpus list. As the
                     % two foils, I pick the nearest neighbors (randomly
                     % higher or lower) in the list sorted by frequency.
-                    iiNotUsed=~ismember(wPage,corpusWord(iUsed));
-                    freq=fPage(find(iiNotUsed,1));
-                    words=wPage(fPage==freq & iiNotUsed); % Unused words with right frequency.
+                    iiNotUsed=~ismember(pageWord,corpusWord(iUsed));
+                    freq=pageFrequency(find(iiNotUsed,1));
+                    words=pageWord(pageFrequency==freq & iiNotUsed); % Unused words with right frequency.
                     assert(~isempty(words),'Oops. Failed to find words with right frequency.');
                     word=words{randi(length(words))}; % Random choice.
                     % iPresent is index in corpusWord of a word that appeared
@@ -3797,7 +3789,7 @@ try
                         if iCandidate<1 || iCandidate>length(corpusWord)
                             continue
                         end
-                        if ~ismember(corpusWord(iCandidate),wPage) && ~ismember(iCandidate,iUsed)
+                        if ~ismember(corpusWord(iCandidate),pageWord) && ~ismember(iCandidate,iUsed)
                             % This word is present in corpus, absent from
                             % page, and unused.
                             iAbsent(end+1)=iCandidate;
