@@ -9,7 +9,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % DrawText to create a texture for each desired letter. The font's TextSize
 % is computed to yield the desired o.targetPix size in the direction
 % specified by o.targetSizeIsHeight (true means height, false means width).
-% However, if o.targetFontHeightOverNominalPtSize==nan then the TextSize is
+% However, if o.targetFontHeightOverNominal==nan then the TextSize is
 % set equal to o.targetPix.
 %
 % If o.getAlphabetFromDisk==true then we look for a folder inside
@@ -38,7 +38,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % o.targetSizeIsHeight
 % o.targetPix
 % o.targetHeightOverWidth
-% o.targetFontHeightOverNominalPtSize
+% o.targetFontHeightOverNominal
 % o.alphabet
 % o.borderLetter
 % o.getAlphabetFromDisk
@@ -175,9 +175,9 @@ else % if o.getAlphabetFromDisk
         assert(streq(font,o.targetFont));
     end
     if o.targetSizeIsHeight
-        sizePix=round(o.targetPix/o.targetFontHeightOverNominalPtSize);
+        sizePix=round(o.targetPix/o.targetFontHeightOverNominal);
     else
-        sizePix=round(o.targetPix*o.targetHeightOverWidth/o.targetFontHeightOverNominalPtSize);
+        sizePix=round(o.targetPix*o.targetHeightOverWidth/o.targetFontHeightOverNominal);
     end
     if ~isfinite(sizePix)
         sizePix=o.targetPix;
