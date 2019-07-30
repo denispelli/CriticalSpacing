@@ -28,32 +28,13 @@ switch o.task
                 assert(isempty(corpusText{2}),'The corpus is broken up into parts.');
             end
             corpusText=corpusText{1};
-            words=WordsInString(corpusText);
-            % corpusFrequency(i) is frequency of word corpusWord(i) in our corpus.
-            corpusWord=unique(words);
-            % Remove any trailing punctuation.
-            for i=1:length(corpusWord)
-                if ~ismember(corpusWord{i}(end),'abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ')
-                    corpusWord{i}=corpusWord{i}(1:end-1);
-                    if ~ismember(corpusWord{i}(end),'abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ')
-                        corpusWord{i}=corpusWord{i}(1:end-1);
-                    end
-                end
-            end
-            corpusWord=unique(corpusWord);
-            corpusFrequency=zeros(size(corpusWord));
-            for i=1:length(corpusWord)
-                corpusFrequency(i)=sum(ismember(words,corpusWord{i}));
-            end
-            [corpusFrequency,ii]=sort(corpusFrequency,'descend');
-            corpusWord=corpusWord(ii);
-            % corpusSentenceBegins lists the character
-            % positions where sentences begin. For this purpose, we
-            % suppose that the corpus begins with a sentence, and that
-            % the character after period space is always a sentence
-            % beginning.
+            [corpusWord,corpusFrequency]=WordFrequency(corpusText);
+           % corpusSentenceBegins lists the character positions where
+            % sentences begin. For this purpose, we suppose that the corpus
+            % begins with a sentence, and that the character after period
+            % space is always a sentence beginning.
             corpusSentenceBegins=[1 strfind(corpusText,'. ')+2];
-            corpusLineEndings=find(WrapString(corpusText,o.readCharsPerLine)==newline);
-            ffprintf(ff,' (%.0f words took %.0f s).\n',length(words),GetSecs-s);
+            corpusLineEndings=find(WrapString(corpusText,o.readCharPerLine)==newline);
+            ffprintf(ff,' (%.0f words took %.0f s).\n',sum(corpusFrequency),GetSecs-s);
         end
 end
