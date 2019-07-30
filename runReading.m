@@ -23,6 +23,9 @@ o.fixationLineWeightDeg=0.03;
 o.fixationCrossDeg=3;
 o.fixationCrossBlankedNearTarget=false;
 o.brightnessSetting=0.87; % Half luminance. Some observers find 1.0 painfully bright.
+o.readLines=12;
+o.readCharsPerLine=50;
+o.screen=0;
 ooo={};
 
 if 1
@@ -131,22 +134,42 @@ if rand>0.5
 %     ooo=fliplr(ooo);
 end
 
+% Adjust viewing distance so text fits on screen.
+for block=1:length(ooo)
+    for oi=1:length(ooo{block})
+        o=ooo{block}(oi);
+        switch o.task
+            case 'read'
+                o.readLines=12;
+                o.readCharsPerLine=50;
+                o.screen=0;
+                maxViewingDistanceCm=MaxViewingDistanceCmForReading(o);
+                if o.viewingDistanceCm>maxViewingDistanceCm
+                    fprintf('Block %f. Reducing viewing distance from %.0f to %.0f cm.\n',...
+                        block,o.viewingDistanceCm,maxViewingDistanceCm);
+                    o.viewingDistanceCm=maxViewingDistanceCm;
+                end
+                ooo{block}(oi)=o;
+        end
+    end
+end
+
 %% Number the blocks.
-for i=1:length(ooo)
-    for oi=1:length(ooo{i})
-        ooo{i}(oi).block=i;
-        ooo{i}(oi).blocksDesired=length(ooo);
+for block=1:length(ooo)
+    for oi=1:length(ooo{block})
+        ooo{block}(oi).block=block;
+        ooo{block}(oi).blocksDesired=length(ooo);
     end
 end
 % ooo=Shuffle(ooo);
 
 %% Print as a table. One row per threshold.
-for i=1:length(ooo)
-    if i==1
+for block=1:length(ooo)
+    if block==1
         oo=ooo{1};
     else
         try
-            oo=[oo ooo{i}];
+            oo=[oo ooo{block}];
         catch e
             fprintf('Success with %d conditions in %d blocks, but failed on next block.\n',...
                 length(oo),max([oo.block]));
@@ -163,17 +186,17 @@ fprintf('Total of %d trials, which may take about %.0f minutes. But reading tria
 % return
 
 %% Run.
-for i=1:length(ooo)
-    if isempty(ooo{i}(1).experimenter) && i>1
-        [ooo{i}.experimenter]=deal(ooo{i-1}(1).experimenter);
+for block=1:length(ooo)
+    if isempty(ooo{block}(1).experimenter) && block>1
+        [ooo{block}.experimenter]=deal(ooo{block-1}(1).experimenter);
     end
-    if isempty(ooo{i}(1).observer) && i>1
-        [ooo{i}.observer]=deal(ooo{i-1}(1).observer);
+    if isempty(ooo{block}(1).observer) && block>1
+        [ooo{block}.observer]=deal(ooo{block-1}(1).observer);
     end
-    [ooo{i}.isFirstBlock]=deal(i==1);
-    [ooo{i}.isLastBlock]=deal(i==length(ooo));
-    ooo{i}=CriticalSpacing(ooo{i});
-    if any([ooo{i}.quitExperiment])
+    [ooo{block}.isFirstBlock]=deal(block==1);
+    [ooo{block}.isLastBlock]=deal(block==length(ooo));
+    ooo{block}=CriticalSpacing(ooo{block});
+    if any([ooo{block}.quitExperiment])
         break
     end
 end
