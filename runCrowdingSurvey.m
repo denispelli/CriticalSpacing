@@ -5,9 +5,9 @@
 clear KbWait o
 mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
-%
-o.useFractionOfScreenToDebug=0.4;
-o.skipScreenCalibration=true; % Skip calibration to save time.
+
+% o.useFractionOfScreenToDebug=0.4;
+% o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.permissionToChangeResolution=true;
