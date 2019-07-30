@@ -478,7 +478,7 @@ global window keepWindowOpen % Keep window open until end of last block.
 global scratchWindow
 global screenRect % For ProcessEscape
 persistent drawTextWarning
-persistent corpusFilename corpusText corpusFrequency corpusWord
+global corpusFilename corpusText corpusFrequency corpusWord corpusSentenceBegins corpusLineEndings
 persistent oldViewingDistanceCm
 global blockTrial blockTrials % used in DrawCounter.
 keepWindowOpen=false; % Enable only in normal return.
@@ -737,7 +737,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
     'minimumViewingDistanceCm' 'normalAcuityDeg' ...
     'normalCrowdingDistanceDeg' 'presentations' 'q' 'responseCount' ...
     'responseKeyCodes' 'results' 'screen' 'snapshotsFolder' 'spacings'  ...
-    'spacingsSequence' 'targetFontHeightOverNominalPtSize' 'targetPix' ...
+    'spacingsSequence' 'targetFontHeightOverNominal' 'targetPix' ...
     'textSize' 'totalSecs' 'unknownFields' 'validKeyNames' ...
     'nativeHeight' 'nativeWidth' 'resolution' 'maximumViewingDistanceCm' ...
     'minimumScreenSizeXYDeg' 'typicalThesholdSizeDeg' ...
@@ -878,7 +878,8 @@ if oo(1).useFractionOfScreenToDebug
     % it, shrunken into a tiny fraction. So we use a reduced number of
     % pixels, but we pretend to retain the same screen size in cm, and
     % angular subtense.
-    screenRect=round(oo(oi).useFractionOfScreenToDebug*screenRect);
+    r=round(oo(oi).useFractionOfScreenToDebug*screenRect);
+    screenRect=AlignRect(r,screenRect,'bottom','right');
 end
 [oo.stimulusRect]=deal(screenRect);
 for oi=1:conditions
@@ -1427,6 +1428,7 @@ try
         sz=round(scalar*oo(1).textSize);
         scalar=sz/oo(1).textSize;
         Screen('TextSize',window,sz);
+        % Set viewing distance.
         [~,y]=DrawFormattedText(window,string,...
             2*oo(1).textSize,y,color,...
             oo(oi).textLineLength/scalar,...
@@ -1449,6 +1451,7 @@ try
                     'and I''ll recreate the keyboard list.'],...
                     oo(1).maxViewingDistanceCm);
                 Screen('TextSize',window,round(oo(1).textSize*scalar));
+                % Need wireless keyboard.
                 [~,y]=DrawFormattedText(window,string,...
                     2*oo(1).textSize,y,color,...
                     oo(oi).textLineLength/scalar,...
@@ -1545,6 +1548,7 @@ try
         
         % Draw the rest of the plain small text onto the screen.
         Screen('TextSize',window,round(oo(1).textSize*scalar));
+        % Welcome screen with expert options.
         [~,y]=DrawFormattedText(window,string,...
             2*oo(1).textSize,y,black,...
             oo(oi).textLineLength/scalar,...
@@ -1556,27 +1560,6 @@ try
         Screen('DrawText',window,double(copyright),...
             2*oo(1).textSize,screenRect(4)-0.2*oo(1).textSize,...
             black,white,1);
-        
-        % CLUMSY WAY TO PRODUCE FLICKER. NOT USED.
-        %         if ~isempty(alertString)
-        %             Screen('TextSize',window,round(oo(1).textSize*scalar));
-        %             DrawCounter(oo);
-        %             for i=1:2*4
-        %                 % 2 seconds of flicker at 8 Hz.
-        %                 DrawFormattedText(window,alertString,...
-        %                     2*oo(1).textSize,y+round(1.5*oo(1).textSize*scalar),...
-        %                     [255 255 255],oo(oi).textLineLength/scalar,...
-        %                     [],[],1.1);
-        %                 Screen('Flip',window,[],1);
-        %                 WaitSecs(1/16);
-        %                 DrawFormattedText(window,alertString,...
-        %                     2*oo(1).textSize,y+0*round(oo(1).textSize*scalar),...
-        %                     [255 0 0],oo(oi).textLineLength/scalar,...
-        %                     [],[],1.1);
-        %                 Screen('Flip',window,[],1);
-        %                 WaitSecs(1/16);
-        %             end
-        %         end
         
         % Get typed response
         if IsWindows
@@ -1689,6 +1672,7 @@ try
         Screen('FillRect',window);
         Screen('TextFont',window,oo(1).textFont,0);
         Screen('TextSize',window,oo(1).textSize);
+        % Name of experimenter.
         [x,y]=DrawFormattedText(window,...
             [preface 'Please slowly type the name of the Experimenter '...
             'who is supervising, followed by RETURN.'],...
@@ -1735,6 +1719,7 @@ try
         Screen('DrawText',window,'',2*oo(1).textSize,screenRect(4)/2-4.5*oo(1).textSize,black,white);
         text=[preface 'Type your first and last names, separated by a SPACE. '...
             'Then hit RETURN.'];
+        % Name of observer.
         [~,y]=DrawFormattedText(window,text,...
             2*oo(1).textSize,2.5*oo(1).textSize,black,...
             oo(1).textLineLength,[],[],1.3);
@@ -1742,6 +1727,7 @@ try
         sz=round(scalar*oo(1).textSize);
         scalar=sz/oo(1).textSize;
         Screen('TextSize',window,sz);
+        % Explain how to type name.
         DrawFormattedText(window,...
             ['Please type your full name, like "Jane Doe" or "John Smith", '...
             'in exactly the same way every time. '...
@@ -2034,7 +2020,7 @@ try
         end
         
         %% Measure targetHeightOverWidth
-        oo(oi).targetFontHeightOverNominalPtSize=nan;
+        oo(oi).targetFontHeightOverNominal=nan;
         oo(oi).targetPix=200; % Font size.
         % Get bounds.
         [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
@@ -2043,7 +2029,7 @@ try
         % It may not be typical of individual characters.
         oo(oi).targetHeightOverWidth=RectHeight(alphabetBounds)/RectWidth(alphabetBounds);
         if ~oo(oi).getAlphabetFromDisk
-            oo(oi).targetFontHeightOverNominalPtSize=RectHeight(alphabetBounds)/oo(oi).targetPix;
+            oo(oi).targetFontHeightOverNominal=RectHeight(alphabetBounds)/oo(oi).targetPix;
         end
         oo(oi).targetPix=oo(oi).targetDeg*pixPerDeg;
         
@@ -2188,8 +2174,8 @@ try
         ffprintf(ff,'Alphabet ''%s'' and borderLetter ''%s''.\n',oo(oi).alphabet,oo(oi).borderLetter);
     end
     for oi=1:conditions
-        ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominalPtSize %.2f\n',...
-            oi,oo(oi).targetHeightOverWidth,oo(oi).targetFontHeightOverNominalPtSize);
+        ffprintf(ff,'%d: o.targetHeightOverWidth %.2f, targetFontHeightOverNominal %.2f\n',...
+            oi,oo(oi).targetHeightOverWidth,oo(oi).targetFontHeightOverNominal);
     end
     for oi=1:conditions
         ffprintf(ff,'%d: durationSec %.2f, eccentricityXYDeg [%.1f %.1f]\n',...
@@ -2399,6 +2385,7 @@ try
         Screen('DrawText',window,double(copyright),2*oo(1).textSize,screenRect(4)-0.5*scalar*oo(1).textSize,black,white,1);
         Screen('TextSize',window,oo(oi).textSize);
         string=strrep(string,'letter',symbolName);
+        % General instructions.
         DrawFormattedText(window,string,...
             2*oo(1).textSize,2.5*oo(1).textSize,black,...
             oo(oi).textLineLength,[],[],1.3);
@@ -2423,7 +2410,7 @@ try
             end
         end
     end % while tryAgain
-    string=''; % DGP June 2019
+    string='';
     
     % This tryAgain loop presents instructions and waits for RETURN.
     tryAgain=true;
@@ -2518,6 +2505,8 @@ try
             fprintf('Important text is in %d-pt %s style %d.\n',...
                 fontSize,fontName,fontStyle);
             % 0.9* because bold is wider, so fewer fit in line.
+            % Please wait to respond until you're fixating.
+            % This is still preface, before the main loop.
             DrawFormattedText(window,string,...
                 2*oo(oi).textSize,2.5*oo(oi).textSize,[0 0 0],...
                 0.9*oo(1).textLineLength,[],[],1.3);
@@ -2694,8 +2683,8 @@ try
             case 'none'
             case 'fixed by font'
         end
-        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominalPtSize %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
-                oi,MFileLineNr,oo(oi).targetFontHeightOverNominalPtSize,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
+        if oo(oi).printSizeAndSpacing; fprintf('%d: %d: targetFontHeightOverNominal %.2f, targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
+                oi,MFileLineNr,oo(oi).targetFontHeightOverNominal,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg); end
         % Screen and letter size vary hugely. For the trial to make sense,
         % we need to guarantee a certain minimum number of characters. We
         % achieve this by specifying the required number of spaces (plus
@@ -2973,7 +2962,7 @@ try
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg);
         end
         % This tryAgain loop presents instructions and waits for the
-        % observer to press space. If there is fixation we ask the observer
+        % observer to press SPACE. If there is fixation we ask the observer
         % to fixate while pressing space. There are three occasions for
         % using this code: 1. First trial; 2. Encourage fixation after
         % observer missed a fixationCheck; 3. After escaping the last
@@ -2998,9 +2987,9 @@ try
                 % May 2019.
                 Screen('FillRect',window); % DGP June 6, 2019.
                 string=[string 'Now, while fixating the cross, hit SPACE. '];
-                % ' ... press SPACE.'
                 Screen('TextSize',window,oo(oi).textSize);
                 Screen('TextFont',window,oo(oi).textFont);
+                % While fixating, hit SPACE.
                 DrawFormattedText(window,...
                     double([encourageFixationString string]),...
                     2*oo(1).textSize,1.5*oo(oi).textSize,black,...
@@ -3008,8 +2997,8 @@ try
                 string='';
                 encourageFixation=false;
                 encourageFixationString='';
-                % Compute fixation lines during first trial, for rest of
-                % trials in block.
+                % Compute fixation lines during first trial, for the
+                % remaining trials in the block.
                 fixationLines=ComputeFixationLines2(oo(oi).fix);
                 % Draw fixation.
                 if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -3084,19 +3073,19 @@ try
                         oo(oi).readSize=oo(oi).readSpacingDeg*pixPerDeg/spacingPerNominal;
                         oo(oi).readSize=round(oo(oi).readSize);
                         oo(oi).spacingDeg=oo(oi).readSize*spacingPerNominal/pixPerDeg;
-                        oo(oi).targetDeg=oo(oi).targetFontHeightOverNominalPtSize*oo(oi).readSize;
+                        oo(oi).targetDeg=oo(oi).targetFontHeightOverNominal*oo(oi).readSize;
                         if ~oo(oi).targetSizeIsHeight
                             oo(oi).targetDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
                         end
                     case 'size'
                         % Driven by o.targetDeg.
                         oo(oi).readSize=oo(oi).targetDeg*pixPerDeg/...
-                            oo(oi).targetFontHeightOverNominalPtSize;
+                            oo(oi).targetFontHeightOverNominal;
                         if ~oo(oi).targetSizeIsHeight
                             oo(oi).readSize=oo(oi).readSize/oo(oi).targetHeightOverWidth;
                         end
                         oo(oi).readSize=round(oo(oi).readSize);
-                        oo(oi).targetDeg=oo(oi).readSize*oo(oi).targetFontHeightOverNominalPtSize/pixPerDeg;
+                        oo(oi).targetDeg=oo(oi).readSize*oo(oi).targetFontHeightOverNominal/pixPerDeg;
                         if  ~oo(oi).targetSizeIsHeight
                             oo(oi).targetDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
                         end
@@ -3105,22 +3094,35 @@ try
                     error(['Condition %d, o.readSize %.1f is not a positive integer. ' ...
                         'Are you sure you want o.task=''read''? '],oi,oo(oi).readSize);
                 end
+                if ~streq(corpusFilename,oo(oi).readFilename) || isempty(corpusLineEndings)
+                    msg='Analyzing text statistics ...';
+                    Screen('FillRect',window,[],clearRect);
+                    Screen('TextFont',window,oo(oi).textFont);
+                    % Analyzing text statistics ...
+                    DrawFormattedText(window,msg,...
+                        oo(1).textSize,1.5*oo(1).textSize,black);
+                    DrawCounter(oo);
+                    Screen('Flip',window);
+                    AnalyzeCorpusFrequency(oo(oi));
+                end
                 % Display instructions.
                 readInstructions=['When you''re ready, '...
                     'press and hold down the SPACE bar to reveal ' ...
-                    'the story and immediately begin reading. '...
-                    'While still holding down the space bar, '...
+                    'a page of text to be read '...
+                    'from beginning to end as quick as you can. '...
+                    'While still pressing the space bar, '...
                     'read as fast as you can '...
                     'while maintaining full comprehension. '...
                     'Read every word. ' ...
                     'Release the space bar when you''re done. '...
                     'You will then be tested for comprehension. '...
-                    'Speed matters. Once you press the space bar, begin reading '...
-                    'immediately when the story appears, '...
-                    'and release the space bar immediately '...
-                    'when you reach the end.'];
+                    'Speed matters. Once you press the space bar, '...
+                    'read the page from beginning to end, '...
+                    'and then immediately release the space bar. '...
+                    ];
                 Screen('FillRect',window,[],clearRect);
                 Screen('TextFont',window,oo(oi).textFont);
+                % Press SPACE to reveal story.
                 DrawFormattedText(window,readInstructions,...
                     oo(1).textSize,1.5*oo(1).textSize,black,...
                     oo(1).textLineLength,[],[],1.3);
@@ -3145,13 +3147,13 @@ try
                         stimulus(2)=oo(oi).alphabet(randi(length(oo(oi).alphabet)));
                     end
                 end
-                if isfinite(oo(oi).targetFontHeightOverNominalPtSize)
+                if isfinite(oo(oi).targetFontHeightOverNominal)
                     if oo(oi).targetSizeIsHeight
-                        sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominalPtSize);
-                        oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominalPtSize;
+                        sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominal);
+                        oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominal;
                     else
-                        sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominalPtSize*oo(oi).targetHeightOverWidth);
-                        oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominalPtSize/oo(oi).targetHeightOverWidth;
+                        sizePix=round(oo(oi).targetPix/oo(oi).targetFontHeightOverNominal*oo(oi).targetHeightOverWidth);
+                        oo(oi).targetPix=sizePix*oo(oi).targetFontHeightOverNominal/oo(oi).targetHeightOverWidth;
                     end
                 end
                 oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
@@ -3492,8 +3494,10 @@ try
         if oo(1).showCounter
             DrawCounter(oo);
         end
-        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1); % Display stimulus & optional fixation.
-        stimulusFlipSecs=GetSecs;
+        % If o.task='read' then ask observer to press and hold SPACE. XYZ
+        % Otherwise display stimulus & optional fixation.
+        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1);
+        stimulusFlipSecs=GetSecs; 
         if oo(oi).recordGaze
             img=snapshot(cam);
             % FUTURE: Write trial number and condition number in corner of
@@ -3635,40 +3639,8 @@ try
             case 'read'
                 % The excerpt will be 12 lines of (up to) 50 characters
                 % each. That's about ten words per line.
-                if isempty(corpusWord) || ~streq(corpusFilename,oo(oi).readFilename)
-                    % corpusWord{i} lists each word in the corpus in order
-                    % of descending frequency. corpusFrequency(i) is
-                    % frequency of each word in the corpus.
-                    ffprintf(ff,'Computing stats of text corpus in ''%s''.',...
-                        oo(oi).readFilename);
-                    s=GetSecs;
-                    readFolder=fullfile(mainFolder,'read');
-                    corpusFilename=oo(oi).readFilename;
-                    readFile=fullfile(readFolder,corpusFilename);
-                    % MATLAB's textscan and readfile both failed to read
-                    % the unicode characters from my UTF-8 file. 
-                    % This user-written textscanu works.
-                    % The file type must be UTF-8, which BBEdit allows when
-                    % you do a Save As. I suppose this is a text file with
-                    % the first byte indicating the encoding.
-                    % We specify nonexistent delimiter and linefeed, so the
-                    % text will come through as one long string.
-                    corpusText=textscanu(readFile,'UTF-8',2,2);
-                    if length(corpusText)>1
-                        assert(isempty(corpusText{2}),'The corpus is broken up into parts.');
-                    end
-                    corpusText=corpusText{1};
-                    words=WordsInString(corpusText);
-                    % corpusFrequency(i) is frequency of word corpusWord(i) in our corpus.
-                    corpusWord=unique(words);
-                    corpusFrequency=zeros(size(corpusWord));
-                    for i=1:length(corpusWord)
-                        corpusFrequency(i)=sum(ismember(words,corpusWord{i}));
-                    end
-                    [corpusFrequency,ii]=sort(corpusFrequency,'descend');
-                    corpusWord=corpusWord(ii);
-                    ffprintf(ff,' (%.0f words took %.0f s).\n',length(words),GetSecs-s);
-                end
+                assert(streq(corpusFilename,oo(oi).readFilename) && ~isempty(corpusLineEndings),...
+                    'The text is not ready to be read.');
                 oo(oi).readMethod=sprintf(...
                     ['Random block of text from %s, ' ...
                     'beginning at beginning of a sentence.\n' ...
@@ -3680,39 +3652,35 @@ try
                     oo(oi).spacingDeg, ...
                     oo(oi).targetFont,oo(oi).readSize,round(1.5*oo(oi).readSize),...
                     oo(oi).viewingDistanceCm);
-                lineEndings=find(WrapString(corpusText,oo(oi).readCharsPerLine)==newline);
                 % Pick starting point that leaves enough lines. The
                 % newlines will move when we re-wrap, but their density
                 % won't change much. n is the largest acceptable line
                 % number in the wrapped text for the beginning of our
                 % excerpt.
-                n=length(lineEndings)-oo(oi).readLines-1;
+                n=length(corpusLineEndings)-oo(oi).readLines-1;
                 % maxBegin is the largest acceptable character position in
                 % the not-yet-wrapped text for the beginning of our
-                % excerpt.
-                maxBegin=lineEndings(n)-n; % Discount the newlines added by wrapping.
-                % sentenceBegins lists the character positions where
-                % sentences begin. For this purpose, we suppose that the
-                % corpus begins with a sentence, and that the character
-                % after period space is always a sentence beginning.
-                sentenceBegins=[1 strfind(corpusText,'. ')+2];
-                % Restrict that list to exclude beginnings that are too
-                % near the end.
-                sentenceBegins=sentenceBegins(sentenceBegins<=maxBegin);
+                % excerpt. Discount the newlines added by wrapping.
+                maxBegin=corpusLineEndings(n)-n;
+                % corpusSentenceBegins lists the character positions where
+                % sentences begin. Restrict that list to exclude beginnings
+                % that are too near the end.
+                sentenceBegins=corpusSentenceBegins(corpusSentenceBegins<=maxBegin);
                 % Randomly pick one of the acceptable first sentences.
                 begin=sentenceBegins(randi(end));
-                % Grab the rest of corpus, beginning at the selected
-                % sentence.
-                string=corpusText(begin:end);
-
-                % Wrap it.
-                string=WrapString(string,oo(oi).readCharsPerLine);
+                % Grab some of the corpus, beginning at the selected
+                % sentence. We take twice what we roughly need, because
+                % taking the whole remainder can take a long time to wrap.
+                last=min(begin+2*oo(oi).readLines*oo(oi).readCharsPerLine,length(corpusText));
+                string=corpusText(begin:last);
+                string=WrapString(string,oo(oi).readCharsPerLine); % Wrap it.
                 lineEndings=find(string==newline);
-                % Keep just the desired number (oo(oi).readLines) of lines,
+                % Keep just the desired number, oo(oi).readLines, of lines,
                 % omitting the (superfluous) final newline.
                 string=string(1:lineEndings(oo(oi).readLines)-1);
                 oo(oi).readString{end+1}=string;
-                
+%                 ffprintf(ff,'Dead time %.2f s since asking for SPACE before ready to sense it.\n',...
+%                     GetSecs-stimulusFlipSecs); % XYZ
                 % Time the interval from press to release of spacebar.
                 oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
                 while true
@@ -3722,6 +3690,7 @@ try
                         [oo,tryAgain]=ProcessEscape(oo);
                         if tryAgain
                             Screen('FillRect',window,white);
+                            % Press SPACE to reveal text.
                             DrawFormattedText(window,readInstructions,...
                                 2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
                                 oo(oi).textLineLength,[],[],1.3);
@@ -3737,6 +3706,7 @@ try
                 Screen('TextFont',window,oo(oi).targetFont);
                 Screen('TextSize',window,oo(oi).readSize);
                 Screen('FillRect',window);
+                % Display page of text to be read.
                 [~,y]=DrawFormattedText(window,double(string),...
                     2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                     oo(oi).readCharsPerLine,[],[],1.5);
@@ -3748,7 +3718,7 @@ try
                 end
                 if ~IsInRect(0,y,oo(oi).stimulusRect)
                     warning('The text extends below the screen. %d lines of %d chars.',...
-                        oo(oi).readLines,oo(oi).readCharsPerLine); 
+                        oo(oi).readLines,oo(oi).readCharsPerLine);
                     ffprintf(ff,'y %.0f, stimulusRect [%.0f %.0f %.0f %.0f], screenRect [%.0f %.0f %.0f %.0f]\n',...
                         y,oo(oi).stimulusRect,screenRect);
                     oo(oi).readError='The text does not fit on screen.';
@@ -3765,8 +3735,8 @@ try
                 oo(oi).readWords(i)=length(strsplit(oo(oi).readString{i}));
                 oo(oi).readCharPerSec(i)=oo(oi).readChars(i)/oo(oi).readSecs(i);
                 oo(oi).readWordPerMin(i)=60*oo(oi).readWords(i)/oo(oi).readSecs(i);
-                ffprintf(ff,'%d: Read size %.1f deg (%.1f deg spacing) at %.0f char/s %.0f word/min.\n',...
-                    oi,oo(oi).targetDeg,oo(oi).spacingDeg,...
+                ffprintf(ff,'%d: Read text with %.1f deg letter spacing (%.1f deg size) at %.0f char/s %.0f word/min.\n',...
+                    oi,oo(oi).spacingDeg,oo(oi).targetDeg,...
                     oo(oi).readCharPerSec(i),oo(oi).readWordPerMin(i));
                 % Test recall.
                 % Query about words shown to test comprehension.
@@ -3786,16 +3756,16 @@ try
                         wPage=wPage(ii);
                         iUsed=[]; % Clear list of words not be be reused.
                     end
-                    % The test will show three words (matched in corpus
-                    % frequency) only one of which was present in the text
-                    % read. Thus knowledge of corpus frequency won't help
-                    % assess which is present in the page, so it's a more
-                    % pure test of recall from the page. I've got the
-                    % corpus words sorted by frequency. So I randomly pick
-                    % a word that appeared exactly once in the page and
-                    % find it in the corpus list. As the two foils, I pick
-                    % the nearest neighbors (randomly higher or lower) in
-                    % the list sorted by frequency.
+                    % The reading comprehension test will show three words
+                    % (matched in corpus frequency) only one of which was
+                    % present in the text read. Thus knowledge of corpus
+                    % frequency won't help assess which is present in the
+                    % page, so it's a more pure test of recall from the
+                    % page. I've got the corpus words sorted by frequency.
+                    % So I randomly pick a word that appeared exactly once
+                    % in the page and find it in the corpus list. As the
+                    % two foils, I pick the nearest neighbors (randomly
+                    % higher or lower) in the list sorted by frequency.
                     iiNotUsed=~ismember(wPage,corpusWord(iUsed));
                     freq=fPage(find(iiNotUsed,1));
                     words=wPage(fPage==freq & iiNotUsed); % Unused words with right frequency.
@@ -3849,6 +3819,7 @@ try
                         corpusWord{iTest});
                     while true
                         Screen('FillRect',window);
+                        % Comprehension question.
                         DrawFormattedText(window,msg,...
                             2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                             oo(oi).textLineLength,[],[],1.5);
@@ -3892,14 +3863,16 @@ try
                         oo(1).quitBlock=true;
                         return;
                     end
-                    % Print question words in Command Window
-                    ffprintf(ff,'Present  <strong>%10s</strong>,  corpus freq %d/%d\n',...
-                        corpusWord{iPresent},corpusFrequency(iPresent),sum(corpusFrequency));
-                    for i=1:length(iAbsent)
-                        ffprintf(ff,'Absent   <strong>%10s</strong>,  corpus freq %d/%d\n',...
-                            corpusWord{iAbsent(i)},corpusFrequency(iAbsent(i)),sum(corpusFrequency));
+                    if false
+                        % Print question words in Command Window
+                        ffprintf(ff,'Present  <strong>%10s</strong>,  corpus freq %d/%d\n',...
+                            corpusWord{iPresent},corpusFrequency(iPresent),sum(corpusFrequency));
+                        for i=1:length(iAbsent)
+                            ffprintf(ff,'Absent   <strong>%10s</strong>,  corpus freq %d/%d\n',...
+                                corpusWord{iAbsent(i)},corpusFrequency(iAbsent(i)),sum(corpusFrequency));
+                        end
+                        ffprintf(ff,'Response %10s\n',corpusWord{answer});
                     end
-                    ffprintf(ff,'Response %10s\n',corpusWord{answer});
                 end % for iQuestion= ...
             case 'identify'
                 responseString='';
@@ -4410,6 +4383,7 @@ else
         Screen('TextSize',window,oo(oi).textSize);
         Screen('TextFont',window,'Verdana');
         Screen('FillRect',window,white);
+        % Set up viewing distance and near point.
         DrawFormattedText(window,string,...
             oo(oi).textSize,1.5*oo(oi).textSize,black,...
             oo(oi).textLineLength,[],[],1.3);
