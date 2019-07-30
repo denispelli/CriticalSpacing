@@ -1,4 +1,5 @@
 function [window,r]=OpenWindow(o)
+% [window,r]=OpenWindow(o);
 % Moved this into a subroutine so that we can reuse the same code when we
 % close and reopen the window to flip the screen horizontally, when we use
 % a mirror.
