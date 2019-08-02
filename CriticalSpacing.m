@@ -464,7 +464,6 @@ end
 mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
 addpath(fullfile(mainFolder,'utilities'));
-addpath(fullfile(mainFolder,'AutoBrightness'));
 plusMinus=char(177);
 
 % Once we call onCleanup, until CriticalSpacing ends,
