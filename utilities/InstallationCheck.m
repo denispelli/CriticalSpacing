@@ -23,9 +23,6 @@ o.textSize=40;
 
 %% FILES
 mainFolder=fileparts(fileparts(mfilename('fullpath'))); %
-if contains(mainFolder,'NoiseDiscrimination')
-    addpath(fullfile(mainFolder,'AutoBrightness')); % "AutoBrightness" folder in same directory as this file
-end
 addpath(fullfile(mainFolder,'lib')); % "lib" folder in same directory as this file
 addpath(fullfile(mainFolder,'utilities')); % "lib" folder in same directory as this file
 
