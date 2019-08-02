@@ -24,8 +24,8 @@
 -- April 24, 2019. I was getting occasional failures, so I cleaned up the error handling. -- It now correctly reports AppleScript errors.
 --
 -- COMPATIBILITY
--- Works on Mavericks, Yosemite, and El Capitan (macOS 10.9 to 10.11).
--- Not yet tested on earlier versions of macOS (< 10.9).
+-- Works on Mavericks, Yosemite, El Capitan, and Mojave (macOS 10.9 to 10.14).
+-- Not tested on versions of macOS before 10.9, but probably works fine.
 -- I hope this will work internationally, with Macs running under macOS
 -- localized for any language, not just English. That is why we select
 -- the Display/Colors panel by the internal name "displaysDisplayTab" 
@@ -208,7 +208,7 @@ on run argv
 							end tell
 						end tell
 					on error
-						set oldIsEnabled to 0
+						set oldIsEnabled to -1
 					end try
 				end try
 			end tell
