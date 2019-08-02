@@ -1,5 +1,5 @@
-function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
-% [oldSetting,failed] = AutoBrightness([screenNumber=0][, newSetting])
+function [oldIsEnabled,failed] = AutoBrightness(screenNumber,newIsEnabled)
+% [oldIsEnabled,failed] = AutoBrightness([screenNumber=0][, newIsEnabled])
 %
 % I think the AppleScript AutoBrightness function will work only if the
 % macOS user account has admin privileges, and MATLAB has permission to
@@ -9,12 +9,12 @@ function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 % AUTOBRIGHTNESS Get and set the checkbox called "Automatically adjust
 % brightness" on the macOS: System Preferences: Displays panel. The first
 % argument selects a screen, but has been tested only for screen 0 (the
-% main screen). The second argument "newSetting" (integer 0 or 1) is
+% main screen). The second argument "newIsEnabled" (logical false or true) is
 % optional, and, if present, indicates that you want to turn the
-% autobrightness feature on (newSetting==1) or off (newSetting==0). If you
-% call AutoBrightness without the newSetting argument (or a value other
-% than 0 or 1) then nothing is changed. The current state is always
-% reported in the returned oldSetting (0 or 1). The optionally returned
+% autobrightness feature on (newIsEnabled==true) or off (newIsEnabled==false). If you
+% call AutoBrightness without the newIsEnabled argument (or a value other
+% than false or true) then nothing is changed. The current state is always
+% reported in the returned oldIsEnabled (false or true). The optionally returned
 % "failed" is always zero unless the applescript failed.
 %
 % AutoBrightness.m uses the AutoBrightness.applescript to allow you to turn
@@ -66,7 +66,7 @@ function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 % BRIGHTNESS. Psychtoolbox for MATLAB and Macintosh already has a Screen
 % call to get and set the brightness, so, in principle, we don't need
 % applescript for that. The Psychtoolbox call is:
-% [oldBrightness]=Screen('ConfigureDisplay','Brightness', screenId [,outputId][,brightness]);
+% [oldBrightness]=Screen('ConfigureDisplay','Brightness',screenId [,outputId][,brightness]);
 % However, in recent versions of macOS the Screen Brightness control works
 % unreliably, so you might want to check out the Brightness function.
 %
@@ -98,7 +98,7 @@ function [oldSetting,failed] = AutoBrightness(screenNumber,newSetting)
 %
 % LINUX and WINDOWS. Applescript works only under macOS. When running under
 % any operating system other that macOS, this program ignores the
-% newSetting argument and always returns zero as the oldSetting. It is
+% newIsEnabled argument and always returns zero as the oldIsEnabled. It is
 % conceivable that Apple's auto brightness feature is implemented on
 % Macintoshes running Linux or Windows. If that applies to you, please
 % consider enhancing this program to return a correct answer for that case,
@@ -123,22 +123,22 @@ if ~IsOSX
     % Macintoshes running Linux or Windows, in which case someone might
     % enhance this MATLAB program to return a correct answer for those
     % cases.
-    oldSetting = 0;
+    oldIsEnabled = false;
     failed = true; % Report failure on this unsupported OS.
     return;
 end
-if nargin < 1
+if nargin<1
     screenNumber=0;
 end
-if nargin <2
-    newSetting=-1; % Indicates missing argument.
+if nargin<2 || isempty(newIsEnabled)
+    newIsEnabled=-1; % Indicates missing argument.
 end
 scriptPath = which('AutoBrightness.applescript');
 forcedToClose=false;
-if newSetting==-1
+if newIsEnabled==-1
     s=sprintf('You called AutoBrightness(%d).',screenNumber);
 else
-    s=sprintf('You called AutoBrightness(%d,%d).',screenNumber,newSetting);
+    s=sprintf('You called AutoBrightness(%d,%d).',screenNumber,newIsEnabled);
 end
 windowIsOpen=~isempty(Screen('Windows'));
 % if ~ismember(screenNumber,Screen('Windows'))
@@ -147,30 +147,30 @@ windowIsOpen=~isempty(Screen('Windows'));
 % Double quotes cope with spaces in scriptPath.
 command = ['osascript "', scriptPath ...
     '" ', num2str(screenNumber),...
-    ' ', num2str(newSetting), ...
+    ' ', num2str(newIsEnabled), ...
     ' ', num2str(windowIsOpen)];
 for i=1:3
-    oldSetting=''; % Default in case not set by function.
-    [failed,oldSetting]=system(command);
-    % Occasionally oldSetting is empty, possibly because that's how we
+    oldIsEnabled=''; % Default in case not set by function.
+    [failed,oldIsEnabled]=system(command);
+    % Occasionally oldIsEnabled is empty, possibly because that's how we
     % initialized it. I don't know why or what that means.
     if failed
-        msg=sprintf('%s Will try again. The applescript failed with the following error:\n%s'...
-            ,s,oldSetting);
+        msg=sprintf('%s The applescript failed with the following error, trying again.\n%s'...
+            ,s,oldIsEnabled);
         warning(msg);
         continue
     end
-    if isempty(oldSetting)
-        msg=sprintf('%s It returned empty oldSetting.\n',s);
+    if isempty(oldIsEnabled)
+        msg=sprintf('%s It returned empty oldIsEnabled.\n',s);
         warning(msg);
         continue
     end
-    oldSetting=str2num(oldSetting);
-    if ~isempty(oldSetting) && oldSetting==-999 && windowIsOpen
+    oldIsEnabled=str2num(oldIsEnabled);
+    if ~isempty(oldIsEnabled) && oldIsEnabled==-999 && windowIsOpen
         forcedToClose=true;
         sca;
     end
-    if ismember(oldSetting,0:1)
+    if ismember(oldIsEnabled,[false true])
         break
     end
 end
