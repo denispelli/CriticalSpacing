@@ -1,6 +1,9 @@
 function [oldLevel,status] = Brightness(screenNumber,newLevel)
 % [oldLevel,status] = Brightness([screenNumber][,newLevel])
 %
+% August 2019. Always use Screen instead of applescript, if Psychotoolbox
+% version 3.0.16 or later is available.
+%
 % BRIGHTNESS. Get and set the "brightness" slider in the macOS: System
 % Preferences: Displays panel. The function argument "newLevel" (0.0
 % to 1.0) indicates the desired brightness. If you call without an argument
@@ -59,7 +62,7 @@ function [oldLevel,status] = Brightness(screenNumber,newLevel)
 % already has a SCREEN call to get and set the brightness, but its setting
 % ability seems to be unreliable in macOS Sierra, so I'm providing this
 % Applescript alternative. The Psychtoolbox call is:
-% [oldBrightness]=Screen('ConfigureDisplay','Brightness', screenId [,outputId][,brightness]); 
+% [oldBrightness]=Screen('ConfigureDisplay','Brightness', screenId [,outputId][,brightness]);
 % Normally the SCREEN call is preferable because it's fast and requires no
 % permissions. The solid new symptom under macOS Sierra is that the slider
 % doesn't move when you change the brightness. Associated with that I find
@@ -111,6 +114,20 @@ if ~IsOSX
     status = 1; % Signal failure on this unsupported OS:
     return;
 end
+[~,ver]=PsychtoolboxVersion;
+v=ver.major*1000+ver.minor*100+ver.point;
+useScreen3016= v<3016 && exist('Screen3016','file');
+useScreenBrightness= v>=3016 || useScreen3016;
+if useScreenBrightness
+    if useScreen3016
+        Screen3016('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        oldLevel=Screen3016('ConfigureDisplay','Brightness',screenNumber,0);
+    else
+        Screen('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        oldLevel=Screen('ConfigureDisplay','Brightness',screenNumber,0);
+    end
+    return
+end
 try
     scriptPath = which('Brightness.applescript');
     command = ['osascript "' scriptPath '"']; % Double quotes cope with spaces in scriptPath.
@@ -120,13 +137,13 @@ try
     if nargin > 1
         command = [command ' ' num2str(newLevel)];
     end
-    [status,oldString]=system(command); % THIS LINE TAKES 11 s ON MY MACBOOK!
+    [status,oldString]=system(command); % Takes 5 s on MacBook Pro, 35 s on MacBook.
     oldLevel=str2double(oldString);
     if isempty(oldLevel) || oldLevel==-1
         error('Make sure you have admin privileges, and that System Preferences is not tied up in a dialog. Brightness applescript error: %s. ',oldString);
     end
 catch e
-    sca;
+    sca; % Close any user windows so error can be seen.
     rethrow(e);
 end
 
