@@ -27,7 +27,12 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % letterStruct(i).width
 % letterStruct(i).dx
 %
-% alphabetBounds
+% alphabetBounds % union of bounds for all letters.
+%
+% RETURNED ONLY FOR REAL FONTS:
+%
+% letterStruct(i).bounds % the bounds of black ink in the rect
+% letterStruct(i).dx % horiz. offset to center letter in alphabet bounds.
 %
 % ARGUMENTS:
 %
@@ -42,7 +47,6 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % o.alphabet
 % o.borderLetter
 % o.getAlphabetFromDisk
-% o.targetFont
 % o.showLineOfLetters
 % o.contrast % Typically 1. Positive for black letters.
 %
@@ -93,11 +97,12 @@ if o.getAlphabetFromDisk
     if length(d)<length(o.alphabet)
         error('Sorry. Saved %s alphabet has only %d letters, and you requested %d letters.',o.targetFont,length(d),length(o.alphabet));
     end
-    savedAlphabet.letters=[];
-    savedAlphabet.images={};
-    savedAlphabet.rect=[];
-    savedAlphabet.imageRects={};
-    savedAlphabet.imageRect=[];
+    savedAlphabet.letters=[];% 'a'
+    savedAlphabet.images={}; % Image, one for each letter.
+    savedAlphabet.bounds=[]; % bounds rect containing all black ink for each image.
+    savedAlphabet.rect=[];   % Union of all the bounds rects.
+    savedAlphabet.imageRects={}; % Rect of each image.
+    savedAlphabet.imageRect=[]; % Union of all the image rects.
     for i=1:length(d)
         filename=fullfile(folder,d(i).name);
         try
@@ -141,7 +146,7 @@ if o.getAlphabetFromDisk
             end
         end
     end
-    alphabetBounds=savedAlphabet.rect;
+    alphabetBounds=savedAlphabet.rect; % Bounds rect of alphabet.
     
     % Create textures, one per letter.
     for i=1:length(letters)
@@ -152,6 +157,10 @@ if o.getAlphabetFromDisk
         assert(length(which)==1);
         r=savedAlphabet.rect;
         letterImage=savedAlphabet.images{which}(r(2)+1:r(4),r(1)+1:r(3));
+        letterStruct(i).image=letterImage; % Used in NoiseDiscrimination, not in CriticalSpacing.
+        if isempty(window)
+            error('Empty "window" pointer.');
+        end
         if o.contrast==1
             letterStruct(i).texture=Screen('MakeTexture',window,uint8(letterImage));
         else
@@ -204,7 +213,7 @@ else % if o.getAlphabetFromDisk
     end
     assert(RectHeight(bounds)>0);
     for i=1:length(letters)
-        letterStruct(i).width=RectWidth(letterStruct(i).bounds);
+%       letterStruct(i).width=RectWidth(letterStruct(i).bounds); % Redundant
         desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
         letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
     end
