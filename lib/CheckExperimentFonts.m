@@ -19,10 +19,10 @@ if isfield(ooo{1}(1),'targetFont')
     missingFromDisk=any(~IsFontAvailableOnDisk(diskFonts,'warn'));
     msg='';
     if missing
-        msg='Please install the missing system fonts. ';
+        msg='Please install the missing system fonts. Try double clicking the corresponding font file in the /fonts/ folder.';
     end
     if missingFromDisk
-        msg=[msg 'Please use SaveAlphabetToDisk to save the missing disk fonts.'];
+        msg=[msg 'Please use SaveAlphabetToDisk to save the missing disk fonts. They will appear in the /alphabets/ folder.'];
     end
     msg=strrep(msg,'. Please',', and');
     if ~isempty(msg)
