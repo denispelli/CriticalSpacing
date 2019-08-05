@@ -1,31 +1,25 @@
 function [oldLevel,status] = Brightness(screenNumber,newLevel)
 % [oldLevel,status] = Brightness([screenNumber][,newLevel])
 %
-% August 2019. Always use Screen instead of applescript, if Psychotoolbox
+% August 2019. Always use Screen instead of Applescript, if Psychotoolbox
 % version 3.0.16 or later is available.
 %
 % BRIGHTNESS. Get and set the "brightness" slider in the macOS: System
 % Preferences: Displays panel. The function argument "newLevel" (0.0
 % to 1.0) indicates the desired brightness. If you call without an argument
-% (or -1) then nothing is changed. The current state is always reported in
+% then nothing is changed. The current state is always reported in
 % the returned oldLevel (0.0 to 1.0). The optionally returned "status" is
 % always zero unless the applescript failed, in which case oldLevel is NaN.
 %
-% CAUTION: If the user has not yet given permission for MATLAB to control
+% ON ERROR:  If there is an error we close any open Psychtoolbox window.
+%
+% PERMISSION: If the user has not yet given permission for MATLAB to control
 % the computer (in System Preferences:Security & Privacy:Accessibility),
-% then the Brightness applescript will put up a helpful alert and wait for
-% the user to enable control. Call Brightness BEFORE you open a
-% Psychtoolbox window: If the alert window is hidden by a Psychtoolbox
-% window, then the user won't know that the program is waiting for him or
-% her. For this reason the Brightness function will abort with an error if
-% you try to call it while an onscreen window is already open. To prevent
-% this confusing situation, we now fail with an explanatory error if you
-% try to call Brightness while a window is open.
+% then we give an error alerting the user to grant this permission.
 %
 % Brightness.m uses the Brightness.applescript to set the "brightness"
 % slider in the macOS: System Preferences: Displays panel. For use in
-% MATLAB, please put both files anywhere in MATLAB's path. I hope they will
-% someday be added to the Psychtoolbox.
+% MATLAB, please put both files anywhere in MATLAB's path.
 %
 % June 25, 2017. Written by denis.pelli@nyu.edu for the Psychtoolbox.
 % June 28, 2017, Fixed type of returned value, formerly a string, to now be
@@ -34,29 +28,32 @@ function [oldLevel,status] = Brightness(screenNumber,newLevel)
 % December 1, 2018. Put try-catch block around the code, to gracefully cope
 % with error while Screen window obscures the MATLAB Command Window.
 % Elimited the check for Screen window, which is no longer an issue.
-% July 16,2019 Improved by looking at code here: 
+% July 16,2019 Improved by looking at code here:
 % https://apple.stackexchange.com/questions/272531/dim-screen-brightness-of-mbp-using-applescript-and-while-using-a-secondary-mon/285907
 %
-% This MATLAB function calls my Brightness applescript. The applescript is
-% equivalent to manually opening the System Preferences:Displays panel and
-% adjusting the "brightness" slider. I wrote the script to be invoked from
-% MATLAB, but you could call it from any macOS application. Adjusting the
-% "brightness" setting in an LCD, controls the luminance of the fluorescent
-% light that is behind the liquid crystal display. I believe that the
-% "brightness" slider controls only the luminance of the source, and does
-% not affect the liquid crystal itsef, which is controlled by the color
-% lookup table. The luminance at the viewer's eye is presumably the product
-% of the two factors: luminance of the source and transmission of the
-% liquid crystal, at each wavelength.
+% This MATLAB function calls either
+% Screen('ConfigureDisplay','Brightness'...) or our Brightness applescript.
+% Both are equivalent to manually opening the System Preferences:Displays
+% panel and adjusting the "brightness" slider. The applescript was written
+% to be invoked from MATLAB, but you could call it from any macOS
+% application.
 %
-% INSTALLATION. To work with MATLAB, please put both files anywhere in
-% MATLAB's path. I hope they will be added to the Psychtoolbox.
+% TECHNICAL: Adjusting the "brightness" setting in an LCD, controls the
+% luminance of the fluorescent light that is behind the liquid crystal
+% display. I believe that the "brightness" slider controls only the
+% luminance of the source, and does not affect the liquid crystal itsef,
+% which is controlled by the color lookup table. The luminance at the
+% viewer's eye is presumably the product of the two factors: luminance of
+% the source and transmission of the liquid crystal, at each wavelength.
 %
-% CAUTION. This uses the "System Preferences: Displays" panel, which takes
-% 30 s to open if it isn't already open. I set up the Brightness
-% applescript to always leave System Preferences open, so you won't waste
-% your observer's time waiting 30 s for System Preferences to open every
-% time you call Brightness.
+% INSTALLATION. To work with MATLAB, please put both the .m and
+% .applescript files anywhere in MATLAB's path.
+%
+% APPLESCRIPT IS SLOW. It uses the "System Preferences: Displays" panel,
+% which takes 30 s to open if it isn't already open. We set up the
+% Brightness applescript to always leave System Preferences open, so you
+% won't waste your observer's time waiting 30 s for System Preferences to
+% open every time you call Brightness.
 %
 % SCREEN CONFIGURE DISPLAY BRIGHTNESS. The macOS version of Psychtoolbox
 % already has a SCREEN call to get and set the brightness, but its setting
@@ -118,12 +115,26 @@ end
 v=ver.major*1000+ver.minor*100+ver.point;
 useScreen3016= v<3016 && exist('Screen3016','file');
 useScreenBrightness= v>=3016 || useScreen3016;
+if nargin<2
+    newLevel=[];
+else
+    if newLevel<0 || newLevel>1
+        warning('newLevel %.1f should normally be in range 0.0 to 1.0.',newLevel)
+    end
+end
+if nargin<1
+    screenNumber=0;
+end
 if useScreenBrightness
     if useScreen3016
-        Screen3016('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        if ~isempty(newLevel)
+            Screen3016('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        end
         oldLevel=Screen3016('ConfigureDisplay','Brightness',screenNumber,0);
     else
-        Screen('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        if ~isempty(newLevel)
+            Screen('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        end
         oldLevel=Screen('ConfigureDisplay','Brightness',screenNumber,0);
     end
     return
@@ -131,10 +142,8 @@ end
 try
     scriptPath = which('Brightness.applescript');
     command = ['osascript "' scriptPath '"']; % Double quotes cope with spaces in scriptPath.
-    if nargin > 0
-        command = [command ' ' num2str(screenNumber)];
-    end
-    if nargin > 1
+    command = [command ' ' num2str(screenNumber)];
+    if nargin>1
         command = [command ' ' num2str(newLevel)];
     end
     [status,oldString]=system(command); % Takes 5 s on MacBook Pro, 35 s on MacBook.
