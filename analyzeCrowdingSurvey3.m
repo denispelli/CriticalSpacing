@@ -50,7 +50,7 @@ for oi=1:length(oo)
     end
     if isempty(mate)
         warning('Found point %d at (%.1f %.1f) with no mate at -eccentricityXYDeg.',...
-            oi,oo(oi).eccentricityXYDeg);
+            oi,oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
         list=oi;
     else
         list=[oi mate];
@@ -76,18 +76,31 @@ for oi=1:length(oo)
     oo(oi).radialDeg=norm(oo(oi).eccentricityXYDeg);
     oo(oi).P=mean([oo(oi).trialData.targetScores]);
 end
-% These are the exclusion criteria. In testing every threshold has a mate,
+% Exclusion criteria. In many conditions every threshold has a mate,
 % because we measured each eccentricity with the opposite eccentricity,
-% interleaved. When we exclude a threshold we also exclude its mate.
-% We exclude any point with proportion correct less that 0.55 (about 20% of
-% data), and we exclude any pair of points for which the absolute log ratio
-% exceeds 0.2. 10^0.2=1.6.
-bad=[oo.P]<0.55 | abs(log10([oo.spacingDeg] ./ [oo([oo.mate]).spacingDeg]))>0.2;
-bad=bad | bad([oo.mate]);
+% interleaved. When we exclude a threshold we also exclude its mate, if it
+% has one. We exclude any point with proportion correct less that 0.55
+% (about 20% of data), and we exclude any pair of points (point and its
+% mate) for which the absolute log ratio exceeds 0.2. 10^0.2=1.6.
+bad=false(size(oo));
+for oi=1:length(oo)
+    bad(oi)=bad(oi) || oo(oi).P<0.55;
+    if ~isempty(oo(oi).spacingDeg) && ~isempty(oo(oi).mate) && ~isempty(oo(oo(oi).mate.spacingDeg)
+        % If has mate, then ratio must not be extreme.
+        badPair=abs(log10(oo(oi).spacingDeg/oo(oo(oi).mate).spacingDeg))>0.2;
+        % If either is bad, then mark mate bad too.
+        bad(oi)=bad(oi)|bad(oo(oi).mate)|badPair;
+        bad(oo(oi).mate)=bad(oo(oi).mate)|bad(oi);
+    end
+end
 for oi=find(bad)
+    if ~isempty(oo(oi).spacingDeg) && ~isempty(oo(oi).mate) && ~isempty(oo(oo(oi).mate).spacingDeg)
+        logRatio=abs(log10(oo(oi).spacingDeg/oo(oo(oi).mate).spacingDeg));
+    else
+        logRatio=[];
+    end
     fprintf('%d: P %.2f, log ratio %.1f, setting to nan, %s %s at %c(%.0f %.0f) deg with %s font.\n',...
-        oi,oo(oi).P,...
-        abs(log10(oo(oi).spacingDeg/oo(oo(oi).mate).spacingDeg)),...
+        oi,oo(oi).P,logRatio,...
         oo(oi).observer,oo(oi).thresholdParameter,...
         char(177),oo(oi).eccentricityXYDeg,oo(oi).targetFont);
 end
