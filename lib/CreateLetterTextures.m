@@ -64,6 +64,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % Error in CreateLetterTextures (line 102)
 % error('All letters must have the same image size!');
 
+% tic
 if ~isfinite(o.targetHeightOverWidth)
     o.targetHeightOverWidth=1;
 end
@@ -71,11 +72,19 @@ letters=[o.alphabet o.borderLetter];
 for i=1:length(letters)
     letterStruct(i).letter=letters(i);
 end
-canvasRect=[0 0 o.targetPix o.targetPix]*max(1,o.targetHeightOverWidth);
+if isempty(o.targetSizeIsHeight)
+    canvasRect=[0 0 o.targetPix o.targetPix]*...
+        max(o.targetHeightOverWidth,1/o.targetHeightOverWidth);
+else
+    if o.targetSizeIsHeight
+        canvasRect=[0 0 o.targetPix/o.targetHeightOverWidth o.targetPix];
+    else
+        canvasRect=[0 0 o.targetPix o.targetPix*o.targetHeightOverWidth];
+    end
+end
 black=0;
 white=255;
 if o.getAlphabetFromDisk
-    
     % Read from disk into "savedAlphabet".
     alphabetsFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'alphabets'); % CriticalSpacing/alphabets/
     if ~exist(alphabetsFolder,'dir')
@@ -84,7 +93,7 @@ if o.getAlphabetFromDisk
     folder=fullfile(alphabetsFolder,EncodeFilename(o.targetFont));
     if exist(folder,'dir')~=7
         error('Missing font folder "%s". Please use SaveAlphabetToDisk to save font "%s".',...
-        folder,o.targetFont);
+            folder,o.targetFont);
     end
     d=dir(folder);
     ok=~[d.isdir];
@@ -147,7 +156,6 @@ if o.getAlphabetFromDisk
         end
     end
     alphabetBounds=savedAlphabet.rect; % Bounds rect of alphabet.
-    
     % Create textures, one per letter.
     for i=1:length(letters)
         which=strfind([savedAlphabet.letters],letters(i));
@@ -169,11 +177,10 @@ if o.getAlphabetFromDisk
         letterStruct(i).rect=Screen('Rect',letterStruct(i).texture);
         % Screen DrawTexture will later scale and stretch, as needed.
     end
-    
 else % if o.getAlphabetFromDisk
     % Draw font and get bounds.
     Screen('Preference','TextAntiAliasing',0);
-    scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*4,8,0);
+    scratchWindow=Screen('OpenOffscreenWindow',window,[],canvasRect*2,8,0);
     if ~isempty(o.targetFontNumber)
         Screen('TextFont',scratchWindow,o.targetFontNumber);
         [~,number]=Screen('TextFont',scratchWindow);
@@ -194,7 +201,15 @@ else % if o.getAlphabetFromDisk
     Screen('TextSize',scratchWindow,sizePix);
     for i=1:length(letters)
         lettersInCells{i}=letters(i);
-        bounds=TextBounds(scratchWindow,letters(i),1);
+        t1=tic;
+        [bounds,ok]=TextBounds(scratchWindow,letters(i),1);
+        if ~ok
+            error('Scratch window not big enough for text.');
+        end
+        t=toc(t1);
+        r=Screen('Rect',scratchWindow);
+        %         fprintf('TextBounds %.2f s, scratchWindow %dx%d\n',...
+        %             t,RectHeight(r),RectWidth(r));
         if o.showLineOfLetters
             b=Screen('TextBounds',scratchWindow, letters(i));
             fprintf('%d: %s "%c" textSize %d, TextBounds [%d %d %d %d] width x height %d x %d, Screen TextBounds %.0f x %.0f\n', ...
@@ -213,7 +228,7 @@ else % if o.getAlphabetFromDisk
     end
     assert(RectHeight(bounds)>0);
     for i=1:length(letters)
-%       letterStruct(i).width=RectWidth(letterStruct(i).bounds); % Redundant
+        %       letterStruct(i).width=RectWidth(letterStruct(i).bounds); % Redundant
         desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
         letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
     end
@@ -246,5 +261,20 @@ else % if o.getAlphabetFromDisk
     end
     Screen('Preference','TextAntiAliasing',1);
 end % if o.getAlphabetFromDisk
-end
 
+if false
+    % For peformance analysis. Report who called us, and how long we took.
+    stack=dbstack;
+    if length(stack)>=2
+        line=stack(2).line; % line number of the calling function
+        file=stack(2).file; % file of the calling function
+    else
+        line=[];
+        file='';
+    end
+    if false
+        r=Screen('Rect',window);
+        fprintf('%s:%d CreateLetterTextures: %.1f s, window %d x %d, o.getAlphabetFromDisk=%d, ''%s'', o.targetPix=%.0f, %d letters.\n', ...
+            file,line,toc,RectHeight(r),RectWidth(r),o.getAlphabetFromDisk,o.targetFont,o.targetPix,length(letters));
+    end
+end
