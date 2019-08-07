@@ -74,7 +74,7 @@ if 1
     ooo{end+1}=o;
 end
 o.trialsDesired=30;
-if 1
+if true
     for ecc=[5 2.5]
         o.conditionName='crowding';
         o.task='identify';
@@ -125,7 +125,7 @@ if 1
         end
     end
 end
-if 1
+if true
     for ecc=[0 5]
         o.conditionName='acuity';
         o.task='identify';
@@ -222,16 +222,16 @@ for block=length(ooo):-1:1
     [ooo{block}(:).maxViewingDistanceCm]=deal(maxCm);
 end
 
-%% ESTIMATED TIME OF ARRIVAL (ETA)
-etaMin=0;
+%% ESTIMATE TIME
+willTakeMin=0;
 for block=1:length(ooo)
     oo=ooo{block};
     for oi=1:length(oo)
         if ~ismember(oo(oi).observer,{'ideal'})
-            etaMin=etaMin+[oo(oi).trialsDesired]/10;
+            willTakeMin=willTakeMin+[oo(oi).trialsDesired]/10;
         end
     end
-    [ooo{block}(:).etaMin]=deal(etaMin);
+    [ooo{block}(:).willTakeMin]=deal(willTakeMin);
 end
 
 %% MAKE SURE NEEDED FONTS ARE AVAILABLE
@@ -261,9 +261,11 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'etaMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
+disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
+
+ooo{end}(end)
 % return
 
 %% RUN.
