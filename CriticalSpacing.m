@@ -2022,6 +2022,8 @@ try
         oo(oi).targetFontHeightOverNominal=nan;
         oo(oi).targetPix=200; % Font size.
         % Get bounds.
+        % This is quick for small letter size, under 100, but can take many
+        % seconds for a font size of 300.
         [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window);
         DestroyLetterTextures(letterStruct);
         % This aspect ratio is based on bounding box of the whole alphabet.
@@ -3159,6 +3161,12 @@ try
                 oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
                 
                 % Create letter textures, using font or from disk.
+                % Consider doing this just once, and keeping it around, and
+                % always scaling it. Consider limiting size of font in this
+                % call to something quick, e.g. font size of 100, and then
+                % scaling trial by trial as needed. This call is very slow
+                % for a large font size, e.g 300, and the super high
+                % resolution isn't needed.
                 [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
                 letters=[oo(oi).alphabet oo(oi).borderLetter];
                 
