@@ -503,6 +503,7 @@ o.viewingDistanceCm=400; % Default for runtime question.
 o.maxViewingDistanceCm=0; % Max over remining blocks.
 % THIS SEEMS A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
 o.measureViewingDistanceToTargetNotFixation=true;
+o.willTakeMin=[];
 
 o.experiment=''; % Name of this experiment. Used to select files for analysis.
 o.block=1; % Each block may contain more than one condition.
@@ -639,7 +640,7 @@ o.showBounds=false;
 o.showLineOfLetters=false;
 o.speakSizeAndSpacing=false;
 o.useFractionOfScreenToDebug=false;
-o.etaMin=0;
+o.willTakeMin=0;
 
 % BLOCKS AND BRIGHTNESS
 % To save time, we set brightness only before the first block, and restore
@@ -2252,7 +2253,8 @@ try
                 DrawCounter(oo);
                 Screen('Flip',window);
                 ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
-%                 Brightness(cal.screen,cal.brightnessSetting); % Set brightness.
+                Brightness(cal.screen,cal.brightnessSetting); % Set
+                %                                               brightness.
                 for i=1:5
                     % cal.brightnessReading=Brightness(cal.screen); % Read brightness.
                     cal.brightnessReading=Screen('ConfigureDisplay',...
@@ -3157,13 +3159,14 @@ try
                 oo(oi).targetDeg=oo(oi).targetPix/pixPerDeg;
                 
                 % Create letter textures, using font or from disk.
-                letterStruct=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
+                [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
                 letters=[oo(oi).alphabet oo(oi).borderLetter];
                 
                 if oo(oi).showAlphabet
-                    % This is for debugging. We also display the alphabet any time the
-                    % caps lock key is pressed. That's standard behavior to allow the
-                    % observer to familiarize herself with the alphabet.
+                    % This is for debugging. We also display the alphabet
+                    % any time the caps lock key is pressed. That's
+                    % standard behavior to allow the observer to
+                    % familiarize herself with the alphabet.
                     for i=1:length(letters)
                         r=[0 0 RectWidth(letterStruct(i).rect) RectHeight(letterStruct(i).rect)];
                         s=RectWidth(oo(oi).stimulusRect)/(1.5*length(letters))/RectWidth(r);
@@ -3284,14 +3287,15 @@ try
                         yMin=tXY(2)-ySpacing*minSpacesY/2;
                         yMax=tXY(2)+ySpacing*minSpacesY/2;
                     end
-                    % Show only as many letters as we need so that, despite a
-                    % fixation error (in any direction) as large as
-                    % +/-maxFixationErrorXYDeg, at least one of the many target
-                    % letters will escape crowding by landing at a small enough
-                    % eccentricity at which the (normal adult) observer's crowding
-                    % distance is less than half the actual spacing. This is the
-                    % standard formula for crowding distance, as a function of
-                    % radial eccentricity.
+                    % Show only as many letters as we need so that, despite
+                    % a fixation error (in any direction) as large as
+                    % +/-maxFixationErrorXYDeg, at least one of the many
+                    % target letters will escape crowding by landing at a
+                    % small enough eccentricity at which the (normal adult)
+                    % observer's crowding distance is less than half the
+                    % actual spacing. This is the standard formula for
+                    % crowding distance, as a function of radial
+                    % eccentricity.
                     % crowdingDistance=0.3*(ecc+0.15);
                     % We solve it for eccentricity.
                     % ecc=crowdingDistance/0.3-0.15;
@@ -3300,14 +3304,15 @@ try
                     crowdingDistanceDeg=0.5*min(xSpacing,ySpacing)/pixPerDeg;
                     % We solve for eccentricity to get this crowding distance.
                     eccDeg=crowdingDistanceDeg/0.3-0.15;
-                    % If positive, this is the greatest ecc whose normal adult
-                    % critical spacing is half the test spacing. The radial
-                    % eccentricity must be at least zero.
+                    % If positive, this is the greatest ecc whose normal
+                    % adult critical spacing is half the test spacing. The
+                    % radial eccentricity must be at least zero.
                     eccDeg=max(0,eccDeg);
-                    % Assume observer tries to fixate center of target text block,
-                    % and actually fixates within a distance maxFixationErrorXYDeg
-                    % of that center. Compute needed horizontal and vertical extent
-                    % of the repetition to put some target within that ecc radius.
+                    % Assume observer tries to fixate center of target text
+                    % block, and actually fixates within a distance
+                    % maxFixationErrorXYDeg of that center. Compute needed
+                    % horizontal and vertical extent of the repetition to
+                    % put some target within that ecc radius.
                     xR=max(0,oo(oi).maxFixationErrorXYDeg(1)-eccDeg)*pixPerDeg;
                     yR=max(0,oo(oi).maxFixationErrorXYDeg(2)-eccDeg)*pixPerDeg;
                     % Round the radius to an integer number of spacings.
@@ -3318,7 +3323,8 @@ try
                         xR=xSpacing*min(xR/xSpacing,oo(oi).maxRepetition);
                         yR=ySpacing*min(yR/ySpacing,floor(oo(oi).maxRepetition/4));
                     else
-                        % If radius is nonzero, add a spacing for margin character.
+                        % If radius is nonzero, add a spacing for margin
+                        % character.
                         if xR>0
                             xR=xR+xSpacing;
                         end
@@ -3351,11 +3357,12 @@ try
                         yMin=tXY(2)-min(yR/2,tXY(2)-yMin);
                         yMax=tXY(2)+min(yR/2,yMax-tXY(2));
                     end
-                    % Round (yMax-yMin)/ySpacing and (xMax-xMin)/xSpacing. This is
-                    % important because we use for loops, with steps of xSpacing
-                    % and ySpacing, to get from xMin and yMin to xMax and yMax. We
-                    % need to arrive precisely at xMax. The rows at yMin and yMax
-                    % are margins, as are the columins at xMin and xMax.
+                    % Round (yMax-yMin)/ySpacing and (xMax-xMin)/xSpacing.
+                    % This is important because we use for loops, with
+                    % steps of xSpacing and ySpacing, to get from xMin and
+                    % yMin to xMax and yMax. We need to arrive precisely at
+                    % xMax. The rows at yMin and yMax are margins, as are
+                    % the columins at xMin and xMax.
                     n=round((xMax-xMin)/xSpacing);
                     xMax=tXY(1)+xSpacing*n/2;
                     xMin=tXY(1)-xSpacing*n/2;
@@ -3398,8 +3405,8 @@ try
                             end
                             xPos=round(x-xPix/2);
                             
-                            % Compute o.targetHeightOverWidth, and, if requested,
-                            % o.setTargetHeightOverWidth
+                            % Compute o.targetHeightOverWidth, and, if
+                            % requested, o.setTargetHeightOverWidth
                             r=round(letterStruct(whichLetter).rect);
                             oo(oi).targetHeightOverWidth=RectHeight(r)/RectWidth(r);
                             if oo(oi).setTargetHeightOverWidth
@@ -3587,8 +3594,9 @@ try
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
             oo(oi).responseTextWidth=min(oo(oi).responseTextWidth,oo(oi).textSize); % But no bigger than our information text.
             Screen('TextSize',window,oo(oi).responseTextWidth);
-            [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
-            % It won't be exactly the right size, so we scale it to be
+			% Create response alphabet.\n',MFileLineNr);
+			% [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
+            % letterStruct,alphabetBounds and won't be exactly the right size, so we scale it to be
             % exactly the size we want.
             alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
             x=2*oo(oi).textSize;
@@ -4002,8 +4010,8 @@ try
             switch oo(oi).thresholdParameter
                 case 'spacing'
                     intensity=log10(oo(oi).spacingDeg);
-                    ffprintf(ff,'presentation %d, condition %d, o.spacingDeg %.2f, o.targetDeg %.2f\n',...
-                        presentation,oi,oo(oi).spacingDeg,oo(oi).targetDeg);
+					% ffprintf(ff,'presentation %d, condition %d, o.spacingDeg %.2f, o.targetDeg %.2f\n',...
+					%    presentation,oi,oo(oi).spacingDeg,oo(oi).targetDeg);
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
             end
