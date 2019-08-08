@@ -64,6 +64,14 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % Error in CreateLetterTextures (line 102)
 % error('All letters must have the same image size!');
 
+% TIMING: Everything is quick except calling TextBounds, which in turn is
+% dominated by the time to call Screen 'GetImage', whose time depends
+% solely on size of the scratchWindow. On my 2017 MacBook, it takes 0.7 s
+% for a 6000x6000 window. TextBounds now warns of clipping error, and
+% CreateLetterTextures promotes that to a fatal error. So it's now ok to
+% have a tight window because you'll know immediately, before collecting
+% data, if it's too tight. This allows a much smaller scratchWindow and
+% thus greatly sped up CreateLetterTextures.
 % tic
 if ~isfinite(o.targetHeightOverWidth)
     o.targetHeightOverWidth=1;
