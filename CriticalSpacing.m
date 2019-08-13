@@ -392,6 +392,14 @@ function oo=CriticalSpacing(oIn)
 %
 % Copyright © 2016, 2017, 2018, 2019 Denis Pelli, denis.pelli@nyu.edu
 
+% HISTORY:
+% August 12, 2019. o.askExperimenterToSetDistance=true asks observer to get
+% the experimenter to set the viewing distance each time it changes. The
+% experiment types a "signature key" (first letter of the previously given
+% o.experimenter name) to continue. This responds to a tendency for
+% observers to just click past even bright red screens asking then to set a
+% new viewing distance.
+
 %% PLANS
 %
 % When the alphabet is large (eg. 26) it currently falls off the right
@@ -507,6 +515,7 @@ o.maxViewingDistanceCm=0; % Max over remining blocks.
 % THIS SEEMS A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
 o.measureViewingDistanceToTargetNotFixation=true;
 o.willTakeMin=[];
+o.askExperimenterToSetDistance=true;
 
 o.experiment=''; % Name of this experiment. Used to select files for analysis.
 o.block=1; % Each block may contain more than one condition.
@@ -1193,7 +1202,7 @@ try
                 case 'fixed by font'
             end
             % Distance at which minimum size is half the typical threshold
-            % whther due to size or spacing.
+            % whether due to size or spacing.
             switch oo(oi).thresholdParameter
                 case 'size'
                     oo(oi).minimumViewingDistanceCm=10*ceil(0.1*oo(oi).viewingDistanceCm*2*minimumSizeDeg/oo(oi).typicalThesholdSizeDeg);
@@ -1400,8 +1409,8 @@ try
         
         % VIEWING DISTANCE
         red=[255 0 0];
-        newViewingDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
-        if newViewingDistance
+        isNewDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
+        if isNewDistance
             color=red;
             string=sprintf(['\n\nDISTANCE: %.0f cm. '...
                 'Please use a ruler or tape measure to move the display and ' ...
@@ -1772,6 +1781,79 @@ try
         end
         Screen('FillRect',window);
     end % while isempty(oo(1).observer)
+    
+    %% IF CHANGED, ASK EXPERIMENTER TO SET VIEWING DISTANCE
+    isNewDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
+    if isNewDistance
+        if oo(1).askExperimenterToSetDistance
+            string=sprintf(['NEW DISTANCE! Please ask the experimenter to adjust the viewing distance. The ' ...
+                'X below should be %.1f cm (%.1f inches) from the observer''s eye. '], ...
+                oo(1).viewingDistanceCm,oo(1).viewingDistanceCm/2.54);
+        else
+            string=sprintf(['NEW DISTANCE! Please adjust the viewing distance so that the ' ...
+                'X below is %.1f cm (%.1f inches) from the observer''s eye. '], ...
+                oo(1).viewingDistanceCm,oo(1).viewingDistanceCm/2.54);
+        end
+    else
+        string=sprintf(['If necessary, please adjust the viewing distance so that the ' ...
+            'X below is still %.1f cm (%.1f inches) from the observer''s eye. '], ...
+            oo(1).viewingDistanceCm,oo(1).viewingDistanceCm/2.54);
+    end
+%    string=[string 'Tilt and swivel the display so the X is orthogonal to the observer''s line of sight. '];
+%    isNewDistance
+%    o.askExperimenterToSetDistance
+    if isNewDistance && oo(1).askExperimenterToSetDistance
+        string=[string 'Then the Experimenter will type his or her signature key to continue.\n'];
+    else
+        string=[string 'Then hit RETURN to continue.\n'];
+    end
+    oo(1).window=window;
+    Screen('TextSize',oo(1).window,oo(1).textSize);
+    Screen('TextFont',oo(1).window,'Verdana');
+    Screen('FillRect',oo(1).window);
+%     Screen('TextBackgroundColor',oo(1).window,oo(1).gray1); % Set background.
+    DrawFormattedText(oo(1).window,string,...
+        2*oo(1).textSize,2.5*oo(1).textSize,black,...
+        oo(1).textLineLength,[],[],1.3);
+    x=oo(1).nearPointXYPix(1);
+    y=oo(1).nearPointXYPix(2);
+    a=0.05*RectHeight(oo(1).stimulusRect);
+    [~,~,lineWidthMinMaxPix(1),lineWidthMinMaxPix(2)]=Screen('DrawLines',oo(1).window);
+    widthPix=max([min([a/20 lineWidthMinMaxPix(2)]) lineWidthMinMaxPix(1)]);
+    Screen('DrawLine',oo(1).window,black,x-a,y-a,x+a,y+a,widthPix);
+    Screen('DrawLine',oo(1).window,black,x+a,y-a,x-a,y+a,widthPix);
+    DrawCounter(oo);
+    Screen('Flip',oo(1).window); % Display request.
+    oo(1).speakInstructions=false;
+    if oo(1).speakInstructions
+        string=strrep(string,'.0','');
+        string=strrep(string,'\n','');
+        Speak(string);
+    end
+    if isNewDistance && oo(1).askExperimenterToSetDistance
+        allowedCode=KbName(oo(1).experimenter(1));
+    else
+        allowedCode=returnKeyCode;
+    end
+    response=GetKeypress([allowedCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
+    if ismember(response,[escapeChar,graveAccentChar])
+        [oo(1).quitExperiment,oo(1).quitBlock,oo(1).skipTrial]=...
+            OfferEscapeOptions(oo(1).window,o,oo(1).textMarginPix);
+        if oo(1).quitExperiment
+            ffprintf(ff,'*** User typed ESCAPE twice. Experiment terminated.\n');
+            return
+        elseif oo(1).quitBlock
+            ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
+            return
+        else
+            ffprintf(ff,'*** User typed ESCAPE, but chose to continue.\n');
+        end
+    else
+        set=true; % Done.
+        oldViewingDistanceCm=oo(1).viewingDistanceCm;
+    end
+    Screen('FillRect',oo(1).window);
+    Screen('Flip',oo(1).window); % Blank, to acknowledge response.  
     
     %% START TIMER
     oo(1).beginSecs=GetSecs;
