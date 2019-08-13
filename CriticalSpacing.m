@@ -105,10 +105,11 @@ function oo=CriticalSpacing(oIn)
 % OPTIONAL: MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically
 % reads your display screen's resolution in pixels and size in cm, and
 % reports them in every data file. Alas, the reported size in cm is
-% sometimes (very) wrong in Windows, and is not always available for
-% external monitors under any OS. So we allow users to measure the display
-% screen size themselves and provide it in their "o" struct as
-% o.measuredScreenWidthCm and o.measuredScreenWidthCm. Use a meter stick to
+% sometimes very wrong in Windows, and is often not available for external
+% monitors under any OS. So we allow users to measure the display screen
+% size themselves and provide it in their "o" struct as
+% o.measuredScreenWidthCm and o.measuredScreenWidthCm. Your measured values
+% will override whatever values your display provides. Use a meter stick to
 % measure the width and height of your screen's filled rectangle of glowing
 % pixels.
 %
@@ -130,9 +131,10 @@ function oo=CriticalSpacing(oIn)
 %
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable because a normally
 % sighted observer viewing foveally has excellent vision and must be many
-% meters away from the screen, and thus will be unable to reach a built-in
-% keyboard attached to the screen. If you must use the built-in keyboard,
-% then have the experimenter type the observer's verbal answers. I like the
+% meters away from the screen in order for us to measure her acuity limit.
+% At this distance their hands can't reach the built-in keyboard attached
+% to the screen. If you must use the built-in keyboard, then have the
+% experimenter type the observer's verbal answers. Instead, I like the
 % Logitech K760 $86 solar-powered wireless keyboard, because its batteries
 % never run out. It's no longer made, but still available on Amazon and
 % eBay (below). To "pair" the keyboard with your computer's blue tooth,
@@ -153,17 +155,17 @@ function oo=CriticalSpacing(oIn)
 % https://www.boschtools.com/us/en/boschtools-ocs/laser-measuring-glm-15-0601072810--120449-p/
 %
 % MIRROR. In a small room, you might need a mirror to achieve a long
-% viewing distance. When CriticalSpacing asks you about viewing distance,
-% you can indicate that you're using a mirror by entering the viewing
-% distance as a negative number. It will flip the display to be seen in a
-% mirror. (You can also request this, in advance, by setting
-% o.flipScreenHorizontally=true; in your run script.) I bought two acrylic
-% front surface mirrors for this. 12x24 inches, $46 each from inventables.
-% Front surface mirrors preserve image quality, and acrylic is hard to
-% break, making it safer than glass. I'm not yet sure how big a mirror one
-% needs to accomodate observer's of various heights, so I listed several of
-% Amazon's offerings, ranging up to 24" by 48". The five-pack is a good
-% deal, five 12"x24" mirrors for $67.
+% viewing distance. You can request this, in advance, by setting
+% o.flipScreenHorizontally=true in your run script. (At run time, when
+% CriticalSpacing asks you about viewing distance, you can indicate that
+% you're using a mirror by entering the viewing distance as a negative
+% number. It will flip the display to be seen in a mirror.) I bought two
+% acrylic front surface mirrors for this. 12x24 inches, $46 each from
+% inventables. Front surface mirrors preserve image quality, and acrylic is
+% hard to break, making it safer than glass. I'm not yet sure how big a
+% mirror one needs to accomodate observers of various heights, so I listed
+% several of Amazon's offerings, ranging up to 24" by 48". The five-pack is
+% a good deal, five 12"x24" mirrors for $67.
 %
 % http://www.amazon.com/Acrylic-Wall-Mirror-Size-24/dp/B001CWAOJW/ref=sr_1_19
 % http://www.amazon.com/Childrens-Factory-Look-At-Mirror/dp/B003BL7TMC/ref=sr_1_14
@@ -210,25 +212,26 @@ function oo=CriticalSpacing(oIn)
 % explanation see "help drawtextplugin". You need this only if you want to
 % set o.getAlphabetFromDisk=false.
 %
-% CHILDREN. Adults and children seem to find it easy and intuitive. Sarah
-% Waugh (Dept. of Vision and Hearing Sciences, Anglia Ruskin University)
-% has tested 200 children of ages 4 to 16 (?). To test children, Sarah used
-% an fictional astronaut adventure story about this test. The game,
-% designed by Aenne Brielmann, in my lab here at NYU, includes an
-% illustrated story book and alien dolls.
+% CHILDREN. Adults and children seem to find CriticalSpacing easy and
+% intuitive. Sarah Waugh (Dept. of Vision and Hearing Sciences, Anglia
+% Ruskin University) has tested 200 children of ages 3 to 16(?). To test
+% children, Sarah used a fictional astronaut adventure story about this
+% test. The game, designed by Aenne Brielmann, in my lab here at NYU,
+% includes an illustrated story book and alien dolls.
 %
 % CHOOSE A VIEWING DISTANCE. You can provide a default in your script, e.g.
 % o.viewingDistanceCm=400. CriticalSpacing invites you to modify the
 % viewing distance (or declare that you're using a mirror) at the beginning
-% of each block. You need long distance to display tiny letters, and you
-% need short viewing distance to display peripheral letters, if fixation is
-% on-screen. (We plan to add support for off-screen fixation.) When viewing
-% foveally, please err on the side of making the viewing distance longer
-% than necessary. If you use too short a viewing distance then the minimum
-% size and spacing may be bigger than the threshold you want to measure. At
-% the end of the block, CriticalSpacing.m warns you if the estimated
-% threshold is smaller than the minimum possible size or spacing at the
-% current distance, and suggests that you increase the viewing distance in
+% of each block. You need a long distance to display tiny letters, and, if
+% fixation is on-screen, you need short viewing distance to display
+% peripheral letters. (We plan to add support for off-screen fixation.)
+% When viewing foveally, please err on the side of making the viewing
+% distance longer than necessary. Observers don't like being closer than 40
+% cm. Also, if you use too short a viewing distance then the minimum size
+% and spacing may be bigger than the threshold you want to measure. At the
+% end of the block, CriticalSpacing.m warns you if the estimated threshold
+% is smaller than the minimum possible size or spacing at the current
+% distance, and suggests that you increase the viewing distance in
 % subsequent blocks. The minimum viewing distance depends on the smallest
 % letter size you want to show with 8 pixels and the resolution (pixels per
 % centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
@@ -251,10 +254,10 @@ function oo=CriticalSpacing(oIn)
 % that would allow that.
 %
 % ECCENTRICITY OF THE TARGET. Eccentricity of the target is achieved by
-% placing fixation appropriately. Modest eccentricities, up to perhaps 30
-% deg, are achieved with on-screen fixation. If the eccentricity
-% is too large for on-screen fixation, then we help you set up off-screen
-% fixation.
+% appropriate placement of the target and the fixation mark. Modest
+% eccentricities, up to perhaps 30 deg, are achieved with on-screen
+% fixation. If the eccentricity is too large for on-screen fixation, then
+% we help you set up off-screen fixation.
 % 1. Set nearPointXYPix according to o.nearPointXYInUnitSquare, whose
 % default is 0.5 0.5.
 % 2. If setNearPointEccentricityTo==
@@ -336,7 +339,7 @@ function oo=CriticalSpacing(oIn)
 % observer about this option to skip. Use this only rarely, when you need
 % it to avoid a crisis. In general it's important to set up the right
 % expectation at the outset. Warn the observer that this is a game and
-% nobody gets them all right. You just try to get as many as you can.
+% nobody gets them all right: "Just try to get as many as you can."
 %
 % THRESHOLD. CriticalSpacing measures threshold spacing or size (i.e.
 % acuity). This program measures threshold spacing in either of two
@@ -2433,7 +2436,9 @@ try
             if any([oo.useFixation])
                 string=[string 'Please rest your eye on the cross before each trial. '];
             end
-            if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing') && ~streq(oo(oi).task,'read')
+            if ~oo(oi).repeatedTargets ...
+                    && streq(oo(oi).thresholdParameter,'spacing') ...
+                    && ~streq(oo(oi).task,'read')
                 string=[string 'When you see three letters, please report just the middle one. '];
             end
             if false
@@ -3122,12 +3127,12 @@ try
                     'read the page from beginning to end, '...
                     'and then immediately release the space bar. '...
                     ];
-                Screen('FillRect',window,[],clearRect);
-                Screen('TextFont',window,oo(oi).textFont);
-                % Press SPACE to reveal story.
-                DrawFormattedText(window,readInstructions,...
-                    oo(1).textSize,1.5*oo(1).textSize,black,...
-                    oo(1).textLineLength,[],[],1.3);
+                %                 Screen('FillRect',window,[],clearRect);
+                %                 Screen('TextFont',window,oo(oi).textFont);
+                %                 % Press SPACE to reveal story.
+                %                 DrawFormattedText(window,readInstructions,...
+                %                     oo(1).textSize,1.5*oo(1).textSize,black,...
+                %                     oo(1).textLineLength,[],[],1.3);
                 % Reuse readInstructions if user escapes and resumes.
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
@@ -3507,10 +3512,10 @@ try
         if oo(1).showCounter
             DrawCounter(oo);
         end
-        % If o.task='read' then ask observer to press and hold SPACE. XYZ
-        % Otherwise display stimulus & optional fixation.
+        % If o.task='read' then ask observer to press and hold the SPACE
+        % bar. Otherwise display both the stimulus & the optional fixation.
         [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1);
-        stimulusFlipSecs=GetSecs; 
+        stimulusFlipSecs=GetSecs;
         if oo(oi).recordGaze
             img=snapshot(cam);
             % FUTURE: Write trial number and condition number in corner of
@@ -3602,8 +3607,8 @@ try
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
             oo(oi).responseTextWidth=min(oo(oi).responseTextWidth,oo(oi).textSize); % But no bigger than our information text.
             Screen('TextSize',window,oo(oi).responseTextWidth);
-			% Create response alphabet.\n',MFileLineNr);
-			% [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
+            % Create response alphabet.\n',MFileLineNr);
+            % [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
             % letterStruct,alphabetBounds and won't be exactly the right size, so we scale it to be
             % exactly the size we want.
             alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
@@ -3653,7 +3658,8 @@ try
             case 'read'
                 % The excerpt will be 12 lines of (up to) 50 characters
                 % each. That's about ten words per line.
-                assert(streq(corpusFilename,oo(oi).readFilename) && ~isempty(corpusLineEndings),...
+                assert(streq(corpusFilename,oo(oi).readFilename) ...
+                    && ~isempty(corpusLineEndings),...
                     'The text is not ready to be read.');
                 oo(oi).readMethod=sprintf(...
                     ['Random block of text from %s, ' ...
@@ -3680,78 +3686,109 @@ try
                 % sentences begin. Restrict that list to exclude beginnings
                 % that are too near the end.
                 sentenceBegins=corpusSentenceBegins(corpusSentenceBegins<=maxBegin);
-                % Randomly pick one of the acceptable first sentences.
-                begin=sentenceBegins(randi(end));
-                % Grab some of the corpus, beginning at the selected
-                % sentence. We take twice what we roughly need, because
-                % taking the whole remainder can take a long time to wrap.
-                last=min(begin+2*oo(oi).readLines*oo(oi).readCharPerLine,length(corpusText));
-                string=corpusText(begin:last);
-                string=WrapString(string,oo(oi).readCharPerLine); % Wrap it.
-                lineEndings=find(string==newline);
-                % Keep just the desired number, oo(oi).readLines, of lines,
-                % omitting the (superfluous) final newline.
-                string=string(1:lineEndings(oo(oi).readLines)-1);
-                oo(oi).readString{end+1}=string;
-%                 ffprintf(ff,'Dead time %.2f s since asking for SPACE before ready to sense it.\n',...
-%                     GetSecs-stimulusFlipSecs); % XYZ
-                % Time the interval from press to release of spacebar.
-                oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
-                while true
-                    [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
-                    answer=KbName(keyCode);
-                    if ismember(answer,{'ESCAPE' '`~'})
-                        [oo,tryAgain]=ProcessEscape(oo);
-                        if tryAgain
-                            Screen('FillRect',window,white);
-                            % Press SPACE to reveal text.
-                            DrawFormattedText(window,readInstructions,...
-                                2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
-                                oo(oi).textLineLength,[],[],1.3);
-                            Screen('Flip',window);
-                            continue
-                        else
-                            return
-                        end
-                    else
-                        break
+                preface='';
+                while true % Repeat until we get reasonable reading speed.
+                    while true % Repeat until observer types SPACE.
+                        % Randomly pick one of the acceptable first sentences.
+                        begin=sentenceBegins(randi(end));
+                        % Grab some of the corpus, beginning at the selected
+                        % sentence. We take twice what we roughly need, because
+                        % taking the whole remainder can take a long time to wrap.
+                        last=min(begin+2*oo(oi).readLines*oo(oi).readCharPerLine,length(corpusText));
+                        string=corpusText(begin:last);
+                        string=WrapString(string,oo(oi).readCharPerLine); % Wrap it.
+                        lineEndings=find(string==newline);
+                        % Keep just the desired number, oo(oi).readLines, of lines,
+                        % omitting the (superfluous) final newline.
+                        string=string(1:lineEndings(oo(oi).readLines)-1);
+                        oo(oi).readString{end+1}=string;
+                        
+                        % There are three ways to get here:
+                        % 1. ordinary flow to display reading
+                        % instrucitions.
+                        % 2. observer hit ESC SPACE after last reading
+                        % stimulus.
+                        % 3. Reading spead was impossibly high, so re start
+                        % trial again with fresh text.
+                        Screen('FillRect',window,[],clearRect);
+                        Screen('TextFont',window,oo(oi).textFont);
+                        % Press SPACE to reveal story.
+                        DrawFormattedText(window,...
+                            [preface readInstructions],...
+                            oo(1).textSize,1.5*oo(1).textSize,black,...
+                            oo(1).textLineLength,[],[],1.3);
+                        Screen('Flip',window);
+                        
+                        % ffprintf(ff,'Dead time %.2f s since asking for SPACE before ready to sense it.\n',...
+                        %      GetSecs-stimulusFlipSecs); % XYZ
+                        % Time the interval from press to release of spacebar.
+                        oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
+                        [beginSecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
+                        answer=KbName(keyCode);
+                        if ismember(answer,{'ESCAPE' '`~'})
+                            [oo,tryAgain]=ProcessEscape(oo);
+                            if tryAgain
+                                % Screen('FillRect',window,white);
+                                % Press SPACE to reveal text.
+                                % DrawFormattedText(window,...
+                                %     [preface readInstructions],...
+                                %     2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
+                                %     oo(oi).textLineLength,[],[],1.3);
+                                % preface='';
+                                % Screen('Flip',window);
+                                continue
+                            else
+                                return
+                            end % if tryAgain
+                        else % if is SPACE.
+                            break
+                        end % if ismember
+                    end % while true, repeat until SPACE.
+                    Screen('TextFont',window,oo(oi).targetFont);
+                    Screen('TextSize',window,oo(oi).readSize);
+                    Screen('FillRect',window);
+                    % Display page of text to be read.
+                    [~,y]=DrawFormattedText(window,double(string),...
+                        2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
+                        oo(oi).readCharPerLine,[],[],1.5);
+                    Screen('Flip',window,[],1);
+                    if false
+                        cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
+                        fprintf('%.2f cm/deg at %.1f cm, size %.0f.\n',...
+                            cmPerDeg,oo(oi).viewingDistanceCm,oo(oi).readSize);
                     end
-                end
-                Screen('TextFont',window,oo(oi).targetFont);
-                Screen('TextSize',window,oo(oi).readSize);
-                Screen('FillRect',window);
-                % Display page of text to be read.
-                [~,y]=DrawFormattedText(window,double(string),...
-                    2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
-                    oo(oi).readCharPerLine,[],[],1.5);
-                Screen('Flip',window,[],1);
-                if false
-                    cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
-                    fprintf('%.2f cm/deg at %.1f cm, size %.0f.\n',...
-                        cmPerDeg,oo(oi).viewingDistanceCm,oo(oi).readSize);
-                end
-                if ~IsInRect(0,y,oo(oi).stimulusRect)
-                    warning('The text extends below the screen. %d lines of %d chars.',...
-                        oo(oi).readLines,oo(oi).readCharPerLine);
-                    ffprintf(ff,'y %.0f, stimulusRect [%.0f %.0f %.0f %.0f], screenRect [%.0f %.0f %.0f %.0f]\n',...
-                        y,oo(oi).stimulusRect,screenRect);
-                    oo(oi).readError='The text does not fit on screen.';
-                end
-                Screen('TextSize',window,oo(1).textSize);
-                Screen('TextFont',window,oo(1).textFont);
-                endSecs=KbReleaseWait(oo(oi).deviceIndex);
-                RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
-                Screen('FillRect',window,white,oo(oi).stimulusRect);
-                Screen('Flip',window,[],1);
-                i=length(oo(oi).readString);
-                oo(oi).readSecs(i)=endSecs-beginSecs;
-                oo(oi).readChars(i)=length(oo(oi).readString{i});
-                oo(oi).readWords(i)=length(strsplit(oo(oi).readString{i}));
-                oo(oi).readCharPerSec(i)=oo(oi).readChars(i)/oo(oi).readSecs(i);
-                oo(oi).readWordPerMin(i)=60*oo(oi).readWords(i)/oo(oi).readSecs(i);
-                ffprintf(ff,'%d: Read text with %.1f deg letter spacing (%.1f deg size) at %.0f char/s %.0f word/min.\n',...
-                    oi,oo(oi).spacingDeg,oo(oi).targetDeg,...
-                    oo(oi).readCharPerSec(i),oo(oi).readWordPerMin(i));
+                    if ~IsInRect(0,y,oo(oi).stimulusRect)
+                        warning('The text extends below the screen. %d lines of %d chars.',...
+                            oo(oi).readLines,oo(oi).readCharPerLine);
+                        ffprintf(ff,'y %.0f, stimulusRect [%.0f %.0f %.0f %.0f], screenRect [%.0f %.0f %.0f %.0f]\n',...
+                            y,oo(oi).stimulusRect,screenRect);
+                        oo(oi).readError='The text does not fit on screen.';
+                    end
+                    Screen('TextSize',window,oo(1).textSize);
+                    Screen('TextFont',window,oo(1).textFont);
+                    endSecs=KbReleaseWait(oo(oi).deviceIndex);
+                    RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
+                    Screen('FillRect',window,white,oo(oi).stimulusRect);
+                    Screen('Flip',window,[],1);
+                    i=length(oo(oi).readString);
+                    oo(oi).readSecs(i)=endSecs-beginSecs;
+                    oo(oi).readChars(i)=length(oo(oi).readString{i});
+                    oo(oi).readWords(i)=length(strsplit(oo(oi).readString{i}));
+                    oo(oi).readCharPerSec(i)=oo(oi).readChars(i)/oo(oi).readSecs(i);
+                    oo(oi).readWordPerMin(i)=60*oo(oi).readWords(i)/oo(oi).readSecs(i);
+                    ffprintf(ff,'%d: Read text with %.1f deg letter spacing (%.1f deg size) at %.0f char/s %.0f word/min.\n',...
+                        oi,oo(oi).spacingDeg,oo(oi).targetDeg,...
+                        oo(oi).readCharPerSec(i),oo(oi).readWordPerMin(i));
+                    if oo(oi).readWordPerMin(i)>3000
+                        preface=['Oops. '...
+                            'That wasn''t long enough to read the page. '...
+                            'Please try again. '...
+                            'This time please hold the space bar down '...
+                            'until you''ve read to the end of the page. '];
+                        continue;
+                    end
+                    break;
+                end % while true % Until reading speed is reasonable.
                 % Test recall.
                 % Query about words shown to test comprehension.
                 for iQuestion=1:oo(oi).readQuestions
@@ -4018,8 +4055,8 @@ try
             switch oo(oi).thresholdParameter
                 case 'spacing'
                     intensity=log10(oo(oi).spacingDeg);
-					% ffprintf(ff,'presentation %d, condition %d, o.spacingDeg %.2f, o.targetDeg %.2f\n',...
-					%    presentation,oi,oo(oi).spacingDeg,oo(oi).targetDeg);
+                    % ffprintf(ff,'presentation %d, condition %d, o.spacingDeg %.2f, o.targetDeg %.2f\n',...
+                    %    presentation,oi,oo(oi).spacingDeg,oo(oi).targetDeg);
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
             end
