@@ -78,6 +78,7 @@ if true
     for ecc=[5 2.5]
         o.conditionName='crowding';
         o.task='identify';
+        o.useFixation=true;
         o.targetDeg=2;
         o.spacingDeg=2;
         o.thresholdParameter='spacing';
