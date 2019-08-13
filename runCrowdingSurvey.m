@@ -265,7 +265,7 @@ disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' 'eccen
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 
-ooo{end}(end)
+% ooo{end}(end)
 % return
 
 %% RUN.
