@@ -8,24 +8,24 @@ white=255;
 screenBufferRect=Screen('Rect',o.screen);
 screenRect=Screen('Rect',o.screen,1);
 o.hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
-if 1
-   PsychImaging('PrepareConfiguration');
-   if o.flipScreenHorizontally
-      PsychImaging('AddTask','AllViews','FlipHorizontal');
-   end
-   if o.hiDPIMultiple~=1
-      PsychImaging('AddTask','General','UseRetinaResolution');
-   end
-   % Mario says the virtual frame buffer makes the back buffer more
-   % reliable, for better performance.
-   PsychImaging('AddTask','General','UseVirtualFramebuffer');
-   if ~o.useFractionOfScreenToDebug
-      [window,r]=PsychImaging('OpenWindow',o.screen,white);
-   else
-      r=round(o.useFractionOfScreenToDebug*screenBufferRect);
-      r=AlignRect(r,screenBufferRect,'right','bottom');
-      [window,r]=PsychImaging('OpenWindow',o.screen,white,r);
-   end
+if true
+    PsychImaging('PrepareConfiguration');
+    if o.flipScreenHorizontally
+        PsychImaging('AddTask','AllViews','FlipHorizontal');
+    end
+    if o.hiDPIMultiple~=1
+        PsychImaging('AddTask','General','UseRetinaResolution');
+    end
+    % Mario says the virtual frame buffer makes the back buffer more
+    % reliable, for better performance.
+    PsychImaging('AddTask','General','UseVirtualFramebuffer');
+    if ~o.useFractionOfScreenToDebug
+        [window,r]=PsychImaging('OpenWindow',o.screen,white);
+    else
+        r=round(o.useFractionOfScreenToDebug*screenBufferRect);
+        r=AlignRect(r,screenBufferRect,'right','bottom');
+        [window,r]=PsychImaging('OpenWindow',o.screen,white,r);
+    end
 else
-   [window,r]=Screen('OpenWindow',o.screen,white,screenBufferRect);
+    [window,r]=Screen('OpenWindow',o.screen,white,screenBufferRect);
 end
