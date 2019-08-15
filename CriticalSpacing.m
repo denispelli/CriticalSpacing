@@ -1850,7 +1850,7 @@ try
     response=GetKeypress([allowedCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
     if ismember(response,[escapeChar,graveAccentChar])
         [oo(1).quitExperiment,oo(1).quitBlock,oo(1).skipTrial]=...
-            OfferEscapeOptions(oo(1).window,o,oo(1).textMarginPix);
+            OfferEscapeOptions(oo(1).window,o);
         if oo(1).quitExperiment
             ffprintf(ff,'*** User typed ESCAPE twice. Experiment terminated.\n');
             oo=SortFields(oo);
@@ -3655,13 +3655,14 @@ try
             % of half a frame. This should give us a mean duration equal to
             % that desired. We assess that in three ways, and print it out
             % at the end of the block.
-            [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,stimulusBeginSec+oo(oi).durationSec-0.5/60,1); % Remove stimulus. Eventually display fixation.
+            [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,...
+                stimulusBeginSec+oo(oi).durationSec-0.5/60,1); % Remove stimulus. Eventually display fixation.
             % We measure stimulus duration in three slightly different
             % ways. We use the VBLTimestamp and StimulusOnsetTime values
             % returned by our call to Screen Flip. And we time the interval
             % between return times of our two calls to Flip. The first Flip
-            % displays the stimulus and the second call erases it.
-            % All of these have the same purpose of recording what the true
+            % displays the stimulus and the second call erases it. All of
+            % these have the same purpose of recording what the true
             % stimulus duration is. The documentation of Screen Flip is a
             % bit vague, so we play safe by measuring in three ways.
             oo(oi).actualDurationSec(end+1)=stimulusEndSec-stimulusBeginSec;
@@ -4337,9 +4338,9 @@ try
             warning('Duration overrun by %.0f ms.',...
                 1000*(max(oo(oi).actualDurationSec)-oo(oi).durationSec));
         end
-        if false
-            % Report other measures of timing, suppressed because the
-            % standard measure seems to be accurate. DGP August 2019.
+        if true
+            % Report two other measures of timing, to confirm standard
+            % measure. DGP August 2019.
             ffprintf(ff,'%d: duration "%.0f ms" actually %.0f%c%.0f ms, max %.0f ms. TIMER\n',...
                 oi,oo(oi).durationSec*1000, ...
                 1000*mean(oo(oi).actualDurationTimerSec),...
