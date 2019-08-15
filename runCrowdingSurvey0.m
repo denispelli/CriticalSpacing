@@ -7,7 +7,7 @@ mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
 
 % o.useFractionOfScreenToDebug=0.4;
-o.skipScreenCalibration=true; % Skip calibration to save time.
+% o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.permissionToChangeResolution=true;
@@ -189,7 +189,9 @@ for block=1:length(ooo)
         o.conditionName='fixation check';
         o.task='identify';
         o.fixationCheck=true;
-        o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
+        o.fixationCrossBlankedUntilSecsAfterTarget=0;
+        o.fixationCrossBlankedNearTarget=true;
+        o.fixationCrossDeg=4;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
@@ -213,9 +215,9 @@ end
 
 switch mfilename
     case 'runCrowdingSurvey0'
-        % For debugging. Use just two blocks, 1 trial per condition.
-        ooo=ooo([2 4]);
-        [ooo{1}.trialsDesired]=deal(1);
+        % For debugging. Use just two blocks [2 4], 1 trial per condition.
+        ooo=ooo([4]);
+%         [ooo{1}.trialsDesired]=deal(1);
     case 'runCrowdingSurvey1'
         ooo=ooo(1:5);
     case 'runCrowdingSurvey2'
@@ -279,7 +281,10 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
+disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' ...
+    'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' ...
+    'trialsDesired' 'fixationCrossDeg' 'fixationCrossBlankedNearTarget' ...
+    'fixationCrossBlankedUntilSecsAfterTarget'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 

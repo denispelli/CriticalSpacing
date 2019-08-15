@@ -49,6 +49,7 @@ if 1
     o.trialsDesired=4;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
+    o.flankingDirection='horizontal';
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
     % 50 cm. Larger letters require proportionally smaller viewing
     % distance.
@@ -83,6 +84,7 @@ if true
         o.spacingDeg=2;
         o.thresholdParameter='spacing';
         o.eccentricityXYDeg=[ecc 0]; % Distance of target from fixation. Positive up and to right.
+        o.flankingDirection='radial';
         o.targetFont='Sloan';
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
@@ -179,13 +181,17 @@ end
 for block=1:length(ooo)
     oo=ooo{block};
     if all([oo.eccentricityXYDeg]==0)
+        % Leave alone conditions at zero eccentricity.
         continue
     else
+        % Add fixation check to conditions with nonzero eccentricity.
         o=oo(1);
         o.conditionName='fixation check';
         o.task='identify';
         o.fixationCheck=true;
-        o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
+        o.fixationCrossBlankedUntilSecsAfterTarget=0;
+        o.fixationCrossBlankedNearTarget=true;
+        o.fixationCrossDeg=4;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
@@ -208,6 +214,10 @@ if rand>0.5
 end
 
 switch mfilename
+    case 'runCrowdingSurvey0'
+        % For debugging. Use just two blocks [2 4], 1 trial per condition.
+        ooo=ooo([4]);
+%         [ooo{1}.trialsDesired]=deal(1);
     case 'runCrowdingSurvey1'
         ooo=ooo(1:5);
     case 'runCrowdingSurvey2'
@@ -271,7 +281,10 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
+disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' ...
+    'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' ...
+    'trialsDesired' 'fixationCrossDeg' 'fixationCrossBlankedNearTarget' ...
+    'fixationCrossBlankedUntilSecsAfterTarget'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 
