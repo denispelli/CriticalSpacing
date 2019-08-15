@@ -11,7 +11,7 @@ function [oldVolume,failed]=SoundVolume(newVolume)
 % Note that there won't be any sound if muting is on. You can use
 % SoundMuting to assess and control muting.
 %
-% Takes 5 s to read and set the volume.
+% Takes about one second to read and set the volume.
 %
 % Written by denis.pelli@nyu.edu for the Psychtoolbox, July 16, 2019. Based
 % on code by Nicholas Robinson-Wall:
