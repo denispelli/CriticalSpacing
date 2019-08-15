@@ -213,9 +213,8 @@ end
 
 switch mfilename
     case 'runCrowdingSurvey0'
-        % For debugging. Use just second block; run just 1 trial of each
-        % condition.
-        ooo=ooo(2);
+        % For debugging. Use just two blocks, 1 trial per condition.
+        ooo=ooo([2 4]);
         [ooo{1}.trialsDesired]=deal(1);
     case 'runCrowdingSurvey1'
         ooo=ooo(1:5);
