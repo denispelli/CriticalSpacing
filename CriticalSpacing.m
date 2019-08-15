@@ -630,6 +630,7 @@ o.fixationCheckMakeupPresentations=1; % After a mistake, how many correct presen
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
 o.responseLabels='abcdefghijklmnopqrstuvwxyz123456789';
+o.alphabetPlacement='bottom'; % 'top' placement currently collides with instructions.
 
 % SIMULATE OBSERVER
 o.simulateObserver=false;
@@ -3706,21 +3707,36 @@ try
             n=length(letterStruct); % Number of letters to display.
             w=RectWidth(screenRect)-2*2*oo(oi).textSize; % Usable width of display.
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
-            oo(oi).responseTextWidth=min(oo(oi).responseTextWidth,oo(oi).textSize); % But no bigger than our information text.
             Screen('TextSize',window,oo(oi).responseTextWidth);
-            % Create response alphabet.\n',MFileLineNr);
-            % [letterStruct,alphabetBounds]=CreateLetterTextures(oi,oo(oi),window); % Takes 2 s.
-            % letterStruct,alphabetBounds and won't be exactly the right size, so we scale it to be
+            % Response alphabet was created above.
+            % alphabetBounds won't be exactly the right size, so we scale it to be
             % exactly the size we want.
+            % Make the alphabet just fit horizontally.
             alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
+            r=RectHeight(alphabetBounds)/RectHeight(oo(oi).stimulusRect);
+            % But shrink it, if necessary, so its height is no more than
+            % 0.2 of the height of the o.stimulusRect. We don't want it to
+            % overwrite fixation. It will be at top or bottom of the
+            % screen, so 0.2 height protects fixation.
+            if r>0.2
+                alphabetBounds=alphabetBounds*0.2/r;
+            end
             x=2*oo(oi).textSize;
-            y=oo(oi).stimulusRect(4)-0.3*RectHeight(alphabetBounds);
+            if ~exist('counterBounds','var') || isempty(counterBounds)
+               counterBounds=DrawCounter(oo);
+            end
+            switch oo(oi).alphabetPlacement
+                case 'bottom'
+                    y=oo(oi).stimulusRect(4)-1.5*RectHeight(counterBounds);
+                case 'top'
+                    y=oo(oi).stimulusRect(2)+1.1*RectHeight(alphabetBounds);
+            end
             if oo(oi).labelAnswers
                 labelTextSize=oo(oi).textSize;
                 Screen('TextSize',window,labelTextSize);
             end
             for i=1:length(oo(oi).alphabet)
-                dstRect=OffsetRect(alphabetBounds,x,y-RectHeight(alphabetBounds));
+                dstRect=OffsetRect(alphabetBounds,x,y);
                 % Draw the i-th letter in o.alphabet.
                 for j=1:length(letterStruct)
                     if oo(oi).alphabet(i)==letterStruct(j).letter
