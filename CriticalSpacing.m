@@ -510,9 +510,9 @@ o.textFont='Verdana';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
 o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
-o.viewingDistanceCm=400; % Default for runtime question.
-o.maxViewingDistanceCm=0; % Max over remining blocks.
-% THIS SEEMS A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
+o.viewingDistanceCm=400; % Default.
+o.maxViewingDistanceCm=0; % Max over remaining blocks in experiment.
+% THIS SEEMS TO BE A CLUMSY ANTECEDENT TO THE NEARPOINT IDEA. DGP
 o.measureViewingDistanceToTargetNotFixation=true;
 o.willTakeMin=[];
 o.askExperimenterToSetDistance=true;
@@ -538,6 +538,7 @@ o.speakViewingDistance=false;
 o.usePurring=false;
 o.useSpeech=false;
 o.showCounter=true;
+o.soundVolume=0.25;
 
 % VISUAL STIMULUS
 o.contrast=1; % Nominal contrast, not calibrated.
@@ -624,7 +625,7 @@ o.forceFixationOffScreen=false;
 o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
 o.recordGaze=false;
 o.fixationCheck=false; % True designates condition as a fixation check.
-o.fixationCheckMakeupPresentations=2; % After a mistake, how many correct presentation to require.
+o.fixationCheckMakeupPresentations=1; % After a mistake, how many correct presentation to require.
 
 % RESPONSE SCREEN
 o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
@@ -783,6 +784,7 @@ end
 if oo(1).quitExperiment
     % Quick return. We're skipping every block in the session.
     keepWindowOpen=false;
+    oo=SortFields(oo);
     return
 end
 skipScreenCalibration=oo(1).skipScreenCalibration; % Global used by CloseWindowsAndCleanup.
@@ -831,6 +833,11 @@ for oi=1:conditions
     end
 end
 Screen('Preference','TextAntiAliasing',1);
+SoundVolume(oo(1).soundVolume);
+soundMuting=SoundMuting;
+if oo(1).soundVolume>0 && soundMuting
+    warning('SoundVolumen %.2f is greater than zero, but SoundMuting is true.',oo(1).soundVolume);
+end
 % Set up for KbCheck. Calling ListenChar(2) tells the MATLAB console/editor
 % to ignore what we type, so we don't inadvertently echo observer responses
 % into the Command window or any open file. We use this mode while use the
@@ -920,9 +927,11 @@ if oo(1).nativeWidth==RectWidth(actualScreenRect)
 else
     warning backtrace off
     if oo(1).permissionToChangeResolution
-        fprintf('WARNING: Trying to change your screen resolution to be optimal for this test. ...');
+        s=GetSecs;
+        fprintf('WARNING: Trying to optimize screen resolution for this test. ... ');
         oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
         res=Screen('Resolution',oo(1).screen);
+        fprintf('Done (%.1f s). ',GetSecs-s);
         if res.width==oo(1).nativeWidth
             fprintf('SUCCESS!\n');
         else
@@ -1382,7 +1391,7 @@ try
         stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
         % This refers to max possible, for this condition. Don't confuse it
         % with o.maxViewingDistanceCm which is max of o.viewingDistanceCm
-        % across remaining blocks.
+        % across remaining blocks in experiment.
         maximumViewingDistanceCm=min( stimulusWidthHeightCm./(2*tand(0.5*minimumScreenSizeXYDeg)) );
         
         % BIG TEXT
@@ -1409,7 +1418,7 @@ try
         
         % VIEWING DISTANCE
         red=[255 0 0];
-        isNewDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm ~= oldViewingDistanceCm;
+        isNewDistance=oo(1).isFirstBlock || oo(1).viewingDistanceCm~=oldViewingDistanceCm;
         if isNewDistance
             color=red;
             string=sprintf(['\n\nDISTANCE: %.0f cm. '...
@@ -1444,7 +1453,6 @@ try
             2*oo(1).textSize,y,color,...
             oo(oi).textLineLength/scalar,...
             [],[],1.1);
-        oldViewingDistanceCm=oo(1).viewingDistanceCm;
         string='';
         
         % WIRELESS KEYBOARD?
@@ -1456,7 +1464,7 @@ try
                 string=sprintf(['\n\nKEYBOARD: ' ...
                     'The maximum viewing distance required '...
                     'in the remaining blocks is %.0f cm. '...
-                    'At that distance you may need a wireless keyboard, ' ...
+                    'At that distance, you may need a wireless keyboard, ' ...
                     'but I can''t detect any. After connecting a new keyboard, ' ...
                     'use your old keyboard to type "k" below, followed by RETURN, ' ...
                     'and I''ll recreate the keyboard list.'],...
@@ -1600,6 +1608,7 @@ try
             if tryAgain
                 continue
             else
+                oo=SortFields(oo);
                 return
             end
         end
@@ -1716,6 +1725,7 @@ try
             if tryAgain
                 continue
             else
+                oo=SortFields(oo);
                 return
             end
         end
@@ -1769,6 +1779,7 @@ try
             if tryAgain
                 continue
             else
+                oo=SortFields(oo);
                 return
             end
         end
@@ -1799,9 +1810,10 @@ try
             'X below is still %.1f cm (%.1f inches) from the observer''s eye. '], ...
             oo(1).viewingDistanceCm,oo(1).viewingDistanceCm/2.54);
     end
-%    string=[string 'Tilt and swivel the display so the X is orthogonal to the observer''s line of sight. '];
-%    isNewDistance
-%    o.askExperimenterToSetDistance
+    oldViewingDistanceCm=oo(1).viewingDistanceCm;
+    %    string=[string 'Tilt and swivel the display so the X is orthogonal to the observer''s line of sight. '];
+    %    isNewDistance
+    %    o.askExperimenterToSetDistance
     if isNewDistance && oo(1).askExperimenterToSetDistance
         string=[string 'Then the Experimenter will type his or her signature key to continue.\n'];
     else
@@ -1811,7 +1823,7 @@ try
     Screen('TextSize',oo(1).window,oo(1).textSize);
     Screen('TextFont',oo(1).window,'Verdana');
     Screen('FillRect',oo(1).window);
-%     Screen('TextBackgroundColor',oo(1).window,oo(1).gray1); % Set background.
+    %     Screen('TextBackgroundColor',oo(1).window,oo(1).gray1); % Set background.
     DrawFormattedText(oo(1).window,string,...
         2*oo(1).textSize,2.5*oo(1).textSize,black,...
         oo(1).textLineLength,[],[],1.3);
@@ -1841,9 +1853,11 @@ try
             OfferEscapeOptions(oo(1).window,o,oo(1).textMarginPix);
         if oo(1).quitExperiment
             ffprintf(ff,'*** User typed ESCAPE twice. Experiment terminated.\n');
+            oo=SortFields(oo);
             return
         elseif oo(1).quitBlock
             ffprintf(ff,'*** User typed ESCAPE. Block terminated.\n');
+            oo=SortFields(oo);
             return
         else
             ffprintf(ff,'*** User typed ESCAPE, but chose to continue.\n');
@@ -1853,7 +1867,7 @@ try
         oldViewingDistanceCm=oo(1).viewingDistanceCm;
     end
     Screen('FillRect',oo(1).window);
-    Screen('Flip',oo(1).window); % Blank, to acknowledge response.  
+    Screen('Flip',oo(1).window); % Blank, to acknowledge response.
     
     %% START TIMER
     oo(1).beginSecs=GetSecs;
@@ -1966,7 +1980,7 @@ try
         end
         ecc=norm(oo(oi).eccentricityXYDeg);
         if isempty(oo(oi).flankingDegVector) && ecc==0 && ismember(oo(oi).flankingDirection,{'radial' 'tangential'})
-            error('At zero o.eccentricityXYDeg, o.flankingDirection must be "horizontal'' or ''vertical'', not ''%s''.',...
+            error('At zero o.eccentricityXYDeg, o.flankingDirection must be ''horizontal'' or ''vertical'', not ''%s''.',...
                 oo(oi).flankingDirection);
         end
         if isempty(oo(oi).flankingDegVector) && ecc>0 && ismember(oo(oi).flankingDirection,{'horizontal' 'vertical'})
@@ -2437,7 +2451,8 @@ try
     string=[string 'Please make sure this computer''s sound is enabled. ' ...
         'Press CAPS LOCK at any time to see the alphabet of possible letters. ' ...
         'You might also have the alphabet on a piece of paper. ' ...
-        'You can respond by typing or speaking, or by pointing to a letter on your piece of paper. '];
+        'You can respond by typing or speaking, ' ...
+        'or by pointing to a letter on your piece of paper. '];
     for oi=1:conditions
         if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'size')
             string=[string 'When you see a letter, please report it. '];
@@ -2493,6 +2508,7 @@ try
             if tryAgain
                 continue
             else
+                oo=SortFields(oo);
                 return
             end
         end
@@ -2566,6 +2582,7 @@ try
                 if tryAgain
                     continue
                 else
+                    oo=SortFields(oo);
                     return
                 end
             end
@@ -2617,6 +2634,7 @@ try
                 if tryAgain
                     continue
                 else
+                    oo=SortFields(oo);
                     return
                 end
             end
@@ -2650,7 +2668,7 @@ try
         oo(oi).trialData=struct([]);
     end % for oi=1:conditions
     condList=shuffle(condList);
-    for oi=1:conditions
+    for oi=conditions:-1:1
         if oo(oi).fixationCheck
             % Insert a fixationCheck at the beginning.
             condList=[oi condList];
@@ -2660,15 +2678,9 @@ try
     skipTrial=false;
     encourageFixation=false;
     encourageFixationString='';
-    fixationTestPresentationsOwed=0;
     
     % THIS IS THE MAIN LOOP
     while presentation<length(condList)
-        if fixationTestPresentationsOwed>0
-            % Repeat the fixationCheck.
-            assert(oo(oi).fixationCheck);
-            condList(presentation+1:end+1)=condList(presentation:end);
-        end
         if skipTrial
             % We arrive here if user canceled last presentation. In that
             % case, we don't count that presentation and reshuffle all the
@@ -3115,6 +3127,7 @@ try
                         if tryAgain
                             continue
                         else
+                            oo=SortFields(oo);
                             return
                         end
                     end
@@ -3731,7 +3744,9 @@ try
                 DrawCounter(oo);
             end
             Screen('Flip',window,[],1); % Display fixation & response instructions.
-            Screen('FillRect',window,white,oo(oi).stimulusRect);
+            % Don't clear screen back buffer until after we've called
+            % GetKeypressWithHelp, because it needs it.
+            % Screen('FillRect',window,white,oo(oi).stimulusRect);
         end % if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
         if oo(oi).takeSnapshot
             TakeSnapshot(oo);
@@ -3820,6 +3835,7 @@ try
                                 % Screen('Flip',window);
                                 continue
                             else
+                                oo=SortFields(oo);
                                 return
                             end % if tryAgain
                         else % if is SPACE.
@@ -3957,6 +3973,7 @@ try
                             if tryAgain
                                 continue
                             else
+                                oo=SortFields(oo);
                                 return
                             end
                         end
@@ -3986,6 +4003,7 @@ try
                         ffprintf(ff,'%s\n',msg);
                         oo(oi).readError=[oo(oi).readError msg];
                         oo(1).quitBlock=true;
+                        oo=SortFields(oo);
                         return;
                     end
                     if false
@@ -4166,20 +4184,16 @@ try
         if oo(1).quitBlock
             break;
         end
-        if fixationTestPresentationsOwed>0
-            % Presentation was not canceled, so count it.
-            fixationTestPresentationsOwed=fixationTestPresentationsOwed-1;
-        end
         if ~all(responseScores) && oo(oi).fixationCheck
             % The observer failed to correctly identify an easy foveal
             % target. Before the next trial, encourage them to always have
             % their eye on the center of the fixation mark when they hit
-            % the response key, which initiates the next trial. We insist
-            % that the observer get right several
-            % (o.fixationCheckMakeupPresentations) consecutive trials of this
-            % condition before proceeding with the rest of the condition
-            % list.
-            % This requests showing of a message before the next trial.
+            % the response key, which initiates the next trial.
+            % encourageFixation=true requests showing of a message before
+            % the next trial. We insist that the observer get right several
+            % (o.fixationCheckMakeupPresentations) consecutive trials of
+            % this condition before proceeding with the rest of the
+            % condition list.
             encourageFixation=true;
             encourageFixationString=['Oops. Wrong response. '...
                 'Perhaps you didn''t have your eye on the center '...
@@ -4189,8 +4203,12 @@ try
                 'before initiating the next trial. '];
             % Repeat the current condition for several trials.
             assert(oo(oi).fixationCheckMakeupPresentations>=0,...
-                'o.fixationCheckMakeupPresentations must be a nonnegative integer.');
-            fixationTestPresentationsOwed=oo(oi).fixationCheckMakeupPresentations;
+                'o.fixationCheckMakeupPresentations %.0f must be a nonnegative integer.',...
+                oo(oi).fixationCheckMakeupPresentations);
+            for i=1:oo(oi).fixationCheckMakeupPresentations
+                % Repeat the fixationCheck.
+                condList(presentation+1:end+1)=condList(presentation:end);
+            end
         else
             encourageFixation=false;
             encourageFixationString='';
@@ -4200,6 +4218,7 @@ try
     blockTrials=[]; % For DrawCounter
     % Quitting just this block or experiment.
     if oo(1).quitBlock || oo(1).quitExperiment
+        oo=SortFields(oo);
         return
     end
     Screen('FillRect',window);
@@ -4307,7 +4326,7 @@ try
     ShowCursor;
     a=[];
     for oi=1:conditions
-        ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms.\n',...
+        ffprintf(ff,'%d: duration "%.0f ms" actually %.0f%c%.0f ms, max %.0f ms.\n',...
             oi,oo(oi).durationSec*1000, ...
             1000*mean(oo(oi).actualDurationSec),...
             plusMinus,...
@@ -4315,30 +4334,37 @@ try
             1000*max(oo(oi).actualDurationSec));
         a=[a oo(oi).actualDurationSec];
         if max(oo(oi).actualDurationSec)>oo(oi).durationSec+2/60
-            warning('Duration overrun by %.2 s.',max(oo(oi).actualDurationSec)-oo(oi).durationSec);
+            warning('Duration overrun by %.0f ms.',...
+                1000*(max(oo(oi).actualDurationSec)-oo(oi).durationSec));
         end
-        ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms. TIMER\n',...
-            oi,oo(oi).durationSec*1000, ...
-            1000*mean(oo(oi).actualDurationTimerSec),...
-            plusMinus,...
-            1000*std(oo(oi).actualDurationTimerSec),...
-            1000*max(oo(oi).actualDurationTimerSec));
-        a=[a oo(oi).actualDurationTimerSec];
-        if max(oo(oi).actualDurationTimerSec)>oo(oi).durationSec+2/60
-            warning('Duration overrun by %.2 s. TIMER',max(oo(oi).actualDurationTimerSec)-oo(oi).durationSec);
-        end
-        ffprintf(ff,'%d: duration "%.0f ms" is %.0f%c%.0f ms, max %.0f ms. VBL\n',...
-            oi,oo(oi).durationSec*1000, ...
-            1000*mean(oo(oi).actualDurationVBLSec),...
-            plusMinus,...
-            1000*std(oo(oi).actualDurationVBLSec),...
-            1000*max(oo(oi).actualDurationVBLSec));
-        a=[a oo(oi).actualDurationVBLSec];
-        if max(oo(oi).actualDurationVBLSec)>oo(oi).durationSec+2/60
-            warning('Duration overrun by %.2 s. VBL',max(oo(oi).actualDurationVBLSec)-oo(oi).durationSec);
+        if false
+            % Report other measures of timing, suppressed because the
+            % standard measure seems to be accurate. DGP August 2019.
+            ffprintf(ff,'%d: duration "%.0f ms" actually %.0f%c%.0f ms, max %.0f ms. TIMER\n',...
+                oi,oo(oi).durationSec*1000, ...
+                1000*mean(oo(oi).actualDurationTimerSec),...
+                plusMinus,...
+                1000*std(oo(oi).actualDurationTimerSec),...
+                1000*max(oo(oi).actualDurationTimerSec));
+            a=[a oo(oi).actualDurationTimerSec];
+            if max(oo(oi).actualDurationTimerSec)>oo(oi).durationSec+2/60
+                warning('Duration overrun by %.0f ms. TIMER',...
+                    1000*(max(oo(oi).actualDurationTimerSec)-oo(oi).durationSec));
+            end
+            ffprintf(ff,'%d: duration "%.0f ms" actually %.0f%c%.0f ms, max %.0f ms. VBL\n',...
+                oi,oo(oi).durationSec*1000, ...
+                1000*mean(oo(oi).actualDurationVBLSec),...
+                plusMinus,...
+                1000*std(oo(oi).actualDurationVBLSec),...
+                1000*max(oo(oi).actualDurationVBLSec));
+            a=[a oo(oi).actualDurationVBLSec];
+            if max(oo(oi).actualDurationVBLSec)>oo(oi).durationSec+2/60
+                warning('Duration overrun by %.0f ms. VBL',...
+                    1000*(max(oo(oi).actualDurationVBLSec)-oo(oi).durationSec));
+            end
         end
     end
-    ffprintf(ff,':: duration is %.0f%c%.0f ms, max %.0f ms.\n',...
+    ffprintf(ff,':: duration actually %.0f%c%.0f ms, max %.0f ms.\n',...
         1000*mean(a),plusMinus,1000*std(a),1000*max(a));
     for oi=1:conditions
         if exist('results','var') && oo(oi).responseCount>1
@@ -4364,8 +4390,9 @@ try
             fontSize=24;
         end
         fontSize=min(36,fontSize);
+        sca; % Close any Psychtoolbox window, which would obscure the input dialog.
         reply=inputdlg2({query},'Comments?',[5 50],{''},'on','FontSize',fontSize);
-        oo.partingComments=deal('');
+        [oo.partingComments]=deal('');
         oo(1).partingComments=reply;
     end
     dataFile=fullfile(oo(1).dataFolder,[oo(1).dataFilename '.mat']);
@@ -4397,6 +4424,7 @@ catch e
     rethrow(e);
 end
 keepWindowOpen=~oo(1).isLastBlock && ~oo(1).quitExperiment;
+oo=SortFields(oo);
 return
 end % function CriticalSpacing
 
