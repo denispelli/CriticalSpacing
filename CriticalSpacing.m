@@ -984,6 +984,10 @@ try
         s=GetSecs;
         window=OpenWindow(oo(1));
         ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
+%         oo(1).flipIntervalSec=Screen('GetFlipInterval',window);
+        oo(1).flipIntervalSec=1/FrameRate(window);
+        ffprintf(ff,'o.flipIntervalSec %.0f ms %.1f Hz\n',...
+            1000*oo(1).flipIntervalSec,1/oo(1).flipIntervalSec);
         scratchWindow=Screen('OpenOffscreenWindow',-1,[],screenRect,8);
     else
         windowsNowOpen=length(Screen('Windows'));
@@ -3655,7 +3659,8 @@ try
             % at the end of the block.
             deadSec=GetSecs-stimulusFlipSecs;
             [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,...
-                stimulusBeginSec+oo(oi).durationSec-1/60,1); % Remove stimulus. Eventually display fixation.
+                stimulusBeginSec+oo(oi).durationSec-oo(1).flipIntervalSec,...
+                1); % Remove stimulus. Eventually display fixation.
             fprintf('Dead time between flips %.0f ms.\n',1000*deadSec);
             % We measure stimulus duration in three slightly different
             % ways. We use the VBLTimestamp and StimulusOnsetTime values
