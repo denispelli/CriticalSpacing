@@ -1,7 +1,7 @@
 function [answer,secs]=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString)
 %[answer,secs]=GetKeypressWithHelp(enableKeyCodes,o,window,stimulusRect,letterStruct,responseString);
-%   Used by CriticalSpacing to get a key stroke. Pressing shift shows
-%   the alphabet.
+%   Used by CriticalSpacing to get a key stroke. Pressing shift or shift
+%   lock shows the alphabet.
 %   We assume that, on entry, the back buffer is a copy of the front
 %   buffer.
 %   denis.pelli@nyu.edu 2016
