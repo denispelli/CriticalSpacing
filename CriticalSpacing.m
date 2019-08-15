@@ -985,10 +985,6 @@ try
         s=GetSecs;
         window=OpenWindow(oo(1));
         ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
-%         oo(1).flipIntervalSec=Screen('GetFlipInterval',window);
-        oo(1).flipIntervalSec=1/FrameRate(window);
-        ffprintf(ff,'o.flipIntervalSec %.0f ms %.1f Hz\n',...
-            1000*oo(1).flipIntervalSec,1/oo(1).flipIntervalSec);
         scratchWindow=Screen('OpenOffscreenWindow',-1,[],screenRect,8);
     else
         windowsNowOpen=length(Screen('Windows'));
@@ -1000,6 +996,12 @@ try
         if kind~=-1
             error('Not first block, yet "scratchWindow" pointer is invalid. %d windows open.',windowsNowOpen);
         end
+    end
+    if ~isfield(oo(1),'flipIntervalSec') || isempty(oo(1).flipIntervalSec)
+        % oo(1).flipIntervalSec=Screen('GetFlipInterval',window);
+        oo(1).flipIntervalSec=1/FrameRate(window);
+        ffprintf(ff,'o.flipIntervalSec %.0f ms %.1f Hz\n',...
+            1000*oo(1).flipIntervalSec,1/oo(1).flipIntervalSec);
     end
     white=WhiteIndex(window);
     black=BlackIndex(window);
