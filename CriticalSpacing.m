@@ -628,9 +628,11 @@ o.fixationCheck=false; % True designates condition as a fixation check.
 o.fixationCheckMakeupPresentations=1; % After a mistake, how many correct presentation to require.
 
 % RESPONSE SCREEN
-o.labelAnswers=false; % Useful for non-Roman fonts, like Checkers.
+o.labelAnswers=false; % Useful for non-Roman fonts, like Chinese and Animals.
 o.responseLabels='abcdefghijklmnopqrstuvwxyz123456789';
 o.alphabetPlacement='bottom'; % 'top' placement currently collides with instructions.
+o.instructionPlacement='topLeft'; % 'topLeft' 'bottomLeft'. NOT YET IMPLEMENTED.
+o.counterPlacement='bottomRight'; % 'bottomLeft' 'bottomCenter' 'bottomRight'
 
 % SIMULATE OBSERVER
 o.simulateObserver=false;
@@ -3664,7 +3666,7 @@ try
             [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,...
                 stimulusBeginSec+oo(oi).durationSec-oo(1).flipIntervalSec,...
                 1); % Remove stimulus. Eventually display fixation.
-            fprintf('Dead time between flips %.0f ms.\n',1000*deadSec);
+            % fprintf('Dead time between flips %.0f ms.\n',1000*deadSec);
             % We measure stimulus duration in three slightly different
             % ways. We use the VBLTimestamp and StimulusOnsetTime values
             % returned by our call to Screen Flip. And we time the interval
@@ -3710,28 +3712,48 @@ try
             w=RectWidth(screenRect)-2*2*oo(oi).textSize; % Usable width of display.
             oo(oi).responseTextWidth=round(w/(n+(n-1)/2)); % Width of letter to fill usable width, assuming a half-letter-width between letters.
             Screen('TextSize',window,oo(oi).responseTextWidth);
-            % Response alphabet was created above.
-            % alphabetBounds won't be exactly the right size, so we scale it to be
-            % exactly the size we want.
-            % Make the alphabet just fit horizontally.
-            alphabetBounds=round(alphabetBounds*oo(oi).responseTextWidth/RectWidth(alphabetBounds));
-            r=RectHeight(alphabetBounds)/RectHeight(oo(oi).stimulusRect);
+            % Response alphabetBounds and letterStruct were created above.
+            % alphabetBounds won't be exactly the right size, so we scale
+            % it to just fit horizontally.
+            r=oo(oi).responseTextWidth/RectWidth(alphabetBounds);
+            alphabetBounds=r*alphabetBounds;
             % But shrink it, if necessary, so its height is no more than
             % 0.2 of the height of the o.stimulusRect. We don't want it to
             % overwrite fixation. It will be at top or bottom of the
             % screen, so 0.2 height protects fixation.
+            r=RectHeight(alphabetBounds)/RectHeight(oo(oi).stimulusRect);
             if r>0.2
                 alphabetBounds=alphabetBounds*0.2/r;
             end
+            alphabetBounds=round(alphabetBounds);
             x=2*oo(oi).textSize;
             if ~exist('counterBounds','var') || isempty(counterBounds)
                counterBounds=DrawCounter(oo);
             end
             switch oo(oi).alphabetPlacement
                 case 'bottom'
-                    y=oo(oi).stimulusRect(4)-1.5*RectHeight(counterBounds);
+                    y=oo(oi).stimulusRect(4);
+                    switch oo(oi).counterPlacement
+                        case {'bottomLeft' 'bottomCenter' 'bottomRight'}
+                            % Leave room for counter produced by
+                            % DrawCounter.
+                            y=y-1.5*RectHeight(counterBounds);
+                    end
+                    switch oo(oi).instructionPlacement
+                        case 'bottomLeft'
+                            % Leave room for instructions at the bottom of
+                            % the screen. Assuming the instructions are
+                            % raised above the counter.
+                            y=y-2*oo(oi).textSize; 
+                    end
                 case 'top'
                     y=oo(oi).stimulusRect(2)+1.1*RectHeight(alphabetBounds);
+                    switch oo(oi).instructionPlacement
+                        case 'topLeft'
+                            % Leave room for instructions at the top of the
+                            % screen. 
+                            y=y+2*oo(oi).textSize;
+                    end
             end
             if oo(oi).labelAnswers
                 labelTextSize=oo(oi).textSize;
