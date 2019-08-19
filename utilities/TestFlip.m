@@ -113,7 +113,7 @@ g.YLim=[0 1000*3.6*periodSec];
 g.XLim=[0 1000*duration(end)];
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
-text(18,17,'requested time');
+text(23,22,'requested time');
 title('Screen Flip time vs when requested');
 xlabel('Requested time re prior flip (ms)');
 ylabel('Flip time re prior flip (ms)');
@@ -127,8 +127,14 @@ text(1,0.9*g.YLim(2),...
     sprintf('Median sd of flip time is %.1f ms.',...
     1000*median(std(excess))));
 c=Screen('Computer');
-computerModelName=c.hw.model;
-text(0.39*g.XLim(2),0.11*g.YLim(2),computerModelName,'FontWeight','bold');
+if isfield(c,'hw') && isfield(c.hw,'model')
+    computerModelName=c.hw.model;
+else
+    computerModelName='';
+end
+machine=ComputerModel;
+text(0.39*g.XLim(2),0.14*g.YLim(2),machine.manufacturer,'FontWeight','bold');
+text(0.39*g.XLim(2),0.11*g.YLim(2),machine.model,'FontWeight','bold');
 system=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
 text(0.39*g.XLim(2),0.07*g.YLim(2),system);
 [~,v]=PsychtoolboxVersion;
@@ -191,11 +197,10 @@ s8=sprintf(['JITTER: The red-line model ignores the jitter. '...
     'the current and prior frames occurred. \n'],...
     1000*sd,1000*sd);
 s9=sprintf([...
-    'OTHER OUTPUT TIMES: Screen ''Flip'', returns three similar time values: '...
+    'OTHER OUTPUT TIMES: Screen ''Flip'' returns three similar time values: '...
     'VBLTimestamp, StimulusOnsetTime, and FlipTimestamp. '...
     'Typically StimulusOnsetTime is identical to VBLTimestamp. '...
-    'On this computer, '...
-    'relative to VBLTimestamp, '...
+    'On this computer, relative to VBLTimestamp, '...
     'StimulusOnsetTime is %.0f%c%.0f %cs (mean%csd), '...
     'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
@@ -207,6 +212,27 @@ position=g.Position;
 position(3)=position(3)*1.3; % Widen text box.
 annotation('textbox',position,'String',str,'LineStyle','none');
 
+% figure(2)
+% Assuming the frame frequency is stable, we estimate the true
+% frame times and assess the sd of VBLTimestamp relative to that.
+tMeasured=cumsum(actual);
+tEst=zeros(size(tMeasured));
+for i=1:length(duration)
+    % Assume all frames have average length.
+    % This is optimal period. Might not be quite optimal phase, but that
+    % will only affect mean, not SD of the deviance.
+    tEst(:,i)=linspace(tMeasured(1,i),tMeasured(end,i),size(tMeasured,1));
+end
+dt=tMeasured-tEst;
+sdT=std(dt);
+% plot(1000*duration,1000*sdT,'-r');
+ylabel('SD re estimated true frame time (ms)');
+xlabel('Requested flip time re previous (ms)');
+r=(duration+bestDelay)/periodSec;
+ok=(r>0.25 & r<0.75) | (r>1.25 & r<1.75) | (r>2.25 & r<2.75);
+sdT=std(dt(ok));
+fprintf('%.1f ms SD of times re periodic times\n',1000*sdT);
+
 %% SAVE PLOT TO DISK
 figureTitle=['TestFlip-' computerModelName '-' system '-' psych '.png'];
 h=gcf;
@@ -216,3 +242,41 @@ graphFile=fullfile(fileparts(mfilename('fullpath')),figureTitle);
 saveas(gcf,graphFile,'png');
 fprintf('Figure has been saved to disk as file "%s".\n',figureTitle);
 
+function machine=ComputerModel
+switch computer
+    case 'MACI64'
+% https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
+        s = evalc(['!'...
+            'curl -s https://support-sp.apple.com/sp/product?cc=$('...
+            'system_profiler SPHardwareDataType '...
+            '| awk ''/Serial/ {print $4}'' '...
+            '| cut -c 9- '...
+            ') | sed ''s|.*<configCode>\(.*\)</configCode>.*|\1|''']);
+        s=strrep(s,char(10),' '); % Change to space.
+        s=strrep(s,char(13),' '); % Change to space.
+        if s(end)==' '
+            s=s(1:end-1);
+        end
+        machine.manufacturer='Apple Inc.';
+        machine.model=s;
+    case 'PCWIN64'
+        s = evalc('!wmic computersystem get manufacturer, model');
+        % s=sprintf(['    ''Manufacturer  Model            \r'...
+        % '     Dell Inc.     Inspiron 5379    ']);
+        s=strrep(s,char(10),' '); % Change to space.
+        s=strrep(s,char(13),' '); % Change to space.
+        s=regexprep(s,'  +',char(9)); % Tab.
+        s=strrep(s,'''',''); % Remove stray quote.
+        fields=split(s,char(9));
+        for i=1:length(fields)
+            ok(i)=~isempty(fields{i});
+        end
+        fields=fields(ok);
+        for i=1:2
+            machine.(fields{i})=fields{i+2};
+        end
+    case 'GLNXA64'
+        machine.manufacturer='';
+        machine.model='linux';
+end
+end
