@@ -16,10 +16,12 @@
 % See also: Screen('Flip?')
 
 %% MEASURE TIMING
+repetitions=30; % 30
+steps=100; % 100
 Screen('Preference','SkipSyncTests',1);
 periodSec=1/FrameRate; 
-clear o t
 plusMinus=char(177);
+micro=char(181);
 screen=0;
 actualDurationVBLSec=[];
 white=255;
@@ -31,12 +33,11 @@ if true
 else
     window=Screen('OpenWindow',screen,white);
 end
-repetitions=30;
-steps=100;
 duration=2*periodSec*(0:steps-1)/steps;
 when=zeros(repetitions,steps);
 actual=zeros(repetitions,steps);
 excess=zeros(repetitions,steps);
+vsf=zeros(repetitions,steps,3);
 for i=1:steps
     % Draw stimulus.
     Screen('TextSize',window,50);
@@ -48,35 +49,52 @@ for i=1:steps
         Screen('DrawText',window,msg,100,100);
         when(j,i)=prior+duration(i);
         % Flip to show stimulus.
-        vbl=Screen('Flip',window,when(j,i));
-        actual(j,i)=vbl-prior;
-        excess(j,i)=vbl-when(j,i);
-        prior=vbl;
+        [VBLTimestamp, StimulusOnsetTime, FlipTimestamp]=Screen('Flip',window,when(j,i));
+        actual(j,i)=VBLTimestamp-prior;
+        excess(j,i)=VBLTimestamp-when(j,i);
+        prior=VBLTimestamp;
+        vsf(j,i,1:3)=[VBLTimestamp, StimulusOnsetTime, FlipTimestamp];
     end
 end
-sca;
+Screen('Close',window);
 fprintf(['Across all duration requests, ' ...
     'the excess duration was %.0f%c%.0f ms (mean%csd), '...
     'with range [%.0f %.0f] ms.\n'],...
     1000*mean(excess(:)),plusMinus,1000*std(excess(:)),...
     plusMinus,...
     1000*min(excess(:)),1000*max(excess(:)));
+vsfDelay=vsf-vsf(:,:,1);
+s=vsfDelay(:,:,2);
+stimulusMean=mean(s(:));
+stimulusSD=std(s(:));
+s=vsfDelay(:,:,3);
+flipMean=mean(s(:));
+flipSD=std(s(:));
+fprintf(['Relative to VBLTimestamp, '...
+    'StimulusOnsetTime is %.0f%c%.0f %cs (mean%csd), '...
+    'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
+    1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
+    1e6*flipMean,plusMinus,1e6*flipSD,micro);
 
 %% PLOT RESULTS
 close all
-figure(1)
-subplot(1,2,1);
+f=figure(1);
+f.Position(3)=1.5*f.Position(3);
+subplot(1,3,1);
 hold on
 % Use fixed delay as a degree of freedom to fit the delays.
-e=zeros(1,repetitions);
 % Find best fitting fixed delay with precision of 0.1 ms.
+e=zeros(1,repetitions);
 delay=0:0.0001:0.1;
 err=zeros(size(delay));
 for i=1:length(delay)
+    % Compute model for this fixed delay.
     model=periodSec*ceil((duration+delay(i))/periodSec);
     for j=1:repetitions
+        % Each iteration of j combines all durations.
         e(j)=mean((actual(j,:)-model).^2);
     end
+    % RMS error of model of our data.
     err(i)=sqrt(mean(e));
 end
 [err,i]=min(err);
@@ -84,11 +102,12 @@ bestDelay=delay(i);
 fprintf('Best fitting fixed delay %.1f ms yields rms error %.1f ms.\n',...
     1000*bestDelay,1000*err);
 % Plot the data
-for i=1:steps
+for i=1:length(duration)
+    % One point for each repetition.
     plot(1000*duration(i),1000*actual(:,i),'.k');
 end
 g=gca;
-g.YLim=[0 1000*3.7*periodSec];
+g.YLim=[0 1000*3.6*periodSec];
 g.XLim=[0 1000*duration(end)];
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
@@ -109,18 +128,18 @@ text(0.39*g.XLim(2),0.11*g.YLim(2),computerModelName,'FontWeight','bold');
 system=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
 text(0.39*g.XLim(2),0.07*g.YLim(2),system);
 [~,v]=PsychtoolboxVersion;
-s=sprintf('Psychtoolbox %d.%d.%d',v.major,v.minor,v.point);
-text(0.39*g.XLim(2),0.03*g.YLim(2),s);
+psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
+text(0.39*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych]);
 model=periodSec*ceil((duration+bestDelay)/periodSec);
 plot(1000*duration,1000*model,'-r');
 ii=find(excess(:)>2*periodSec);
 times=sort(excess(ii));
-s1=sprintf(['Measured Screen Flip times (black dots) are fit by a model (red). '...
+s1=sprintf(['CAPTION: Measured Screen Flip times (black dots) are fit by a model (red). '...
     'Measured delay (VBLTimestamp re prior VBLTimestamp) vs. ' ...
     'requested delay ("when" re prior VBLTimestamp). ' ...
     'The model has only one degree of freedom, a fixed delay %.1f ms. '],...
     1000*bestDelay);
-s2=sprintf('We call time=Screen(''Flip'',window,when); ');
+s2=sprintf('We call \ntime=Screen(''Flip'',window,when);\n');
 s3=sprintf([...
     '%d times for each of %d delays (value of "when" re prior flip). ' ...
     'Delay ranges from %.0f to %.0f ms in steps of %.1f ms. '],...
@@ -141,16 +160,52 @@ s6=[sprintf(['The %d measured flip times include %d outliers exceeding '...
     sprintf('%.0f ',1000*times) ' ms. '];
 s7='Measured by TestFlip.m, available from denis.pelli@nyu.edu. ';
 str=[s1 s2 s3 s4 s5 s6 s7];
-subplot(1,2,2);
+subplot(1,3,2);
 g=gca;
-g.XTick=[];
-g.YTick=[];
 g.Visible='off';
-annotation('textbox',g.Position,'String',str,'LineStyle','none');
+position=g.Position;
+% position(1)=position(1)-0.25*position(3);
+position(3)=position(3)*1.3;
+% g.FontUnits='normalized';
+% position(2)=position(2)+2*g.FontSize;
+annotation('textbox',position,'String',str,'LineStyle','none');
+
+s8=sprintf(['JITTER: The red-line model ignores the jitter. '...
+    'The jitter has an SD of %.1f ms vertically, '...
+    'and, visually, seems to be about the same horizontally '...
+    'in the data that I''ve seen, '...
+    'which hints that the horizontal and vertical jitters '...
+    'might have the same source. '...
+    'We believe that there is essentially no jitter in the '...
+    'display frame rate (generated by the graphics chip) and the '...
+    'system time (generated by the clock oscillator in the CPU). These '...
+    'autonomous devices should be immune to unix timesharing. '...
+    'Thus the %.1f ms jitter seen in the reported frame time, '...
+    'and the similar horizontal jitter in the data, '...
+    'must arise in the software reporting of when '...
+    'the current and prior frames occurred. \n'],...
+    1000*sd,1000*sd);
+    s9=sprintf([...
+    'OTHER OUTPUT TIMES: Screen ''Flip'', returns three similar time values: '...
+    'VBLTimestamp, StimulusOnsetTime, and FlipTimestamp. '...
+    'Typically StimulusOnsetTime is identical to VBLTimestamp. '...
+    'On this computer, '...
+    'relative to VBLTimestamp, '...
+    'StimulusOnsetTime is %.0f%c%.0f %cs (mean%csd), '...
+    'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
+    1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
+    1e6*flipMean,plusMinus,1e6*flipSD,micro);
+str={s8 s9};
+subplot(1,3,3);
+g=gca;
+g.Visible='off';
+position=g.Position;
+position(3)=position(3)*1.3;
+% g.FontUnits='normalized';
+% position(2)=position(2)+2*g.FontSize;
+annotation('textbox',position,'String',str,'LineStyle','none');
 
 %% SAVE PLOT TO DISK
-[~,v]=PsychtoolboxVersion;
-psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
 figureTitle=['TestFlip-' computerModelName '-' system '-' psych '.png'];
 h=gcf;
 h.NumberTitle='off';
