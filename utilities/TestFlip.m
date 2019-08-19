@@ -19,7 +19,7 @@
 repetitions=30; % 30
 steps=100; % 100
 Screen('Preference','SkipSyncTests',1);
-periodSec=1/FrameRate; 
+periodSec=1/FrameRate;
 plusMinus=char(177);
 micro=char(181);
 screen=0;
@@ -49,7 +49,7 @@ for i=1:steps
         Screen('DrawText',window,msg,100,100);
         when(j,i)=prior+duration(i);
         % Flip to show stimulus.
-        [VBLTimestamp, StimulusOnsetTime, FlipTimestamp]=Screen('Flip',window,when(j,i));
+        [VBLTimestamp,StimulusOnsetTime,FlipTimestamp]=Screen('Flip',window,when(j,i));
         actual(j,i)=VBLTimestamp-prior;
         excess(j,i)=VBLTimestamp-when(j,i);
         prior=VBLTimestamp;
@@ -80,6 +80,8 @@ fprintf(['Relative to VBLTimestamp, '...
 close all
 f=figure(1);
 f.Position(3)=1.5*f.Position(3);
+
+% Panel 1
 subplot(1,3,1);
 hold on
 % Use fixed delay as a degree of freedom to fit the delays.
@@ -119,9 +121,11 @@ text(1,0.98*g.YLim(2),...
     sprintf('Estimated fixed delay %.1f ms.',1000*bestDelay),...
     'FontWeight','bold');
 text(1,0.94*g.YLim(2),...
-    sprintf('Frame duration %.1f ms (%.1f Hz).',1000*periodSec,1/periodSec));
+    sprintf('Frame duration %.1f ms (%.1f Hz).',...
+    1000*periodSec,1/periodSec));
 text(1,0.9*g.YLim(2),...
-    sprintf('Median sd of flip time is %.1f ms.',1000*median(std(excess))));
+    sprintf('Median sd of flip time is %.1f ms.',...
+    1000*median(std(excess))));
 c=Screen('Computer');
 computerModelName=c.hw.model;
 text(0.39*g.XLim(2),0.11*g.YLim(2),computerModelName,'FontWeight','bold');
@@ -132,6 +136,9 @@ psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
 text(0.39*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych]);
 model=periodSec*ceil((duration+bestDelay)/periodSec);
 plot(1000*duration,1000*model,'-r');
+
+% Panel 2
+subplot(1,3,2);
 ii=find(excess(:)>2*periodSec);
 times=sort(excess(ii));
 s1=sprintf(['CAPTION: Measured Screen Flip times (black dots) are fit by a model (red). '...
@@ -160,16 +167,14 @@ s6=[sprintf(['The %d measured flip times include %d outliers exceeding '...
     sprintf('%.0f ',1000*times) ' ms. '];
 s7='Measured by TestFlip.m, available from denis.pelli@nyu.edu. ';
 str=[s1 s2 s3 s4 s5 s6 s7];
-subplot(1,3,2);
 g=gca;
 g.Visible='off';
 position=g.Position;
-% position(1)=position(1)-0.25*position(3);
-position(3)=position(3)*1.3;
-% g.FontUnits='normalized';
-% position(2)=position(2)+2*g.FontSize;
+position(3)=position(3)*1.3; % Widen text box.
 annotation('textbox',position,'String',str,'LineStyle','none');
 
+% Panel 3.
+subplot(1,3,3);
 s8=sprintf(['JITTER: The red-line model ignores the jitter. '...
     'The jitter has an SD of %.1f ms vertically, '...
     'and, visually, seems to be about the same horizontally '...
@@ -185,7 +190,7 @@ s8=sprintf(['JITTER: The red-line model ignores the jitter. '...
     'must arise in the software reporting of when '...
     'the current and prior frames occurred. \n'],...
     1000*sd,1000*sd);
-    s9=sprintf([...
+s9=sprintf([...
     'OTHER OUTPUT TIMES: Screen ''Flip'', returns three similar time values: '...
     'VBLTimestamp, StimulusOnsetTime, and FlipTimestamp. '...
     'Typically StimulusOnsetTime is identical to VBLTimestamp. '...
@@ -196,13 +201,10 @@ s8=sprintf(['JITTER: The red-line model ignores the jitter. '...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
 str={s8 s9};
-subplot(1,3,3);
 g=gca;
 g.Visible='off';
 position=g.Position;
-position(3)=position(3)*1.3;
-% g.FontUnits='normalized';
-% position(2)=position(2)+2*g.FontSize;
+position(3)=position(3)*1.3; % Widen text box.
 annotation('textbox',position,'String',str,'LineStyle','none');
 
 %% SAVE PLOT TO DISK
