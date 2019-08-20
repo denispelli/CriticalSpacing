@@ -16,7 +16,7 @@
 % See also: Screen('Flip?')
 
 %% MEASURE TIMING
-repetitions=30; % 30
+repetitions=100; % 30
 steps=100; % 100
 Screen('Preference','SkipSyncTests',1);
 periodSec=1/FrameRate;
@@ -33,7 +33,7 @@ if true
 else
     window=Screen('OpenWindow',screen,white);
 end
-duration=2*periodSec*(0:steps-1)/steps;
+duration=2.5*periodSec*(0:steps-1)/steps;
 when=zeros(repetitions,steps);
 actual=zeros(repetitions,steps);
 excess=zeros(repetitions,steps);
@@ -109,7 +109,7 @@ for i=1:length(duration)
     plot(1000*duration(i),1000*actual(:,i),'.k');
 end
 g=gca;
-g.YLim=[0 1000*3.6*periodSec];
+g.YLim=[0 1000*4.5*periodSec];
 g.XLim=[0 1000*duration(end)];
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
@@ -117,15 +117,18 @@ text(23,22,'requested time');
 title('Screen Flip time vs when requested');
 xlabel('Requested time re prior flip (ms)');
 ylabel('Flip time re prior flip (ms)');
-text(1,0.98*g.YLim(2),...
+text(1,0.95*g.YLim(2),...
     sprintf('Estimated fixed delay %.1f ms.',1000*bestDelay),...
     'FontWeight','bold');
-text(1,0.94*g.YLim(2),...
+text(1,0.91*g.YLim(2),...
     sprintf('Frame duration %.1f ms (%.1f Hz).',...
     1000*periodSec,1/periodSec));
-text(1,0.9*g.YLim(2),...
+text(1,0.87*g.YLim(2),...
     sprintf('Median sd of flip time is %.1f ms.',...
     1000*median(std(excess))));
+text(1,0.83*g.YLim(2),...
+    sprintf('Flip SD is %.1f ms in middle half',1000*sd));
+text(1,0.79*g.YLim(2),'of the second frame duration. ');
 c=Screen('Computer');
 if isfield(c,'hw') && isfield(c.hw,'model')
     computerModelName=c.hw.model;
@@ -133,13 +136,23 @@ else
     computerModelName='';
 end
 machine=ComputerModel;
-text(0.39*g.XLim(2),0.14*g.YLim(2),machine.manufacturer,'FontWeight','bold');
-text(0.39*g.XLim(2),0.11*g.YLim(2),machine.model,'FontWeight','bold');
+model=machine.model;
+i=strfind(model,' (');
+if length(model)>25 && ~isempty(i)
+    i=i(1);
+    model1=model(1:i);
+    model2=model(i+1:end);
+    text(0.99*g.XLim(2),0.19*g.YLim(2),model1,'FontWeight','bold','HorizontalAlignment','right');
+    text(0.99*g.XLim(2),0.15*g.YLim(2),model2,'FontWeight','bold','HorizontalAlignment','right');
+else
+    text(0.99*g.XLim(2),0.15*g.YLim(2),model,'FontWeight','bold','HorizontalAlignment','right');
+end
+text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,'HorizontalAlignment','right');
 system=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
-text(0.39*g.XLim(2),0.07*g.YLim(2),system);
+text(0.99*g.XLim(2),0.07*g.YLim(2),system,'HorizontalAlignment','right');
 [~,v]=PsychtoolboxVersion;
 psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
-text(0.39*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych]);
+text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych],'HorizontalAlignment','right');
 model=periodSec*ceil((duration+bestDelay)/periodSec);
 plot(1000*duration,1000*model,'-r');
 
@@ -148,9 +161,9 @@ subplot(1,3,2);
 ii=find(excess(:)>2*periodSec);
 times=sort(excess(ii));
 s1=sprintf(['CAPTION: Measured Screen Flip times (black dots) are fit by a model (red). '...
-    'Measured delay (VBLTimestamp re prior VBLTimestamp) vs. ' ...
-    'requested delay ("when" re prior VBLTimestamp). ' ...
-    'The model has only one degree of freedom, a fixed delay %.1f ms. '],...
+    'The model has only one degree of freedom, a fixed delay %.1f ms. '...
+    'The data are measured delay (VBLTimestamp re prior VBLTimestamp) vs. ' ...
+    'requested delay ("when" re prior VBLTimestamp). '], ...
     1000*bestDelay);
 s2=sprintf('We call \ntime=Screen(''Flip'',window,when);\n');
 s3=sprintf([...
@@ -158,21 +171,17 @@ s3=sprintf([...
     'Delay ranges from %.0f to %.0f ms in steps of %.1f ms. '],...
     repetitions,steps,...
     1000*duration(1),1000*duration(end),1000*(duration(2)-duration(1)));
-s4=sprintf('%.1f ms median SD for flip time (re prior). ',...
-    1000*median(std(excess)));
 % Analyze half the second frame duration, far from the transitions.
 r=(duration+bestDelay)/periodSec;
 ok=r>1.25 & r<1.75;
 a=actual(:,ok);
 sd=std(a(:));
-s5=sprintf(['%.1f ms SD for flip times (re prior) in '...
-    'middle half of the second frame duration. '],1000*sd);
 s6=[sprintf(['The %d measured flip times include %d outliers exceeding '...
     'the request by two frame durations: '], ...
     repetitions*steps,length(times)) ...
     sprintf('%.0f ',1000*times) ' ms. '];
 s7='Measured by TestFlip.m, available from denis.pelli@nyu.edu. ';
-str=[s1 s2 s3 s4 s5 s6 s7];
+str=[s1 s2 s3  s6 s7];
 g=gca;
 g.Visible='off';
 position=g.Position;
@@ -182,23 +191,18 @@ annotation('textbox',position,'String',str,'LineStyle','none');
 % Panel 3.
 subplot(1,3,3);
 s8=sprintf(['JITTER: The red-line model ignores the jitter. '...
-    'The jitter has an SD of %.1f ms vertically, '...
-    'and, visually, seems to be about the same horizontally '...
-    'in the data that I''ve seen, '...
-    'which hints that the horizontal and vertical jitters '...
-    'might have the same source. '...
     'We believe that there is essentially no jitter in the '...
     'display frame rate (generated by the graphics chip) and the '...
     'system time (generated by the clock oscillator in the CPU). These '...
     'autonomous devices should be immune to unix timesharing. '...
-    'Thus the %.1f ms jitter seen in the reported frame time, '...
-    'and the similar horizontal jitter in the data, '...
+    'Thus the %.1f ms vertical jitter seen in the reported frame time, '...
+    'and the sometimes similar horizontal jitter in the data, '...
     'must arise in the software reporting of when '...
-    'the current and prior frames occurred. \n'],...
-    1000*sd,1000*sd);
+    'the current and prior frames occurred and the implementation '...
+    'of the when timer. \n'],1000*sd);
 s9=sprintf([...
-    'OTHER OUTPUT TIMES: Screen ''Flip'' returns three similar time values: '...
-    'VBLTimestamp, StimulusOnsetTime, and FlipTimestamp. '...
+    'OTHER OUTPUT TIMES: Screen ''Flip'' returns three similar time '...
+    'values: VBLTimestamp, StimulusOnsetTime, and FlipTimestamp. '...
     'Typically StimulusOnsetTime is identical to VBLTimestamp. '...
     'On this computer, relative to VBLTimestamp, '...
     'StimulusOnsetTime is %.0f%c%.0f %cs (mean%csd), '...
@@ -212,7 +216,6 @@ position=g.Position;
 position(3)=position(3)*1.3; % Widen text box.
 annotation('textbox',position,'String',str,'LineStyle','none');
 
-% figure(2)
 % Assuming the frame frequency is stable, we estimate the true
 % frame times and assess the sd of VBLTimestamp relative to that.
 tMeasured=cumsum(actual);
@@ -231,7 +234,43 @@ xlabel('Requested flip time re previous (ms)');
 r=(duration+bestDelay)/periodSec;
 ok=(r>0.25 & r<0.75) | (r>1.25 & r<1.75) | (r>2.25 & r<2.75);
 sdT=std(dt(ok));
-fprintf('%.1f ms SD of times re periodic times\n',1000*sdT);
+fprintf('%.1f ms SD of times re periodic times.\n',1000*sdT);
+
+if 0
+    % Not quite working.
+    figure(2)
+    % Fit the horizontal jitter.
+    e=zeros(1,repetitions);
+    sd=0.0001:0.0001:0.003;
+    for i=1:length(sd)
+        % Compute model for this horizontal jitter.
+        gauss=exp(-(duration-mean(duration)).^2/(2*sd(i)^2));
+        gauss=gauss/sum(gauss);
+        model=periodSec*ceil((duration+delay(i))/periodSec);
+        modelg=conv(gauss,model,'same');
+        plot(1000*duration,1000*model,'-k',1000*duration,1000*modelg,'-g',...
+            'LineWidth',2);
+        e=mean(actual)-modelg;
+        err(i)=sqrt(mean(e(20:end-20).^2));
+    end
+    [err,i]=min(err);
+    bestSD=sd(i);
+    gauss=exp(-(duration-mean(duration)).^2/(2*sd(i)^2));
+    gauss=gauss/sum(gauss);
+    hold on
+    plot(1000*duration,1000*gauss,'-r');
+    fprintf('Best fitting horizontal SD %.1f ms yields rms error %.1f ms.\n',...
+        1000*bestSD,1000*err);
+    % Plot the data
+    hold on
+    plot(1000*duration,1000*mean(actual),'.k');
+    plot(1000*duration,1000*model,'-k',1000*duration,1000*modelg,'-g',...
+        'LineWidth',2);
+    g=gca;
+    % g.YLim=[0 1000*4*periodSec];
+    g.XLim=[0 1000*duration(end)];
+    daspect([1 1 1]);
+end
 
 %% SAVE PLOT TO DISK
 figureTitle=['TestFlip-' computerModelName '-' system '-' psych '.png'];
@@ -242,10 +281,11 @@ graphFile=fullfile(fileparts(mfilename('fullpath')),figureTitle);
 saveas(gcf,graphFile,'png');
 fprintf('Figure has been saved to disk as file "%s".\n',figureTitle);
 
+%% Get Computer Model
 function machine=ComputerModel
 switch computer
     case 'MACI64'
-% https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
+        % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         s = evalc(['!'...
             'curl -s https://support-sp.apple.com/sp/product?cc=$('...
             'system_profiler SPHardwareDataType '...
