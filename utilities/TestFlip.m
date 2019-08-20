@@ -16,7 +16,7 @@
 % See also: Screen('Flip?')
 
 %% MEASURE TIMING
-repetitions=100; % 30
+repetitions=100; % 100
 steps=100; % 100
 Screen('Preference','SkipSyncTests',1);
 periodSec=1/FrameRate;
@@ -76,6 +76,18 @@ fprintf(['Relative to VBLTimestamp, '...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
 
+%% FOR DEBUGGING, SAVE DATA TO DISK
+machine=ComputerModelName;
+c=Screen('Computer');
+os=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
+[~,v]=PsychtoolboxVersion;
+psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
+saveTitle=['TestFlip-' machine.Model '-' os '-' psych '.mat'];
+folder=fileparts(mfilename('fullpath'));
+close all
+save([folder filesep saveTitle]);
+fprintf('Data have been saved to disk as file "%s" alongside TestFlip.m.\n',saveTitle);
+
 %% PLOT RESULTS
 close all
 f=figure(1);
@@ -103,6 +115,11 @@ end
 bestDelay=delay(i);
 fprintf('Best fitting fixed delay %.1f ms yields rms error %.1f ms.\n',...
     1000*bestDelay,1000*err);
+% Analyze half the second frame duration, far from the transitions.
+r=(duration+bestDelay)/periodSec;
+ok=1.25<r & r<1.75;
+a=actual(:,ok);
+sd=std(a(:));
 % Plot the data
 for i=1:length(duration)
     % One point for each repetition.
@@ -129,14 +146,12 @@ text(1,0.87*g.YLim(2),...
 text(1,0.83*g.YLim(2),...
     sprintf('Flip SD is %.1f ms in middle half',1000*sd));
 text(1,0.79*g.YLim(2),'of the second frame duration. ');
-c=Screen('Computer');
-if isfield(c,'hw') && isfield(c.hw,'model')
-    computerModelName=c.hw.model;
+machine=ComputerModelName;
+if ~isempty(machine.ModelLong)
+    model=machine.ModelLong;
 else
-    computerModelName='';
+    model=machine.Model;
 end
-machine=ComputerModel;
-model=machine.model;
 i=strfind(model,' (');
 if length(model)>25 && ~isempty(i)
     i=i(1);
@@ -147,9 +162,8 @@ if length(model)>25 && ~isempty(i)
 else
     text(0.99*g.XLim(2),0.15*g.YLim(2),model,'FontWeight','bold','HorizontalAlignment','right');
 end
-text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,'HorizontalAlignment','right');
-system=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
-text(0.99*g.XLim(2),0.07*g.YLim(2),system,'HorizontalAlignment','right');
+text(0.99*g.XLim(2),0.11*g.YLim(2),machine.Manufacturer,'HorizontalAlignment','right');
+text(0.99*g.XLim(2),0.07*g.YLim(2),os,'HorizontalAlignment','right');
 [~,v]=PsychtoolboxVersion;
 psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
 text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych],'HorizontalAlignment','right');
@@ -171,11 +185,6 @@ s3=sprintf([...
     'Delay ranges from %.0f to %.0f ms in steps of %.1f ms. '],...
     repetitions,steps,...
     1000*duration(1),1000*duration(end),1000*(duration(2)-duration(1)));
-% Analyze half the second frame duration, far from the transitions.
-r=(duration+bestDelay)/periodSec;
-ok=r>1.25 & r<1.75;
-a=actual(:,ok);
-sd=std(a(:));
 s6=[sprintf(['The %d measured flip times include %d outliers exceeding '...
     'the request by two frame durations: '], ...
     repetitions*steps,length(times)) ...
@@ -274,16 +283,28 @@ if 0
 end
 
 %% SAVE PLOT TO DISK
-figureTitle=['TestFlip-' computerModelName '-' system '-' psych '.png'];
+c=Screen('Computer');
+os=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
+figureTitle=['TestFlip-' machine.Model '-' os '-' psych '.png'];
 h=gcf;
 h.NumberTitle='off';
 h.Name=figureTitle;
-graphFile=fullfile(fileparts(mfilename('fullpath')),figureTitle);
-saveas(gcf,graphFile,'png');
-fprintf('Figure has been saved to disk as file "%s".\n',figureTitle);
+folder=fileparts(mfilename('fullpath'));
+saveas(gcf,[folder filesep figureTitle],'png');
+fprintf(['<strong>Figure has been saved to disk as file "%s", '...
+    'next to TestFlip.m.</strong>\n'],figureTitle);
 
-%% Get Computer Model
-function machine=ComputerModel
+%% GET COMPUTER'S MODEL NAME
+function machine=ComputerModelName
+clear machine
+machine.Model='';
+machine.ModelLong='';
+machine.Manufacturer='';
+c=Screen('Computer');
+os=strrep(c.system,'Mac OS','macOS'); % Modernize the spelling.
+if isfield(c,'hw') && isfield(c.hw,'model')
+    machine.Model=c.hw.model;
+end
 switch computer
     case 'MACI64'
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
@@ -296,28 +317,40 @@ switch computer
         s=strrep(s,char(10),' '); % Change to space.
         s=strrep(s,char(13),' '); % Change to space.
         if s(end)==' '
-            s=s(1:end-1);
+            s=s(1:end-1); % Remove trailing space.
         end
-        machine.manufacturer='Apple Inc.';
-        machine.model=s;
+        machine.ModelLong=s;
+        machine.Manufacturer='Apple Inc.';
     case 'PCWIN64'
-        s = evalc('!wmic computersystem get manufacturer, model');
-        % s=sprintf(['    ''Manufacturer  Model            \r'...
-        % '     Dell Inc.     Inspiron 5379    ']);
-        s=strrep(s,char(10),' '); % Change to space.
+        wmicString = evalc('!wmic computersystem get manufacturer, model');
+        % Here's a typical result:
+        %         wmicString=sprintf(['    ''Manufacturer  Model            \r'...
+        %         '     Dell Inc.     Inspiron 5379    ']);
+        s=strrep(wmicString,char(10),' '); % Change to space.
         s=strrep(s,char(13),' '); % Change to space.
-        s=regexprep(s,'  +',char(9)); % Tab.
+        s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
         s=strrep(s,'''',''); % Remove stray quote.
         fields=split(s,char(9));
+        clear ok
         for i=1:length(fields)
             ok(i)=~isempty(fields{i});
         end
-        fields=fields(ok);
-        for i=1:2
-            machine.(fields{i})=fields{i+2};
+        fields=fields(ok); % Discard empty fields.
+        % The original had two columns: category and value. We've now got
+        % one long column with n categories followed by n values.
+        % We asked for Manufacturer and Model so n should be 2.
+        n=length(fields)/2;
+        for i=1:n
+            % Grab each field's name and value.
+            machine.(fields{i})=fields{i+n};
+        end
+        if ~isfield(machine,'Manufacturer') || isempty(machine.Manufacturer)...
+                || ~isfield(machine,'Model') || isempty(machine.Model)
+            wmicString
+            warning('Failed to retrieve Manufacturer and Model from WMIC.');
         end
     case 'GLNXA64'
-        machine.manufacturer='';
-        machine.model='linux';
+        machine.Manufacturer='';
+        machine.Model='linux';
 end
 end
