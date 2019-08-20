@@ -238,6 +238,7 @@ fprintf('%.1f ms SD of times re periodic times.\n',1000*sdT);
 
 if 0
     % Not quite working.
+    % Estimate the horizontal jitter.
     figure(2)
     % Fit the horizontal jitter.
     e=zeros(1,repetitions);
