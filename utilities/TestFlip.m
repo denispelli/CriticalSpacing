@@ -405,7 +405,6 @@ switch computer
         machine.manufacturer='Apple Inc.';
         % THIS WILL GET MODEL: sysctl hw.model
         % A python solution: https://gist.github.com/zigg/6174270
-hw.model: MacBook10,1
 
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
