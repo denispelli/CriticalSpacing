@@ -89,15 +89,19 @@ if 1
     folder=fileparts(mfilename('fullpath'));
     close all
     save([folder filesep saveTitle]);
-    fprintf('Data have been saved to disk as file "%s" alongside TestFlip.m.\n',saveTitle);
+    fprintf(['<strong>Data has been saved to disk as file "%s", '...
+        'next to TestFlip.m.</strong>\n'],saveTitle);
 end
 
 %% PLOT RESULTS
 close all
 f=figure(1);
-f.Position([3 4])=[1.6 1.45].*f.Position([3 4]);
-f.Position(1)=f.Position(1)-0.3*f.Position(1);
-f.Position(2)=f.Position(2)+0.2*f.Position(4);
+screenRect=Screen('Rect',0);
+r=[0 0 819 557]; % Works well on MacBook so exporting to all computers.
+r=CenterRect(r,screenRect);
+r=OffsetRect(r,0,-r(2));
+% Convert Apple rect to MATLAB Position.
+f.Position=[r(1) screenRect(4)-r(4) RectWidth(r) RectHeight(r)];
 
 % Panel 1
 subplot(1,3,1);
@@ -143,13 +147,15 @@ for i=1:length(duration)
 end
 % Now compute deviance of measured times from estimate of periodic
 % frame time. We care only about SD, not mean.
-dt=tMeasured-tEst; 
+dt=tMeasured-tEst;
 if 0
+    % See more detail than just the one-number summary
+    % sdMidHalfFrameRePeriodic.
     % Plot error re better estimate of actual frame time.
     sd=std(dt);
     plot(1000*duration,1000*sd,'-r');
-    ylabel('SD re estimated true frame time (ms)');
-    xlabel('Requested flip time re previous (ms)');
+    ylabel('SD re estimated true frame time (ms)','FontSize',12);
+    xlabel('Requested flip time re previous (ms)','FontSize',12);
 end
 r=(duration+bestFixedDelay)/periodSec;
 % Select only the data that are far from the vertical transitions.
@@ -172,25 +178,26 @@ g.Position([3 4])=1.3*g.Position([3 4]);
 g.Position([1 2])=g.Position([1 2])-0.15*g.Position([3 4]);
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
-text(25,24,'req. time');
-title('Screen stimulus duration vs requested');
-xlabel('Requested duration (ms)');
-ylabel('Duration (ms)');
+text(25,24,'req. time','FontSize',12);
+title('Stimulus duration vs requested','FontSize',16);
+xlabel('Requested duration (ms)','FontSize',16);
+ylabel('Duration (ms)','FontSize',16);
 text(1,0.97*g.YLim(2),...
     sprintf('Estimated fixed delay %.1f ms.',1000*bestFixedDelay),...
-    'FontWeight','bold');
+    'FontWeight','bold','FontSize',12);
 text(1,0.93*g.YLim(2),...
     sprintf('Frame period %.1f ms (%.1f Hz).',...
-    1000*periodSec,1/periodSec));
-text(1,0.89*g.YLim(2),'SD of flip time re prior flip:');
+    1000*periodSec,1/periodSec),'FontSize',12);
+text(1,0.89*g.YLim(2),'SD of flip time re prior flip:','FontSize',12);
 text(1,0.85*g.YLim(2),...
     sprintf('mean %.1f ms, median %.1f ms, ',...
-    1000*mean(std(excess)),1000*median(std(excess))));
+    1000*mean(std(excess)),1000*median(std(excess))),'FontSize',12);
 text(1,0.81*g.YLim(2),...
-    sprintf('%.1f ms in mid half of frame.',1000*sdMidHalfFrame));
-text(1,0.77*g.YLim(2),'SD of flip re periodic est.:');
+    sprintf('%.1f ms in mid half of frame.',1000*sdMidHalfFrame),'FontSize',12);
+text(1,0.77*g.YLim(2),'SD of flip re periodic est.:','FontSize',12);
 text(1,0.73*g.YLim(2),...
-    sprintf('%.1f ms in mid half of frame. ',1000*sdMidHalfFrameRePeriodic));
+    sprintf('%.1f ms in mid half of frame. ',...
+    1000*sdMidHalfFrameRePeriodic),'FontSize',12);
 machine=ComputerModelName;
 if ~isempty(machine.modelLong)
     model=machine.modelLong;
@@ -202,21 +209,28 @@ if length(model)>25 && ~isempty(i)
     i=i(1);
     model1=model(1:i);
     model2=model(i+1:end);
-    text(0.99*g.XLim(2),0.19*g.YLim(2),model1,'FontWeight','bold','HorizontalAlignment','right');
-    text(0.99*g.XLim(2),0.15*g.YLim(2),model2,'FontWeight','bold','HorizontalAlignment','right');
+    text(0.99*g.XLim(2),0.19*g.YLim(2),model1,...
+        'FontWeight','bold','HorizontalAlignment','right','FontSize',14);
+    text(0.99*g.XLim(2),0.15*g.YLim(2),model2,...
+        'HorizontalAlignment','right','FontSize',12);
 else
-    text(0.99*g.XLim(2),0.15*g.YLim(2),model,'FontWeight','bold','HorizontalAlignment','right');
+    text(0.99*g.XLim(2),0.15*g.YLim(2),model,...
+        'FontWeight','bold','HorizontalAlignment','right','FontSize',14);
 end
-text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,'HorizontalAlignment','right');
-text(0.99*g.XLim(2),0.07*g.YLim(2),machine.system,'HorizontalAlignment','right');
+text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,...
+    'HorizontalAlignment','right','FontSize',12);
+text(0.99*g.XLim(2),0.07*g.YLim(2),machine.system,...
+    'HorizontalAlignment','right','FontSize',12);
 [~,v]=PsychtoolboxVersion;
 psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
-text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych],'HorizontalAlignment','right');
+text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych],...
+    'HorizontalAlignment','right','FontSize',12);
 model=periodSec*ceil((duration+bestFixedDelay)/periodSec);
 plot(1000*duration,1000*model,'-r','LineWidth',2);
 g.Units='normalized';
-g.Position(2)=max(0,g.Position(2));
-g.Position(4)=min(1,g.Position(4));
+% g.Position(2)=max(0,g.Position(2));
+% g.Position(4)=min(1,g.Position(4));
+g.Position=[.09 0 .28 1];
 panelOnePosition=g.Position;
 
 % Panel 2
@@ -293,7 +307,12 @@ str={s8 s9};
 g=gca;
 g.Visible='off';
 position=[g.Position(1) 0 panelOnePosition(3) 1];
-annotation('textbox',position,'String',str,'LineStyle','none','FontSize',12);
+a=annotation('textbox',position,'String',str,'LineStyle','none','FontSize',12);
+% fprintf('Panel 1 g.Position=[%.2f %.2f %.2f %.2f];\n',g.Position);
+% g.Units='pixels';
+% fprintf('Panel 1 g.Position=[%.2f %.2f %.2f %.2f];\n',g.Position);
+% fprintf('g.FontName %s, g.FontSize %d\n',g.FontName,g.FontSize);
+% fprintf('a.FontName %s, a.FontSize %d\n',a.FontName,a.FontSize);
 
 
 if 0
@@ -378,7 +397,16 @@ switch computer
             s=s(1:end-1); % Remove trailing whitespace.
         end
         machine.modelLong=s;
+        if all(machine.modelLong(1:5)=='fish:') || ...
+                ~all(ismember(lower(machine.modelLong(1:3)),'abcdefghijklmnopqrstuvwxyz'))
+            warning('Oops. curl failed. Send this to denis.pelli@nyu.edu: "%s"',s);
+            machine.modelLong='';
+        end
         machine.manufacturer='Apple Inc.';
+        % THIS WILL GET MODEL: sysctl hw.model
+        % A python solution: https://gist.github.com/zigg/6174270
+hw.model: MacBook10,1
+
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
