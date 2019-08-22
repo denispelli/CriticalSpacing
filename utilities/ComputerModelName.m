@@ -30,7 +30,16 @@ switch computer
             s=s(1:end-1); % Remove trailing whitespace.
         end
         machine.modelLong=s;
+        if all(machine.modelLong(1:5)=='fish:') || ...
+                ~all(ismember(lower(machine.modelLong(1:3)),'abcdefghijklmnopqrstuvwxyz'))
+            warning('Oops. curl failed. Send this to denis.pelli@nyu.edu: "%s"',s);
+            machine.modelLong='';
+        end
         machine.manufacturer='Apple Inc.';
+        % THIS WILL GET MODEL: sysctl hw.model
+        % A python solution: https://gist.github.com/zigg/6174270
+hw.model: MacBook10,1
+
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
