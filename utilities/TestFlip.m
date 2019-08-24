@@ -114,8 +114,10 @@ machine=ComputerModelName;
 if 1
     % This saves all the measurements as a MAT file, so that the data can
     % be analyzed later or remotely.
-    saveTitle=['TestFlip-' machine.model '-' machine.system '-Psy ' machine.psych '.mat'];
+    saveTitle=['TestFlip-' machine.model '-' machine.system ...
+        '-' machine.psychtoolbox '.mat'];
     saveTitle=strrep(saveTitle,'Windows','Win');
+    saveTitle=strrep(saveTitle,'Psychtoolbox','Psy');
     saveTitle=strrep(saveTitle,' ','-');
     folder=fileparts(which('TestFlip'));
     close all
@@ -254,7 +256,7 @@ text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,...
     'HorizontalAlignment','right','FontSize',12);
 text(0.99*g.XLim(2),0.07*g.YLim(2),machine.system,...
     'HorizontalAlignment','right','FontSize',12);
-text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' machine.psych],...
+text(0.99*g.XLim(2),0.03*g.YLim(2),machine.psychtoolbox,...
     'HorizontalAlignment','right','FontSize',12);
 model=periodSec*ceil((duration+bestFixedDelay)/periodSec);
 plot(1000*duration,1000*model,'-r','LineWidth',1.5);
@@ -379,8 +381,9 @@ end
 %% SAVE PLOT TO DISK
 % This can run on saved data from another machine.
 figureTitle=['TestFlip-' machine.model '-' machine.system ...
-    '-Psy ' machine.psych '.png'];
+    '-' machine.psychtoolbox '.png'];
 figureTitle=strrep(figureTitle,'Windows','Win');
+figureTitle=strrep(figureTitle,'Psychtoolbox','Psy');
 figureTitle=strrep(figureTitle,' ','-');
 h=gcf;
 h.NumberTitle='off';
@@ -399,16 +402,20 @@ function machine=ComputerModelName
 % machine.manufacturer, e.g. 'Apple Inc.' or 'Dell Inc'.
 % machine.system, e.g. 'macOS 10.14.3' or 'Windows NT-10.0.9200'.
 % machine.psychtoolbox, e.g. 'Psychtoolbox 3.0.16'.
-% machine.psych, e.g. '3.0.16'.
 % Unavailable answers are empty ''.
 % August 24, 2019, denis.pelli@nyu.edu
+%
+% LIMITATIONS:
+% The "curl" trick to get macOS modelLong failed on a MacBookPro:
+%     Model: 'MacBookPro13,2'
+% ModelLong: 'fish: Expected a variable name after this $. curl -s https://support-sp.apple.com/sp/product?cc=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | cut -c 9- ) | sed 's|.*<configCode>\(.*\)</configCode>.*|\1|'                                                    ^'
+
 machine.model='';
 machine.modelLong=''; % Currently provided only for macOS.
 machine.manufacturer='';
 machine.system='';
 [~,v]=PsychtoolboxVersion;
-machine.psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
-machine.psychtoolbox=['Psychtoolbox ' machine.psych];
+machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',v.major,v.minor,v.point);
 c=Screen('Computer');
 machine.system=c.system;
 if isfield(c,'hw') && isfield(c.hw,'model')
@@ -433,14 +440,13 @@ switch computer
             machine.modelLong='';
         end
         machine.manufacturer='Apple Inc.';
-        % THIS WILL GET MODEL: sysctl hw.model
         % A python solution: https://gist.github.com/zigg/6174270
 
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
-        %         wmicString=sprintf(['    ''Manufacturer  Model            \r'...
-        %         '     Dell Inc.     Inspiron 5379    ']);
+        % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
+        % '     Dell Inc.     Inspiron 5379    ']);
         s=strrep(wmicString,char(10),' '); % Change to space.
         s=strrep(s,char(13),' '); % Change to space.
         s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
@@ -454,10 +460,10 @@ switch computer
         % The original had two columns: category and value. We've now got
         % one long column with n categories followed by n values.
         % We asked for manufacturer and model so n should be 2.
-        n=length(fields)/2;
+        n=length(fields)/2; % n names followed by n values.
         for i=1:n
             % Grab each field's name and value.
-            % Don't capitalize the name.
+            % Lowercase name.
             fields{i}(1)=lower(fields{i}(1));
             machine.(fields{i})=fields{i+n};
         end
