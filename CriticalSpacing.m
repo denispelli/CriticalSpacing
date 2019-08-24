@@ -472,6 +472,11 @@ if nargin<1 || ~exist('oIn','var')
 end
 
 mainFolder=fileparts(mfilename('fullpath'));
+if ~exist('TextSizeToFit','file') && ...
+        ~exist([mainFolder filesep 'lib' filesep 'TextSizeToFit.m'],'file')
+    error(['Please run me from inside the "CriticalSpacing" folder. '...
+        'That allows me to find other routines.']);
+end
 addpath(fullfile(mainFolder,'lib'));
 addpath(fullfile(mainFolder,'utilities'));
 plusMinus=char(177);
