@@ -6,7 +6,6 @@ function machine=ComputerModelName
 % machine.manufacturer, e.g. 'Apple Inc.' or 'Dell Inc'.
 % machine.system, e.g. 'macOS 10.14.3' or 'Windows NT-10.0.9200'.
 % machine.psychtoolbox, e.g. 'Psychtoolbox 3.0.16'.
-% machine.psych, e.g. '3.0.16'.
 % Unavailable answers are empty ''.
 % August 24, 2019, denis.pelli@nyu.edu
 %
@@ -20,8 +19,7 @@ machine.modelLong=''; % Currently provided only for macOS.
 machine.manufacturer='';
 machine.system='';
 [~,v]=PsychtoolboxVersion;
-machine.psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
-machine.psychtoolbox=['Psychtoolbox ' machine.psych];
+machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',v.major,v.minor,v.point);
 c=Screen('Computer');
 machine.system=c.system;
 if isfield(c,'hw') && isfield(c.hw,'model')
