@@ -5,13 +5,17 @@ function machine=ComputerModelName
 % machine.modelLong, e.g. 'MacBook (Retina, 12-inch, 2017)' or ''.
 % machine.manufacturer, e.g. 'Apple Inc.' or 'Dell Inc'.
 % machine.system, e.g. 'macOS 10.14.3' or 'Windows NT-10.0.9200'.
+% machine.psychtoolbox, e.g. 'Psychtoolbox 3.0.16'.
+% machine.psych, e.g. '3.0.16'.
 % Unavailable answers are empty ''.
-% Augsut 20, 2019, denis.pelli@nyu.edu
-clear machine
+% August 24, 2019, denis.pelli@nyu.edu
 machine.model='';
-machine.modelLong=''; % Currently provided only for macintosh.
+machine.modelLong=''; % Currently provided only for macOS.
 machine.manufacturer='';
 machine.system='';
+[~,v]=PsychtoolboxVersion;
+machine.psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
+machine.psychtoolbox=['Psychtoolbox ' machine.psych];
 c=Screen('Computer');
 machine.system=c.system;
 if isfield(c,'hw') && isfield(c.hw,'model')
@@ -60,7 +64,7 @@ switch computer
         n=length(fields)/2;
         for i=1:n
             % Grab each field's name and value.
-            % Don't capitalize the category.
+            % Don't capitalize the name.
             fields{i}(1)=lower(fields{i}(1));
             machine.(fields{i})=fields{i+n};
         end
@@ -70,18 +74,19 @@ switch computer
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
     case 'GLNXA64'
+        % Can anyone provide Linux code here?
 end
 % Clean up the Operating System name.
 while ismember(machine.system(end),{' ' '-'})
-    % Strip trailing debris.
+    % Strip trailing separators.
     machine.system=machine.system(1:end-1);
 end
 while ismember(machine.system(1),{' ' '-'})
-    % Strip leading debris.
+    % Strip leading separators.
     machine.system=machine.system(2:end);
 end
 machine.system=strrep(c.system,'Mac OS','macOS'); % Modernize spelling.
-if c.windows
+if IsWin
     % Prepend "Windows".
     if ~all('win'==lower(machine.system(1:3)))
         machine.system=['Windows ' machine.system];
