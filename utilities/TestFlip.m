@@ -379,7 +379,6 @@ if 0
 end
 
 %% SAVE PLOT TO DISK
-% This can run on saved data from another machine.
 figureTitle=['TestFlip-' machine.model '-' machine.system ...
     '-' machine.psychtoolbox '.png'];
 figureTitle=strrep(figureTitle,'Windows','Win');
@@ -396,13 +395,28 @@ fprintf(['<strong>Figure has been saved to disk as file "%s", '...
 %% GET COMPUTER'S MODEL NAME
 function machine=ComputerModelName
 % machine=ComputerModelName;
-% Returns a struct with four text fields describing the host computer:
+% Returns a struct with five text fields that specify the basic
+% configuration of your hardware and software:
 % machine.model, e.g. 'MacBook10,1' or 'Inspiron 5379'.
 % machine.modelLong, e.g. 'MacBook (Retina, 12-inch, 2017)' or ''.
 % machine.manufacturer, e.g. 'Apple Inc.' or 'Dell Inc'.
 % machine.system, e.g. 'macOS 10.14.3' or 'Windows NT-10.0.9200'.
 % machine.psychtoolbox, e.g. 'Psychtoolbox 3.0.16'.
 % Unavailable answers are empty ''.
+%
+% This is useful in testing and benchmarking to record the test environment
+% in a human-readable way.
+% If you are trying to produce a compact string, e.g. to use in a file
+% name, you might do something like this:
+% machine=ComputerModelName;
+% filename=['TestFlip-' machine.model '-' machine.system ...
+%     '-' machine.psychtoolbox '.png'];
+% filename=strrep(filename,'Windows','Win');
+% filename=strrep(filename,'Psychtoolbox','Psy');
+% filename=strrep(filename,' ','-');
+% Which produces a string like this: 
+% TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
+%
 % August 24, 2019, denis.pelli@nyu.edu
 %
 % LIMITATIONS:
