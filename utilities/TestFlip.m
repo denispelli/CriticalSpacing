@@ -3,15 +3,47 @@
 % detailed report. We use the 'when' argument of Screen Flip to request a
 % flip time. Our measurements support the theory (plotted as a red line in
 % the graph) that Flip occurs on the first available frame after a fixed
-% delay. So the possible delay of the flip relative to the time requested
-% in "when" ranges from the fixed delay to that plus a frame. Thus, if all
-% phases are equally likely, the mean time of the flip, relative to the
-% time you specify in "when" is the fixed delay plus half a frame duration.
-% So, if you want the Flip to occur as near as possible to a given time,
-% you should set Flip's "when" argument to a value before that time. The
-% decrement should be the fixed delay measured here (roughly 5 ms) plus
-% half a frame duration (about 17/2 ms).
+% delay. According to this model, the possible delay of the flip relative
+% to the time requested in "when" ranges from the fixed delay to that plus
+% a frame. Thus, if all phases are equally likely, the mean time of the
+% flip, relative to the time you specify in "when" is the fixed delay plus
+% half a frame duration. So, if you want the Flip to occur as near as
+% possible to a given time, you should set Flip's "when" argument to a
+% value before that time. The decrement should be the fixed delay measured
+% here (roughly 5 ms) plus half a frame duration (about 17/2 ms).
 % denis.pelli@nyu.edu, August 20, 2019
+%
+% From discusson on Psychtoolbox forum:
+% https://groups.yahoo.com/neo/groups/psychtoolbox/conversations/messages/23963
+% Dear Mario and friends
+% following up on the helpful feedback, i wrote a test program (included
+% below) to document the timing of Screen Flip and asked friends to run it
+% on various computers. I've pasted the results below. (They ran slightly
+% different versions, as I developed it, so some of the printouts are cut
+% off, but the key numbers are visible. Mostly they timed 10,000 calls to
+% Screen Flip, with various "when" requests, but one is for 100 calls.)
+% Screen Flip works well enough on all machines for most purposes. It runs
+% almost perfectly on Dell's Inspiron 5379, under Windows, but less well on
+% Dell's Inspiron 13-7359. Among the macs there is quite a variety in
+% results. I hope someone will run TestFlip on Linux and post results. The
+% pattern of delays is more complicated than I anticipated, which may offer
+% clues to what is causing the delays. (I am baffled by the banding which
+% appears with some "when" values and not others.) I offer the code for
+% everyone to use freely, and for inclusion in the Psychtoolbox. Mario
+% works hard to get good timing, despite the ever changing challenges of
+% the operating systems. This is intended to aid that effort by
+% charactering performance.
+% Best
+% Denis
+% p.s.
+% The data collection, fitting, plotting, and saving now seem to work
+% robustly on macOS and Windows computers. Fingers crossed, I expect it to
+% work fine on Linux too. However, it's important to label the results with
+% the computer model name, and I include a subroutine ComputerModelName to
+% get that. This turned out to be much harder than I'd anticipated, and it
+% works on most machines but still fails on some. I think it's robust
+% enough to proceed without the name, but that's likely where compatibility
+% issues will occur.
 %
 % See also: Screen('Flip?')
 
@@ -93,7 +125,8 @@ if 1
 end
 
 %% PLOT RESULTS
-% This can run on saved data from any machine. Just LOAD the saved MAT file.
+% This can run on saved data from any machine. Just LOAD the saved MAT
+% file.
 close all
 f=figure(1);
 screenRect=Screen('Rect',0);
@@ -193,7 +226,8 @@ text(1,0.85*g.YLim(2),...
     sprintf('mean %.1f ms, median %.1f ms, ',...
     1000*mean(std(excess)),1000*median(std(excess))),'FontSize',12);
 text(1,0.81*g.YLim(2),...
-    sprintf('%.1f ms in mid half of frame.',1000*sdMidHalfFrame),'FontSize',12);
+    sprintf('%.1f ms in mid half of frame.',1000*sdMidHalfFrame),...
+    'FontSize',12);
 text(1,0.77*g.YLim(2),'SD of flip re periodic est.:','FontSize',12);
 text(1,0.73*g.YLim(2),...
     sprintf('%.1f ms in mid half of frame. ',...
@@ -302,7 +336,8 @@ str={s8 s9};
 g=gca;
 g.Visible='off';
 position=[g.Position(1) 0 panelOnePosition(3) 1];
-a=annotation('textbox',position,'String',str,'LineStyle','none','FontSize',12);
+a=annotation('textbox',position,'String',str,'LineStyle','none',...
+    'FontSize',12);
 
 if 0
     % Not quite working.
@@ -343,7 +378,8 @@ end
 
 %% SAVE PLOT TO DISK
 % This can run on saved data from another machine.
-figureTitle=['TestFlip-' machine.model '-' machine.system '-Psy ' machine.psych '.png'];
+figureTitle=['TestFlip-' machine.model '-' machine.system ...
+    '-Psy ' machine.psych '.png'];
 figureTitle=strrep(figureTitle,'Windows','Win');
 figureTitle=strrep(figureTitle,' ','-');
 h=gcf;
