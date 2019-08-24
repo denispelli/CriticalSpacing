@@ -75,25 +75,25 @@ fprintf(['Relative to VBLTimestamp, '...
     'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
+% Identify the machine.
+machine=ComputerModelName;
 
-%% FOR DEBUGGING, SAVE DATA TO DISK
+%% OPTIONALLY, SAVE DATA TO DISK
 if 1
-    % This saves all the measurements, so that the data can be analyzed
-    % remotely.
-    machine=ComputerModelName;
-    [~,v]=PsychtoolboxVersion;
-    psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
-    saveTitle=['TestFlip-' machine.model '-' machine.system '-Psy ' psych '.mat'];
+    % This saves all the measurements as a MAT file, so that the data can
+    % be analyzed later or remotely.
+    saveTitle=['TestFlip-' machine.model '-' machine.system '-Psy ' machine.psych '.mat'];
     saveTitle=strrep(saveTitle,'Windows','Win');
     saveTitle=strrep(saveTitle,' ','-');
-    folder=fileparts(mfilename('fullpath'));
+    folder=fileparts(which('TestFlip'));
     close all
     save([folder filesep saveTitle]);
-    fprintf(['<strong>Data has been saved to disk as file "%s", '...
+    fprintf(['<strong>Data have been saved to disk as file "%s", '...
         'next to TestFlip.m.</strong>\n'],saveTitle);
 end
 
 %% PLOT RESULTS
+% This can run on saved data from any machine. Just LOAD the saved MAT file.
 close all
 f=figure(1);
 screenRect=Screen('Rect',0);
@@ -132,8 +132,8 @@ ok=1.25<r & r<1.75;
 a=actual(:,ok);
 sdMidHalfFrame=std(a(:));
 
-% Assuming the frame frequency is stable, we estimate the true
-% frame times and assess the sd of VBLTimestamp relative to that.
+% Assuming the frame frequency is stable, we estimate the true frame times
+% and assess the sd of VBLTimestamp relative to that.
 tMeasured=cumsum(actual);
 tEst=zeros(size(tMeasured));
 for i=1:length(duration)
@@ -145,11 +145,11 @@ for i=1:length(duration)
     % frame, and uniformly interpolate the reat.
     tEst(:,i)=linspace(tMeasured(1,i),tMeasured(end,i),size(tMeasured,1));
 end
-% Now compute deviance of measured times from estimate of periodic
-% frame time. We care only about SD, not mean.
+% Now compute deviance of measured times from estimate of periodic frame
+% time. We care only about SD, not mean.
 dt=tMeasured-tEst;
 if 0
-    % See more detail than just the one-number summary
+    % Show more detail than just the one-number summary
     % sdMidHalfFrameRePeriodic.
     % Plot error re better estimate of actual frame time.
     sd=std(dt);
@@ -159,7 +159,7 @@ if 0
 end
 r=(duration+bestFixedDelay)/periodSec;
 % Select only the data that are far from the vertical transitions.
-ok=(r>0.25 & r<0.75) | (r>1.25 & r<1.75) | (r>2.25 & r<2.75);
+% ok=(r>0.25 & r<0.75) | (r>1.25 & r<1.75) | (r>2.25 & r<2.75);
 ok=(r>1.25 & r<1.75) ;
 dtOk=dt(:,ok);
 sdMidHalfFrameRePeriodic=std(dtOk(:));
@@ -198,7 +198,6 @@ text(1,0.77*g.YLim(2),'SD of flip re periodic est.:','FontSize',12);
 text(1,0.73*g.YLim(2),...
     sprintf('%.1f ms in mid half of frame. ',...
     1000*sdMidHalfFrameRePeriodic),'FontSize',12);
-machine=ComputerModelName;
 if ~isempty(machine.modelLong)
     model=machine.modelLong;
 else
@@ -221,15 +220,11 @@ text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,...
     'HorizontalAlignment','right','FontSize',12);
 text(0.99*g.XLim(2),0.07*g.YLim(2),machine.system,...
     'HorizontalAlignment','right','FontSize',12);
-[~,v]=PsychtoolboxVersion;
-psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
-text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' psych],...
+text(0.99*g.XLim(2),0.03*g.YLim(2),['Psychtoolbox ' machine.psych],...
     'HorizontalAlignment','right','FontSize',12);
 model=periodSec*ceil((duration+bestFixedDelay)/periodSec);
-plot(1000*duration,1000*model,'-r','LineWidth',2);
+plot(1000*duration,1000*model,'-r','LineWidth',1.5);
 g.Units='normalized';
-% g.Position(2)=max(0,g.Position(2));
-% g.Position(4)=min(1,g.Position(4));
 g.Position=[.09 0 .28 1];
 panelOnePosition=g.Position;
 
@@ -308,12 +303,6 @@ g=gca;
 g.Visible='off';
 position=[g.Position(1) 0 panelOnePosition(3) 1];
 a=annotation('textbox',position,'String',str,'LineStyle','none','FontSize',12);
-% fprintf('Panel 1 g.Position=[%.2f %.2f %.2f %.2f];\n',g.Position);
-% g.Units='pixels';
-% fprintf('Panel 1 g.Position=[%.2f %.2f %.2f %.2f];\n',g.Position);
-% fprintf('g.FontName %s, g.FontSize %d\n',g.FontName,g.FontSize);
-% fprintf('a.FontName %s, a.FontSize %d\n',a.FontName,a.FontSize);
-
 
 if 0
     % Not quite working.
@@ -353,13 +342,14 @@ if 0
 end
 
 %% SAVE PLOT TO DISK
-figureTitle=['TestFlip-' machine.model '-' machine.system '-Psy ' psych '.png'];
+% This can run on saved data from another machine.
+figureTitle=['TestFlip-' machine.model '-' machine.system '-Psy ' machine.psych '.png'];
 figureTitle=strrep(figureTitle,'Windows','Win');
 figureTitle=strrep(figureTitle,' ','-');
 h=gcf;
 h.NumberTitle='off';
 h.Name=figureTitle;
-folder=fileparts(mfilename('fullpath'));
+folder=fileparts(which('TestFlip'));
 saveas(gcf,[folder filesep figureTitle],'png');
 fprintf(['<strong>Figure has been saved to disk as file "%s", '...
     'next to TestFlip.m.</strong>\n'],figureTitle);
@@ -372,13 +362,17 @@ function machine=ComputerModelName
 % machine.modelLong, e.g. 'MacBook (Retina, 12-inch, 2017)' or ''.
 % machine.manufacturer, e.g. 'Apple Inc.' or 'Dell Inc'.
 % machine.system, e.g. 'macOS 10.14.3' or 'Windows NT-10.0.9200'.
+% machine.psychtoolbox, e.g. 'Psychtoolbox 3.0.16'.
+% machine.psych, e.g. '3.0.16'.
 % Unavailable answers are empty ''.
-% Augsut 20, 2019, denis.pelli@nyu.edu
-clear machine
+% August 24, 2019, denis.pelli@nyu.edu
 machine.model='';
-machine.modelLong=''; % Currently provided only for macintosh.
+machine.modelLong=''; % Currently provided only for macOS.
 machine.manufacturer='';
 machine.system='';
+[~,v]=PsychtoolboxVersion;
+machine.psych=sprintf('%d.%d.%d',v.major,v.minor,v.point);
+machine.psychtoolbox=['Psychtoolbox ' machine.psych];
 c=Screen('Computer');
 machine.system=c.system;
 if isfield(c,'hw') && isfield(c.hw,'model')
@@ -427,7 +421,7 @@ switch computer
         n=length(fields)/2;
         for i=1:n
             % Grab each field's name and value.
-            % Don't capitalize the category.
+            % Don't capitalize the name.
             fields{i}(1)=lower(fields{i}(1));
             machine.(fields{i})=fields{i+n};
         end
@@ -437,18 +431,19 @@ switch computer
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
     case 'GLNXA64'
+        % Can anyone provide Linux code here?
 end
 % Clean up the Operating System name.
 while ismember(machine.system(end),{' ' '-'})
-    % Strip trailing debris.
+    % Strip trailing separators.
     machine.system=machine.system(1:end-1);
 end
 while ismember(machine.system(1),{' ' '-'})
-    % Strip leading debris.
+    % Strip leading separators.
     machine.system=machine.system(2:end);
 end
 machine.system=strrep(c.system,'Mac OS','macOS'); % Modernize spelling.
-if c.windows
+if IsWin
     % Prepend "Windows".
     if ~all('win'==lower(machine.system(1:3)))
         machine.system=['Windows ' machine.system];
