@@ -22,7 +22,13 @@ o.screenVerbosity=0; % 0 for no messages, 1 for critical, 2 for warnings, 3 defa
 o.textSize=40;
 
 %% FILES
-mainFolder=fileparts(fileparts(mfilename('fullpath'))); %
+mainFolder=fileparts(fileparts(mfilename('fullpath')));
+if ~exist('TextSizeToFit','file') && ...
+        ~exist([mainFolder filesep 'lib' filesep 'TextSizeToFit.m'],'file')
+    error(['Please run me from the "utility" folder in '...
+    'NoiseDiscrimination or CriticalSpacing.  That allows me to find other '...
+    'routines in the corresponding "lib" folder.']);
+end
 addpath(fullfile(mainFolder,'lib')); % "lib" folder in same directory as this file
 addpath(fullfile(mainFolder,'utilities')); % "lib" folder in same directory as this file
 
@@ -229,11 +235,11 @@ if ~verLessThan('matlab','8.1')
     if ok
         test(end).value='true';
         test(end).ok=true;
-%         fprintf('Good! PsychJava appears in javaclasspath.txt.\n');
+        %         fprintf('Good! PsychJava appears in javaclasspath.txt.\n');
     else
         test(end).value='false';
         test(end).ok=false;
-%         warning('Boo! PsychJava does not appear in javaclasspath.txt. Please read "help PsychJavaTrouble".');
+        %         warning('Boo! PsychJava does not appear in javaclasspath.txt. Please read "help PsychJavaTrouble".');
     end
     test(end).help='help PsychJavaTrouble';
 end
@@ -241,13 +247,13 @@ end
 try
     test(end+1).name='Speak';
     test(end).min='true';
-    Speak('Two beeps');
+    Speak('Hello. Two beeps');
     test(end).value='true';
     test(end).ok=true;
-catch me
+catch e
     test(end).value='false';
     test(end).ok=false;
-    warning(me.message)
+    warning(e.message)
 end
 
 %% TEST SOUND
@@ -269,7 +275,7 @@ if IsOSX
     try
         test(end+1).name='PsychPortAudio';
         d=PsychPortAudio('GetDevices');
-%         fprintf('PsychPortAudio driver loaded. \n');
+        %         fprintf('PsychPortAudio driver loaded. \n');
         test(end).value='true';
         test(end).ok=true;
     catch em
@@ -320,7 +326,7 @@ try
     Screen('Preference','SkipSyncTests',1);
     Screen('Preference','TextAntiAliasing',1);
     if o.useFractionOfScreenToDebug
-%         fprintf('Using tiny window for debugging.\n');
+        %         fprintf('Using tiny window for debugging.\n');
     end
     if isempty(window)
         fprintf('Opening the window. ...\n'); % Newline for Screen warnings.
@@ -373,9 +379,9 @@ try
         test(end).min=true;
         test(end).ok=test(end).value;
         Screen('DrawText',window,' ',0,0,0,1,1);
-%         fprintf('Loaded DrawText Plugin %s. Needed for accurate text rendering.\n',mat2str(value));
+        %         fprintf('Loaded DrawText Plugin %s. Needed for accurate text rendering.\n',mat2str(value));
         if ~value
-%             warning('The DrawText plugin failed to load. We need it. See warning above. Read "Install NoiseDiscrimination.docx" B.7 to learn how to install it.');
+            %             warning('The DrawText plugin failed to load. We need it. See warning above. Read "Install NoiseDiscrimination.docx" B.7 to learn how to install it.');
         end
         test(end).help='help DrawTextPlugin';
         
@@ -394,7 +400,7 @@ try
         windowInfo=Screen('GetWindowInfo',window);
         test(end+1).name='Beam position queries available';
         test(end).value=windowInfo.Beamposition ~= -1 && windowInfo.VBLEndline ~= -1;
-%         fprintf('Beam position queries %s, and should be true for best timing.\n',mat2str(test(end).value));
+        %         fprintf('Beam position queries %s, and should be true for best timing.\n',mat2str(test(end).value));
         test(end).min='';
         test(end).ok=true;
         test(end).help='Screen GetWindowInfo?';
@@ -458,18 +464,23 @@ try
     o.recordGaze=true;
     test(end+1).name='Camera';
     if o.recordGaze
+        fprintf('Trying to use the camera to take a photo. ...\n');
         videoExtension='.avi'; % '.avi', '.mp4' or '.mj2'
-        clear cam
-        if exist('matlab.webcam.internal.Utility.isMATLABOnline','class')
-            cam=webcam;
-            gazeFile=fullfile(o.dataFolder,[o.dataFilename videoExtension]);
-            vidWriter=VideoWriter(gazeFile);
+        clear cam webcam
+        try
+            cam=webcam(1);
+            preview(cam);
+            WaitSecs(1);
+            o.dataFilename='InstallationCheckPhoto';
+            photoFile=fullfile(o.dataFolder,[o.dataFilename videoExtension]);
+            vidWriter=VideoWriter(photoFile);
             vidWriter.FrameRate=1; % frame/s.
             open(vidWriter);
-            fprintf('Recording gaze (of conditions %s) in %s file:\n',num2str(find([o.recordGaze])),videoExtension);
+            fprintf('Recording snapshot in file: %s\n',photoFile);
             test(end).value=true;
-        else
-%             fprintf('Cannot record gaze. Lack webcam link. Set o.recordGaze=false.\n');
+        catch e
+            fprintf(2,'Failed to connect to your camera.\n');
+            warning(e.message);
             test(end).value=false;
             o.recordGaze=false;
         end
@@ -478,7 +489,7 @@ try
         try
             img=snapshot(cam);
         catch e
-            warning(e)
+            warning(e.message)
         end
         % FUTURE: Write trial number and condition number in
         % corner of recorded movie image.
@@ -490,8 +501,16 @@ try
     end
     test(end).min=true;
     test(end).ok=test(end).value;
-    test(end).help='web https://www.mathworks.com/help/supportpkg/usbwebcams/ug/snapshot.html';
+    test(end).help='web https://www.mathworks.com/help/supportpkg/usbwebcams/';
+    % Weirdly this web page says the support package is NOT needed:
+    % https://www.mathworks.com/help/supportpkg/usbwebcams/ug/installing-the-webcams-support-package.html
+    % test(end).help='web https://www.mathworks.com/hardware-support/matlab-webcam.html';
+    % test(end).help=sprintf(['MATLAB Support Package for USB Webcams has not been installed. \n'...
+    %     'Open Add-Ons Explorer to install the Webcam Support Package.\n'...
+    %     'web https://www.mathworks.com/matlabcentral/fileexchange/45182-matlab-support-package-for-usb-webcams\n'...
+    %     'In the MATLAB Command Window type "webcam(1)" to get the best installation link.']);
     
+    %% Is screen calibrated?
     if contains(mainFolder,'NoiseDiscrimination')
         test(end+1).name='Screen is calibrated';
         if streq(cal.datestr,'none') || isempty(cal.datestr);
@@ -502,7 +521,16 @@ try
             test(end).ok=true;
         end
         test(end).min='true';
-        test(end).help='help CalibrateScreenLuminance';
+        test(end).help='help CalibrateScreenLuminance; % In NoiseDiscrimination/utilities/';
+        if exist('OurScreenCalibrations','file')
+            cal=OurScreenCalibrations(0);
+            if isfield(cal,'old') && isfield(cal.old,'L') && isfield(cal,'datestr')
+                if ~streq(cal.datestr,'none') && ~isempty(cal.datestr)
+                    test(end).value='true';
+                    test(end).ok=true;
+                end
+            end
+        end
     end
     
     %% Goodbye
