@@ -9,6 +9,12 @@ function machine=ComputerModelName
 % machine.psych, e.g. '3.0.16'.
 % Unavailable answers are empty ''.
 % August 24, 2019, denis.pelli@nyu.edu
+%
+% LIMITATIONS:
+% The "curl" trick to get macOS modelLong failed on a MacBookPro:
+%     Model: 'MacBookPro13,2'
+% ModelLong: 'fish: Expected a variable name after this $. curl -s https://support-sp.apple.com/sp/product?cc=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | cut -c 9- ) | sed 's|.*<configCode>\(.*\)</configCode>.*|\1|'                                                    ^'
+
 machine.model='';
 machine.modelLong=''; % Currently provided only for macOS.
 machine.manufacturer='';
@@ -40,14 +46,13 @@ switch computer
             machine.modelLong='';
         end
         machine.manufacturer='Apple Inc.';
-        % THIS WILL GET MODEL: sysctl hw.model
         % A python solution: https://gist.github.com/zigg/6174270
 
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
-        %         wmicString=sprintf(['    ''Manufacturer  Model            \r'...
-        %         '     Dell Inc.     Inspiron 5379    ']);
+        % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
+        % '     Dell Inc.     Inspiron 5379    ']);
         s=strrep(wmicString,char(10),' '); % Change to space.
         s=strrep(s,char(13),' '); % Change to space.
         s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
@@ -61,10 +66,10 @@ switch computer
         % The original had two columns: category and value. We've now got
         % one long column with n categories followed by n values.
         % We asked for manufacturer and model so n should be 2.
-        n=length(fields)/2;
+        n=length(fields)/2; % n names followed by n values.
         for i=1:n
             % Grab each field's name and value.
-            % Don't capitalize the name.
+            % Lowercase name.
             fields{i}(1)=lower(fields{i}(1));
             machine.(fields{i})=fields{i+n};
         end
