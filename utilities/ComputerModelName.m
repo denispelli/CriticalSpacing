@@ -1,18 +1,28 @@
 function machine=ComputerModelName
 % machine=ComputerModelName;
-% Returns a struct with five text fields that specify the basic
-% configuration of your hardware and software:
-% machine.model, e.g. 'MacBook10,1' or 'Inspiron 5379'.
-% machine.modelLong, e.g. 'MacBook (Retina, 12-inch, 2017)' or ''.
-% machine.manufacturer, e.g. 'Apple Inc.' or 'Dell Inc'.
-% machine.system, e.g. 'macOS 10.14.3' or 'Windows NT-10.0.9200'.
-% machine.psychtoolbox, e.g. 'Psychtoolbox 3.0.16'.
+% Returns a struct with six text fields that specify the basic
+% configuration of your hardware and software. Here are examples for macOS
+% and Windows:
+%
+%            model: 'MacBook10,1'
+%        modelLong: 'MacBook (Retina, 12-inch, 2017)'
+%     manufacturer: 'Apple Inc.'
+%           system: 'macOS 10.14.6'
+%     psychtoolbox: 'Psychtoolbox 3.0.16'
+%           matlab: 'MATLAB 9.6 (R2019a)'
+%     
+%            model: 'Inspiron 5379'
+%        modelLong: ''
+%     manufacturer: 'Dell Inc.'
+%           system: 'Windows NT-10.0.9200'
+%     psychtoolbox: 'Psychtoolbox 3.0.16'
+%           matlab: 'MATLAB 9.6 (R2019a)'
+%
 % Unavailable answers are empty ''.
 %
 % This is useful in testing and benchmarking to record the test environment
-% in a human-readable way.
-% If you are trying to produce a compact string, e.g. to use in a file
-% name, you might do something like this:
+% in a human-readable way. If you are trying to produce a compact string,
+% e.g. to use in a file name, you might do something like this:
 % machine=ComputerModelName;
 % filename=['TestFlip-' machine.model '-' machine.system ...
 %     '-' machine.psychtoolbox '.png'];
@@ -30,11 +40,18 @@ function machine=ComputerModelName
 % ModelLong: 'fish: Expected a variable name after this $. curl -s https://support-sp.apple.com/sp/product?cc=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | cut -c 9- ) | sed 's|.*<configCode>\(.*\)</configCode>.*|\1|'                                                    ^'
 
 machine.model='';
-machine.modelLong=''; % Currently provided only for macOS.
+machine.modelLong=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
 machine.system='';
-[~,v]=PsychtoolboxVersion;
-machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',v.major,v.minor,v.point);
+machine.psychtoolbox='';
+machine.matlab='';
+[~,p]=PsychtoolboxVersion;
+machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
+if ~exist('ver','file')
+    error('Need MATLAB release R2006 or later.');
+end
+m=ver('matlab');
+machine.matlab=sprintf('%s %s %s',m.Name,m.Version,m.Release);
 c=Screen('Computer');
 machine.system=c.system;
 if isfield(c,'hw') && isfield(c.hw,'model')
@@ -70,7 +87,7 @@ switch computer
         s=strrep(s,char(13),' '); % Change to space.
         s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
         s=strrep(s,'''',''); % Remove stray quote.
-        fields=split(s,char(9));
+        fields=split(s,char(9)); % Use tabs to split into tokens.
         clear ok
         for i=1:length(fields)
             ok(i)=~isempty(fields{i});
@@ -79,18 +96,21 @@ switch computer
         % The original had two columns: category and value. We've now got
         % one long column with n categories followed by n values.
         % We asked for manufacturer and model so n should be 2.
-        n=length(fields)/2; % n names followed by n values.
-        for i=1:n
-            % Grab each field's name and value.
-            % Lowercase name.
-            fields{i}(1)=lower(fields{i}(1));
-            machine.(fields{i})=fields{i+n};
+        if length(fields)==4
+            n=length(fields)/2; % n names followed by n values.
+            for i=1:n
+                % Grab each field's name and value.
+                % Lowercase name.
+                fields{i}(1)=lower(fields{i}(1));
+                machine.(fields{i})=fields{i+n};
+            end
         end
         if ~isfield(machine,'manufacturer') || isempty(machine.manufacturer)...
                 || ~isfield(machine,'model') || isempty(machine.model)
             wmicString
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
+        
     case 'GLNXA64'
         % Can anyone provide Linux code here?
 end
@@ -103,7 +123,8 @@ while ismember(machine.system(1),{' ' '-'})
     % Strip leading separators.
     machine.system=machine.system(2:end);
 end
-machine.system=strrep(c.system,'Mac OS','macOS'); % Modernize spelling.
+% Modernize spelling.
+machine.system=strrep(machine.system,'Mac OS','macOS'); 
 if IsWin
     % Prepend "Windows".
     if ~all('win'==lower(machine.system(1:3)))
