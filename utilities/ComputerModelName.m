@@ -39,6 +39,11 @@ function machine=ComputerModelName
 %     Model: 'MacBookPro13,2'
 % ModelLong: 'fish: Expected a variable name after this $. curl -s https://support-sp.apple.com/sp/product?cc=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | cut -c 9- ) | sed 's|.*<configCode>\(.*\)</configCode>.*|\1|'                                                    ^'
 
+%% HISTORY
+% August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
+% August 25, 2019. DGP fixed bug that bypassed most of the cleanup of
+%                  machine.system.
+
 machine.model='';
 machine.modelLong=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
