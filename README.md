@@ -32,4 +32,4 @@ CriticalSpacing, Psychtoolbox, and MATLAB
 * April 13, 2017. Fixed problem reported by Bianca Huurneman, Nabin Paudel, and Thomas Salazar. The “b.png” letter file in the Pelli font had the wrong image size, which provoked a warning and fatal error. The bad file has now been replaced with a good file of the correct size. And error checking and reporting has been enhanced to give a more specific and explanatory error message should such an error ever recur. Thanks to Bianca, Nabin, and Thomas for reporting the problem. - Denis
 
 
-&copy; Copyright 2016, 2017, 2018 Denis Pelli, denis.pelli@nyu.edu
+&copy; Copyright 2016, 2017, 2018, 2019 Denis Pelli, denis.pelli@nyu.edu
