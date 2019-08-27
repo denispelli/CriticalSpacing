@@ -442,7 +442,7 @@ function machine=ComputerModelName
 % August 25, 2019. DGP fixed bug that bypassed most of the cleanup of
 %                  machine.system.
 % August 27, 2019. DGP use macOS Terminal only if it is running the bash
-%                  shell.
+%                  shell. Reduce dependence on Psychtoolbox.
 
 machine.model='';
 machine.modelLong=''; % Currently non-empty only for macOS.
@@ -454,21 +454,26 @@ if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
 end
-if ~exist('ver','file')
-    error('Need MATLAB release R2006 or later.');
-end
-m=ver('octave');
-if isempty(m)
-    m=ver('matlab');
+if exist('ver','file')
+    m=ver('octave');
     if isempty(m)
-        error('The language must be MATLAB or Octave.');
+        m=ver('matlab');
+        if isempty(m)
+            error('The language must be MATLAB or Octave.');
+        end
     end
+    machine.matlab=sprintf('%s %s %s',m.Name,m.Version,m.Release);
+else
+    warn('MATLAB/OCTAVE too old (pre 2006) to have "ver" command.');
 end
-machine.matlab=sprintf('%s %s %s',m.Name,m.Version,m.Release);
-c=Screen('Computer');
-machine.system=c.system;
-if isfield(c,'hw') && isfield(c.hw,'model')
-    machine.model=c.hw.model;
+if exist('Screen','file')
+    c=Screen('Computer');
+    machine.system=c.system;
+    if isfield(c,'hw') && isfield(c.hw,'model')
+        machine.model=c.hw.model;
+    end
+else
+    warn('Currently need Psychtoolbox to get operating system name.');
 end
 switch computer
     case 'MACI64'
