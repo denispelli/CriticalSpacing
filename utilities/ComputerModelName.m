@@ -55,12 +55,20 @@ machine.manufacturer='';
 machine.system='';
 machine.psychtoolbox='';
 machine.matlab='';
-[~,p]=PsychtoolboxVersion;
-machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
+if exist('PsychtoolboxVersion','file')
+    [~,p]=PsychtoolboxVersion;
+    machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
+end
 if ~exist('ver','file')
     error('Need MATLAB release R2006 or later.');
 end
-m=ver('matlab');
+m=ver('octave');
+if isempty(m)
+    m=ver('matlab');
+    if isempty(m)
+        error('The language must be MATLAB or Octave.');
+    end
+end
 machine.matlab=sprintf('%s %s %s',m.Name,m.Version,m.Release);
 c=Screen('Computer');
 machine.system=c.system;

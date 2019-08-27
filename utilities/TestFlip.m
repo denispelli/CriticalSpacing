@@ -430,20 +430,40 @@ function machine=ComputerModelName
 % August 24, 2019, denis.pelli@nyu.edu
 %
 % LIMITATIONS:
-% The "curl" trick to get macOS modelLong failed on a MacBookPro:
-%     Model: 'MacBookPro13,2'
-% ModelLong: 'fish: Expected a variable name after this $. curl -s https://support-sp.apple.com/sp/product?cc=$(system_profiler SPHardwareDataType | awk '/Serial/ {print $4}' | cut -c 9- ) | sed 's|.*<configCode>\(.*\)</configCode>.*|\1|'                                                    ^'
+% LINUX: Doesn't yet get model name or manufacturer.
+% MACOS: It gets the long model name only if Terminal's default shell
+% is bash, which it typically is. I am thus far unable to switch to the
+% bash shell and back, using "bash" and "exit", because MATLAB hangs up
+% forever, e.g. !s=evalc('bash;pwd;exit');
+% http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
+
+%% HISTORY
+% August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
+% August 25, 2019. DGP fixed bug that bypassed most of the cleanup of
+%                  machine.system.
+% August 27, 2019. DGP use macOS Terminal only if it is running the bash
+%                  shell.
 
 machine.model='';
 machine.modelLong=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
 machine.system='';
-[~,p]=PsychtoolboxVersion;
-machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
+machine.psychtoolbox='';
+machine.matlab='';
+if exist('PsychtoolboxVersion','file')
+    [~,p]=PsychtoolboxVersion;
+    machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
+end
 if ~exist('ver','file')
     error('Need MATLAB release R2006 or later.');
 end
-m=ver('matlab');
+m=ver('octave');
+if isempty(m)
+    m=ver('matlab');
+    if isempty(m)
+        error('The language must be MATLAB or Octave.');
+    end
+end
 machine.matlab=sprintf('%s %s %s',m.Name,m.Version,m.Release);
 c=Screen('Computer');
 machine.system=c.system;
@@ -453,19 +473,26 @@ end
 switch computer
     case 'MACI64'
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
-        s = evalc(['!'...
-            'curl -s https://support-sp.apple.com/sp/product?cc=$('...
-            'system_profiler SPHardwareDataType '...
-            '| awk ''/Serial/ {print $4}'' '...
-            '| cut -c 9- '...
-            ') | sed ''s|.*<configCode>\(.*\)</configCode>.*|\1|''']);
-        while ismember(s(end),{' ' char(10) char(13)})
-            s=s(1:end-1); % Remove trailing whitespace.
+        shell=evalc('!echo $0');
+        if contains(shell,'bash')
+            % This script requires the bash shell.
+            s = evalc(['!'...
+                'curl -s https://support-sp.apple.com/sp/product?cc=$('...
+                'system_profiler SPHardwareDataType '...
+                '| awk ''/Serial/ {print $4}'' '...
+                '| cut -c 9- '...
+                ') | sed ''s|.*<configCode>\(.*\)</configCode>.*|\1|''']);
+            while ismember(s(end),{' ' char(10) char(13)})
+                s=s(1:end-1); % Remove trailing whitespace.
+            end
+        else
+            warning('Getting the long model name requires that Terminal''s default shell be "bash".');
+            s='';
         end
         machine.modelLong=s;
-        if all(machine.modelLong(1:5)=='fish:') || ...
-                ~all(ismember(lower(machine.modelLong(1:3)),'abcdefghijklmnopqrstuvwxyz'))
-            warning('Oops. curl failed. Send this to denis.pelli@nyu.edu: "%s"',s);
+        if ~all(ismember(lower(machine.modelLong(1:3)),'abcdefghijklmnopqrstuvwxyz'))
+            machine
+            warning('Oops. curl failed. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
             machine.modelLong='';
         end
         machine.manufacturer='Apple Inc.';
@@ -516,7 +543,8 @@ while ismember(machine.system(1),{' ' '-'})
     % Strip leading separators.
     machine.system=machine.system(2:end);
 end
-machine.system=strrep(machine.system,'Mac OS','macOS'); % Modernize spelling.
+% Modernize spelling.
+machine.system=strrep(machine.system,'Mac OS','macOS'); 
 if IsWin
     % Prepend "Windows".
     if ~all('win'==lower(machine.system(1:3)))
