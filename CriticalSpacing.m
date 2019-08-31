@@ -843,8 +843,8 @@ end
 Screen('Preference','TextAntiAliasing',1);
 SoundVolume(oo(1).soundVolume);
 soundMuting=SoundMuting;
-if oo(1).soundVolume>0 && soundMuting
-    warning('SoundVolumen %.2f is greater than zero, but SoundMuting is true.',oo(1).soundVolume);
+if oo(1).soundVolume>0 && ~isempty(soundMuting) && soundMuting
+    warning('SoundVolume %.2f is greater than zero, but SoundMuting is true.',oo(1).soundVolume);
 end
 % Set up for KbCheck. Calling ListenChar(2) tells the MATLAB console/editor
 % to ignore what we type, so we don't inadvertently echo observer responses
@@ -1041,7 +1041,7 @@ try
             oo(1).textSize=round(0.02*RectWidth(r)); % Rough guess.
             Screen('TextSize',window,oo(1).textSize);
             if false
-                % Appears too briefly to be read. Annoying.
+                % Appears too briefly to be read, so I suppressed it.
                 Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
                     2*oo(1).textSize,2.5*oo(1).textSize);
             end
@@ -1061,7 +1061,8 @@ try
         fclose(fileId);
         if ~isempty(drawTextWarning) && oo(oi).getAlphabetFromDisk
             warning backtrace off
-            warning('You can ignore the warnings above about DrawText because we aren''t using it.');
+            warning(['You can ignore the warnings above about DrawText '...
+                'because we aren''t using it.']);
             warning backtrace on
         end
         delete(drawTextWarningFileName);
