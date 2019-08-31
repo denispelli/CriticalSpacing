@@ -30,14 +30,19 @@ function [oldVolume,failed]=SoundVolume(newVolume)
 if nargin<1
     newVolume=[];
 end
+oldVolume=[];
+failed=false;
+if ~ismac
+    return
+end
 
 % Get volume (0.0 to 1.0).
 % osascript -e 'output volume of (get volume settings)'
 [failed,msg]=system('osascript -e "output volume of (get volume settings)"');
 if failed
+    warning('Applescript failed to read sound volume.');
     failed
     msg
-    warning('Applescript failed to read volume.');
     oldVolume=msg;
 else
     oldVolume=str2num(msg)/100;
@@ -52,8 +57,8 @@ if ~isempty(newVolume)
     str=sprintf('osascript -e "set volume output volume %d"',round(100*newVolume));
     [failed,msg]=system(str);
     if failed
+        warning('Applescript failed to set volume.');
         failed
         msg
-        warning('Applescript failed to set volume.');
     end
 end

@@ -24,19 +24,26 @@ function [oldIsMuted,failed]=SoundMuting(newIsMuted)
 % https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_cmds.html
 % https://discussions.apple.com/thread/6418291
 
+oldIsMuted=logical([]); % Make sure output arguments are defined.
+failed=false;
 if nargin<1
-    newIsMuted=[];
+    newIsMuted=logical([]);
+end
+if ~ismac
+    return
 end
 
 % Get mute state (logical true or false).
 % osascript -e 'output muted of (get volume settings)'
 [failed,str]=system('osascript -e "output muted of (get volume settings)"');
 if failed
+    warning('Applescript failed to read muting.');
     failed
     str
-    warning('Applescript failed to read muting.');
 end
-str=str(1:end-1);
+if ~isempty(str)
+    str=str(1:end-1);
+end
 switch str
     case 'true'
         oldIsMuted=true;
@@ -60,9 +67,9 @@ if ~isempty(newIsMuted)
     str=sprintf('osascript -e "set volume output muted %s"',str);
     [failed,msg]=system(str);
     if failed
+        warning('Applescript failed to set muting.');
         failed
         msg
-        warning('Applescript failed to set muting.');
     end
 end
 

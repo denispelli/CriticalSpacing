@@ -1,12 +1,12 @@
-function [oldLevel,status] = Brightness(screenNumber,newLevel)
-% [oldLevel,status] = Brightness([screenNumber][,newLevel])
+function [oldLevel,failed] = Brightness(screenNumber,newLevel)
+% [oldLevel,failed] = Brightness([screenNumber][,newLevel])
 %
 % BRIGHTNESS. Get and set the "brightness" slider in the macOS: System
 % Preferences: Displays panel. The function argument "newLevel" (0.0
 % to 1.0) indicates the desired brightness. If you call without an argument
 % then nothing is changed. The current state is always reported in
-% the returned oldLevel (0.0 to 1.0). The optionally returned "status" is
-% always zero unless the applescript failed, in which case oldLevel is NaN.
+% the returned oldLevel (0.0 to 1.0). The optionally returned "failed" is
+% always false unless the applescript failed, in which case oldLevel is NaN.
 %
 % ON ERROR:  If there is an error we close any open Psychtoolbox window.
 %
@@ -102,6 +102,8 @@ function [oldLevel,status] = Brightness(screenNumber,newLevel)
 % Thanks to Mario Kleiner for explaining how macOS "brightness" works.
 % Thanks to nick.peatfield@gmail.com for sharing his applescript code for
 % dimmer.scpt and brighter.scpt.
+oldLevel=[];
+failed=false;
 
 if ~IsOSX
     % I believe that Applescript works only within macOS. It is conceivable
@@ -109,7 +111,7 @@ if ~IsOSX
     % running Linux or Windows, in which case someone might enhance this
     % program to work for those situations.
     oldLevel = NaN;
-    status = 1; % Signal failure on this unsupported OS:
+    failed = true; % Signal failure on this unsupported OS:
     return;
 end
 [~,ver]=PsychtoolboxVersion;
@@ -126,10 +128,13 @@ if nargin<1
     screenNumber=0;
 end
 if useScreenBrightness
-    if ~isempty(newLevel)
-        Screen('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
-    end
-    oldLevel=Screen('ConfigureDisplay','Brightness',screenNumber,0);
+        if ~isempty(newLevel)
+            Screen('ConfigureDisplay','Brightness',screenNumber,0,newLevel);
+        end
+        oldLevel=Screen('ConfigureDisplay','Brightness',screenNumber,0);
+    return
+end
+if ~ismac
     return
 end
 try
@@ -140,9 +145,11 @@ try
     if nargin>1
         command = [command ' ' num2str(newLevel)];
     end
-    [status,oldString]=system(command); % Takes 5 s on MacBook Pro, 35 s on MacBook.
+    [failed,oldString]=system(command); % Takes 5 s on MacBook Pro, 35 s on MacBook.
     oldLevel=str2double(oldString);
-    if isempty(oldLevel) || oldLevel==-1
+    if failed || isempty(oldLevel) || oldLevel==-1
+        failed
+        oldString
         error('Make sure you have admin privileges, and that System Preferences is not tied up in a dialog. Brightness applescript error: %s. ',oldString);
     end
 catch e
