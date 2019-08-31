@@ -1,6 +1,6 @@
 function machine=ComputerModelName
 % machine=ComputerModelName;
-% Returns a struct with six text fields that specify the basic
+% Returns a struct with seven text fields that specify the basic
 % configuration of your hardware and software. Here are examples for macOS
 % and Windows:
 %
@@ -161,4 +161,30 @@ if IsWin
         machine.system=['Windows ' machine.system];
     end
 end
+
+%% PSYCHTOOLBOX KERNEL DRIVER
+% http://psychtoolbox.org/docs/PsychtoolboxKernelDriver';
+machine.PsychtoolboxKernelDriver='';
+if ismac
+    hasKernel=~system('kextstat -l -k | grep PsychtoolboxKernelDriver > /dev/null');
+    if hasKernel
+        %'Psychtoolbox kernel driver version';
+        [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
+        v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
+        machine.PsychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v{1}];
+    end
+end
+
+%% GPU
+% The most important info about the system would be the gpu vendor and
+% model and driver version, e.g., accessible via winfo =
+% Screen('GetWindowInfo', window);
+screen=0;
+useFractionOfScreenToDebug=0.2;
+screenBufferRect=Screen('Rect',screen);
+r=round(useFractionOfScreenToDebug*screenBufferRect);
+r=AlignRect(r,screenBufferRect,'right','bottom');
+window=Screen('OpenWindow',screen,255,r);
+info=Screen('GetWindowInfo',window)
+Screen('Close',window);
 end
