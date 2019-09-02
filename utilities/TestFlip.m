@@ -39,13 +39,17 @@
 % The data collection, fitting, plotting, and saving now seem to work
 % robustly on macOS and Windows computers. Fingers crossed, I expect it to
 % work fine on Linux too. However, it's important to label the results with
-% the computer model name, and I include a subroutine ComputerModelName to
+% the computer model name, and I include a subroutine IdentifyComputer to
 % get that. This turned out to be much harder than I'd anticipated, and it
 % works on most machines but still fails on some. I think it's robust
 % enough to proceed without the name, but that's likely where compatibility
 % issues will occur.
 %
-% See also: Screen('Flip?')
+% See also: FlipTest, Screen('Flip?')
+
+% September 1, 2019 DGP Removed subroutine, now called IdentifyComputer.
+%                       Now also identify video driver and report
+%                       PsychtoolboxKernelDriver version if it's present.
 
 %% MEASURE TIMING
 repetitions=100; % 100
@@ -107,8 +111,8 @@ fprintf(['Relative to VBLTimestamp, '...
     'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
-% Identify the machine.
-machine=ComputerModelName;
+% Identify the computer.
+machine=IdentifyComputer;
 
 %% OPTIONALLY, SAVE DATA TO DISK
 if 1
@@ -213,25 +217,32 @@ g.Position([3 4])=1.3*g.Position([3 4]);
 g.Position([1 2])=g.Position([1 2])-0.15*g.Position([3 4]);
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
-text(25,24,'req. time','FontSize',12);
+text(28,27,'req. time','FontSize',12);
 title('Stimulus duration vs requested','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
-text(1,0.97*g.YLim(2),...
+y=0.97*g.YLim(2);
+text(1,y,...
     sprintf('Estimated fixed delay %.1f ms.',1000*bestFixedDelay),...
     'FontWeight','bold','FontSize',12);
-text(1,0.93*g.YLim(2),...
+y=y-0.04*g.YLim(2);
+text(1,y,...
     sprintf('Frame period %.1f ms (%.1f Hz).',...
     1000*periodSec,1/periodSec),'FontSize',12);
-text(1,0.89*g.YLim(2),'SD of flip time re prior flip:','FontSize',12);
-text(1,0.85*g.YLim(2),...
+y=y-0.04*g.YLim(2);
+text(1,y,'SD of flip time re prior flip:','FontSize',12);
+y=y-0.04*g.YLim(2);
+text(1,y,...
     sprintf('mean %.1f ms, median %.1f ms, ',...
     1000*mean(std(excess)),1000*median(std(excess))),'FontSize',12);
-text(1,0.81*g.YLim(2),...
+y=y-0.04*g.YLim(2);
+text(1,y,...
     sprintf('%.1f ms in mid half of frame.',1000*sdMidHalfFrame),...
     'FontSize',12);
-text(1,0.77*g.YLim(2),'SD of flip re periodic est.:','FontSize',12);
-text(1,0.73*g.YLim(2),...
+y=y-0.04*g.YLim(2);
+text(1,y,'SD of flip re periodic est.:','FontSize',12);
+y=y-0.04*g.YLim(2);
+text(1,y,...
     sprintf('%.1f ms in mid half of frame. ',...
     1000*sdMidHalfFrameRePeriodic),'FontSize',12);
 if ~isempty(machine.modelLong)
@@ -240,24 +251,35 @@ else
     model=machine.model;
 end
 i=strfind(model,' (');
+y=0.02*g.YLim(2);
+x=0.99*g.XLim(2);
+text(x,y,machine.system,...
+    'HorizontalAlignment','right','FontSize',12); y=y+0.04*g.YLim(2);
+if ~isempty(machine.psychtoolboxKernelDriver)
+    text(x,y,machine.psychtoolboxKernelDriver,...
+        'HorizontalAlignment','right','FontSize',12); y=y+0.04*g.YLim(2);
+end
+text(x,y,machine.psychtoolbox,...
+    'HorizontalAlignment','right','FontSize',12); y=y+0.04*g.YLim(2);
+text(x,y,machine.videoDriver,...
+    'HorizontalAlignment','right','FontSize',9); y=y+0.04*g.YLim(2);
+text(x,y,machine.manufacturer,...
+    'HorizontalAlignment','right','FontSize',12); y=y+0.04*g.YLim(2);
 if length(model)>25 && ~isempty(i)
     i=i(1);
     model1=model(1:i);
     model2=model(i+1:end);
-    text(0.99*g.XLim(2),0.19*g.YLim(2),model1,...
-        'FontWeight','bold','HorizontalAlignment','right','FontSize',14);
-    text(0.99*g.XLim(2),0.15*g.YLim(2),model2,...
-        'HorizontalAlignment','right','FontSize',12);
+    text(x,y,model2,...
+        'HorizontalAlignment','right','FontSize',12); 
+    y=y+0.04*g.YLim(2);
+    text(x,y,model1,...
+        'FontWeight','bold','HorizontalAlignment','right','FontSize',14); 
+    y=y+0.04*g.YLim(2);
 else
-    text(0.99*g.XLim(2),0.15*g.YLim(2),model,...
-        'FontWeight','bold','HorizontalAlignment','right','FontSize',14);
+    text(x,y,model,...
+        'FontWeight','bold','HorizontalAlignment','right','FontSize',14); 
+    y=y+0.04*g.YLim(2);
 end
-text(0.99*g.XLim(2),0.11*g.YLim(2),machine.manufacturer,...
-    'HorizontalAlignment','right','FontSize',12);
-text(0.99*g.XLim(2),0.07*g.YLim(2),machine.system,...
-    'HorizontalAlignment','right','FontSize',12);
-text(0.99*g.XLim(2),0.03*g.YLim(2),machine.psychtoolbox,...
-    'HorizontalAlignment','right','FontSize',12);
 model=periodSec*ceil((duration+bestFixedDelay)/periodSec);
 plot(1000*duration,1000*model,'-r','LineWidth',1.5);
 g.Units='normalized';
@@ -392,168 +414,3 @@ saveas(gcf,[folder filesep figureTitle],'png');
 fprintf(['<strong>Figure has been saved to disk as file "%s", '...
     'next to TestFlip.m.</strong>\n'],figureTitle);
 
-%% GET COMPUTER'S MODEL NAME
-function machine=ComputerModelName
-% machine=ComputerModelName;
-% Returns a struct with six text fields that specify the basic
-% configuration of your hardware and software. Here are examples for macOS
-% and Windows:
-%
-%            model: 'MacBook10,1'
-%        modelLong: 'MacBook (Retina, 12-inch, 2017)'
-%     manufacturer: 'Apple Inc.'
-%           system: 'macOS 10.14.6'
-%     psychtoolbox: 'Psychtoolbox 3.0.16'
-%           matlab: 'MATLAB 9.6 (R2019a)'
-%     
-%            model: 'Inspiron 5379'
-%        modelLong: ''
-%     manufacturer: 'Dell Inc.'
-%           system: 'Windows NT-10.0.9200'
-%     psychtoolbox: 'Psychtoolbox 3.0.16'
-%           matlab: 'MATLAB 9.6 (R2019a)'
-%
-% Unavailable answers are empty ''.
-%
-% This is useful in testing and benchmarking to record the test environment
-% in a human-readable way. If you are trying to produce a compact string,
-% e.g. to use in a file name, you might do something like this:
-% machine=ComputerModelName;
-% filename=['TestFlip-' machine.model '-' machine.system ...
-%     '-' machine.psychtoolbox '.png'];
-% filename=strrep(filename,'Windows','Win');
-% filename=strrep(filename,'Psychtoolbox','Psy');
-% filename=strrep(filename,' ','-');
-% Which produces a string like this: 
-% TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
-%
-% August 24, 2019, denis.pelli@nyu.edu
-%
-% LIMITATIONS:
-% LINUX: Doesn't yet get model name or manufacturer.
-% MACOS: It gets the long model name only if Terminal's default shell
-% is bash, which it typically is. I am thus far unable to switch to the
-% bash shell and back, using "bash" and "exit", because MATLAB hangs up
-% forever, e.g. !s=evalc('bash;pwd;exit');
-% http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
-
-%% HISTORY
-% August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
-% August 25, 2019. DGP fixed bug that bypassed most of the cleanup of
-%                  machine.system.
-% August 27, 2019. DGP use macOS Terminal only if it is running the bash
-%                  shell. Reduce dependence on Psychtoolbox.
-
-machine.model='';
-machine.modelLong=''; % Currently non-empty only for macOS.
-machine.manufacturer='';
-machine.system='';
-machine.psychtoolbox='';
-machine.matlab='';
-if exist('PsychtoolboxVersion','file')
-    [~,p]=PsychtoolboxVersion;
-    machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
-end
-if exist('ver','file')
-    m=ver('octave');
-    if isempty(m)
-        m=ver('matlab');
-        if isempty(m)
-            error('The language must be MATLAB or Octave.');
-        end
-    end
-    machine.matlab=sprintf('%s %s %s',m.Name,m.Version,m.Release);
-else
-    warn('MATLAB/OCTAVE too old (pre 2006) to have "ver" command.');
-end
-if exist('Screen','file')
-    c=Screen('Computer');
-    machine.system=c.system;
-    if isfield(c,'hw') && isfield(c.hw,'model')
-        machine.model=c.hw.model;
-    end
-else
-    warn('Currently need Psychtoolbox to get operating system name.');
-end
-switch computer
-    case 'MACI64'
-        % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
-        shell=evalc('!echo $0');
-        if contains(shell,'bash')
-            % This script requires the bash shell.
-            s = evalc(['!'...
-                'curl -s https://support-sp.apple.com/sp/product?cc=$('...
-                'system_profiler SPHardwareDataType '...
-                '| awk ''/Serial/ {print $4}'' '...
-                '| cut -c 9- '...
-                ') | sed ''s|.*<configCode>\(.*\)</configCode>.*|\1|''']);
-            while ismember(s(end),{' ' char(10) char(13)})
-                s=s(1:end-1); % Remove trailing whitespace.
-            end
-        else
-            warning('Getting the long model name requires that Terminal''s default shell be "bash".');
-            s='';
-        end
-        machine.modelLong=s;
-        if ~all(ismember(lower(machine.modelLong(1:3)),'abcdefghijklmnopqrstuvwxyz'))
-            machine
-            warning('Oops. curl failed. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
-            machine.modelLong='';
-        end
-        machine.manufacturer='Apple Inc.';
-        % A python solution: https://gist.github.com/zigg/6174270
-
-    case 'PCWIN64'
-        wmicString = evalc('!wmic computersystem get manufacturer, model');
-        % Here's a typical result:
-        % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
-        % '     Dell Inc.     Inspiron 5379    ']);
-        s=strrep(wmicString,char(10),' '); % Change to space.
-        s=strrep(s,char(13),' '); % Change to space.
-        s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
-        s=strrep(s,'''',''); % Remove stray quote.
-        fields=split(s,char(9)); % Use tabs to split into tokens.
-        clear ok
-        for i=1:length(fields)
-            ok(i)=~isempty(fields{i});
-        end
-        fields=fields(ok); % Discard empty fields.
-        % The original had two columns: category and value. We've now got
-        % one long column with n categories followed by n values.
-        % We asked for manufacturer and model so n should be 2.
-        if length(fields)==4
-            n=length(fields)/2; % n names followed by n values.
-            for i=1:n
-                % Grab each field's name and value.
-                % Lowercase name.
-                fields{i}(1)=lower(fields{i}(1));
-                machine.(fields{i})=fields{i+n};
-            end
-        end
-        if ~isfield(machine,'manufacturer') || isempty(machine.manufacturer)...
-                || ~isfield(machine,'model') || isempty(machine.model)
-            wmicString
-            warning('Failed to retrieve manufacturer and model from WMIC.');
-        end
-        
-    case 'GLNXA64'
-        % Can anyone provide Linux code here?
-end
-% Clean up the Operating System name.
-while ismember(machine.system(end),{' ' '-'})
-    % Strip trailing separators.
-    machine.system=machine.system(1:end-1);
-end
-while ismember(machine.system(1),{' ' '-'})
-    % Strip leading separators.
-    machine.system=machine.system(2:end);
-end
-% Modernize spelling.
-machine.system=strrep(machine.system,'Mac OS','macOS'); 
-if IsWin
-    % Prepend "Windows".
-    if ~all('win'==lower(machine.system(1:3)))
-        machine.system=['Windows ' machine.system];
-    end
-end
-end
