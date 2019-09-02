@@ -1,22 +1,30 @@
-function machine=ComputerModelName
-% machine=ComputerModelName;
-% Returns a struct with seven text fields that specify the basic
-% configuration of your hardware and software. Here are examples for macOS
-% and Windows:
+function machine=IdentifyComputer(option)
+% machine=IdentifyComputer([option]);
+% Returns a struct with eight text fields that specify the basic
+% configuration of your hardware and software. Getting the videoDriver
+% information requires opening and closing a window, which can take around
+% 30 s, so you may wish to set option='dontOpenWindow' to skip that test,
+% and return a struct with the videoDriver field empty ''.
 %
-%            model: 'MacBook10,1'
-%        modelLong: 'MacBook (Retina, 12-inch, 2017)'
-%     manufacturer: 'Apple Inc.'
-%           system: 'macOS 10.14.6'
-%     psychtoolbox: 'Psychtoolbox 3.0.16'
-%           matlab: 'MATLAB 9.6 (R2019a)'
-%     
-%            model: 'Inspiron 5379'
-%        modelLong: ''
-%     manufacturer: 'Dell Inc.'
-%           system: 'Windows NT-10.0.9200'
-%     psychtoolbox: 'Psychtoolbox 3.0.16'
-%           matlab: 'MATLAB 9.6 (R2019a)'
+% Here are display of the output struct for macOS and Windows:
+%
+%                    model: 'MacBook10,1'
+%                modelLong: 'MacBook (Retina, 12-inch, 2017)'
+%             manufacturer: 'Apple Inc.'
+%              videoDriver: 'Intel Inc.--Intel(R) HD Graphics 615--2.1 INTEL-12.10.12'
+%             psychtoolbox: 'Psychtoolbox 3.0.16'
+% psychtoolboxKernelDriver: ''
+%                   matlab: 'MATLAB 9.6 (R2019a)'
+%                   system: 'macOS 10.14.6'
+%
+%                    model: 'Inspiron 5379'
+%                modelLong: ''
+%             manufacturer: 'Dell Inc.'
+%              videoDriver: 'xxx'
+%             psychtoolbox: 'Psychtoolbox 3.0.16'
+% psychtoolboxKernelDriver: ''
+%                   matlab: 'MATLAB 9.6 (R2019a)'
+%                   system: 'Windows NT-10.0.9200'
 %
 % Unavailable answers are empty ''.
 %
@@ -24,15 +32,16 @@ function machine=ComputerModelName
 % in a human-readable way. If you are trying to produce a compact string,
 % e.g. to use in a file name, you might do something like this:
 % machine=ComputerModelName;
-% filename=['TestFlip-' machine.model '-' machine.system ...
+% filename=['TestFlip-' machine.model ...
+%     '-' machine.system ...
 %     '-' machine.psychtoolbox '.png'];
 % filename=strrep(filename,'Windows','Win');
 % filename=strrep(filename,'Psychtoolbox','Psy');
 % filename=strrep(filename,' ','-');
-% Which produces a string like this: 
+% Which produces a string like this:
 % TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
 %
-% August 24, 2019, denis.pelli@nyu.edu
+% September 1, 2019, denis.pelli@nyu.edu
 %
 % LIMITATIONS:
 % LINUX: Doesn't yet get model name or manufacturer.
@@ -48,13 +57,17 @@ function machine=ComputerModelName
 %                  machine.system.
 % August 27, 2019. DGP use macOS Terminal only if it is running the bash
 %                  shell. Reduce dependence on Psychtoolbox.
-
+if nargin<1
+    option='';
+end
 machine.model='';
 machine.modelLong=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
-machine.system='';
+machine.videoDriver='';
 machine.psychtoolbox='';
+machine.psychtoolboxKernelDriver='';
 machine.matlab='';
+machine.system='';
 if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
@@ -107,7 +120,7 @@ switch computer
         end
         machine.manufacturer='Apple Inc.';
         % A python solution: https://gist.github.com/zigg/6174270
-
+        
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
@@ -154,7 +167,7 @@ while ismember(machine.system(1),{' ' '-'})
     machine.system=machine.system(2:end);
 end
 % Modernize spelling.
-machine.system=strrep(machine.system,'Mac OS','macOS'); 
+machine.system=strrep(machine.system,'Mac OS','macOS');
 if IsWin
     % Prepend "Windows".
     if ~all('win'==lower(machine.system(1:3)))
@@ -163,28 +176,42 @@ if IsWin
 end
 
 %% PSYCHTOOLBOX KERNEL DRIVER
-% http://psychtoolbox.org/docs/PsychtoolboxKernelDriver';
-machine.PsychtoolboxKernelDriver='';
+% http://psychtoolbox.org/docs/psychtoolboxKernelDriver';
+machine.psychtoolboxKernelDriver='';
 if ismac
-    hasKernel=~system('kextstat -l -k | grep PsychtoolboxKernelDriver > /dev/null');
+    hasKernel=~system('kextstat -l -k | grep psychtoolboxKernelDriver > /dev/null');
     if hasKernel
         %'Psychtoolbox kernel driver version';
-        [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
+        [~,result]=system('kextstat -l -b psychtoolboxKernelDriver');
         v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
-        machine.PsychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v{1}];
+        machine.psychtoolboxKernelDriver=['psychtoolboxKernelDriver ' v{1}];
     end
 end
 
-%% GPU
-% The most important info about the system would be the gpu vendor and
-% model and driver version, e.g., accessible via winfo =
-% Screen('GetWindowInfo', window);
-screen=0;
-useFractionOfScreenToDebug=0.2;
-screenBufferRect=Screen('Rect',screen);
-r=round(useFractionOfScreenToDebug*screenBufferRect);
-r=AlignRect(r,screenBufferRect,'right','bottom');
-window=Screen('OpenWindow',screen,255,r);
-info=Screen('GetWindowInfo',window)
-Screen('Close',window);
+%% Video driver
+% Mario Kleiner suggests (1.9.2019) identifying the gpu hardware and driver
+% by the concatenation of GLVendor, GLRenderer, and GLVersion, which are
+% accessible via winfo=Screen('GetWindowInfo',window);
+if ~contains(option,'dontOpenWindow')
+    % This block is optional because opening and closing a window takes a
+    % long time, on the order of 30 s, so you may want to skip it if you
+    % don't need the video driver details.
+    screen=0;
+    useFractionOfScreenToDebug=0.2;
+    screenBufferRect=Screen('Rect',screen);
+    r=round(useFractionOfScreenToDebug*screenBufferRect);
+    r=AlignRect(r,screenBufferRect,'right','bottom');
+    try
+        window=[];
+        window=Screen('OpenWindow',screen,255,r);
+        info=Screen('GetWindowInfo',window);
+        machine.videoDriver=[info.GLVendor '--' info.GLRenderer '--' info.GLVersion];
+    catch e
+        warn('Unable to get video driver openGL details.');
+        warning(e.message);
+    end
+    if Screen(window,'WindowKind')~=0
+        Screen('Close',window);
+    end
 end
+end % function
