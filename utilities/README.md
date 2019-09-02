@@ -6,11 +6,11 @@
 
 "mat" is a folder with all the MAT files that result from running TestFlip on a variety of computers. It's just raw timing data. Hardly anyone will be interested in this.
 
-ComputerModelName.m. To identify the computer and software environment, TestFlip.m uses a subroutine ComputerModelName, within the file. It is also available as a separate file ComputerModelName.m. It currently supports macOS and Windows. I hope someone can extend it to support Linux.
+IdentifyComputer.m. To identify the computer and software environment, TestFlip.m uses the  function IdentifyComputer, provided as a separate file IdentifyComputer.m. It currently supports macOS and Windows. I hope someone can extend it to support Linux.
 
 InstallationCheck.m is unrelated. We use it to check that a computer has all the necessary software installed to run an experiment.
 
-I have offered both TestFlip.m and ComputerModelName.m to be incorporated into the Psychtoolbox. 
+I am offering both TestFlip.m and IdentifyComputer.m to be incorporated into the Psychtoolbox. 
 
 THANKS to Darshan Thapa, Augustin Burchell, Sangita Chakraborty, and iandol@gmail.com for sending PNG files now included in the png folder.
 
@@ -26,5 +26,7 @@ TestFlip.m, Psychtoolbox, and MATLAB (or Octave)
 
 ## Update:
 * August 27, 2019. DGP Made available through GitHub.
+* September 1, 2019. DGP Renamed ComputerModelName to IdentifyComputer.
+
 
 &copy; Copyright 2019 Denis Pelli, denis.pelli@nyu.edu
