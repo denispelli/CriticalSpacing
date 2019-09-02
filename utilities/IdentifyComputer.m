@@ -113,7 +113,7 @@ switch computer
             s='';
         end
         machine.modelLong=s;
-        if ~all(ismember(lower(machine.modelLong(1:3)),'abcdefghijklmnopqrstuvwxyz'))
+        if length(s)<3 || ~all(ismember(lower(s(1:3)),'abcdefghijklmnopqrstuvwxyz'))
             machine
             warning('Oops. curl failed. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
             machine.modelLong='';
