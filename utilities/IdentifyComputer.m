@@ -20,7 +20,7 @@ function machine=IdentifyComputer(option)
 %                    model: 'Inspiron 5379'
 %                modelLong: ''
 %             manufacturer: 'Dell Inc.'
-%              videoDriver: 'xxx'
+%              videoDriver: '???'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
@@ -45,18 +45,19 @@ function machine=IdentifyComputer(option)
 %
 % LIMITATIONS:
 % LINUX: Doesn't yet get model name or manufacturer.
-% MACOS: It gets the long model name only if Terminal's default shell
-% is bash, which it typically is. I am thus far unable to switch to the
+% MACOS: It gets the long model name only if Terminal's default shell is
+% bash or zsh, which it typically is. I am thus far unable to switch to the
 % bash shell and back, using "bash" and "exit", because MATLAB hangs up
 % forever, e.g. !s=evalc('bash;pwd;exit');
 % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
+% https://support.apple.com/en-us/HT208050
 
 %% HISTORY
 % August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
 % August 25, 2019. DGP fixed bug that bypassed most of the cleanup of
 %                  machine.system.
 % August 27, 2019. DGP use macOS Terminal only if it is running the bash
-%                  shell. Reduce dependence on Psychtoolbox.
+%                  or zsh shell. Reduce dependence on Psychtoolbox.
 if nargin<1
     option='';
 end
@@ -97,8 +98,10 @@ switch computer
     case 'MACI64'
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         shell=evalc('!echo $0');
-        if contains(shell,'bash')
-            % This script requires the bash shell.
+        if contains(shell,'bash') || contains(shell,'zsh')
+            % This script requires the bash or zsh shell.
+            % macOS Catalina switches from bash to zsh as the default
+            % shell. This code not yet tested with zsh.
             s = evalc(['!'...
                 'curl -s https://support-sp.apple.com/sp/product?cc=$('...
                 'system_profiler SPHardwareDataType '...
@@ -109,7 +112,9 @@ switch computer
                 s=s(1:end-1); % Remove trailing whitespace.
             end
         else
-            warning('Getting the long model name requires that Terminal''s default shell be "bash".');
+            warning(['Sorry. '...
+                'Getting the long model name requires that Terminal''s '...
+                'default shell be "bash" or "zsh".']);
             s='';
         end
         machine.modelLong=s;
