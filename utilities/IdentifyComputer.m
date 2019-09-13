@@ -1,17 +1,19 @@
 function machine=IdentifyComputer(option)
 % machine=IdentifyComputer([option]);
 % Returns a struct with eight text fields that specify the basic
-% configuration of your hardware and software. Getting the videoDriver
+% configuration of your hardware and software. Getting the video driver
 % information requires opening and closing a window, which can take around
 % 30 s, so you may wish to set option='dontOpenWindow' to skip that test,
-% and return a struct with the videoDriver field empty ''.
+% and return a struct with the video driver fields empty ''.
 %
 % Here are display of the output struct for macOS and Windows:
 %
 %                    model: 'MacBook10,1'
 %                modelLong: 'MacBook (Retina, 12-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
-%              videoDriver: 'Intel Inc.--Intel(R) HD Graphics 615--2.1 INTEL-12.10.12'
+%             driverVendor: 'Intel Inc.'
+%           driverRenderer: 'Intel(R) HD Graphics 615'
+%            driverVersion: '2.1 INTEL-12.10.12'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
@@ -20,7 +22,6 @@ function machine=IdentifyComputer(option)
 %                    model: 'Inspiron 5379'
 %                modelLong: ''
 %             manufacturer: 'Dell Inc.'
-%              videoDriver: '???'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
@@ -65,7 +66,9 @@ end
 machine.model='';
 machine.modelLong=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
-machine.videoDriver='';
+machine.driverVendor='';
+machine.driverRenderer='';
+machine.driverVersion='';
 machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
 machine.matlab='';
@@ -217,7 +220,9 @@ if ~contains(option,'dontOpenWindow')
         window=[];
         window=Screen('OpenWindow',screen,255,r);
         info=Screen('GetWindowInfo',window);
-        machine.videoDriver=[info.GLVendor '--' info.GLRenderer '--' info.GLVersion];
+        machine.driverVendor=info.GLVendor;
+        machine.driverRenderer=info.GLRenderer;
+        machine.driverVersion=info.GLVersion;
     catch e
         warn('Unable to get video driver openGL details.');
         warning(e.message);
