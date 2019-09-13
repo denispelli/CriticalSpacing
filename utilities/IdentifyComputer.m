@@ -58,6 +58,7 @@ function machine=IdentifyComputer(option)
 %                  machine.system.
 % August 27, 2019. DGP use macOS Terminal only if it is running the bash
 %                  or zsh shell. Reduce dependence on Psychtoolbox.
+% September 13, 2019. DGP debugged code to detect PsychtoolboxKernelDriver.
 if nargin<1
     option='';
 end
@@ -98,10 +99,10 @@ switch computer
     case 'MACI64'
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         shell=evalc('!echo $0');
-        if contains(shell,'bash') || contains(shell,'zsh')
-            % This script requires the bash or zsh shell.
-            % macOS Catalina switches from bash to zsh as the default
-            % shell. This code not yet tested with zsh.
+        if contains(shell,'bash')% || contains(shell,'zsh')
+            % This script requires the bash shell.
+            % Alas, macOS Catalina switches from bash to zsh as the default
+            % shell. 
             s = evalc(['!'...
                 'curl -s https://support-sp.apple.com/sp/product?cc=$('...
                 'system_profiler SPHardwareDataType '...
@@ -114,7 +115,8 @@ switch computer
         else
             warning(['Sorry. '...
                 'Getting the long model name requires that Terminal''s '...
-                'default shell be "bash" or "zsh".']);
+                'default shell be "bash". Alas, macOS Catalina changes '...
+                'the default to be "zsh".']);
             s='';
         end
         machine.modelLong=s;
@@ -184,12 +186,17 @@ end
 % http://psychtoolbox.org/docs/psychtoolboxKernelDriver';
 machine.psychtoolboxKernelDriver='';
 if ismac
-    hasKernel=~system('kextstat -l -k | grep psychtoolboxKernelDriver > /dev/null');
+    [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
+    hasKernel=contains(result,'PsychtoolboxKernelDriver');
     if hasKernel
         %'Psychtoolbox kernel driver version';
-        [~,result]=system('kextstat -l -b psychtoolboxKernelDriver');
         v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
-        machine.psychtoolboxKernelDriver=['psychtoolboxKernelDriver ' v{1}];
+        if ~isempty(v)
+            v=v{1};
+        else
+            v='';
+        end
+        machine.psychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v];
     end
 end
 
