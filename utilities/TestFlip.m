@@ -254,14 +254,6 @@ end
 y=0.02*g.YLim(2);
 x=0.99*g.XLim(2);
 dy=0.03*g.YLim(2);
-text(x,y,machine.system,...
-    'HorizontalAlignment','right','FontSize',10); y=y+dy;
-if ~isempty(machine.psychtoolboxKernelDriver)
-    text(x,y,machine.psychtoolboxKernelDriver,...
-        'HorizontalAlignment','right','FontSize',10); y=y+dy;
-end
-text(x,y,machine.psychtoolbox,...
-    'HorizontalAlignment','right','FontSize',10); y=y+dy;
 if ~isempty(machine.driverVersion)
     text(x,y,machine.driverVersion,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
@@ -274,6 +266,14 @@ if ~isempty(machine.driverVendor)
     text(x,y,machine.driverVendor,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
+text(x,y,machine.system,...
+    'HorizontalAlignment','right','FontSize',10); y=y+dy;
+if ~isempty(machine.psychtoolboxKernelDriver)
+    text(x,y,machine.psychtoolboxKernelDriver,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+text(x,y,machine.psychtoolbox,...
+    'HorizontalAlignment','right','FontSize',10); y=y+dy;
 if ~isempty(machine.manufacturer)
     text(x,y,machine.manufacturer,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
