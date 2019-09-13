@@ -51,6 +51,9 @@
 %                       Now also identify video driver and report
 %                       PsychtoolboxKernelDriver version if it's present.
 
+% Identify the computer.
+machine=IdentifyComputer;
+
 %% MEASURE TIMING
 repetitions=100; % 100
 steps=100; % 100
@@ -111,8 +114,6 @@ fprintf(['Relative to VBLTimestamp, '...
     'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
-% Identify the computer.
-machine=IdentifyComputer;
 
 %% OPTIONALLY, SAVE DATA TO DISK
 if 1
@@ -262,7 +263,7 @@ end
 text(x,y,machine.psychtoolbox,...
     'HorizontalAlignment','right','FontSize',12); y=y+0.04*g.YLim(2);
 text(x,y,machine.videoDriver,...
-    'HorizontalAlignment','right','FontSize',9); y=y+0.04*g.YLim(2);
+    'HorizontalAlignment','right','FontSize',7); y=y+0.04*g.YLim(2);
 text(x,y,machine.manufacturer,...
     'HorizontalAlignment','right','FontSize',12); y=y+0.04*g.YLim(2);
 if length(model)>25 && ~isempty(i)
