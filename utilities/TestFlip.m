@@ -251,35 +251,47 @@ if ~isempty(machine.modelLong)
 else
     model=machine.model;
 end
-i=strfind(model,' (');
 y=0.02*g.YLim(2);
 x=0.99*g.XLim(2);
-dy=0.035*g.YLim(2);
+dy=0.03*g.YLim(2);
 text(x,y,machine.system,...
-    'HorizontalAlignment','right','FontSize',11); y=y+dy;
+    'HorizontalAlignment','right','FontSize',10); y=y+dy;
 if ~isempty(machine.psychtoolboxKernelDriver)
     text(x,y,machine.psychtoolboxKernelDriver,...
-        'HorizontalAlignment','right','FontSize',11); y=y+dy;
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
 text(x,y,machine.psychtoolbox,...
-    'HorizontalAlignment','right','FontSize',11); y=y+dy;
-text(x,y,machine.videoDriver,...
-    'HorizontalAlignment','right','FontSize',6); y=y+dy;
-text(x,y,machine.manufacturer,...
-    'HorizontalAlignment','right','FontSize',11); y=y+dy;
+    'HorizontalAlignment','right','FontSize',10); y=y+dy;
+if ~isempty(machine.driverVersion)
+    text(x,y,machine.driverVersion,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+if ~isempty(machine.driverRenderer)
+    text(x,y,machine.driverRenderer,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+if ~isempty(machine.driverVendor)
+    text(x,y,machine.driverVendor,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+if ~isempty(machine.manufacturer)
+    text(x,y,machine.manufacturer,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+i=strfind(model,' (');
 if length(model)>25 && ~isempty(i)
     i=i(1);
-    model1=model(1:i);
+    model1=model(1:i-1); % Omit the space.
     model2=model(i+1:end);
     text(x,y,model2,...
-        'HorizontalAlignment','right','FontSize',11); 
+        'HorizontalAlignment','right','FontSize',10); 
     y=y+dy;
     text(x,y,model1,...
-        'FontWeight','bold','HorizontalAlignment','right','FontSize',13); 
+        'FontWeight','bold','HorizontalAlignment','right','FontSize',12); 
     y=y+dy;
 else
     text(x,y,model,...
-        'FontWeight','bold','HorizontalAlignment','right','FontSize',13); 
+        'FontWeight','bold','HorizontalAlignment','right','FontSize',12); 
     y=y+dy;
 end
 model=periodSec*ceil((duration+bestFixedDelay)/periodSec);
