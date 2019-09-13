@@ -66,13 +66,13 @@ end
 machine.model='';
 machine.modelLong=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
-machine.driverVendor='';
-machine.driverRenderer='';
-machine.driverVersion='';
 machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
+machine.driverVendor='';
+machine.driverRenderer='';
+machine.driverVersion='';
 if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
