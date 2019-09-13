@@ -421,15 +421,19 @@ try
         %% PSYCHTOOLBOX KERNEL DRIVER
         if ismac
             test(end+1).name='Psychtoolbox kernel driver';
-            test(end).value=~system('kextstat -l -k | grep PsychtoolboxKernelDriver > /dev/null');
+            [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
+            test(end).value=~isempty(result);
             test(end).min=true; % Helpful only if AMD driver.
             test(end).ok=test(end).value;
             test(end).help='web http://psychtoolbox.org/docs/PsychtoolboxKernelDriver';
-            
             test(end+1).name='Psychtoolbox kernel driver version';
-            [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
-            v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
-            test(end).value=v{1};
+            if ~isempty(result)
+                v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
+                v=v{1};
+            else
+                v=[];
+            end
+            test(end).value=v;
             test(end).min='1.1';
             if ~isempty(test(end).value)
                 test(end).ok= str2num(test(end).value)>=str2num(test(end).min);
