@@ -223,26 +223,27 @@ title('Stimulus duration vs requested','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
 y=0.97*g.YLim(2);
+dy=0.035*g.YLim(2);
 text(1,y,...
     sprintf('Estimated fixed delay %.1f ms.',1000*bestFixedDelay),...
-    'FontWeight','bold','FontSize',12);
-y=y-0.04*g.YLim(2);
+    'FontSize',12);
+y=y-dy;
 text(1,y,...
     sprintf('Frame period %.1f ms (%.1f Hz).',...
     1000*periodSec,1/periodSec),'FontSize',12);
-y=y-0.04*g.YLim(2);
+y=y-dy;
 text(1,y,'SD of flip time re prior flip:','FontSize',12);
-y=y-0.04*g.YLim(2);
+y=y-dy;
 text(1,y,...
     sprintf('mean %.1f ms, median %.1f ms, ',...
     1000*mean(std(excess)),1000*median(std(excess))),'FontSize',12);
-y=y-0.04*g.YLim(2);
+y=y-dy;
 text(1,y,...
     sprintf('%.1f ms in mid half of frame.',1000*sdMidHalfFrame),...
     'FontSize',12);
-y=y-0.04*g.YLim(2);
+y=y-dy;
 text(1,y,'SD of flip re periodic est.:','FontSize',12);
-y=y-0.04*g.YLim(2);
+y=y-dy;
 text(1,y,...
     sprintf('%.1f ms in mid half of frame. ',...
     1000*sdMidHalfFrameRePeriodic),'FontSize',12);
@@ -254,16 +255,16 @@ end
 y=0.02*g.YLim(2);
 x=0.99*g.XLim(2);
 dy=0.03*g.YLim(2);
-if ~isempty(machine.openGLRenderer)
-    text(x,y,machine.openGLRenderer,...
-        'HorizontalAlignment','right','FontSize',10); y=y+dy;
-end
 if ~isempty(machine.openGLVersion)
     text(x,y,machine.openGLVersion,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
 if ~isempty(machine.openGLVendor)
     text(x,y,machine.openGLVendor,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+if ~isempty(machine.openGLRenderer)
+    text(x,y,machine.openGLRenderer,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
 text(x,y,machine.system,...
@@ -281,19 +282,15 @@ end
 i=strfind(model,' (');
 if length(model)>25 && ~isempty(i)
     i=i(1);
-    model1=model(1:i-1); % Omit the space.
     model2=model(i+1:end);
+    model=model(1:i-1); % Omit the space.
     text(x,y,model2,...
-        'HorizontalAlignment','right','FontSize',10); 
-    y=y+dy;
-    text(x,y,model1,...
-        'FontWeight','bold','HorizontalAlignment','right','FontSize',12); 
-    y=y+dy;
-else
-    text(x,y,model,...
-        'FontWeight','bold','HorizontalAlignment','right','FontSize',12); 
+        'HorizontalAlignment','right','FontSize',10);
     y=y+dy;
 end
+text(x,y,model,...
+    'FontWeight','bold','HorizontalAlignment','right','FontSize',14);
+y=y+dy;
 model=periodSec*ceil((duration+bestFixedDelay)/periodSec);
 plot(1000*duration,1000*model,'-r','LineWidth',1.0);
 g.Units='normalized';
