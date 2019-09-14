@@ -51,7 +51,6 @@
 screen=0;
 repetitions=100; % 100
 steps=100; % 100
-clear Screen
 Screen('Preference','SkipSyncTests',1);
 periodSec=1/FrameRate;
 plusMinus=char(177);
@@ -69,7 +68,8 @@ if true
 else
     window=Screen('OpenWindow',screen,white,r);
 end
-machine=IdentifyComputer(window);
+% machine=IdentifyComputer(window); % Fails with experimental Screen.
+machine=IdentifyComputer(0); % Work around.
 duration=2.5*periodSec*(0:steps-1)/steps;
 when=zeros(repetitions,steps);
 actual=zeros(repetitions,steps);
