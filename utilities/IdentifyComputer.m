@@ -15,9 +15,20 @@ function machine=IdentifyComputer(option)
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%           openGLRenderer: 'Intel(R) HD Graphics 615'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.10.12'
-%           openGLRenderer: 'Intel(R) HD Graphics 615'
+%
+%                    model: 'MacBookPro11,5'
+%                modelLong: 'MacBook Pro (Retina, 15-inch, Mid 2015)'
+%             manufacturer: 'Apple Inc.'
+%             psychtoolbox: 'Psychtoolbox 3.0.16'
+% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
+%                   matlab: 'MATLAB 9.4 (R2018a)'
+%                   system: 'macOS 10.14.6'
+%           openGLRenderer: 'AMD Radeon R9 M370X OpenGL Engine'
+%             openGLVendor: 'ATI Technologies Inc.'
+%            openGLVersion: '2.1 ATI-2.11.20'
 %
 %                    model: 'Inspiron 5379'
 %                modelLong: ''
@@ -70,9 +81,9 @@ machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
+machine.openGLRenderer='';
 machine.openGLVendor='';
 machine.openGLVersion='';
-machine.openGLRenderer='';
 if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
