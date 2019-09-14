@@ -51,6 +51,7 @@
 screen=0;
 repetitions=100; % 100
 steps=100; % 100
+clear Screen
 Screen('Preference','SkipSyncTests',1);
 periodSec=1/FrameRate;
 plusMinus=char(177);
