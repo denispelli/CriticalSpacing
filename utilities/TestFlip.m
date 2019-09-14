@@ -254,12 +254,12 @@ end
 y=0.02*g.YLim(2);
 x=0.99*g.XLim(2);
 dy=0.03*g.YLim(2);
-if ~isempty(machine.driverVersion)
-    text(x,y,machine.driverVersion,...
-        'HorizontalAlignment','right','FontSize',10); y=y+dy;
-end
 if ~isempty(machine.driverRenderer)
     text(x,y,machine.driverRenderer,...
+        'HorizontalAlignment','right','FontSize',10); y=y+dy;
+end
+if ~isempty(machine.driverVersion)
+    text(x,y,machine.driverVersion,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
 if ~isempty(machine.driverVendor)

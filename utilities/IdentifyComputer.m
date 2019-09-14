@@ -11,13 +11,13 @@ function machine=IdentifyComputer(option)
 %                    model: 'MacBook10,1'
 %                modelLong: 'MacBook (Retina, 12-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
-%             driverVendor: 'Intel Inc.'
-%           driverRenderer: 'Intel(R) HD Graphics 615'
-%            driverVersion: '2.1 INTEL-12.10.12'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%             driverVendor: 'Intel Inc.'
+%            driverVersion: '2.1 INTEL-12.10.12'
+%           driverRenderer: 'Intel(R) HD Graphics 615'
 %
 %                    model: 'Inspiron 5379'
 %                modelLong: ''
@@ -71,8 +71,8 @@ machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
 machine.driverVendor='';
-machine.driverRenderer='';
 machine.driverVersion='';
+machine.driverRenderer='';
 if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
