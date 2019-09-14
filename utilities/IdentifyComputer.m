@@ -1,10 +1,12 @@
-function machine=IdentifyComputer(option)
-% machine=IdentifyComputer([option]);
+function machine=IdentifyComputer(windowOrScreen)
+% machine=IdentifyComputer([windowOrScreen]);
 % Returns a struct with ten text fields that specify the basic
-% configuration of your hardware and software. Getting the graphic openGL
-% information requires opening and closing a window, which can take around
-% 30 s, so you may wish to pass the optional argument 'doNotOpenWindow' to
-% skip that test, and return a struct with the openGL fields empty ''.
+% configuration of your hardware and software. Use windowOrScreen to
+% provide a window pointer or the screen number. Default is screen 0, the
+% main screen. Set it to [] to skip getting the openGL fields (they'll be
+% empty ''). You may want to do this if you don't already have a window
+% open, because opening one to get the openGL information can take around
+% 30 s.
 %
 % Here are several examples of the output struct for macOS and Windows:
 %
@@ -15,6 +17,7 @@ function machine=IdentifyComputer(option)
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%                   screen: 0
 %           openGLRenderer: 'Intel(R) HD Graphics 615'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.10.12'
@@ -26,6 +29,7 @@ function machine=IdentifyComputer(option)
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %                   matlab: 'MATLAB 9.4 (R2018a)'
 %                   system: 'macOS 10.14.6'
+%                   screen: 0
 %           openGLRenderer: 'AMD Radeon R9 M370X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
@@ -74,7 +78,7 @@ function machine=IdentifyComputer(option)
 %                  Renamed the openGL fields to more closely correspond to
 %                  the names in windowInfo.
 if nargin<1
-    option='';
+    windowOrScreen=0;
 end
 machine.model='';
 machine.modelDescription=''; % Currently non-empty only for macOS.
@@ -83,6 +87,7 @@ machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
+machine.screen=0;
 machine.openGLRenderer='';
 machine.openGLVendor='';
 machine.openGLVersion='';
@@ -118,7 +123,7 @@ switch computer
         if contains(shell,'bash')% || contains(shell,'zsh')
             % This script requires the bash shell.
             % Alas, macOS Catalina switches from bash to zsh as the default
-            % shell. 
+            % shell.
             s = evalc(['!'...
                 'curl -s https://support-sp.apple.com/sp/product?cc=$('...
                 'system_profiler SPHardwareDataType '...
@@ -216,34 +221,58 @@ if ismac
     end
 end
 
-%% Video driver
+%% OPEN GL DRIVER
 % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware and driver
-% by the combination of GLVendor, GLRenderer, and GLVersion, provided by
-% winfo=Screen('GetWindowInfo',window);
-if ~contains(option,'doNotOpenWindow')
-    % This block is optional because opening and closing a window takes a
-    % long time, on the order of 30 s, so you may want to skip it if you
-    % don't need the video driver details.
-    screen=0;
-    useFractionOfScreenToDebug=0.2;
-    screenBufferRect=Screen('Rect',screen);
-    r=round(useFractionOfScreenToDebug*screenBufferRect);
+% by the combination of GLRenderer, GLVendor, and GLVersion, which provided
+% by info=Screen('GetWindowInfo',window);
+window=[];
+if ismember(windowOrScreen,Screen('Screens'))
+    % It's a screen. Open a window on it.
+    machine.screen=windowOrScreen;
+    % Opening and closing a window takes a long time, on the order of 30 s,
+    % so you may want to skip it if you don't need the openGL fields.
+    fractionOfScreenUsed=0.2;
+    screenBufferRect=Screen('Rect',machine.screen);
+    r=round(fractionOfScreenUsed*screenBufferRect);
     r=AlignRect(r,screenBufferRect,'right','bottom');
     verbosity=Screen('Preference','Verbosity',0);
     try
-        window=[];
-        window=Screen('OpenWindow',screen,255,r);
-        info=Screen('GetWindowInfo',window);
-        machine.openGLRenderer=info.GLRenderer;
-        machine.openGLVendor=info.GLVendor;
-        machine.openGLVersion=info.GLVersion;
+        window=Screen('OpenWindow',machine.screen,255,r);
     catch e
-        warn('Unable to get OpenGL details.');
         warning(e.message);
-    end
-    if Screen(window,'WindowKind')~=0
-        Screen('Close',window);
+        warning('Unable to open window on screen %d.',machine.screen);
     end
     Screen('Preference','Verbosity',verbosity);
+elseif Screen('WindowKind',windowOrScreen)==1
+    % It's a window pointer. Figure out which screen it's on.
+    window=windowOrScreen;
+    machine.screen=[];
+    for screen=Screen('Screens')
+        if any(ClipRect(Screen('GlobalRect',window),Screen('GlobalRect',screen))~=0)
+            % Choose first screen that has nonzero intersection with the
+            % window.
+            machine.screen=screen;
+            break
+        end
+    end
+    if isempty(machine.screen)
+        error('Unable to figure out which screen the window is on.');
+    end
+else
+    if ~isempty(windowOrScreen)
+        error('Illegal windowOrScreen=%.0f, should be a window pointer, a screen number, or empty.',windowOrScreen);
+    end
+end
+if ~isempty(window)
+    info=Screen('GetWindowInfo',window);
+    machine.openGLRenderer=info.GLRenderer;
+    machine.openGLVendor=info.GLVendor;
+    machine.openGLVersion=info.GLVersion;
+    if windowOrScreen==machine.screen
+        % If we opened the window, then close it.
+        Screen('Close',window);
+    end
+else
+    machine.screen=[];
 end
 end % function
