@@ -249,9 +249,13 @@ if ismember(windowOrScreen,Screen('Screens'))
 elseif Screen('WindowKind',windowOrScreen)==1
     % It's a window pointer. Figure out which screen it's on.
     window=windowOrScreen;
+    if IsEmptyRect(Screen('GlobalRect',window))
+        % This occurred only with an experimental version of Screen.
+        error('Screen GlobalRect of window is empty');
+    end
     machine.screen=[];
     for screen=Screen('Screens')
-        if any(ClipRect(Screen('GlobalRect',window),Screen('GlobalRect',screen))~=0)
+        if ~IsEmptyRect(ClipRect(Screen('GlobalRect',window),Screen('GlobalRect',screen)))
             % Choose first screen that has nonzero intersection with the
             % window.
             machine.screen=screen;
@@ -259,6 +263,9 @@ elseif Screen('WindowKind',windowOrScreen)==1
         end
     end
     if isempty(machine.screen)
+        % This occurred only with an experimental version of Screen.
+        Screen('GlobalRect',window)
+        Screen('GlobalRect',0)
         error('Unable to figure out which screen the window is on.');
     end
 else
