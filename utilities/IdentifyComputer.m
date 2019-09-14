@@ -205,8 +205,8 @@ end
 
 %% Video driver
 % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware and driver
-% by the concatenation of GLVendor, GLRenderer, and GLVersion, which are
-% accessible via winfo=Screen('GetWindowInfo',window);
+% by the combination of GLVendor, GLRenderer, and GLVersion, provided by
+% winfo=Screen('GetWindowInfo',window);
 if ~contains(option,'dontOpenWindow')
     % This block is optional because opening and closing a window takes a
     % long time, on the order of 30 s, so you may want to skip it if you
