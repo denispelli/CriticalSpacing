@@ -1,12 +1,15 @@
 function machine=IdentifyComputer(windowOrScreen)
 % machine=IdentifyComputer([windowOrScreen]);
-% Returns a struct with ten text fields that specify the basic
-% configuration of your hardware and software. Use windowOrScreen to
-% provide a window pointer or the screen number. Default is screen 0, the
-% main screen. Set it to [] to skip getting the openGL fields (they'll be
-% empty ''). You may want to do this if you don't already have a window
-% open, because opening one to get the openGL information can take around
-% 30 s.
+% Returns a struct with ten text fields (and a screen number) that specify
+% the basic configuration of your hardware and software. The openGL fields
+% refer to the screen with the number specified by the screen field. Use
+% windowOrScreen to provide a window pointer or the screen number. Default
+% is screen 0, the main screen. This routine is quick if windowOrScreen is
+% empty [] or points to a window; it's slow if you provide a screen number
+% (or accept the default of screen 0) because then it has to open and close
+% a window, which may take 30 s. Passing an empty windowOrScreen skips
+% opening a window, at the cost of setting all the openGL fields to empty
+% ''.
 %
 % Here are several examples of the output struct for macOS and Windows:
 %
