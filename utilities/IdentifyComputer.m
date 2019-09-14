@@ -190,9 +190,8 @@ end
 machine.psychtoolboxKernelDriver='';
 if ismac
     [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
-    hasKernel=contains(result,'PsychtoolboxKernelDriver');
-    if hasKernel
-        %'Psychtoolbox kernel driver version';
+    if contains(result,'PsychtoolboxKernelDriver')
+        % Get version number of Psychtoolbox kernel driver.
         v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
         if ~isempty(v)
             v=v{1};
