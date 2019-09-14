@@ -9,7 +9,7 @@ function machine=IdentifyComputer(option)
 % Here are display of the output struct for macOS and Windows:
 %
 %                    model: 'MacBook10,1'
-%                modelLong: 'MacBook (Retina, 12-inch, 2017)'
+%         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: ''
@@ -20,7 +20,7 @@ function machine=IdentifyComputer(option)
 %            openGLVersion: '2.1 INTEL-12.10.12'
 %
 %                    model: 'MacBookPro11,5'
-%                modelLong: 'MacBook Pro (Retina, 15-inch, Mid 2015)'
+%         modelDescription: 'MacBook Pro (Retina, 15-inch, Mid 2015)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
@@ -31,7 +31,7 @@ function machine=IdentifyComputer(option)
 %            openGLVersion: '2.1 ATI-2.11.20'
 %
 %                    model: 'Inspiron 5379'
-%                modelLong: ''
+%         modelDescription: ''
 %             manufacturer: 'Dell Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 % psychtoolboxKernelDriver: ''
@@ -75,7 +75,7 @@ if nargin<1
     option='';
 end
 machine.model='';
-machine.modelLong=''; % Currently non-empty only for macOS.
+machine.modelDescription=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
 machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
@@ -133,11 +133,11 @@ switch computer
                 'the default to be "zsh".']);
             s='';
         end
-        machine.modelLong=s;
+        machine.modelDescription=s;
         if length(s)<3 || ~all(ismember(lower(s(1:3)),'abcdefghijklmnopqrstuvwxyz'))
             machine
             warning('Oops. curl failed. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
-            machine.modelLong='';
+            machine.modelDescription='';
         end
         machine.manufacturer='Apple Inc.';
         % A python solution: https://gist.github.com/zigg/6174270
@@ -227,6 +227,7 @@ if ~contains(option,'doNotOpenWindow')
     screenBufferRect=Screen('Rect',screen);
     r=round(useFractionOfScreenToDebug*screenBufferRect);
     r=AlignRect(r,screenBufferRect,'right','bottom');
+    verbosity=Screen('Preference','Verbosity',0);
     try
         window=[];
         window=Screen('OpenWindow',screen,255,r);
@@ -241,5 +242,6 @@ if ~contains(option,'doNotOpenWindow')
     if Screen(window,'WindowKind')~=0
         Screen('Close',window);
     end
+    Screen('Preference','Verbosity',verbosity);
 end
 end % function

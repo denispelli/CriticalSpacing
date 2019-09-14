@@ -247,8 +247,8 @@ y=y-dy;
 text(1,y,...
     sprintf('%.1f ms in mid half of frame. ',...
     1000*sdMidHalfFrameRePeriodic),'FontSize',12);
-if ~isempty(machine.modelLong)
-    model=machine.modelLong;
+if ~isempty(machine.modelDescription)
+    model=machine.modelDescription;
 else
     model=machine.model;
 end
