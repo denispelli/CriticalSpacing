@@ -1,10 +1,10 @@
 function machine=IdentifyComputer(option)
 % machine=IdentifyComputer([option]);
 % Returns a struct with eight text fields that specify the basic
-% configuration of your hardware and software. Getting the video driver
+% configuration of your hardware and software. Getting the video openGL
 % information requires opening and closing a window, which can take around
 % 30 s, so you may wish to set option='dontOpenWindow' to skip that test,
-% and return a struct with the video driver fields empty ''.
+% and return a struct with the video openGL fields empty ''.
 %
 % Here are display of the output struct for macOS and Windows:
 %
@@ -15,9 +15,9 @@ function machine=IdentifyComputer(option)
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
-%             driverVendor: 'Intel Inc.'
-%            driverVersion: '2.1 INTEL-12.10.12'
-%           driverRenderer: 'Intel(R) HD Graphics 615'
+%             openGLVendor: 'Intel Inc.'
+%            openGLVersion: '2.1 INTEL-12.10.12'
+%           openGLRenderer: 'Intel(R) HD Graphics 615'
 %
 %                    model: 'Inspiron 5379'
 %                modelLong: ''
@@ -70,9 +70,9 @@ machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
-machine.driverVendor='';
-machine.driverVersion='';
-machine.driverRenderer='';
+machine.openGLVendor='';
+machine.openGLVersion='';
+machine.openGLRenderer='';
 if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',p.major,p.minor,p.point);
@@ -147,8 +147,8 @@ switch computer
         end
         fields=fields(ok); % Discard empty fields.
         % The original had two columns: category and value. We've now got
-        % one long column with n categories followed by n values.
-        % We asked for manufacturer and model so n should be 2.
+        % one long column with n categories followed by n values. We asked
+        % for manufacturer and model so n should be 2.
         if length(fields)==4
             n=length(fields)/2; % n names followed by n values.
             for i=1:n
@@ -220,11 +220,11 @@ if ~contains(option,'dontOpenWindow')
         window=[];
         window=Screen('OpenWindow',screen,255,r);
         info=Screen('GetWindowInfo',window);
-        machine.driverVendor=info.GLVendor;
-        machine.driverRenderer=info.GLRenderer;
-        machine.driverVersion=info.GLVersion;
+        machine.openGLVendor=info.GLVendor;
+        machine.openGLRenderer=info.GLRenderer;
+        machine.openGLVersion=info.GLVersion;
     catch e
-        warn('Unable to get video driver openGL details.');
+        warn('Unable to get OpenGL details.');
         warning(e.message);
     end
     if Screen(window,'WindowKind')~=0
