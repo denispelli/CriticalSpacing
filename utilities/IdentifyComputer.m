@@ -3,7 +3,7 @@ function machine=IdentifyComputer(option)
 % Returns a struct with eight text fields that specify the basic
 % configuration of your hardware and software. Getting the video openGL
 % information requires opening and closing a window, which can take around
-% 30 s, so you may wish to set option='dontOpenWindow' to skip that test,
+% 30 s, so you may wish to set option='doNotOpenWindow' to skip that test,
 % and return a struct with the video openGL fields empty ''.
 %
 % Here are display of the output struct for macOS and Windows:
@@ -218,7 +218,7 @@ end
 % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware and driver
 % by the combination of GLVendor, GLRenderer, and GLVersion, provided by
 % winfo=Screen('GetWindowInfo',window);
-if ~contains(option,'dontOpenWindow')
+if ~contains(option,'doNotOpenWindow')
     % This block is optional because opening and closing a window takes a
     % long time, on the order of 30 s, so you may want to skip it if you
     % don't need the video driver details.
@@ -231,8 +231,8 @@ if ~contains(option,'dontOpenWindow')
         window=[];
         window=Screen('OpenWindow',screen,255,r);
         info=Screen('GetWindowInfo',window);
-        machine.openGLVendor=info.GLVendor;
         machine.openGLRenderer=info.GLRenderer;
+        machine.openGLVendor=info.GLVendor;
         machine.openGLVersion=info.GLVersion;
     catch e
         warn('Unable to get OpenGL details.');
