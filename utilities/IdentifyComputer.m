@@ -1,12 +1,12 @@
 function machine=IdentifyComputer(option)
 % machine=IdentifyComputer([option]);
-% Returns a struct with eight text fields that specify the basic
-% configuration of your hardware and software. Getting the video openGL
+% Returns a struct with ten text fields that specify the basic
+% configuration of your hardware and software. Getting the graphic openGL
 % information requires opening and closing a window, which can take around
-% 30 s, so you may wish to set option='doNotOpenWindow' to skip that test,
-% and return a struct with the video openGL fields empty ''.
+% 30 s, so you may wish to pass the optional argument 'doNotOpenWindow' to
+% skip that test, and return a struct with the openGL fields empty ''.
 %
-% Here are display of the output struct for macOS and Windows:
+% Here are several examples of the output struct for macOS and Windows:
 %
 %                    model: 'MacBook10,1'
 %         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
@@ -71,6 +71,8 @@ function machine=IdentifyComputer(option)
 % August 27, 2019. DGP use macOS Terminal only if it is running the bash
 %                  or zsh shell. Reduce dependence on Psychtoolbox.
 % September 13, 2019. DGP debugged code to detect PsychtoolboxKernelDriver.
+%                  Renamed the openGL fields to more closely correspond to
+%                  the names in windowInfo.
 if nargin<1
     option='';
 end
