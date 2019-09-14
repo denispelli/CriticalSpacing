@@ -197,6 +197,7 @@ if ismac
             v=v{1};
         else
             v='';
+            warning('Failed to get version of PsychtoolboxKernelDriver.');
         end
         machine.psychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v];
     end
