@@ -45,32 +45,30 @@
 % enough to proceed without the name, but that's likely where compatibility
 % issues will occur.
 %
-% See also: FlipTest, Screen('Flip?')
-
-% September 1, 2019 DGP Removed subroutine, now called IdentifyComputer.
-%                       Now also identify video driver and report
-%                       PsychtoolboxKernelDriver version if it's present.
-
-% Identify the computer.
-machine=IdentifyComputer;
+% See also: FlipTest, Screen('Flip?'), IdentifyComputer
 
 %% MEASURE TIMING
+screen=0;
 repetitions=100; % 100
 steps=100; % 100
 Screen('Preference','SkipSyncTests',1);
 periodSec=1/FrameRate;
 plusMinus=char(177);
 micro=char(181);
-screen=0;
 white=255;
+fractionOfScreenUsed=1; % Set less than 1 only for debugging.
+screenBufferRect=Screen('Rect',screen);
+r=round(fractionOfScreenUsed*screenBufferRect);
+r=AlignRect(r,screenBufferRect,'right','bottom');
 if true
     PsychImaging('PrepareConfiguration');
     PsychImaging('AddTask','General','UseRetinaResolution');
     PsychImaging('AddTask','General','UseVirtualFramebuffer');
-    window=PsychImaging('OpenWindow',screen,white);
+    window=PsychImaging('OpenWindow',screen,white,r);
 else
-    window=Screen('OpenWindow',screen,white);
+    window=Screen('OpenWindow',screen,white,r);
 end
+machine=IdentifyComputer(window);
 duration=2.5*periodSec*(0:steps-1)/steps;
 when=zeros(repetitions,steps);
 actual=zeros(repetitions,steps);
@@ -78,13 +76,14 @@ excess=zeros(repetitions,steps);
 vsf=zeros(repetitions,steps,3);
 for i=1:steps
     % Draw stimulus.
-    Screen('TextSize',window,50);
+    Screen('TextSize',window,round(50*fractionOfScreenUsed));
     prior=Screen('Flip',window,0);
     for j=1:repetitions
         Screen('FillRect',window);
         msg=sprintf('Now timing request for %.0f ms.  %d of %d.',...
             1000*duration(i),j+(i-1)*repetitions,steps*repetitions);
-        Screen('DrawText',window,double(msg),100,100);
+        Screen('DrawText',window,double(msg),...
+            round(100*fractionOfScreenUsed),round(100*fractionOfScreenUsed));
         when(j,i)=prior+duration(i);
         % Flip to show stimulus.
         [VBLTimestamp,StimulusOnsetTime,FlipTimestamp]=...
