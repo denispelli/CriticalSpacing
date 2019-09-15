@@ -47,10 +47,11 @@ function machine=IdentifyComputer(windowOrScreen)
 %
 % Unavailable answers are empty ''.
 %
-% This is useful in testing and benchmarking to record the test environment
-% in a human-readable way. If you are trying to produce a compact string,
-% e.g. to use in a file name, you might do something like this:
-% machine=ComputerModelName;
+% This is useful in testing, benchmarking, and bug reporting, to record the
+% test environment in a compact human-readable way. If you are trying to
+% produce a compact string, e.g. to use in a file name, you might do
+% something like this:
+% machine=IdentifyComputer([]);
 % filename=['TestFlip-' machine.model ...
 %     '-' machine.system ...
 %     '-' machine.psychtoolbox '.png'];
@@ -120,30 +121,23 @@ else
     warn('Currently need Psychtoolbox to get operating system name.');
 end
 switch computer
+    %% macOS
     case 'MACI64'
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
-        shell=evalc('!echo $0');
-        if contains(shell,'bash')% || contains(shell,'zsh')
-            % This script requires the bash shell.
-            % Alas, macOS Catalina switches from bash to zsh as the default
-            % shell.
-            s = evalc(['!'...
-                'curl -s https://support-sp.apple.com/sp/product?cc=$('...
-                'system_profiler SPHardwareDataType '...
-                '| awk ''/Serial/ {print $4}'' '...
-                '| cut -c 9- '...
-                ') | sed ''s|.*<configCode>\(.*\)</configCode>.*|\1|''']);
-            while ismember(s(end),{' ' char(10) char(13)})
-                s=s(1:end-1); % Remove trailing whitespace.
-            end
+        shell=evalc('!echo $0'); % Get name of current shell.
+        if contains(shell,'bash') || contains(shell,'zsh')
+            % Our script works with bash and zsh shells.
         else
-            warning(['Sorry. '...
-                'Getting the long model name requires that Terminal''s '...
-                'default shell be "bash". Alas, macOS Catalina changes '...
-                'the default to be "zsh".']);
-            s='';
+            % Untested on other shells.
+            warning(['Getting the modelDescription has only been tested  '...
+                'the with bash and zsh shells. Users can set which shell '...
+                'is used by the Terminal application.']);
         end
-        machine.modelDescription=s;
+        serialNumber=evalc('!system_profiler SPHardwareDataType | awk ''/Serial/ {print $4}''');
+        report=evalc(['!curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1)]);
+        x=regexp(report,'<configCode>(?<modelDescription>.*)</configCode>','names');
+        machine.modelDescription=x.modelDescription;
+        s=machine.modelDescription;
         if length(s)<3 || ~all(ismember(lower(s(1:3)),'abcdefghijklmnopqrstuvwxyz'))
             machine
             warning('Oops. curl failed. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
@@ -152,6 +146,7 @@ switch computer
         machine.manufacturer='Apple Inc.';
         % A python solution: https://gist.github.com/zigg/6174270
         
+    %% Windows
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
@@ -184,7 +179,8 @@ switch computer
             wmicString
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
-        
+       
+    %% Linux
     case 'GLNXA64'
         % Can anyone provide Linux code here?
 end
