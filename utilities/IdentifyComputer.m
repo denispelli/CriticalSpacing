@@ -224,10 +224,12 @@ if ismac
     end
 end
 
-%% OPEN GL DRIVER
+%% OpenGL DRIVER
 % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware and driver
-% by the combination of GLRenderer, GLVendor, and GLVersion, which provided
-% by info=Screen('GetWindowInfo',window);
+% by the combination of GLRenderer, GLVendor, and GLVersion, which are
+% provided by info=Screen('GetWindowInfo',window);
+
+% From the provided windowOrScreen we get a window and screen.
 window=[];
 if ismember(windowOrScreen,Screen('Screens'))
     % It's a screen. Open a window on it.
@@ -247,26 +249,11 @@ if ismember(windowOrScreen,Screen('Screens'))
     end
     Screen('Preference','Verbosity',verbosity);
 elseif Screen('WindowKind',windowOrScreen)==1
-    % It's a window pointer. Figure out which screen it's on.
-    window=windowOrScreen;
-    if IsEmptyRect(Screen('GlobalRect',window))
+    % It's a window pointer. Get the screen number.
+    machine.screen=Screen('WindowScreenNumber',windowOrScreen);
+    if ~ismember(machine.screen,Screen('Screens'))
         % This occurred only with an experimental version of Screen.
-        error('Screen GlobalRect of window is empty');
-    end
-    machine.screen=[];
-    for screen=Screen('Screens')
-        if ~IsEmptyRect(ClipRect(Screen('GlobalRect',window),Screen('GlobalRect',screen)))
-            % Choose first screen that has nonzero intersection with the
-            % window.
-            machine.screen=screen;
-            break
-        end
-    end
-    if isempty(machine.screen)
-        % This occurred only with an experimental version of Screen.
-        Screen('GlobalRect',window)
-        Screen('GlobalRect',0)
-        error('Unable to figure out which screen the window is on.');
+        error('Could not get screen number of window.');
     end
 else
     if ~isempty(windowOrScreen)
