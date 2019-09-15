@@ -65,12 +65,6 @@ function machine=IdentifyComputer(windowOrScreen)
 %
 % LIMITATIONS:
 % LINUX: Doesn't yet get model name or manufacturer.
-% MACOS: It gets the long model name only if Terminal's default shell is
-% bash or zsh, which it typically is. I am thus far unable to switch to the
-% bash shell and back, using "bash" and "exit", because MATLAB hangs up
-% forever, e.g. !s=evalc('bash;pwd;exit');
-% http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
-% https://support.apple.com/en-us/HT208050
 
 %% HISTORY
 % August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
@@ -124,24 +118,21 @@ switch computer
     %% macOS
     case 'MACI64'
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
-        shell=evalc('!echo $0'); % Get name of current shell.
-        if contains(shell,'bash') || contains(shell,'zsh')
-            % Our script works with bash and zsh shells.
-        else
-            % Untested on other shells.
-            warning(['Getting the modelDescription has only been tested  '...
-                'the with bash and zsh shells. Users can set which shell '...
-                'is used by the Terminal application.']);
-        end
-        serialNumber=evalc('!system_profiler SPHardwareDataType | awk ''/Serial/ {print $4}''');
-        report=evalc(['!curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1)]);
+        % Whatever shell is running, we maintain compatibility by sending
+        % each script to the bash shell.
+        serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
+        report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
         x=regexp(report,'<configCode>(?<modelDescription>.*)</configCode>','names');
         machine.modelDescription=x.modelDescription;
         s=machine.modelDescription;
-        if length(s)<3 || ~all(ismember(lower(s(1:3)),'abcdefghijklmnopqrstuvwxyz'))
+        if length(s)<3 || ~all(ismember(lower(s(1:3)),...
+                'abcdefghijklmnopqrstuvwxyz'))
             machine
-            warning('Oops. curl failed. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
+            shell=evalc('!echo $0') % name of current shell.
+            warning('Oops. Failed in getting modelDescription. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
             machine.modelDescription='';
+            % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
+            % https://support.apple.com/en-us/HT208050
         end
         machine.manufacturer='Apple Inc.';
         % A python solution: https://gist.github.com/zigg/6174270
