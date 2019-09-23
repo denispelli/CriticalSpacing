@@ -6,8 +6,8 @@ function machine=IdentifyComputer(windowOrScreen)
 % windowOrScreen to provide a window pointer or the screen number. Default
 % is screen 0, the main screen. This routine is quick if windowOrScreen is
 % empty [] or points to a window; it's slow if you provide a screen number
-% (or accept the default of screen 0) because then it has to open and close
-% a window, which may take 30 s. Passing an empty windowOrScreen skips
+% (or use the default of screen 0) because then it has to open and close a
+% window, which may take 30 s. Passing an empty windowOrScreen skips
 % opening a window, at the cost of setting all the openGL fields to empty
 % ''.
 %
@@ -37,6 +37,18 @@ function machine=IdentifyComputer(windowOrScreen)
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
 %
+%                    model: 'MacBookPro13,2'
+%         modelDescription: 'MacBook Pro (13-inch, 2016, Four Thunderbolt 3 Ports)'
+%             manufacturer: 'Apple Inc.'
+%             psychtoolbox: 'Psychtoolbox 3.0.15'
+% psychtoolboxKernelDriver: ''
+%                   matlab: 'MATLAB 9.5 (R2018b)'
+%                   system: 'macOS 10.14.5'
+%                   screen: 0
+%           openGLRenderer: 'Intel(R) Iris(TM) Graphics 550'
+%             openGLVendor: 'Intel Inc.'
+%            openGLVersion: '2.1 INTEL-12.9.22?
+%
 %                    model: 'Inspiron 5379'
 %         modelDescription: ''
 %             manufacturer: 'Dell Inc.'
@@ -47,10 +59,11 @@ function machine=IdentifyComputer(windowOrScreen)
 %
 % Unavailable answers are empty ''.
 %
-% This is useful in testing, benchmarking, and bug reporting, to record the
-% test environment in a compact human-readable way. If you are trying to
-% produce a compact string, e.g. to use in a file name, you might do
-% something like this:
+% This is handy in testing, benchmarking, and bug reporting, to easily
+% record the test environment in a compact human-readable way.
+%
+% If you are trying to produce a compact string, e.g. to use in a file
+% name, you might do something like this:
 % machine=IdentifyComputer([]);
 % filename=['TestFlip-' machine.model ...
 %     '-' machine.system ...
@@ -61,10 +74,21 @@ function machine=IdentifyComputer(windowOrScreen)
 % Which produces a string like this:
 % TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
 %
+% In principle one might want to separately report each screen, but in
+% practice there's typically no point in doing that. In the old days one
+% could plug in arbitrary video cards and have different drivers for each
+% screen. Today, most of us use computers with no slots. At most we plug in
+% a cable connected to an external display and thus use the same video
+% driver as the built-in display (screen 0). Thus some properties, e.g.
+% resolution and frame rate, might differ, but not the information we
+% report here. If it becomes useful to report screen-dependent information
+% we could drop the screen field, and change each of the screen-dependent
+% fields to be a cell array.
+%
 % September 1, 2019, denis.pelli@nyu.edu
 %
-% LIMITATIONS:
-% LINUX: Doesn't yet get model name or manufacturer.
+% LIMITATIONS: Works on all OSes, but on Linux doesn't yet get model name
+% or manufacturer.
 
 %% HISTORY
 % August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
@@ -117,6 +141,7 @@ end
 switch computer
     %% macOS
     case 'MACI64'
+        machine.manufacturer='Apple Inc.';
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         % Whatever shell is running, we maintain compatibility by sending
         % each script to the bash shell.
@@ -125,19 +150,18 @@ switch computer
         x=regexp(report,'<configCode>(?<modelDescription>.*)</configCode>','names');
         machine.modelDescription=x.modelDescription;
         s=machine.modelDescription;
-        if length(s)<3 || ~all(ismember(lower(s(1:3)),...
-                'abcdefghijklmnopqrstuvwxyz'))
+        if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
             machine
             shell=evalc('!echo $0') % name of current shell.
-            warning('Oops. Failed in getting modelDescription. Please send the lines above to denis.pelli@nyu.edu: "%s"',s);
+            warning(['Oops. Failed in getting modelDescription. '...
+                'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
             machine.modelDescription='';
             % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
             % https://support.apple.com/en-us/HT208050
         end
-        machine.manufacturer='Apple Inc.';
         % A python solution: https://gist.github.com/zigg/6174270
         
-    %% Windows
+        %% Windows
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
@@ -148,11 +172,7 @@ switch computer
         s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
         s=strrep(s,'''',''); % Remove stray quote.
         fields=split(s,char(9)); % Use tabs to split into tokens.
-        clear ok
-        for i=1:length(fields)
-            ok(i)=~isempty(fields{i});
-        end
-        fields=fields(ok); % Discard empty fields.
+        fields=fields(~ismissing(fields)); % Discard empty fields.
         % The original had two columns: category and value. We've now got
         % one long column with n categories followed by n values. We asked
         % for manufacturer and model so n should be 2.
@@ -170,8 +190,8 @@ switch computer
             wmicString
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
-       
-    %% Linux
+        
+        %% Linux
     case 'GLNXA64'
         % Can anyone provide Linux code here?
 end
