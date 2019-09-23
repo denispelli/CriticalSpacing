@@ -1,6 +1,6 @@
 %% Analyze the data collected by runCrowdingSurvey. April 2019
 
-experiment='CrowdingSurvey2'; % And CrowdingSurvey2.
+experiment='CrowdingSurvey'; % And CrowdingSurvey2.
 printFilenames=false;
 makePlotLinear=false;
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
@@ -15,7 +15,8 @@ vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'experimenter' 'observer' 'localHostName' 'trialsDesired' 'thresholdParameter' ...
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
-    'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' };
+    'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' ...
+    'readSecs' 'readWordPerMin'};
 oo1=ReadExperimentData(experiment,vars); 
 fprintf('%4.0f thresholds in experiment %s\n',length(oo1),experiment);
 % oo2=ReadExperimentData('CrowdingSurvey2',vars); 
