@@ -1,15 +1,15 @@
 function machine=IdentifyComputer(windowOrScreen)
 % machine=IdentifyComputer([windowOrScreen]);
-% Returns a struct with ten text fields (and a screen number) that specify
-% the basic configuration of your hardware and software. The openGL fields
-% refer to the screen with the number specified by the screen field. Use
-% windowOrScreen to provide a window pointer or the screen number. Default
-% is screen 0, the main screen. This routine is quick if windowOrScreen is
-% empty [] or points to a window; it's slow if you provide a screen number
-% (or use the default of screen 0) because then it has to open and close a
-% window, which may take 30 s. Passing an empty windowOrScreen skips
-% opening a window, at the cost of setting all the openGL fields to empty
-% ''.
+% Returns a struct with ten text fields (plus screen number and size) that
+% specify the basic configuration of your hardware and software. The openGL
+% fields refer to the screen with the number specified by the screen field.
+% Use windowOrScreen to provide a window pointer or the screen number.
+% Default is screen 0, the main screen. This routine is quick if
+% windowOrScreen is empty [] or points to a window; it's slow if you
+% provide a screen number (or use the default screen 0) because then it has
+% to open and close a window, which may take 30 s. Passing an empty
+% windowOrScreen skips opening a window, at the cost of leaving the screen
+% size and openGL fields empty.
 %
 % Here are several examples of the output struct for macOS and Windows:
 %
@@ -21,6 +21,7 @@ function machine=IdentifyComputer(windowOrScreen)
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
 %                   screen: 0
+%                     size: [1440 2304]
 %           openGLRenderer: 'Intel(R) HD Graphics 615'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.10.12'
@@ -33,6 +34,7 @@ function machine=IdentifyComputer(windowOrScreen)
 %                   matlab: 'MATLAB 9.4 (R2018a)'
 %                   system: 'macOS 10.14.6'
 %                   screen: 0
+%                     size: [? ?]
 %           openGLRenderer: 'AMD Radeon R9 M370X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
@@ -45,6 +47,7 @@ function machine=IdentifyComputer(windowOrScreen)
 %                   matlab: 'MATLAB 9.5 (R2018b)'
 %                   system: 'macOS 10.14.5'
 %                   screen: 0
+%                     size: [? ?]
 %           openGLRenderer: 'Intel(R) Iris(TM) Graphics 550'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.9.22?
@@ -99,6 +102,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % September 13, 2019. DGP debugged code to detect PsychtoolboxKernelDriver.
 %                  Renamed the openGL fields to more closely correspond to
 %                  the names in windowInfo.
+% September 24, 2019. DGP added "size" specifying the screen resolution.
 if nargin<1
     windowOrScreen=0;
 end
@@ -110,6 +114,7 @@ machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
 machine.screen=0;
+machine.size=[];
 resolution=Screen('Resolution',windowOrScreen);
 machine.size=[resolution.height resolution.width];
 machine.openGLRenderer='';
@@ -163,7 +168,7 @@ switch computer
         end
         % A python solution: https://gist.github.com/zigg/6174270
         
-        %% Windows
+    %% Windows
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
@@ -193,18 +198,26 @@ switch computer
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
         
-        %% Linux
+    %% Linux
     case 'GLNXA64'
         % Can anyone provide Linux code here?
 end
 % Clean up the Operating System name.
-while ismember(machine.system(end),{' ' '-'})
-    % Strip trailing separators.
-    machine.system=machine.system(1:end-1);
-end
 while ismember(machine.system(1),{' ' '-'})
     % Strip leading separators.
-    machine.system=machine.system(2:end);
+    if length(machine.system)>1
+        machine.system=machine.system(2:end);
+    else
+        machine.system='';
+    end
+end
+while ismember(machine.system(end),{' ' '-'})
+    % Strip trailing separators.
+    if length(machine.system)>1
+        machine.system=machine.system(1:end-1);
+    else
+        machine.system='';
+    end
 end
 % Modernize spelling.
 machine.system=strrep(machine.system,'Mac OS','macOS');
