@@ -47,8 +47,62 @@
 %
 % See also: FlipTest, Screen('Flip?'), IdentifyComputer
 
-%% MEASURE TIMING
+% September 24, 2019
+% Force native resolution, as requested by Mario Kleiner.
+
 screen=0;
+% Don't call IdentifyComputer until after we've set the resolution, 
+% because IdentifyComputer should report the actual resolution tested.
+
+%% SET RESOLUTION TO NATIVE
+% Are we using the screen at its maximum native resolution?
+permissionToChangeResolution=true;
+res=Screen('Resolutions',screen);
+nativeWidth=0;
+nativeHeight=0;
+for i=1:length(res)
+    if res(i).width>nativeWidth
+        nativeWidth=res(i).width;
+        nativeHeight=res(i).height;
+    end
+end
+actualScreenRect=Screen('Rect',screen,1);
+oldResolution=Screen('Resolution',screen);
+if nativeWidth==oldResolution.width
+    fprintf('Your screen resolution is at its native maximum %d x %d. Excellent!\n',nativeWidth,nativeHeight);
+else
+    warning backtrace off
+    if permissionToChangeResolution
+        s=GetSecs;
+        fprintf('WARNING: Trying to use native screen resolution for this test. ... ');
+        Screen('Resolution',screen,nativeWidth,nativeHeight);
+        res=Screen('Resolution',screen);
+        fprintf('Done (%.1f s). ',GetSecs-s);
+        if res.width==nativeWidth
+            fprintf('SUCCESS!\n');
+        else
+            warning('FAILED.');
+            res
+        end
+        actualScreenRect=Screen('Rect',screen,1);
+    end
+    if nativeWidth==RectWidth(actualScreenRect)
+        fprintf('Using native screen resolution %d x %d. Good.\n',nativeWidth,nativeHeight);
+    else
+        if RectWidth(actualScreenRect)<nativeWidth
+            warning('Your screen resolution %d x %d is less that its native maximum %d x %d.\n',RectWidth(actualScreenRect),RectHeight(actualScreenRect),nativeWidth,nativeHeight);
+        else
+            warning('Your screen resolution %d x %d exceeds its native resolution %d x %d.\n',...
+                RectWidth(actualScreenRect),RectHeight(actualScreenRect),nativeWidth,nativeHeight);
+        end
+        fprintf(['(To use native resolution, set permissionToChangeResolution=true in TestFlip.m, \n'...
+            'or use System Preferences:Displays to select "Default" resolution.)\n']);
+        warning backtrace on
+    end
+end
+resolution=Screen('Resolution',screen);
+
+%% MEASURE TIMING
 repetitions=100; % 100
 steps=100; % 100
 Screen('Preference','SkipSyncTests',1);
@@ -129,6 +183,13 @@ if 1
     save([folder filesep saveTitle]);
     fprintf(['<strong>Data have been saved to disk as file "%s", '...
         'next to TestFlip.m.</strong>\n'],saveTitle);
+end
+
+%% RESTORE RESOLUTION
+if permissionToChangeResolution && ...
+        (oldResolution.width~=resolution.width || ...
+        oldResolution.height~=resolution.height)
+    Screen('Resolution',screen,oldResolution.width,oldResolution.height);
 end
 
 %% PLOT RESULTS
@@ -267,6 +328,8 @@ if ~isempty(machine.openGLRenderer)
     text(x,y,machine.openGLRenderer,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
+text(x,y,sprintf('screen %d, %d x %d',screen,resolution.height,resolution.width),...
+            'HorizontalAlignment','right','FontSize',10); y=y+dy;
 text(x,y,machine.system,...
     'HorizontalAlignment','right','FontSize',10); y=y+dy;
 if ~isempty(machine.psychtoolboxKernelDriver)
