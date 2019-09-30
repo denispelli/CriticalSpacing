@@ -33,7 +33,7 @@ ooo={};
 
 if 1
     o.conditionName='reading';
-    o.readFilename='the phantom tollbooth.txt'; % Norton Juster (1961). The Phantom Tollbooth. Random House.
+    o.readFilename='FirstGradeTexts.txt'; 
     o.task='read';
     o.thresholdParameter='spacing';
     o.targetFont='Monaco';
@@ -187,7 +187,7 @@ disp(t(:,{'block' 'experiment' 'conditionName' 'trialsDesired' 'targetFont'  ...
     'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
 trials=sum([oo.trialsDesired]);
 fprintf('Total of %d trials, which may take about %.0f minutes. But reading trials take longer.\n',trials,trials/10);
-return
+% return
 
 %% Run.
 for block=1:length(ooo)
