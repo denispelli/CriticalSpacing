@@ -5,7 +5,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % fields refer to the screen with the number specified by the screen field.
 % Use windowOrScreen to provide a window pointer or the screen number.
 % Default is screen 0, the main screen. This routine is quick if
-% windowOrScreen is empty [] or points to a window; it's slow if you
+% windowOrScreen is empty [] or points to a window, and it's slow if you
 % provide a screen number (or use the default screen 0) because then it has
 % to open and close a window, which may take 30 s. Passing an empty
 % windowOrScreen skips opening a window, at the cost of leaving the screen
@@ -20,6 +20,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%                  screens: 0
 %                   screen: 0
 %                     size: [1440 2304]
 %           openGLRenderer: 'Intel(R) HD Graphics 615'
@@ -33,8 +34,9 @@ function machine=IdentifyComputer(windowOrScreen)
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %                   matlab: 'MATLAB 9.4 (R2018a)'
 %                   system: 'macOS 10.14.6'
+%                  screens: 0
 %                   screen: 0
-%                     size: [? ?]
+%                     size: [1800 2880]
 %           openGLRenderer: 'AMD Radeon R9 M370X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
@@ -46,6 +48,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.5 (R2018b)'
 %                   system: 'macOS 10.14.5'
+%                  screens: 0
 %                   screen: 0
 %                     size: [? ?]
 %           openGLRenderer: 'Intel(R) Iris(TM) Graphics 550'
@@ -59,6 +62,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'Windows NT-10.0.9200'
+%                  screens: 0
 %
 % Unavailable answers are empty ''.
 %
@@ -78,17 +82,17 @@ function machine=IdentifyComputer(windowOrScreen)
 % TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
 %
 % In principle one might want to separately report each screen, but in
-% practice there's typically no point in doing that. In the old days one
+% practice there's typically no gain in doing that. In the old days one
 % could plug in arbitrary video cards and have different drivers for each
 % screen. Today, most of us use computers with no slots. At most we plug in
-% a cable connected to an external display and thus use the same video
-% driver as the built-in display (screen 0). Thus some properties, e.g.
-% resolution and frame rate, might differ, but not the information we
-% report here. If it becomes useful to report screen-dependent information
-% we could drop the screen field, and change each of the screen-dependent
-% fields to be a cell array.
+% a cable connected to an external display (or two) and thus use the same
+% video driver as the built-in display (screen 0). Thus some properties,
+% e.g. resolution and frame rate, can differ from screen to screen, but not
+% the openGL fields we report here. If it becomes useful to report
+% screen-dependent information we could drop the screen field, and change
+% each of the screen-dependent fields to be a cell array.
 %
-% September 1, 2019, denis.pelli@nyu.edu
+% October 7, 2019, denis.pelli@nyu.edu
 %
 % LIMITATIONS: Works on all OSes, but on Linux doesn't yet get model name
 % or manufacturer.
@@ -113,6 +117,7 @@ machine.psychtoolbox='';
 machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
+machine.screens=Screen('Screens');
 machine.screen=0;
 machine.size=[];
 resolution=Screen('Resolution',windowOrScreen);
