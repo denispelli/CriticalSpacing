@@ -31,7 +31,7 @@ o.readCharPerLine=50;
 o.screen=0;
 ooo={};
 
-if 1
+if true
     o.conditionName='reading';
     o.readFilename='FirstGradeTexts.txt'; 
     o.task='read';
