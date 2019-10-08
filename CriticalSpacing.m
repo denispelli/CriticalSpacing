@@ -3739,6 +3739,7 @@ try
             switch oo(oi).alphabetPlacement
                 case 'bottom'
                     y=oo(oi).stimulusRect(4);
+                    y=y-RectHeight(alphabetBounds);
                     switch oo(oi).counterPlacement
                         case {'bottomLeft' 'bottomCenter' 'bottomRight'}
                             % Leave room for counter produced by
@@ -3770,7 +3771,8 @@ try
                 % Draw the i-th letter in o.alphabet.
                 for j=1:length(letterStruct)
                     if oo(oi).alphabet(i)==letterStruct(j).letter
-                        Screen('DrawTexture',window,letterStruct(j).texture,[],dstRect);
+                        Screen('DrawTexture',window,...
+                            letterStruct(j).texture,[],dstRect);
                     end
                 end
                 if oo(oi).labelAnswers
