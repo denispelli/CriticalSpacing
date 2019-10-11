@@ -150,13 +150,13 @@ command = ['osascript "', scriptPath ...
     ' ', num2str(newIsEnabled), ...
     ' ', num2str(windowIsOpen)];
 for i=1:3
-    oldIsEnabled=''; % Default in case not set by function.
+    oldIsEnabled=''; % Provide default in case not set by system call.
     [failed,oldIsEnabled]=system(command);
     % Occasionally oldIsEnabled is empty, possibly because that's how we
     % initialized it. I don't know why or what that means.
     if failed
-        msg=sprintf('%s The applescript failed with the following error, trying again.\n%s'...
-            ,s,oldIsEnabled);
+        msg=sprintf(['%s The applescript failed with the following error, '...
+            'trying again.\n%s'],s,oldIsEnabled);
         warning(msg);
         continue
     end
