@@ -215,7 +215,36 @@ switch computer
         
     %% Linux
     case 'GLNXA64'
-        % Can anyone provide Linux code here?
+        % User needs to have root priviledges to get correct hardware information. 
+        % lshw command is used for listing hardware information on Linux
+        % systems. This snippet is tested on Ubuntu 18.04 system.
+        [status,std_out] = system("lshw -C system -json");
+        % Use regexp to get the start of json information
+        start_index = regexp(std_out,"{\s{0,}");
+        % convert std_out string into a dictionary 
+        % jsonified structure of lshw output looks like:
+        % '{
+        % .
+        % "description" : "Notebook",
+        % "product" : "80WK (LENOVO_MT_80WK_BU_idea_FM_Lenovo Y520-15IKBN)",
+        % "vendor" : "LENOVO",
+        % "version" : "Lenovo Y520-15IKBN",
+        % "serial" : "PF0U17J8",
+        % "width" : 64,
+        % .
+        % .
+        jsonified_description = std_out(start_index(1):end);
+        % convert json string into a matlab compatible struct form
+        description_struct = jsondecode(jsonified_description);
+        % assign values from description to machine
+        machine.manufacturer = description_struct.vendor;
+        machine.model = description_struct.product;
+        % failure handlingmodel
+        if ~isfield(machine,'manufacturer') || isempty(machine.manufacturer)...
+                || ~isfield(machine,'model') || isempty(machine.model)
+            warning('Failed to retrieve manufacturer and model from lshw. Make sure user program is run as root');
+        end
+        
 end
 % Clean up the Operating System name.
 while ismember(machine.system(1),{' ' '-'})
