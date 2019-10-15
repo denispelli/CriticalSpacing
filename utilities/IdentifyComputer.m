@@ -13,6 +13,21 @@ function machine=IdentifyComputer(windowOrScreen)
 %
 % Here are several examples of the output struct for macOS and Windows:
 %
+%                    model: 'iMac15,1'
+%         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
+%             manufacturer: 'Apple Inc.'
+%             psychtoolbox: 'Psychtoolbox 3.0.16'
+% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
+%                   matlab: 'MATLAB 9.6 (R2019a)'
+%                   system: 'macOS 10.14.6'
+%                  screens: 0
+%                   screen: 0
+%                     size: [1800 3200]
+%                       mm: [341 602]
+%           openGLRenderer: 'AMD Radeon R9 M290X OpenGL Engine'
+%             openGLVendor: 'ATI Technologies Inc.'
+%            openGLVersion: '2.1 ATI-2.11.20'
+%
 %                    model: 'MacBook10,1'
 %         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
@@ -56,10 +71,8 @@ function machine=IdentifyComputer(windowOrScreen)
 %            openGLVersion: '2.1 INTEL-12.9.22?
 %
 %                    model: 'Inspiron 5379'
-%         modelDescription: ''
 %             manufacturer: 'Dell Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
-% psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'Windows NT-10.0.9200'
 %                  screens: 0
@@ -98,15 +111,8 @@ function machine=IdentifyComputer(windowOrScreen)
 % or manufacturer.
 
 %% HISTORY
-% August 24, 2019. DGP wrote it as a subroutine for TestFlip.m
-% August 25, 2019. DGP fixed bug that bypassed most of the cleanup of
-%                  machine.system.
-% August 27, 2019. DGP use macOS Terminal only if it is running the bash
-%                  or zsh shell. Reduce dependence on Psychtoolbox.
-% September 13, 2019. DGP debugged code to detect PsychtoolboxKernelDriver.
-%                  Renamed the openGL fields to more closely correspond to
-%                  the names in windowInfo.
-% September 24, 2019. DGP added "size" specifying the screen resolution.
+% August 24, 2019. DGP wrote it.
+% October 15, 2019 omkar.kumbhar@nyu.edu added support for linux.
 if nargin<1
     windowOrScreen=0;
 end
@@ -124,11 +130,12 @@ else
 end
 machine.screen=0;
 machine.size=[];
+machine.mm=[];
 if exist('Screen','file')
     resolution=Screen('Resolution',windowOrScreen);
     machine.size=[resolution.height resolution.width];
-else
-    machine.size=[];
+    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
+    machine.mm=[screenHeightMm,screenWidthMm];
 end
 machine.openGLRenderer='';
 machine.openGLVendor='';
@@ -168,8 +175,8 @@ switch computer
         % each script to the bash shell.
         serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
         report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
-        x=regexp(report,'<configCode>(?<modelDescription>.*)</configCode>','names');
-        machine.modelDescription=x.modelDescription;
+        x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
+        machine.modelDescription=x.description;
         s=machine.modelDescription;
         if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
             machine
@@ -182,7 +189,7 @@ switch computer
         end
         % A python solution: https://gist.github.com/zigg/6174270
         
-    %% Windows
+        %% Windows
     case 'PCWIN64'
         wmicString = evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
@@ -213,15 +220,16 @@ switch computer
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
         
-    %% Linux
+        %% Linux
     case 'GLNXA64'
-        % User needs to have root priviledges to get correct hardware information. 
+        % User needs to have root priviledges to get hardware information.
         % lshw command is used for listing hardware information on Linux
         % systems. This snippet is tested on Ubuntu 18.04 system.
+        % By omkar.kumbhar@nyu.edu, October 15, 2019.
         [status,std_out] = system("lshw -C system -json");
         % Use regexp to get the start of json information
         start_index = regexp(std_out,"{\s{0,}");
-        % convert std_out string into a dictionary 
+        % convert std_out string into a dictionary
         % jsonified structure of lshw output looks like:
         % '{
         % .
@@ -234,19 +242,16 @@ switch computer
         % .
         % .
         jsonified_description = std_out(start_index(1):end);
-        % convert json string into a matlab compatible struct form
+        % Convert json string into a matlab compatible struct.
         description_struct = jsondecode(jsonified_description);
-        % assign values from description to machine
         machine.manufacturer = description_struct.vendor;
         machine.model = description_struct.product;
-        % failure handlingmodel
-        if ~isfield(machine,'manufacturer') || isempty(machine.manufacturer)...
-                || ~isfield(machine,'model') || isempty(machine.model)
-            warning('Failed to retrieve manufacturer and model from lshw. Make sure user program is run as root');
+        if  isempty(machine.manufacturer) || isempty(machine.model)
+            warning(['Failed to retrieve manufacturer and model from lshw. '...
+                'Make sure shell is running as root.']);
         end
-        
 end
-% Clean up the Operating System name.
+%% Clean up the Operating System name.
 while ismember(machine.system(1),{' ' '-'})
     % Strip leading separators.
     if length(machine.system)>1
@@ -337,8 +342,6 @@ if exist('Screen','file')
             % If we opened the window, then close it.
             Screen('Close',window);
         end
-    else
-        machine.screen=[];
     end
 end
 end % function
