@@ -93,6 +93,10 @@ for i=1:length(observers)
     end
     s(i).beginningTime=min(table2array(tt(:,'beginningTime')));
     s(i).date=datestr(datevec(s(i).beginningTime));
+%    readWordPerMin=table2array(tt(:,'readWordPerMin'));
+%    readWordPerMin=[readWordPerMin{:}]
+%    s(i).readWordPerMinMean=mean(readWordPerMin,'omitnan');
+%    s(i).readWordPerMinSD=std(readWordPerMin,'omitnan');
 end
 sTable=struct2table(s);
 sTable=sortrows(sTable,{'beginningTime'});
@@ -100,7 +104,7 @@ sTable.beginningTime=[];
 fprintf('\n<strong>%.0f rows. One row per observer, sorted by date:</strong>\n',height(sTable));
 disp(sTable(:,{'date' 'conditions' 'observer' 'localHostName' ...
     'experimenter' 'experiment'...
-    'spacingEccXDeg' 'sizeEccXDeg'}));
+    'spacingEccXDeg' 'sizeEccXDeg' }));
 
 %% Compute each observer's mean and SD of deviation from log normal.
 % Struct s with fields: observer, meanReLogNormal, sdReLogNorm.
@@ -134,6 +138,7 @@ for i=1:length(observers)
                 s(i).spacingReNominal(oi)=...
                     oo1(oi).spacingDeg/NominalCrowdingDistanceDeg(oo1(oi).eccentricityXYDeg);
         end
+%        s(i).readWordPerMin=oo1(oi).readWordPerMin;
     end
     ok=isfinite(s(i).eccentricityXYDeg(1,:));
     s(i).meanLogSizeReNominal=mean(log10(s(i).sizeReNominal(ok)),'omitnan');
