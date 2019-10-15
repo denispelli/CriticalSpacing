@@ -1,4 +1,6 @@
 %% Analyze the data collected by runCrowdingSurvey3. May 2019
+% Ignore data whose thresholds suggest poor fixation.
+% For VSS 2019.
 experiment='CrowdingSurvey3'; 
 printFilenames=false;
 makePlotLinear=false;
@@ -85,7 +87,7 @@ end
 bad=false(size(oo));
 for oi=1:length(oo)
     bad(oi)=bad(oi) || oo(oi).P<0.55;
-    if ~isempty(oo(oi).spacingDeg) && ~isempty(oo(oi).mate) && ~isempty(oo(oo(oi).mate.spacingDeg)
+    if ~isempty(oo(oi).spacingDeg) && ~isempty(oo(oi).mate) && ~isempty(oo(oo(oi).mate).spacingDeg)
         % If has mate, then ratio must not be extreme.
         badPair=abs(log10(oo(oi).spacingDeg/oo(oo(oi).mate).spacingDeg))>0.2;
         % If either is bad, then mark mate bad too.
