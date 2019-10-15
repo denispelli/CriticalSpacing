@@ -104,7 +104,7 @@ sTable.beginningTime=[];
 fprintf('\n<strong>%.0f rows. One row per observer, sorted by date:</strong>\n',height(sTable));
 disp(sTable(:,{'date' 'conditions' 'observer' 'localHostName' ...
     'experimenter' 'experiment'...
-    'spacingEccXDeg' 'sizeEccXDeg' }));
+    'spacingEccXDeg' 'sizeEccXDeg'}));
 
 %% Compute each observer's mean and SD of deviation from log normal.
 % Struct s with fields: observer, meanReLogNormal, sdReLogNorm.
