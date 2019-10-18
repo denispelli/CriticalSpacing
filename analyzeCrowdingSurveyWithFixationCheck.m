@@ -19,7 +19,7 @@ vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime'...
     'block' 'blocksDesired' 'brightnessSetting' 'trialData' 'targetFont' 'script' 'task'};
 oo1=ReadExperimentData(experiment,vars);
-fprintf('%4.0f thresholds in experiment %s\n',length(oo1),experiment);
+fprintf('%4.0f conditions for experiment %s\n',length(oo1),experiment);
 % oo2=ReadExperimentData('CrowdingSurvey2',vars);
 % fprintf('%4.0f thresholds in experiment %s\n',length(oo2),'CrowdingSurvey2');
 % oo=[oo1 oo2];
