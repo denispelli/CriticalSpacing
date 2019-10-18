@@ -186,7 +186,7 @@ disp(t(:,{'block' 'experiment' 'conditionName' 'trialsDesired' 'targetFont'  ...
     'readSpacingDeg' 'eccentricityXYDeg' 'viewingDistanceCm'}));
 trials=sum([oo.trialsDesired]);
 fprintf('Total of %d trials, which may take about %.0f minutes. But reading trials take longer.\n',trials,trials/10);
-return
+% return
 
 %% Run.
 for block=1:length(ooo)
