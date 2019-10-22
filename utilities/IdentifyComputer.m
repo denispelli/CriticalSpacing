@@ -355,16 +355,12 @@ if exist('Screen','file')
         end
     end
 end
-if IsOSX
-    % Copied from InitializePsychSound.
-    try
-        PsychPortAudio('GetDevices');
-        machine.psychPortAudio=true;
-    catch em
-        fprintf(['Failed to load PsychPortAudio driver with error:\n%s\n\n'],...
-            em.message);
-        machine.psychPortAudio=false;
-    end
+try
+    InitializePsychSound;
+    machine.psychPortAudio=true;
+catch em
+    fprintf(['Failed to load PsychPortAudio driver, with error:\n%s\n\n'],...
+        em.message);
+    machine.psychPortAudio=false;
 end
-
 end % function
