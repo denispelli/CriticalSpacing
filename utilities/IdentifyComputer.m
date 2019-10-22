@@ -120,7 +120,6 @@ machine.model='';
 machine.modelDescription=''; % Currently non-empty only for macOS.
 machine.manufacturer='';
 machine.psychtoolbox='';
-machine.psychtoolboxKernelDriver='';
 machine.matlab='';
 machine.system='';
 if exist('Screen','file')
@@ -145,6 +144,9 @@ if exist('PsychtoolboxVersion','file')
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',...
         p.major,p.minor,p.point);
 end
+machine.psychtoolboxKernelDriver='';
+machine.drawTextPlugin=[];
+machine.psychPortAudio=[];
 if exist('ver','file')
     m=ver('octave');
     if isempty(m)
@@ -222,7 +224,7 @@ switch computer
         
         %% Linux
     case 'GLNXA64'
-        % User needs to have root priviledges to get hardware information.
+        % User needs root priviledges to get hardware information.
         % lshw command is used for listing hardware information on Linux
         % systems. This snippet is tested on Ubuntu 18.04 system.
         % By omkar.kumbhar@nyu.edu, October 15, 2019.
@@ -329,6 +331,15 @@ if exist('Screen','file')
         end
     end
     if ~isempty(window)
+        % Check for presence of DrawText Plugin, for best rendering.
+        % Recommended by Mario Kleiner, July 2017.
+        % The first 'DrawText' call should triggers loading of the plugin, but may fail.
+        Screen('DrawText',window,' ',0,0,0,1,1);
+        machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
+        if ~machine.drawTextPlugin
+%             warning('The DrawText plugin failed to load. See ''help DrawTextPlugin''.');
+        end
+        
         % OpenGL DRIVER
         % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware
         % and driver by the combination of GLRenderer, GLVendor, and
@@ -344,4 +355,16 @@ if exist('Screen','file')
         end
     end
 end
+if IsOSX
+    % Copied from InitializePsychSound.
+    try
+        PsychPortAudio('GetDevices');
+        machine.psychPortAudio=true;
+    catch em
+        fprintf(['Failed to load PsychPortAudio driver with error:\n%s\n\n'],...
+            em.message);
+        machine.psychPortAudio=false;
+    end
+end
+
 end % function
