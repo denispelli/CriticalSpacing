@@ -11,34 +11,37 @@ cd(dataFolder);
 close all
 
 %% READ ALL DATA OF EXPERIMENT FILES INTO A LIST OF THRESHOLDS "oo".
-vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
-    'experimenter' 'observer' 'localHostName' 'trialsDesired' 'thresholdParameter' ...
+vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... 
+    'experimenter' 'observer' 'localHostName' ...
+    'trialsDesired' 'responseCount' ...
+    'thresholdParameter' ...
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime' 'block' 'blocksDesired' ...
-    'readSecs' 'readWordPerMin'};
-oo1=ReadExperimentData(experiment,vars); 
-fprintf('%4.0f thresholds in experiment %s\n',length(oo1),experiment);
-% oo2=ReadExperimentData('CrowdingSurvey2',vars); 
-% fprintf('%4.0f thresholds in experiment %s\n',length(oo2),'CrowdingSurvey2');
-% oo=[oo1 oo2];
-oo=oo1;
-fprintf('%4.0f thresholds all together\n',length(oo));
+    'task' 'readWordPerMin' 'readFilename' ...
+    'readNumberOfResponses' 'readNumberCorrect' 'targetFont'...
+    };
+oo=ReadExperimentData(experiment,vars); 
+fprintf('%4.0f conditions in experiment %s\n',length(oo),experiment);
 
 %% CLEAN
 ok=logical([]);
 for oi=1:length(oo)
-    switch oo(oi).thresholdParameter
-        case 'size'
-            oo(oi).spacingDeg=nan;
-            oo(oi).flankingDirection='none';
-        case 'spacing'
-            oo(oi).targetDeg=nan;
+    switch oo(oi).task
+        case 'identify'
+            switch oo(oi).thresholdParameter
+                case 'size'
+                    oo(oi).spacingDeg=nan;
+                    oo(oi).flankingDirection='none';
+                case 'spacing'
+                    oo(oi).targetDeg=nan;
+            end
+        case 'read'
     end
     oo(oi).xDeg=oo(oi).eccentricityXYDeg(1);
     oo(oi).experiment=experiment;
+    % USE ONLY 2019 DATA
     timeVector=datevec(oo(oi).beginningTime);
-    % FOR NOW, USE ONLY 2019 DATA
     ok(oi)= timeVector(1)>2018;
 end
 oo=oo(ok);
@@ -50,7 +53,7 @@ end
 
 % Report the relevant fields of each file.
 t=struct2table(oo,'AsArray',true);
-t=sortrows(t,{'observer' 'thresholdParameter'  'xDeg' });
+t=sortrows(t,{'task' 'observer' 'thresholdParameter'  'xDeg' });
 % t(:,{'dataFilename' 'targetDeg' 'trialsDesired' 'eccentricityXYDeg' 'observer' 'beginningTime'})
 % return
 if printFilenames
@@ -58,13 +61,15 @@ if printFilenames
     switch experiment
         case {'CrowdingSurvey' 'CrowdingSurvey2'}
             disp(t(:,{'experiment' 'observer' 'localHostName' 'experimenter'...
-                'thresholdParameter' 'eccentricityXYDeg' ...
+                'task' 'readWordPerMin' 'thresholdParameter' 'eccentricityXYDeg' ...
                 'flankingDirection' 'spacingDeg' 'targetDeg' ...
-                'dataFilename'  ...
-                }));
+                'dataFilename'...
+                'trialsDesired' 'responseCount' ...
+                'readFilename' ...
+                'readNumberOfResponses' 'readNumberCorrect' 'targetFont'}));
     end
 end
-t=sortrows(t,{'thresholdParameter' 'observer' 'xDeg'});
+t=sortrows(t,{'task' 'experimenter' 'thresholdParameter' 'observer' 'xDeg'});
 fprintf('<strong>Writing data to ''%sData.xls''.\n</strong>',oo(1).experiment);
 writetable(t,fullfile(dataFolder,'crowdingSurveyData.xls'));
 % return
@@ -77,9 +82,12 @@ for i=1:length(observers)
     tt=t(ismember(t.observer,{observers{i}}),:);
     s(i).conditions=height(tt);
     s(i).experimenter=unique(table2cell(tt(:,'experimenter')));
+    s(i).experimenter=s(i).experimenter{1};
     s(i).experiment=unique(table2cell(tt(:,'experiment')));
     s(i).localHostName=unique(table2cell(tt(:,'localHostName')));
     s(i).numberOfComputers=length(s(i).localHostName);
+    s(i).task=unique(table2cell(tt(:,'task')));
+    s(i).task=s(i).task{1};
     params={'size' 'spacing'};
     for j=1:length(params)
         ttt=tt(ismember(tt.thresholdParameter,{params{j}}),:);
@@ -93,18 +101,18 @@ for i=1:length(observers)
     end
     s(i).beginningTime=min(table2array(tt(:,'beginningTime')));
     s(i).date=datestr(datevec(s(i).beginningTime));
-%    readWordPerMin=table2array(tt(:,'readWordPerMin'));
-%    readWordPerMin=[readWordPerMin{:}]
-%    s(i).readWordPerMinMean=mean(readWordPerMin,'omitnan');
-%    s(i).readWordPerMinSD=std(readWordPerMin,'omitnan');
+   readWordPerMin=table2array(tt(:,'readWordPerMin'));
+   readWordPerMin=[readWordPerMin{:}];
+   s(i).readWordPerMinMean=mean(readWordPerMin,'omitnan');
+   s(i).readWordPerMinSD=std(readWordPerMin,'omitnan');
 end
 sTable=struct2table(s);
-sTable=sortrows(sTable,{'beginningTime'});
+sTable=sortrows(sTable,{'experimenter' 'observer'});
 sTable.beginningTime=[];
-fprintf('\n<strong>%.0f rows. One row per observer, sorted by date:</strong>\n',height(sTable));
+fprintf('\n<strong>%.0f rows. One row per observer, sorted by experimenter:</strong>\n',height(sTable));
 disp(sTable(:,{'date' 'conditions' 'observer' 'localHostName' ...
-    'experimenter' 'experiment'...
-    'spacingEccXDeg' 'sizeEccXDeg'}));
+    'experimenter' 'experiment' 'task'...
+    'spacingEccXDeg' 'sizeEccXDeg' 'readWordPerMinMean' 'readWordPerMinSD'}));
 
 %% Compute each observer's mean and SD of deviation from log normal.
 % Struct s with fields: observer, meanReLogNormal, sdReLogNorm.
