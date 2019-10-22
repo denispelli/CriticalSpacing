@@ -374,14 +374,14 @@ try
         test(end+1).name='DrawText plugin';
         % Recommended by Mario Kleiner, July 2017.
         % The first 'DrawText' call triggers loading of the plugin, but may fail.
+        Screen('DrawText',window,' ',0,0,0,1,1);
         value=Screen('Preference','TextRenderer')>0;
         test(end).value=value;
         test(end).min=true;
         test(end).ok=test(end).value;
-        Screen('DrawText',window,' ',0,0,0,1,1);
-        %         fprintf('Loaded DrawText Plugin %s. Needed for accurate text rendering.\n',mat2str(value));
+        % fprintf('Loaded DrawText Plugin %s. Needed for accurate text rendering.\n',mat2str(value));
         if ~value
-            %             warning('The DrawText plugin failed to load. We need it. See warning above. Read "Install NoiseDiscrimination.docx" B.7 to learn how to install it.');
+            % warning('The DrawText plugin failed to load. We need it. See warning above. Read "Install NoiseDiscrimination.docx" B.7 to learn how to install it.');
         end
         test(end).help='help DrawTextPlugin';
         
