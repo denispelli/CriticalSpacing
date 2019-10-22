@@ -1728,6 +1728,7 @@ try
         [name,terminatorChar]=GetEchoString(window,'Experimenter name:',...
             2*oo(1).textSize,0.82*screenRect(4),black,...
             background,1,oo(1).deviceIndex);
+        name=strip(name); % Remove leading and trailing whitespace.
         if length(name)<3
             preface=['Sorry. ''' name ''' is not enough. This name must have at least 3 characters. '];
             continue
@@ -1789,6 +1790,7 @@ try
         [name,terminatorChar]=GetEchoString(window,'Observer name:',...
             2*oo(1).textSize,0.82*screenRect(4),...
             black,background,1,oo(1).deviceIndex);
+        name=strip(name); % Remove leading and trailing whitespace.
         if ismember(terminatorChar,[escapeChar graveAccentChar])
             [oo,tryAgain]=ProcessEscape(oo);
             if tryAgain
@@ -3941,6 +3943,7 @@ try
                     end
                     break;
                 end % while true % Until reading speed is reasonable.
+                oo(oi).responseCount=oo(oi).responseCount+1;
                 % Test recall.
                 % Query about words shown to test comprehension.
                 for iQuestion=1:oo(oi).readQuestions
