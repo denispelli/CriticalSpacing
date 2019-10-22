@@ -60,6 +60,7 @@ if nargin<2
     vars={'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection' ...
         'thresholdParameter' 'task' 'targetFont' 'alphabet' 'borderLetter' ...
         'viewingDistanceCm' 'row' 'block' 'beginningTime' 'beginSecs' ...
+        'responseCount'...
 %         'alphabet' 'borderLetter' 'computer' 'condition' 'conditionName' ...
 %         'contrast' 'dataFilename' 'dataFolder' 'durationSec' ...
 %         'eccentricityPolarDeg' 'eccentricityXYDeg' 'eccentricityXYPix' ...
@@ -155,7 +156,7 @@ for iFile=1:length(matFiles) % One file per iteration.
         end
     end
 end
-fprintf('Read %d thresholds from %d files. Now discarding empties and duplicates.\n',length(oo),length(matFiles));
+fprintf('ReadExperimentData read %d thresholds from %d files. Now discarding empties and duplicates.\n',length(oo),length(matFiles));
 
 %% CLEAN UP THE LIST, DISCARDING WHAT WE DON'T WANT.
 % We've now gotten all the thresholds into oo.
@@ -176,8 +177,12 @@ if ~isempty(missingFields)
 end
 s=sprintf('condition.conditionName(trials):');
 for oi=length(oo):-1:1
-    if isempty(oo(oi).trialsDesired)
-        oo(oi)=[];
+    switch oo(oi).task
+        case 'identify'
+            if isempty(oo(oi).responseCount)
+                oo(oi)=[];
+            end
+        case 'read'
     end
 end
 for oi=1:length(oo)
@@ -185,13 +190,15 @@ for oi=1:length(oo)
     oo(oi).date=sprintf('%04d.%02d.%02d, %02d:%02d:%02.0f',y,m,d,h,mi,s);
 end
 tt=struct2table(oo,'AsArray',true);
-minimumTrials=30; % 25 DGP
-if sum(tt.trialsDesired<minimumTrials)>0
-    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than %d trials:\n',sum(tt.trialsDesired<minimumTrials),minimumTrials);
-    disp(tt(tt.trialsDesired<minimumTrials,{'date' 'observer' 'thresholdParameter' 'eccentricityXYDeg' 'trialsDesired'})) % 'experiment'  'conditionName'
+% TEMPORARILY PROTECT 'read' DATA THAT UNDER REPORTS responseCount.
+if sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'}))>0
+    fprintf('\nWARNING: Discarding %d threshold(s) with fewer than desiredTrials:\n',...
+        sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'})));
+    disp(tt(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'}),...
+        {'date' 'observer' 'task' 'thresholdParameter' 'eccentricityXYDeg' 'responseCount' 'trialsDesired' })) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
-    if oo(oi).trialsDesired<minimumTrials
+    if oo(oi).responseCount<oo(oi).trialsDesired & ~ismember(tt.task,{'read'})
         oo(oi)=[];
         tt(oi,:)=[];
     end
