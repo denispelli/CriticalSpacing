@@ -144,12 +144,20 @@ PsychTweak('ScreenVerbosity',3);
 Screen('Preference','Verbosity',verbosity);
 machine.screen=0;
 machine.size=[];
+machine.nativeSize=[];
 machine.mm=[];
 if exist('Screen','file')
     resolution=Screen('Resolution',windowOrScreen);
     machine.size=[resolution.height resolution.width];
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
     machine.mm=[screenHeightMm,screenWidthMm];
+    res=Screen('Resolutions',machine.screen);
+    machine.nativeSize=[0 0];
+    for i=1:length(res)
+        if res(i).width>machine.nativeSize(2)
+            machine.nativeSize=[res(i).height res(i).width];
+        end
+    end
 end
 machine.openGLRenderer='';
 machine.openGLVendor='';
