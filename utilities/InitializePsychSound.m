@@ -107,7 +107,7 @@ if IsOSX
         %        fprintf('/Users/lisa/lib/ \n\n');
         %        fprintf('Please try this steps, then restart your script.\n\n');
         em = psychlasterror;
-        fprintf('The exact error message of the linker was: %s\n', em.message);
+        fprintf('The exact error message of the linker was: %s\n',em.message);
         fprintf('\n\n');
         error('Failed to load PsychPortAudio driver.');
     end
