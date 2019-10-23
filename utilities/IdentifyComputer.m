@@ -17,7 +17,6 @@ function machine=IdentifyComputer(windowOrScreen)
 %         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
-% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
 %                  screens: 0
@@ -27,12 +26,14 @@ function machine=IdentifyComputer(windowOrScreen)
 %           openGLRenderer: 'AMD Radeon R9 M290X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
+% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
+%           drawTextPlugin: 1
+%           psychPortAudio: 1
 %
 %                    model: 'MacBook10,1'
 %         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
-% psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
 %                  screens: 0
@@ -41,12 +42,14 @@ function machine=IdentifyComputer(windowOrScreen)
 %           openGLRenderer: 'Intel(R) HD Graphics 615'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.10.12'
+% psychtoolboxKernelDriver: ''
+%           drawTextPlugin: 1
+%           psychPortAudio: 1
 %
 %                    model: 'MacBookPro11,5'
 %         modelDescription: 'MacBook Pro (Retina, 15-inch, Mid 2015)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
-% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %                   matlab: 'MATLAB 9.4 (R2018a)'
 %                   system: 'macOS 10.14.6'
 %                  screens: 0
@@ -55,12 +58,14 @@ function machine=IdentifyComputer(windowOrScreen)
 %           openGLRenderer: 'AMD Radeon R9 M370X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
+% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
+%           drawTextPlugin: 1
+%           psychPortAudio: 1
 %
 %                    model: 'MacBookPro13,2'
 %         modelDescription: 'MacBook Pro (13-inch, 2016, Four Thunderbolt 3 Ports)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.15'
-% psychtoolboxKernelDriver: ''
 %                   matlab: 'MATLAB 9.5 (R2018b)'
 %                   system: 'macOS 10.14.5'
 %                  screens: 0
@@ -69,6 +74,9 @@ function machine=IdentifyComputer(windowOrScreen)
 %           openGLRenderer: 'Intel(R) Iris(TM) Graphics 550'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.9.22?
+% psychtoolboxKernelDriver: ''
+%           drawTextPlugin: 1
+%           psychPortAudio: 1
 %
 %                    model: 'Inspiron 5379'
 %             manufacturer: 'Dell Inc.'
@@ -107,8 +115,8 @@ function machine=IdentifyComputer(windowOrScreen)
 %
 % October 7, 2019, denis.pelli@nyu.edu
 %
-% LIMITATIONS: Works on all OSes, but on Linux doesn't yet get model name
-% or manufacturer.
+% LIMITATIONS: Works on all OSes, but, under Linux, requires root privilege
+% to get model name and manufacturer.
 
 %% HISTORY
 % August 24, 2019. DGP wrote it.
@@ -123,10 +131,17 @@ machine.psychtoolbox='';
 machine.matlab='';
 machine.system='';
 if exist('Screen','file')
+    % PsychTweak 0 suppresses some early print outs made by Screen
+    % Preference Verbosity. 
+    PsychTweak('ScreenVerbosity',0);
+    verbosity=Screen('Preference','Verbosity',0);
     machine.screens=Screen('Screens');
 else
     machine.screens=[];
 end
+% Restore former settings.
+PsychTweak('ScreenVerbosity',3);
+Screen('Preference','Verbosity',verbosity);
 machine.screen=0;
 machine.size=[];
 machine.mm=[];
@@ -308,6 +323,7 @@ if exist('Screen','file')
         screenBufferRect=Screen('Rect',machine.screen);
         r=round(fractionOfScreenUsed*screenBufferRect);
         r=AlignRect(r,screenBufferRect,'right','bottom');
+        PsychTweak('ScreenVerbosity',0);
         verbosity=Screen('Preference','Verbosity',0);
         try
             window=Screen('OpenWindow',machine.screen,255,r);
@@ -356,11 +372,13 @@ if exist('Screen','file')
     end
 end
 try
+    verbosity=PsychPortAudio('Verbosity',0);
     InitializePsychSound;
     machine.psychPortAudio=true;
 catch em
-    fprintf(['Failed to load PsychPortAudio driver, with error:\n%s\n\n'],...
+    fprintf('Failed to load PsychPortAudio driver, with error:\n%s\n\n',...
         em.message);
     machine.psychPortAudio=false;
 end
+PsychPortAudio('Verbosity',verbosity);
 end % function
