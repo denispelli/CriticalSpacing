@@ -132,7 +132,7 @@ machine.matlab='';
 machine.system='';
 if exist('Screen','file')
     % PsychTweak 0 suppresses some early print outs made by Screen
-    % Preference Verbosity. 
+    % Preference Verbosity.
     PsychTweak('ScreenVerbosity',0);
     verbosity=Screen('Preference','Verbosity',0);
     machine.screens=Screen('Screens');
@@ -184,8 +184,8 @@ else
     warning('Currently need Psychtoolbox to get operating system name.');
 end
 switch computer
-    %% macOS
     case 'MACI64'
+        %% macOS
         machine.manufacturer='Apple Inc.';
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         % Whatever shell is running, we maintain compatibility by sending
@@ -206,9 +206,9 @@ switch computer
         end
         % A python solution: https://gist.github.com/zigg/6174270
         
-        %% Windows
     case 'PCWIN64'
-        wmicString = evalc('!wmic computersystem get manufacturer, model');
+        %% Windows
+        wmicString=evalc('!wmic computersystem get manufacturer, model');
         % Here's a typical result:
         % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
         % '     Dell Inc.     Inspiron 5379    ']);
@@ -237,36 +237,18 @@ switch computer
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
         
-        %% Linux
     case 'GLNXA64'
-        % User needs root priviledges to get hardware information.
-        % lshw command is used for listing hardware information on Linux
-        % systems. This snippet is tested on Ubuntu 18.04 system.
-        % By omkar.kumbhar@nyu.edu, October 15, 2019.
-        [status,std_out] = system("lshw -C system -json");
-        % Use regexp to get the start of json information
-        start_index = regexp(std_out,"{\s{0,}");
-        % convert std_out string into a dictionary
-        % jsonified structure of lshw output looks like:
-        % '{
-        % .
-        % "description" : "Notebook",
-        % "product" : "80WK (LENOVO_MT_80WK_BU_idea_FM_Lenovo Y520-15IKBN)",
-        % "vendor" : "LENOVO",
-        % "version" : "Lenovo Y520-15IKBN",
-        % "serial" : "PF0U17J8",
-        % "width" : 64,
-        % .
-        % .
-        jsonified_description = std_out(start_index(1):end);
-        % Convert json string into a matlab compatible struct.
-        description_struct = jsondecode(jsonified_description);
-        machine.manufacturer = description_struct.vendor;
-        machine.model = description_struct.product;
-        if  isempty(machine.manufacturer) || isempty(machine.model)
-            warning(['Failed to retrieve manufacturer and model from lshw. '...
-                'Make sure shell is running as root.']);
-        end
+        %% Linux
+        % Most methods for getting the computer model require root
+        % privileges, which we cannot assume here. We used method 4 from:
+        % https://www.2daygeek.com/how-to-check-system-hardware-manufacturer-model-and-serial-number-in-linux/
+        % Tested in MATLAB under Ubuntu 18.04.
+        % Written by omkar.kumbhar@nyu.edu, October 22, 2019.
+        [status_version,product_version]=system("cat /sys/class/dmi/id/product_version");
+        [status_name,product_name]=system("cat /sys/class/dmi/id/product_name");
+        [status_board,board_vendor]=system("cat /sys/class/dmi/id/board_vendor");
+        machine.manufacturer=strtrim(board_vendor);
+        machine.model=strtrim(strcat(product_name," ",product_version));
 end
 %% Clean up the Operating System name.
 while ismember(machine.system(1),{' ' '-'})
