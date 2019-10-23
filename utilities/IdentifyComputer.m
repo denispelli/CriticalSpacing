@@ -11,7 +11,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % Passing an empty windowOrScreen skips opening a window, at the cost of
 % leaving the screen size and openGL fields empty.
 %
-% Here are several examples of the output struct for macOS and Windows:
+% Here are examples of the output struct for macOS, Windows, and Linux:
 %
 %                    model: 'iMac15,1'
 %         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
@@ -22,6 +22,7 @@ function machine=IdentifyComputer(windowOrScreen)
 %                  screens: 0
 %                   screen: 0
 %                     size: [1800 3200]
+%               nativeSize: [2880 5120]
 %                       mm: [341 602]
 %           openGLRenderer: 'AMD Radeon R9 M290X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
@@ -70,7 +71,7 @@ function machine=IdentifyComputer(windowOrScreen)
 %                   system: 'macOS 10.14.5'
 %                  screens: 0
 %                   screen: 0
-%                     size: [? ?]
+%                     size: []
 %           openGLRenderer: 'Intel(R) Iris(TM) Graphics 550'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.9.22?
@@ -85,7 +86,25 @@ function machine=IdentifyComputer(windowOrScreen)
 %                   system: 'Windows NT-10.0.9200'
 %                  screens: 0
 %
-% Unavailable answers are empty ''.
+%                    model: '80WK Lenovo Y520-15IKBN'
+%         modelDescription: ''
+%             manufacturer: 'LENOVO'
+%             psychtoolbox: 'Psychtoolbox 3.0.16'
+%                   matlab: 'MATLAB 9.6 (R2019a)'
+%                   system: 'Linux 4.15.0-65-generic'
+%                  screens: 0
+%                   screen: 0
+%                     size: [1080 1920]
+%               nativeSize: []
+%                       mm: [286 508]
+%           openGLRenderer: 'GeForce GTX 1050 Ti/PCIe/SSE2'
+%             openGLVendor: 'NVIDIA Corporation'
+%            openGLVersion: '4.6.0 NVIDIA 396.54'
+% psychtoolboxKernelDriver: ''
+%           drawTextPlugin: 1
+%           psychPortAudio: 1
+% 
+% Unavailable answers are empty: '' or [].
 %
 % This is handy in testing, benchmarking, and bug reporting, to easily
 % record the test environment in a compact human-readable way.
