@@ -262,11 +262,12 @@ try
         Screen('Preference','ConserveVRAM', 16384); % Force use of DWM.
     end
     
-    % Get the list of Screens and choose the one with the highest screen number.
-    % Screen 0 is, by definition, the display with the menu bar. Often when 
-    % two monitors are connected the one without the menu bar is used as 
-    % the stimulus display.  Chosing the display with the highest display number is 
-    % a best guess about where you want the stimulus displayed.  
+    % Get the list of Screens and choose the one with the highest screen
+    % number. Screen 0 is, by definition, the display with the menu bar.
+    % Often when two monitors are connected the one without the menu bar is
+    % used as the stimulus display.  Chosing the display with the highest
+    % display number is a best guess about where you want the stimulus
+    % displayed.
     screens=Screen('Screens');
     if isempty(screenNumber)
         screenNumber=max(screens);
@@ -278,7 +279,7 @@ try
 
     % Open double-buffered window: Optionally enable stereo output if
     % stereo == 1.
-    PsychImaging('PrepareConfiguration')
+    PsychImaging('PrepareConfiguration');
     if usedpixx
         % Use DataPixx for external timestamping for quick basic correctness
         % tests.
@@ -312,24 +313,24 @@ try
     % If OS returns 0, then we assume that we run on a flat-panel with
     % fixed 60 Hz refresh interval.
     framerate=Screen('NominalFramerate', w);
-    if (framerate==0)
+    if framerate==0
         framerate=60;
-    end;
+    end
 
-    ifinominal=1 / framerate;
+    ifinominal=1/framerate;
     fprintf('The refresh interval reported by the operating system is %2.5f ms.\n', ifinominal*1000);
     
-    % Perform a calibration loop to determine the "real" interframe interval
-    % for the given gfx-card + monitor combination:
+    % Perform a calibration loop to determine the "real" interframe
+    % interval for the given gfx-card + monitor combination:
     Screen('TextSize', w, 24);
     Screen('DrawText', w, 'Measuring monitor refresh interval... This can take up to 20 seconds...', 10, 10, 255);
     
-    if (stereo>0)
+    if stereo>0
         % Show something for the right eye as well in stereo mode:
         Screen('SelectStereoDrawBuffer', w, 1);
         Screen('FillRect', w, 0);
         Screen('DrawText', w, 'Stereo yeah!!!', 10, 40, 255);
-    end;
+    end
     
     % Measure monitor refresh interval again, just for fun...
     % This will trigger a calibration loop of minimum 100 valid samples and return the
@@ -338,7 +339,9 @@ try
     % 20 seconds...
     %[ ifi nvalid stddev ]= Screen('GetFlipInterval', w, 100, 0.0001, 5);
     [ ifi, nvalid, stddev ]= Screen('GetFlipInterval', w);
-    fprintf('Measured refresh interval, as reported by "GetFlipInterval" is %2.5f ms. (nsamples = %i, stddev = %2.5f ms)\n', ifi*1000, nvalid, stddev*1000);
+    fprintf(['Measured refresh interval, as reported by "GetFlipInterval",'...
+        'is %2.5f ms. (nsamples = %i, stddev = %2.5f ms)\n'],...
+        ifi*1000, nvalid, stddev*1000);
     
     % Init data-collection arrays for collection of n samples:
     ts=zeros(1,n);
@@ -388,7 +391,7 @@ try
             % will actually ignore the deadline and just Flip at the next
             % possible retrace...
             tdeadline=0;
-        end;
+        end
         
         if usedpixx
             % Ask for a Datapixx onset timestamp for next 'Flip':
@@ -413,7 +416,8 @@ try
         % interval. Small values << screen height are also ok,
         % they just indicate either a slower machine or some types of flat-panels...
 
-        [ tvbl, so(i), flipfin(i), missest(i), beampos(i)]=Screen('Flip', w, tdeadline, clearmode);
+        [ tvbl, so(i), flipfin(i), missest(i), beampos(i)]=...
+            Screen('Flip', w, tdeadline, clearmode);
 
         if usedpixx
             % Ask for a Datapixx onset timestamp from last 'Flip':
@@ -453,7 +457,7 @@ try
         pos=mod(i, screenheight);
         Screen('FillRect', w, mod(i, 255), [pos+20 pos+20 pos+400 pos+400]);
         % Screen('FillRect', w, mod(i, 2)*255);
-        if (stereo>0)
+        if stereo>0
             % Show something for the right eye as well in stereo mode:
             Screen('SelectStereoDrawBuffer', w, 1);
             Screen('FillRect', w, mod(i, 255), [pos+40 pos+20 pos+420 pos+400]);
@@ -476,7 +480,7 @@ try
             % real experiments as it will significantly degrade
             % performance and can *cause* deadline misses.
             td(i)=Screen('DrawingFinished', w, clearmode, synchronous);
-        end;
+        end
 
         % Sleep a random amount of time, just to simulate some work being
         % done in the Matlab loop:
@@ -495,7 +499,7 @@ try
     RestrictKeysForKbCheck([]);
 
     % Shutdown realtime scheduling:
-    Priority(0)
+    Priority(0);
 
     % Close display: If we skipped/missed any presentation deadline during
     % Flip, Psychtoolbox will automatically display some warning message on the Matlab
@@ -519,7 +523,7 @@ try
     numbermisses=0;
     numberearly=0;
 
-    if numifis > 0
+    if numifis>0
         if (stereo == 11) && (numifis == 1)
             % Special case: Stereomode 11 can't do better than one swap
             % every two refresh cycles, so take this into account:
@@ -536,18 +540,16 @@ try
             end
         end
     else
-        if stereo == 11
+        if stereo==11
             % Special case: Stereomode 11 can't do better than one swap
             % every two refresh cycles at best, so take this into account:
             ifi = ifi * 2;
         end
-
         for i=2:n
-            if (ts(i)-ts(i-1) > ifi*1.5)
+            if ts(i)-ts(i-1) > ifi*1.5
                 numbermisses=numbermisses+1;
             end
-
-            if (ts(i)-ts(i-1) < ifi*(numifis-0.5))
+            if ts(i)-ts(i-1) < ifi*(numifis-0.5)
                 numberearly=numberearly+1;
             end
         end
@@ -578,13 +580,13 @@ try
    
     % Figure 2 shows the recorded beam positions:
     if winfo.VBLEndline > -1
-        hasbeampos = 1;
+        hasbeampos = true;
     else
-        hasbeampos = 0;
+        hasbeampos = false;
     end
 
     if hasbeampos
-        figure
+        figure;
         plot(beampos);
         title('Rasterbeam position when timestamp was taken (in scanlines):');
         SavePlotToDisk(gcf);
@@ -593,7 +595,7 @@ try
     if (numbermisses > 1) || (numberearly > 0)
         % Figure 3 shows estimated size of presentation deadline-miss in
         % milliseconds:
-        figure
+        figure;
         hold on
         plot(missest*1000);
         plot(zeros(1,n));
@@ -602,10 +604,10 @@ try
         SavePlotToDisk(gcf);
     end
 
-    if isequal(ts, so)
+    if isequal(ts,so)
         % Same info in vbltime and stimulus onset time. Only
         % do one plot and label it in a less confusing manner:
-        figure
+        figure;
         plot((flipfin - so)*1000);
 
         if IsLinux && (Screen('Preference', 'VBLTimestampingmode') == 4)
@@ -622,7 +624,7 @@ try
   else
         % Figure 4 shows difference in ms between finish of Flip and estimated
         % start of VBL time:
-        figure
+        figure;
         plot((flipfin - ts)*1000);
         title('Time delta between start of VBL and return of Flip in milliseconds:');
         SavePlotToDisk(gcf);
@@ -638,7 +640,7 @@ try
     % Figure 6 shows duration of drawing commands when calling
     % "DrawingFinished" in synchronous mode.
     if synchronous==1
-        figure
+        figure;
         plot(td*1000);
         title('Total duration of all drawing commands in milliseconds:');
         SavePlotToDisk(gcf);
@@ -683,14 +685,11 @@ catch %#ok<*CTCH>
     % above. Importantly, it closes the onscreen window if its open and
     % shuts down realtime-scheduling of Matlab:
     RestrictKeysForKbCheck([]);
-
     sca;
-    
     % Disable realtime-priority in case of errors.
     Priority(0);
     psychrethrow(psychlasterror);
 end %try..catch..
-
 return
 end
 
@@ -708,7 +707,7 @@ figureTitle=strrep(figureTitle,' ','-');
 h.NumberTitle='off';
 h.Name=figureTitle;
 saveas(h,figureTitle,'png');
-fprintf(['Figure %d has been saved to disk as file "%s".\n'],...
+fprintf('Figure %d has been saved to disk as file "%s".\n',...
     h.Number,h.Name);
 end
 
