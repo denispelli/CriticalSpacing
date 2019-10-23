@@ -353,10 +353,10 @@ if exist('Screen','file')
         Screen('DrawText',window,' ',0,0,0,1,1);
         machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
         if ~machine.drawTextPlugin
-%             warning('The DrawText plugin failed to load. See ''help DrawTextPlugin''.');
+            % warning('The DrawText plugin failed to load. See ''help DrawTextPlugin''.');
         end
         
-        % OpenGL DRIVER
+        %% OpenGL DRIVER
         % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware
         % and driver by the combination of GLRenderer, GLVendor, and
         % GLVersion, which are provided by
