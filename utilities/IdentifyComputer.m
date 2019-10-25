@@ -1,15 +1,16 @@
 function machine=IdentifyComputer(windowOrScreen)
-% machine=IdentifyComputer([windowOrScreen]);
-% Returns a struct with ten text fields (plus list of screens, and a screen
-% number and size) that specify the basic configuration of your hardware
-% and software. The openGL fields refer to the screen with the number
-% specified by the screen field. Use windowOrScreen to provide a window
-% pointer or the screen number. Default is screen 0, the main screen. This
-% routine is quick if windowOrScreen is empty [] or points to a window, and
-% it's slow if you provide a screen number (or use the default screen 0)
-% because then it has to open and close a window, which may take 30 s.
-% Passing an empty windowOrScreen skips opening a window, at the cost of
-% leaving the screen size and openGL fields empty.
+% machine=IdentifyComputer([windowOrScreen]); 
+% Returns a struct with 17 fields (10 text , 5 numerical, and 2 logical)
+% that specify the basic configuration of your hardware and software with
+% regard to compatibility. The openGL fields refer to the screen with the
+% number specified by the "screen" field. Use the windowOrScreen argument
+% to specify a window pointer or the screen number. Default is screen 0,
+% the main screen. This routine is quick if windowOrScreen is empty [], or
+% points to an open window, or specifies a screen on which a window is
+% already open, and it's slow if you provide a screen number (or use the
+% default screen 0) because then it has to open and close a window, which
+% may take 30 s. Passing an empty windowOrScreen skips opening a window, at
+% the cost of leaving the screen size and openGL fields empty.
 %
 % Here are examples of the output struct for macOS, Windows, and Linux:
 %
@@ -40,10 +41,12 @@ function machine=IdentifyComputer(windowOrScreen)
 %                  screens: 0
 %                   screen: 0
 %                     size: [1440 2304]
+%               nativeSize: [1600 2560]
+%                       mm: [161 258]
 %           openGLRenderer: 'Intel(R) HD Graphics 615'
 %             openGLVendor: 'Intel Inc.'
 %            openGLVersion: '2.1 INTEL-12.10.12'
-% psychtoolboxKernelDriver: ''
+% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
 %
@@ -100,11 +103,11 @@ function machine=IdentifyComputer(windowOrScreen)
 %           openGLRenderer: 'GeForce GTX 1050 Ti/PCIe/SSE2'
 %             openGLVendor: 'NVIDIA Corporation'
 %            openGLVersion: '4.6.0 NVIDIA 396.54'
-% psychtoolboxKernelDriver: ''
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
 % 
-% Unavailable answers are empty: '' or [].
+% Unavailable answers are empty: '' or []. The psychtoolboxKernelDriver
+% field is defined only for macOS.
 %
 % This is handy in testing, benchmarking, and bug reporting, to easily
 % record the test environment in a compact human-readable way.
@@ -121,21 +124,21 @@ function machine=IdentifyComputer(windowOrScreen)
 % Which produces a string like this:
 % TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
 %
-% In principle one might want to separately report each screen, but in
-% practice there's typically no gain in doing that. In the old days one
-% could plug in arbitrary video cards and have different drivers for each
-% screen. Today, most of us use computers with no slots. At most we plug in
-% a cable connected to an external display (or two) and thus use the same
-% video driver as the built-in display (screen 0). Thus some properties,
-% e.g. resolution and frame rate, can differ from screen to screen, but not
-% the openGL fields we report here. If it becomes useful to report
-% screen-dependent information we could drop the screen field, and change
-% each of the screen-dependent fields to be a cell array.
+% In principle, one might want to separately report the openGL driver info
+% for each screen, but, in practice, there's typically no gain in doing
+% that. In the old days one could plug in arbitrary video cards and have
+% different drivers for each screen. Today, most of us use computers with
+% no slots. At most we plug in a cable connected to an external display (or
+% two) and thus use the same video driver as the built-in display (screen
+% 0). Thus some properties, e.g. resolution and frame rate, can differ from
+% screen to screen, but not the openGL fields we report here. If it becomes
+% useful to report screen-dependent information we could drop the screen
+% field, and change each of the screen-dependent fields to be a cell array.
 %
-% October 7, 2019, denis.pelli@nyu.edu
+% LIMITATIONS: needs more testing on computers with multiple screens. I
+% received a report, under Linux, that it hangs with multiple screens.
 %
-% LIMITATIONS: Works on all OSes, but, under Linux, requires root privilege
-% to get model name and manufacturer.
+% denis.pelli@nyu.edu
 
 %% HISTORY
 % August 24, 2019. DGP wrote it.
@@ -149,18 +152,17 @@ machine.manufacturer='';
 machine.psychtoolbox='';
 machine.matlab='';
 machine.system='';
+machine.screens=[];
 if exist('Screen','file')
-    % PsychTweak 0 suppresses some early print outs made by Screen
+    % PsychTweak 0 suppresses some early printouts made by Screen
     % Preference Verbosity.
     PsychTweak('ScreenVerbosity',0);
     verbosity=Screen('Preference','Verbosity',0);
     machine.screens=Screen('Screens');
-else
-    machine.screens=[];
+    % Restore former settings.
+    PsychTweak('ScreenVerbosity',3);
+    Screen('Preference','Verbosity',verbosity);
 end
-% Restore former settings.
-PsychTweak('ScreenVerbosity',3);
-Screen('Preference','Verbosity',verbosity);
 machine.screen=0;
 machine.size=[];
 machine.nativeSize=[];
@@ -186,9 +188,11 @@ if exist('PsychtoolboxVersion','file')
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',...
         p.major,p.minor,p.point);
 end
-machine.psychtoolboxKernelDriver='';
-machine.drawTextPlugin=[];
-machine.psychPortAudio=[];
+if ismac
+    machine.psychtoolboxKernelDriver='';
+end
+machine.drawTextPlugin=logical([]);
+machine.psychPortAudio=logical([]);
 if exist('ver','file')
     m=ver('octave');
     if isempty(m)
@@ -267,15 +271,15 @@ switch computer
     case 'GLNXA64'
         %% Linux
         % Most methods for getting the computer model require root
-        % privileges, which we cannot assume here. We used method 4 from:
+        % privileges, which we cannot assume here. We use method 4 from:
         % https://www.2daygeek.com/how-to-check-system-hardware-manufacturer-model-and-serial-number-in-linux/
         % Tested in MATLAB under Ubuntu 18.04.
         % Written by omkar.kumbhar@nyu.edu, October 22, 2019.
-        [status_version,product_version]=system("cat /sys/class/dmi/id/product_version");
-        [status_name,product_name]=system("cat /sys/class/dmi/id/product_name");
-        [status_board,board_vendor]=system("cat /sys/class/dmi/id/board_vendor");
-        machine.manufacturer=strtrim(board_vendor);
-        machine.model=strtrim(strcat(product_name," ",product_version));
+        [statusVersion,productVersion]=system('cat /sys/class/dmi/id/product_version');
+        [statusName,productName]=system('cat /sys/class/dmi/id/product_name');
+        [statusBoard,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
+        machine.manufacturer=strtrim(boardVendor);
+        machine.model=strtrim(strcat(productName,' ',productVersion));
 end
 %% Clean up the Operating System name.
 while ismember(machine.system(1),{' ' '-'})
@@ -305,8 +309,8 @@ end
 
 %% PSYCHTOOLBOX KERNEL DRIVER
 % http://psychtoolbox.org/docs/psychtoolboxKernelDriver';
-machine.psychtoolboxKernelDriver='';
 if ismac
+    machine.psychtoolboxKernelDriver='';
     [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
     if contains(result,'PsychtoolboxKernelDriver')
         % Get version number of Psychtoolbox kernel driver.
@@ -321,32 +325,52 @@ if ismac
     end
 end
 if exist('Screen','file')
-    % From the provided windowOrScreen we get a window and screen.
+    % From the provided windowOrScreen we find both the screen and a
+    % window on that screen. If necessary we open a window.
     window=[];
+    isNewWindow=false;
     if ismember(windowOrScreen,machine.screens)
-        % It's a screen. Open a window on it.
+        % It's a screen. We need a window on it.
         machine.screen=windowOrScreen;
-        % Opening and closing a window takes a long time, on the order of 30 s,
-        % so you may want to skip it if you don't need the openGL fields.
-        fractionOfScreenUsed=0.2;
-        screenBufferRect=Screen('Rect',machine.screen);
-        r=round(fractionOfScreenUsed*screenBufferRect);
-        r=AlignRect(r,screenBufferRect,'right','bottom');
-        PsychTweak('ScreenVerbosity',0);
-        verbosity=Screen('Preference','Verbosity',0);
-        try
-            window=Screen('OpenWindow',machine.screen,255,r);
-        catch e
-            warning(e.message);
-            warning('Unable to open window on screen %d.',machine.screen);
+        % Try to find a window already open on the specified screen.
+        windows=Screen('Windows');
+        for i=1:length(windows)
+            if machine.screen==Screen('WindowScreenNumber',windows(i))
+                % This window is on specified screen.
+                if Screen('WindowKind',windows(i))==1
+                    % This window belongs to Psychtoolbox.
+                    window=windows(i);
+                    break
+                end
+            end
         end
-        Screen('Preference','Verbosity',verbosity);
+        if isempty(window)
+            % Opening and closing a window takes a long time, on the order
+            % of 30 s, so you may want to skip that, by passing an empty
+            % argument [], if you don't need the openGL fields.
+            fractionOfScreenUsed=1;
+            screenBufferRect=Screen('Rect',machine.screen);
+            r=round(fractionOfScreenUsed*screenBufferRect);
+            r=AlignRect(r,screenBufferRect,'right','bottom');
+            PsychTweak('ScreenVerbosity',0);
+            verbosity=Screen('Preference','Verbosity',0);
+            try
+                Screen('Preference','SkipSyncTests',1);
+                window=Screen('OpenWindow',machine.screen,255,r);
+                isNewWindow=true;
+            catch em
+                warning(em.message);
+                warning('Unable to open window on screen %d.',...
+                    machine.screen);
+            end
+            Screen('Preference','Verbosity',verbosity);
+        end
     elseif Screen('WindowKind',windowOrScreen)==1
         % It's a window pointer. Get the screen number.
         machine.screen=Screen('WindowScreenNumber',windowOrScreen);
         if ~ismember(machine.screen,Screen('Screens'))
-            % This occurred only with an experimental version of Screen.
-            error('Could not get screen number of window.');
+            % This failed only with an experimental version of Screen.
+            error('Could not get screen number of window pointer.');
         end
     else
         if ~isempty(windowOrScreen)
@@ -356,25 +380,26 @@ if exist('Screen','file')
         end
     end
     if ~isempty(window)
-        % Check for presence of DrawText Plugin, for best rendering.
-        % Recommended by Mario Kleiner, July 2017.
-        % The first 'DrawText' call should triggers loading of the plugin, but may fail.
+        %% DRAWTEXT PLUGIN
+        % Check for presence of DrawText Plugin, for best rendering. The
+        % first 'DrawText' call should trigger loading of the plugin, but
+        % may fail. Recommended by Mario Kleiner, July 2017.
         Screen('DrawText',window,' ',0,0,0,1,1);
         machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
         if ~machine.drawTextPlugin
-            % warning('The DrawText plugin failed to load. See ''help DrawTextPlugin''.');
+            % warning(['The DrawText plugin failed to load. '...
+            % 'See ''help DrawTextPlugin''.']);
         end
-        
         %% OpenGL DRIVER
         % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware
         % and driver by the combination of GLRenderer, GLVendor, and
-        % GLVersion, which are provided by
-        % info=Screen('GetWindowInfo',window);
+        % GLVersion, which are provided by Screen('GetWindowInfo',window).
         info=Screen('GetWindowInfo',window);
         machine.openGLRenderer=info.GLRenderer;
         machine.openGLVendor=info.GLVendor;
         machine.openGLVersion=info.GLVersion;
-        if windowOrScreen==machine.screen
+        %% CLOSE WINDOW
+        if isNewWindow
             % If we opened the window, then close it.
             Screen('Close',window);
         end
