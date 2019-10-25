@@ -49,6 +49,7 @@ function machine=IdentifyComputer(windowOrScreen)
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
+%                  summary: 'MacBook10,1-macOS-10.14.6-PTB-3.0.16'
 %
 %                    model: 'MacBookPro11,5'
 %         modelDescription: 'MacBook Pro (Retina, 15-inch, Mid 2015)'
@@ -112,31 +113,26 @@ function machine=IdentifyComputer(windowOrScreen)
 % This is handy in testing, benchmarking, and bug reporting, to easily
 % record the test environment in a compact human-readable way.
 %
-% If you are trying to produce a compact string, e.g. to use in a file
-% name, you might do something like this:
+% The machine.summary field helps you make a filename that identifies your
+% configuration. For example:
 % machine=IdentifyComputer([]);
-% filename=['TestFlip-' machine.model ...
-%     '-' machine.system ...
-%     '-' machine.psychtoolbox '.png'];
-% filename=strrep(filename,'Windows','Win');
-% filename=strrep(filename,'Psychtoolbox','Psy');
-% filename=strrep(filename,' ','-');
-% Which produces a string like this:
-% TestFlip-MacBook10,1-macOS-10.14.6-Psy-3.0.16.png
+% filename=['TestFlip-' machine.summary '.png'];
+% produces a string like this:
+% TestFlip-MacBook10,1-macOS-10.14.6-PTB-3.0.16.png
 %
-% In principle, one might want to separately report the openGL driver info
-% for each screen, but, in practice, there's typically no gain in doing
-% that. In the old days one could plug in arbitrary video cards and have
-% different drivers for each screen. Today, most of us use computers with
-% no slots. At most we plug in a cable connected to an external display (or
-% two) and thus use the same video driver as the built-in display (screen
-% 0). Thus some properties, e.g. resolution and frame rate, can differ from
-% screen to screen, but not the openGL fields we report here. If it becomes
-% useful to report screen-dependent information we could drop the screen
-% field, and change each of the screen-dependent fields to be a cell array.
+% JUST ONE SCREEN. In principle, one might want to separately report the
+% openGL driver info for each screen, but, in practice, there's typically
+% no gain in doing that. In the old days one could plug in arbitrary video
+% cards and have different drivers for each screen. Today, most of us use
+% computers with no slots. At most we plug in a cable connected to an
+% external display (or two) and thus use the same video driver as the
+% built-in display (screen 0). Thus some properties, e.g. resolution and
+% frame rate, can differ from screen to screen, but not the openGL fields
+% we report here. If it becomes useful to report screen-dependent
+% information we could drop the screen field, and change each of the
+% screen-dependent fields to be a cell array.
 %
-% LIMITATIONS: needs more testing on computers with multiple screens. I
-% received a report, under Linux, that it hangs with multiple screens.
+% LIMITATIONS: needs more testing on computers with multiple screens. 
 %
 % denis.pelli@nyu.edu
 
@@ -211,8 +207,6 @@ if exist('Screen','file')
     if isfield(c,'hw') && isfield(c.hw,'model')
         machine.model=c.hw.model;
     end
-else
-    warning('Currently need Psychtoolbox to get operating system name.');
 end
 switch computer
     case 'MACI64'
@@ -405,14 +399,21 @@ if exist('Screen','file')
         end
     end
 end
-try
-    verbosity=PsychPortAudio('Verbosity',0);
-    InitializePsychSound;
-    machine.psychPortAudio=true;
-catch em
-    fprintf('Failed to load PsychPortAudio driver, with error:\n%s\n\n',...
-        em.message);
-    machine.psychPortAudio=false;
+if exist('PsychPortAudio','file')
+    try
+        verbosity=PsychPortAudio('Verbosity',0);
+        InitializePsychSound;
+        machine.psychPortAudio=true;
+    catch em
+        fprintf('Failed to load PsychPortAudio driver, with error:\n%s\n\n',...
+            em.message);
+        machine.psychPortAudio=false;
+    end
+    PsychPortAudio('Verbosity',verbosity);
 end
-PsychPortAudio('Verbosity',verbosity);
+%% Produce summary string useful in a filename.
+machine.summary=[machine.model '-' machine.system '-' machine.psychtoolbox];
+machine.summary=strrep(machine.summary,'Windows','Win');
+machine.summary=strrep(machine.summary,'Psychtoolbox','PTB');
+machine.summary=strrep(machine.summary,' ','-');
 end % function
