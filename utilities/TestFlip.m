@@ -137,6 +137,7 @@ for i=1:steps
         Screen('FillRect',window);
         msg=sprintf('Now timing request for %.0f ms.  %d of %d.',...
             1000*duration(i),j+(i-1)*repetitions,steps*repetitions);
+        Screen('TextBackgroundColor',window,255); % Set background.
         Screen('DrawText',window,double(msg),...
             round(100*fractionOfScreenUsed),round(100*fractionOfScreenUsed));
         when(j,i)=prior+duration(i);
