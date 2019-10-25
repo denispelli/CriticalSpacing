@@ -476,11 +476,11 @@ if 0
 end
 
 %% SAVE PLOT TO DISK
-figureTitle=['TestFlip-' machine.model '-' machine.system ...
-    '-' machine.psychtoolbox '.png'];
-figureTitle=strrep(figureTitle,'Windows','Win');
-figureTitle=strrep(figureTitle,'Psychtoolbox','Psy');
-figureTitle=strrep(figureTitle,' ','-');
+if exist('machine','var') && isfield(machine,'summary')
+    figureTitle=['TestFlip-' machine.summary '.png'];
+else
+    figureTitle='TestFlip.png');
+end
 h=gcf;
 h.NumberTitle='off';
 h.Name=figureTitle;
