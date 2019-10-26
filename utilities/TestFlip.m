@@ -479,7 +479,7 @@ end
 if exist('machine','var') && isfield(machine,'summary')
     figureTitle=['TestFlip-' machine.summary '.png'];
 else
-    figureTitle='TestFlip.png');
+    figureTitle='TestFlip.png';
 end
 h=gcf;
 h.NumberTitle='off';
