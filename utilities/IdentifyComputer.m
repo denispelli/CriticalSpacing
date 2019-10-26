@@ -1,16 +1,25 @@
-function machine=IdentifyComputer(windowOrScreen)
-% machine=IdentifyComputer([windowOrScreen]); 
-% Returns a struct with 17 fields (10 text , 5 numerical, and 2 logical)
+function machine=IdentifyComputer(windowOrScreen,verbose)
+% machine=IdentifyComputer([windowOrScreen,verbose]);
+% Returns a struct with 18 fields (11 text , 5 numerical, and 2 logical)
 % that specify the basic configuration of your hardware and software with
-% regard to compatibility. The openGL fields refer to the screen with the
-% number specified by the "screen" field. Use the windowOrScreen argument
-% to specify a window pointer or the screen number. Default is screen 0,
-% the main screen. This routine is quick if windowOrScreen is empty [], or
-% points to an open window, or specifies a screen on which a window is
-% already open, and it's slow if you provide a screen number (or use the
-% default screen 0) because then it has to open and close a window, which
-% may take 30 s. Passing an empty windowOrScreen skips opening a window, at
-% the cost of leaving the screen size and openGL fields empty.
+% regard to compatibility. Some fields (e.g. bitsPlusPlus) appear only if
+% the relevant feature is present.
+% OUTPUT ARGUMENT:
+% "machine" is a struct with many informative fields. The size, nativeSize,
+% mm, and openGL fields refer to the screen with the number specified by
+% the "screen" field. Mario Kleiner warns that under macOS the nativeSize
+% is not wholly reliable.
+% INPUT ARGUMENTS:
+% Use the "windowOrScreen" argument to specify a window pointer or the
+% screen number. Default is screen 0, the main screen. This routine is
+% quick if windowOrScreen is empty [], or points to an open window, or
+% specifies a screen on which a window is already open, and it's slow
+% otherwise. That's because if you provide a screen number (or use the
+% default screen 0) without a window then it has to open and close a
+% window, which may take 30 s. Passing an empty windowOrScreen skips
+% opening a window, at the cost of leaving the screen size and openGL
+% fields empty. The second argument, if present, should be the string
+% 'verbose', to not suppress warning messages.
 %
 % Here are examples of the output struct for macOS, Windows, and Linux:
 %
@@ -106,12 +115,13 @@ function machine=IdentifyComputer(windowOrScreen)
 %            openGLVersion: '4.6.0 NVIDIA 396.54'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
-% 
-% Unavailable answers are empty: '' or []. The psychtoolboxKernelDriver
-% field is defined only for macOS.
 %
-% This is handy in testing, benchmarking, and bug reporting, to easily
-% record the test environment in a compact human-readable way.
+% Unavailable answers are empty: '' or []. The psychtoolboxKernelDriver
+% field appears only for macOS. The bitsPlusPlus field appears only if
+% the Bits++ video hardware is detected.
+%
+% IdentifyComputer is handy in testing, benchmarking, and bug reporting, to
+% easily record the test environment in a compact human-readable way.
 %
 % The machine.summary field helps you make a filename that identifies your
 % configuration. For example:
@@ -125,14 +135,14 @@ function machine=IdentifyComputer(windowOrScreen)
 % no gain in doing that. In the old days one could plug in arbitrary video
 % cards and have different drivers for each screen. Today, most of us use
 % computers with no slots. At most we plug in a cable connected to an
-% external display (or two) and thus use the same video driver as the
-% built-in display (screen 0). Thus some properties, e.g. resolution and
-% frame rate, can differ from screen to screen, but not the openGL fields
-% we report here. If it becomes useful to report screen-dependent
-% information we could drop the screen field, and change each of the
-% screen-dependent fields to be a cell array.
+% external display (or two) and thus use the same video driver on all
+% screens. Thus some properties, e.g. resolution and frame rate, can differ
+% from screen to screen, but not the openGL fields we report here. If it
+% becomes useful to report screen-dependent information we could drop the
+% screen field, and change each of the screen-dependent fields to be a cell
+% array.
 %
-% LIMITATIONS: needs more testing on computers with multiple screens. 
+% LIMITATIONS: needs more testing on computers with multiple screens.
 %
 % denis.pelli@nyu.edu
 
@@ -141,6 +151,15 @@ function machine=IdentifyComputer(windowOrScreen)
 % October 15, 2019 omkar.kumbhar@nyu.edu added support for linux.
 if nargin<1
     windowOrScreen=0;
+end
+if nargin<2
+    verbose=false;
+else
+    if ismember(verbose,{'verbose'})
+        verbose=true;
+    else
+        error('Second argument, if present, must be the string ''verbose''');
+    end
 end
 machine.model='';
 machine.modelDescription=''; % Currently non-empty only for macOS.
@@ -152,18 +171,22 @@ machine.screens=[];
 if exist('Screen','file')
     % PsychTweak 0 suppresses some early printouts made by Screen
     % Preference Verbosity.
-    PsychTweak('ScreenVerbosity',0);
-    verbosity=Screen('Preference','Verbosity',0);
+    if ~verbose
+        PsychTweak('ScreenVerbosity',0);
+        verbosity=Screen('Preference','Verbosity',0);
+    end
     machine.screens=Screen('Screens');
     % Restore former settings.
-    PsychTweak('ScreenVerbosity',3);
-    Screen('Preference','Verbosity',verbosity);
+    if ~verbose
+        PsychTweak('ScreenVerbosity',3);
+        Screen('Preference','Verbosity',verbosity);
+    end
 end
 machine.screen=0;
 machine.size=[];
 machine.nativeSize=[];
 machine.mm=[];
-if exist('Screen','file')
+if exist('Screen','file') && ~isempty(windowOrScreen)
     resolution=Screen('Resolution',windowOrScreen);
     machine.size=[resolution.height resolution.width];
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
@@ -208,6 +231,7 @@ if exist('Screen','file')
         machine.model=c.hw.model;
     end
 end
+%% For each OS, get computer model and manufacturer.
 switch computer
     case 'MACI64'
         %% macOS
@@ -272,26 +296,12 @@ switch computer
         [statusVersion,productVersion]=system('cat /sys/class/dmi/id/product_version');
         [statusName,productName]=system('cat /sys/class/dmi/id/product_name');
         [statusBoard,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
-        machine.manufacturer=strtrim(boardVendor);
-        machine.model=strtrim(strcat(productName,' ',productVersion));
+        machine.manufacturer=strip(boardVendor);
+        machine.model=[strip(productName) ' ' strip(productVersion)];
 end
-%% Clean up the Operating System name.
-while ismember(machine.system(1),{' ' '-'})
-    % Strip leading separators.
-    if length(machine.system)>1
-        machine.system=machine.system(2:end);
-    else
-        machine.system='';
-    end
-end
-while ismember(machine.system(end),{' ' '-'})
-    % Strip trailing separators.
-    if length(machine.system)>1
-        machine.system=machine.system(1:end-1);
-    else
-        machine.system='';
-    end
-end
+% Clean up the Operating System name.
+machine.system=strip(machine.system);
+machine.system=strip(machine.system,'-');
 % Modernize spelling.
 machine.system=strrep(machine.system,'Mac OS','macOS');
 if IsWin
@@ -318,7 +328,7 @@ if ismac
         machine.psychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v];
     end
 end
-if exist('Screen','file')
+if exist('Screen','file') && ~isempty(windowOrScreen)
     % From the provided windowOrScreen we find both the screen and a
     % window on that screen. If necessary we open a window.
     window=[];
@@ -332,7 +342,7 @@ if exist('Screen','file')
             if machine.screen==Screen('WindowScreenNumber',windows(i))
                 % This window is on specified screen.
                 if Screen('WindowKind',windows(i))==1
-                    % This window belongs to Psychtoolbox.
+                    % This window belongs to Psychtoolbox, so use it.
                     window=windows(i);
                     break
                 end
@@ -346,8 +356,10 @@ if exist('Screen','file')
             screenBufferRect=Screen('Rect',machine.screen);
             r=round(fractionOfScreenUsed*screenBufferRect);
             r=AlignRect(r,screenBufferRect,'right','bottom');
-            PsychTweak('ScreenVerbosity',0);
-            verbosity=Screen('Preference','Verbosity',0);
+            if ~verbose
+                PsychTweak('ScreenVerbosity',0);
+                verbosity=Screen('Preference','Verbosity',0);
+            end
             try
                 Screen('Preference','SkipSyncTests',1);
                 window=Screen('OpenWindow',machine.screen,255,r);
@@ -357,7 +369,9 @@ if exist('Screen','file')
                 warning('Unable to open window on screen %d.',...
                     machine.screen);
             end
-            Screen('Preference','Verbosity',verbosity);
+            if ~verbose
+                Screen('Preference','Verbosity',verbosity);
+            end
         end
     elseif Screen('WindowKind',windowOrScreen)==1
         % It's a window pointer. Get the screen number.
@@ -380,10 +394,7 @@ if exist('Screen','file')
         % may fail. Recommended by Mario Kleiner, July 2017.
         Screen('DrawText',window,' ',0,0,0,1,1);
         machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
-        if ~machine.drawTextPlugin
-            % warning(['The DrawText plugin failed to load. '...
-            % 'See ''help DrawTextPlugin''.']);
-        end
+
         %% OpenGL DRIVER
         % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware
         % and driver by the combination of GLRenderer, GLVendor, and
@@ -392,24 +403,38 @@ if exist('Screen','file')
         machine.openGLRenderer=info.GLRenderer;
         machine.openGLVendor=info.GLVendor;
         machine.openGLVersion=info.GLVersion;
+
         %% CLOSE WINDOW
         if isNewWindow
             % If we opened the window, then close it.
             Screen('Close',window);
         end
     end
-end
+end % if exist('Screen','file') && ~isempty(windowOrScreen)
 if exist('PsychPortAudio','file')
     try
-        verbosity=PsychPortAudio('Verbosity',0);
+        if ~verbose
+            verbosity=PsychPortAudio('Verbosity',0);
+        end
         InitializePsychSound;
         machine.psychPortAudio=true;
     catch em
-        fprintf('Failed to load PsychPortAudio driver, with error:\n%s\n\n',...
+        warning('Failed to load PsychPortAudio driver, with error:\n%s\n\n',...
             em.message);
         machine.psychPortAudio=false;
     end
-    PsychPortAudio('Verbosity',verbosity);
+    if ~verbose
+        PsychPortAudio('Verbosity',verbosity);
+    end
+end
+% LOOK FOR Bits++
+% Based on code provided by Rob Lee at Cambridge Research Systems Ltd. 
+list=PsychHID('Devices');
+for k=1:length(list)
+    if strcmp(list(k).product,'BITS++')
+        machine.bitsPlusPlus=true;
+        break
+    end
 end
 %% Produce summary string useful in a filename.
 machine.summary=[machine.model '-' machine.system '-' machine.psychtoolbox];
