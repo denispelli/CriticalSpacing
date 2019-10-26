@@ -179,7 +179,7 @@ s=sprintf('condition.conditionName(trials):');
 for oi=length(oo):-1:1
     switch oo(oi).task
         case 'identify'
-            if isempty(oo(oi).responseCount)
+            if ~isfield(oo(oi),'responseCount') || isempty(oo(oi).responseCount)
                 oo(oi)=[];
             end
         case 'read'
@@ -191,14 +191,14 @@ for oi=1:length(oo)
 end
 tt=struct2table(oo,'AsArray',true);
 % TEMPORARILY PROTECT 'read' DATA THAT UNDER REPORTS responseCount.
-if sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'}))>0
+if isfield(oo,'responseCount') && sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'}))>0
     fprintf('\nWARNING: Discarding %d threshold(s) with fewer than desiredTrials:\n',...
         sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'})));
     disp(tt(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'}),...
         {'date' 'observer' 'task' 'thresholdParameter' 'eccentricityXYDeg' 'responseCount' 'trialsDesired' })) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
-    if oo(oi).responseCount<oo(oi).trialsDesired & ~ismember(tt.task,{'read'})
+    if isfield(oo,'responseCount') && oo(oi).responseCount<oo(oi).trialsDesired && ~ismember(tt.task,{'read'})
         oo(oi)=[];
         tt(oi,:)=[];
     end
