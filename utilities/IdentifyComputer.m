@@ -1,6 +1,6 @@
 function machine=IdentifyComputer(windowOrScreen,verbose)
 % machine=IdentifyComputer([windowOrScreen,verbose]);
-% Returns a struct with 18 fields (11 text , 5 numerical, and 2 logical)
+% Returns a struct with 19 fields (12 text , 5 numerical, and 2 logical)
 % that specify the basic configuration of your hardware and software with
 % regard to compatibility. Some fields (e.g. bitsPlusPlus) appear only if
 % the relevant feature is present.
@@ -167,6 +167,9 @@ machine.manufacturer='';
 machine.psychtoolbox='';
 machine.matlab='';
 machine.system='';
+s=which('Screen');
+d=dir(s);
+machine.screenMex=[d.name ' ' datestr(d.datenum,'dd-mmm-yyyy')];
 machine.screens=[];
 if exist('Screen','file')
     % PsychTweak 0 suppresses some early printouts made by Screen
@@ -375,7 +378,8 @@ if exist('Screen','file') && ~isempty(windowOrScreen)
         end
     elseif Screen('WindowKind',windowOrScreen)==1
         % It's a window pointer. Get the screen number.
-        machine.screen=Screen('WindowScreenNumber',windowOrScreen);
+        window=windowOrScreen;
+        machine.screen=Screen('WindowScreenNumber',window);
         if ~ismember(machine.screen,Screen('Screens'))
             % This failed only with an experimental version of Screen.
             error('Could not get screen number of window pointer.');
