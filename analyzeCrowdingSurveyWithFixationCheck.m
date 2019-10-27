@@ -79,7 +79,7 @@ end
 
 % Computing ratio of mating conditions.
 for oi=1:length(oo)
-    if ~isempty(oo(oi).spacingDeg) && ~isempty(oo(oi).mate) && ~isempty(oo(oo(oi).mate).spacingDeg)
+    if isfield(oo,'mate') && ~isempty(oo(oi).spacingDeg) && ~isempty(oo(oi).mate) && ~isempty(oo(oo(oi).mate).spacingDeg)
         oo(oi).spacingRatio=oo(oi).spacingDeg/oo(oo(oi).mate).spacingDeg;
     end
 end
@@ -105,10 +105,20 @@ for oi=1:length(oo)
     end
 end
 b=b(~isempty([b.fixationP]) & ~isempty([b.spacingRatio]));
-t=struct2table(b);
-t
-plot(b.fixationP,abs(log10(b.spacingRatio)));
+if ~isempty(b)
+    t=struct2table(b);
+    t
+    plot(b.fixationP,abs(log10(b.spacingRatio)));
+end
 return
+
+%% ELIMINATING DATA
+%for oi=1:length(oi)
+%   if oo(oi)b.fixationP < .7
+%       oo(oi)b.fixationP = []
+%       oo(oi)b.spacingRatio = []
+%   end
+%end
 
 %% SELECT CONDITION(S)
 if isempty(oo)
