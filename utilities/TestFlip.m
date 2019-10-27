@@ -1,58 +1,51 @@
-% TestFlip.m
+function TestFlip(screen)
+% TestFlip([screen]);
 % Measures timing of Screen Flip on your computer and software, producing a
-% detailed report. We use the 'when' argument of Screen Flip to request a
-% flip time. Our measurements support the theory (plotted as a red line in
-% the graph) that Flip occurs on the first available frame after a fixed
-% delay. According to this model, the possible delay of the flip relative
-% to the time requested in "when" ranges from the fixed delay to that plus
-% a frame. Thus, if all phases are equally likely, the mean time of the
-% flip, relative to the time you specify in "when" is the fixed delay plus
-% half a frame duration. So, if you want the Flip to occur as near as
-% possible to a given time, you should set Flip's "when" argument to a
-% value before that time. The decrement should be the fixed delay measured
-% here (roughly 5 ms) plus half a frame duration (about 17/2 ms).
-% denis.pelli@nyu.edu, August 20, 2019
+% detailed one-page PNG graph with caption. Modern displays have multiple
+% frame buffers, and the "flip" makes a formerly invisible buffer visible.
+% The optional "screen" argument defaults to 0, the main screen. TestFlip
+% uses the 'when' argument of Screen Flip to request a flip time. Our
+% measurements support the theory (plotted as a red line in the graph) that
+% flip occurs on the first available frame after a fixed delay. According
+% to this model, the possible delay of the flip relative to the time
+% requested in "when" ranges from the fixed delay to that plus a frame.
+% Thus, if all phases are equally likely, the mean time of the flip,
+% relative to the time you specify in "when" is the fixed delay plus half a
+% frame duration. So, if you want the Flip to occur as near as possible to
+% a given time, you should set the Screen Flip "when" argument to a value
+% before that time. The decrement should be the fixed delay measured here
+% (roughly 5 ms) plus half a frame duration (about 8.5 ms).
+% denis.pelli@nyu.edu, October 27, 2019
 %
-% From discusson on Psychtoolbox forum:
+% Related discusson on Psychtoolbox forum:
 % https://groups.yahoo.com/neo/groups/psychtoolbox/conversations/messages/23963
-% Dear Mario and friends
-% following up on the helpful feedback, i wrote a test program (included
-% below) to document the timing of Screen Flip and asked friends to run it
-% on various computers. I've pasted the results below. (They ran slightly
-% different versions, as I developed it, so some of the printouts are cut
-% off, but the key numbers are visible. Mostly they timed 10,000 calls to
-% Screen Flip, with various "when" requests, but one is for 100 calls.)
-% Screen Flip works well enough on all machines for most purposes. It runs
-% almost perfectly on Dell's Inspiron 5379, under Windows, but less well on
-% Dell's Inspiron 13-7359. Among the macs there is quite a variety in
-% results. I hope someone will run TestFlip on Linux and post results. The
-% pattern of delays is more complicated than I anticipated, which may offer
-% clues to what is causing the delays. (I am baffled by the banding which
-% appears with some "when" values and not others.) I offer the code for
-% everyone to use freely, and for inclusion in the Psychtoolbox. Mario
-% works hard to get good timing, despite the ever changing challenges of
-% the operating systems. This is intended to aid that effort by
-% charactering performance.
-% Best
-% Denis
-% p.s.
-% The data collection, fitting, plotting, and saving now seem to work
-% robustly on macOS and Windows computers. Fingers crossed, I expect it to
-% work fine on Linux too. However, it's important to label the results with
-% the computer model name, and I include a subroutine IdentifyComputer to
-% get that. This turned out to be much harder than I'd anticipated, and it
-% works on most machines but still fails on some. I think it's robust
-% enough to proceed without the name, but that's likely where compatibility
-% issues will occur.
 %
-% See also: FlipTest, Screen('Flip?'), IdentifyComputer
+% See also: VBLSyncTest, FlipTest, "Screen Flip?", IdentifyComputer
 
-% September 24, 2019
-% Force native resolution, as requested by Mario Kleiner.
+% September 24, 2019 DGP. Force native resolution, as requested by Mario 
+%               Kleiner.
+% October 25, 2019. Mario Kleiner. Make it a function (for speed). Set 
+%               Priority. Get user permission before changing resolution.
+%               For accuracy of reported resolution and speed, call
+%               IdentifyComputer and FrameRate only after window is open.
+% October 25, 2019. DGP Added "screen" argument. "clear Screen" to make a 
+%               fresh start.
 
-screen=0;
-% Don't call IdentifyComputer until after we've set the resolution, 
-% because IdentifyComputer should report the actual resolution tested.
+% You can set resolution and steps to any number. 100 100 takes about 5
+% minutes and makes a pretty graph, clearly showing the temporal scatter
+% and sampled densely enough along the delay axis that you don't notice
+% bands.
+repetitions=100; % 100
+steps=100; % 100
+
+if nargin<1
+    screen=0; % 0 for main screen, 1 for next screen, etc.
+end
+clear Screen
+screens=Screen('Screens');
+if ~ismember(screen,screens)
+    error('Sorry the requested screen number %d is not a legal value (0, etc.).',screen);
+end
 
 %% SET RESOLUTION TO NATIVE
 % Are we using the screen at its maximum native resolution?
@@ -103,10 +96,10 @@ end
 resolution=Screen('Resolution',screen);
 
 %% MEASURE TIMING
-repetitions=100; % 100
-steps=100; % 100
-Screen('Preference','SkipSyncTests',1);
-periodSec=1/FrameRate;
+Screen('Preference','SkipSyncTests',1); % Needed to run on many computers.
+Priority(MaxPriority(0)); % Minimize interruptions.
+repetitions=round(repetitions);
+steps=round(steps);
 plusMinus=char(177);
 micro=char(181);
 white=255;
@@ -122,8 +115,12 @@ if true
 else
     window=Screen('OpenWindow',screen,white,r);
 end
-% machine=IdentifyComputer(window); % Fails with experimental Screen.
-machine=IdentifyComputer(0); % Work around.
+% We call IdentifyComputer only after the possible change in resolution, so
+% it correctly reports the final resolution.
+machine=IdentifyComputer(window); 
+% We call FrameRate only after our window is open so FrameRate can use the
+% open window instead of opening its own.
+periodSec=1/FrameRate(window); 
 duration=2.5*periodSec*(0:steps-1)/steps;
 when=zeros(repetitions,steps);
 actual=zeros(repetitions,steps);
@@ -140,6 +137,11 @@ for i=1:steps
         Screen('TextBackgroundColor',window,255); % Set background.
         Screen('DrawText',window,double(msg),...
             round(100*fractionOfScreenUsed),round(100*fractionOfScreenUsed));
+        if fractionOfScreenUsed~=1
+            Screen('DrawText',window,double('Warning: Use of less-than-full-screen window impairs timing.'),...
+            round(100*fractionOfScreenUsed),round(180*fractionOfScreenUsed),[255 100 0]);
+            Screen('TextColor',window,[0 0 0]);
+        end
         when(j,i)=prior+duration(i);
         % Flip to show stimulus.
         [VBLTimestamp,StimulusOnsetTime,FlipTimestamp]=...
@@ -151,6 +153,7 @@ for i=1:steps
     end
 end
 Screen('Close',window);
+Priority(0);
 fprintf(['Across all duration requests, ' ...
     'the excess duration was %.0f%c%.0f ms (mean%csd), '...
     'with range [%.0f %.0f] ms.\n'],...
@@ -174,12 +177,8 @@ fprintf(['Relative to VBLTimestamp, '...
 if 1
     % This saves all the measurements as a MAT file, so that the data can
     % be analyzed later or remotely.
-    saveTitle=['TestFlip-' machine.model '-' machine.system ...
-        '-' machine.psychtoolbox '.mat'];
-    saveTitle=strrep(saveTitle,'Windows','Win');
-    saveTitle=strrep(saveTitle,'Psychtoolbox','Psy');
-    saveTitle=strrep(saveTitle,' ','-');
-    folder=fileparts(which('TestFlip'));
+    saveTitle=['TestFlip-' machine.summary '.mat'];
+    folder=fileparts(mfilename('fullpath'));
     close all
     save([folder filesep saveTitle]);
     fprintf(['<strong>Data have been saved to disk as file "%s", '...
@@ -250,7 +249,7 @@ end
 % Now compute deviance of measured times from estimate of periodic frame
 % time. We care only about SD, not mean.
 dt=tMeasured-tEst;
-if 0
+if false
     % Show more detail than just the one-number summary
     % sdMidHalfFrameRePeriodic.
     % Plot error re better estimate of actual frame time.
@@ -280,7 +279,7 @@ g.Position([3 4])=1.3*g.Position([3 4]);
 g.Position([1 2])=g.Position([1 2])-0.15*g.Position([3 4]);
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
-text(28,27,'req. time','FontSize',12);
+text(32,31,'Request','FontSize',10);
 title('Stimulus duration vs requested','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
@@ -329,9 +328,11 @@ if ~isempty(machine.openGLRenderer)
     text(x,y,machine.openGLRenderer,...
         'HorizontalAlignment','right','FontSize',10); y=y+dy;
 end
-text(x,y,sprintf('screen %d, %d x %d',screen,resolution.height,resolution.width),...
+text(x,y,sprintf('screen %d, %d x %d, %.0f x %.0f mm',screen,machine.size,machine.mm),...
             'HorizontalAlignment','right','FontSize',10); y=y+dy;
 text(x,y,machine.system,...
+    'HorizontalAlignment','right','FontSize',10); y=y+dy;
+text(x,y,machine.screenMex,...
     'HorizontalAlignment','right','FontSize',10); y=y+dy;
 if ~isempty(machine.psychtoolboxKernelDriver)
     text(x,y,machine.psychtoolboxKernelDriver,...
@@ -365,6 +366,11 @@ panelOnePosition=g.Position;
 subplot(1,3,2);
 ii=find(excess(:)>2*periodSec);
 times=sort(excess(ii));
+if fractionOfScreenUsed~=1
+    s0=sprintf('WARNING: Use of less-than-full-screen window may have impaired timing.\n');
+else
+    s0='';
+end
 s1=sprintf(['CAPTION: Measured durations (black dots) are fit by a model (red). '...
     'The model has only one degree of freedom, a fixed delay %.1f ms. '...
     'The data are measured duration (VBLTimestamp re prior VBLTimestamp) vs. ' ...
@@ -393,7 +399,7 @@ s8=sprintf(['\n\nJITTER: Flip times on some computer displays show '...
     'and the sometimes-similar horizontal jitter (in the request time '...
     'at which the duration increases suddenly by a whole frame), '...
     'must arise in the software reports of '],1000*sdMidHalfFrame);
-str={[s1 s2] [s3  s6 s7 s8]};
+str={[s0 s1 s2] [s3  s6 s7 s8]};
 g=gca;
 g.Visible='off';
 position=[g.Position(1) 0 panelOnePosition(3) 1];
@@ -484,7 +490,7 @@ end
 h=gcf;
 h.NumberTitle='off';
 h.Name=figureTitle;
-folder=fileparts(which('TestFlip'));
+folder=fileparts(mfilename('fullpath'));
 saveas(gcf,[folder filesep figureTitle],'png');
 fprintf(['<strong>Figure has been saved to disk as file "%s", '...
     'next to TestFlip.m.</strong>\n'],figureTitle);
