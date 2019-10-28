@@ -149,6 +149,7 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %% HISTORY
 % August 24, 2019. DGP wrote it.
 % October 15, 2019 omkar.kumbhar@nyu.edu added support for linux.
+% October 28, 2019 DGP added machine.screenMex with creation date.
 if nargin<1
     windowOrScreen=0;
 end
@@ -169,7 +170,13 @@ machine.matlab='';
 machine.system='';
 s=which('Screen');
 d=dir(s);
-machine.screenMex=[d.name ' ' datestr(d.datenum,'dd-mmm-yyyy')];
+creationDatenum=GetFileCreationDatenum(s);
+if isempty(creationDatenum)
+    % If creation date is not available (i.e. under Linux) then fall back
+    % on modification date, which is always available.
+    creationDatenum=d.datenum; % File modification date.
+end
+machine.screenMex=[d.name ' ' datestr(creationDatenum,'dd-mmm-yyyy')];
 machine.screens=[];
 if exist('Screen','file')
     % PsychTweak 0 suppresses some early printouts made by Screen
@@ -446,3 +453,26 @@ machine.summary=strrep(machine.summary,'Windows','Win');
 machine.summary=strrep(machine.summary,'Psychtoolbox','PTB');
 machine.summary=strrep(machine.summary,' ','-');
 end % function
+
+function creationDatenum=GetFileCreationDatenum(filePath)
+% Get the file's creation date.
+switch computer
+    case 'MACI64'
+        %% macOS
+        [a,b]=system(sprintf('GetFileInfo "%s"',filePath));
+        filePath=strfind(b,'created: ')+9;
+        crdat=b(filePath:filePath+18);
+        creationDatenum=datenum(crdat);
+    case 'PCWIN64'
+        %% Windows
+        % https://www.mathworks.com/matlabcentral/answers/288339-how-to-get-creation-date-of-files
+        d=System.IO.File.GetCreationTime(filePath);
+        % The resulting .NET DateTime object can then be converted into a MATLAB datetime object.
+        creationDatenum=datenum(datetime(d.Year,d.Month,d.Day,d.Hour,d.Minute,d.Second));
+case 'GLNXA64'
+        %% Linux
+        % Alas, depending on the file system used, Linux typically does not
+        % retain the creation date.
+        creationDatenum='';
+end
+end
