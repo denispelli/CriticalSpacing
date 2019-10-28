@@ -35,8 +35,9 @@ function TestFlip(screen)
 % minutes and makes a pretty graph, clearly showing the temporal scatter
 % and sampled densely enough along the delay axis that you don't notice
 % bands.
-repetitions=100; % 100
-steps=100; % 100
+repetitions=100/10; % 100
+steps=100/10; % 100
+% BUG: NEED TO FIT TO FIND FRAME RATE.
 
 if nargin<1
     screen=0; % 0 for main screen, 1 for next screen, etc.
@@ -279,7 +280,7 @@ g.Position([3 4])=1.3*g.Position([3 4]);
 g.Position([1 2])=g.Position([1 2])-0.15*g.Position([3 4]);
 daspect([1 1 1]);
 plot(1000*duration,1000*duration,'-k');
-text(32,31,'Request','FontSize',10);
+text(34,33,'Request','FontSize',10);
 title('Stimulus duration vs requested','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
@@ -364,7 +365,7 @@ panelOnePosition=g.Position;
 
 % Panel 2
 subplot(1,3,2);
-ii=find(excess(:)>2*periodSec);
+ii=excess(:)>2*periodSec;
 times=sort(excess(ii));
 if fractionOfScreenUsed~=1
     s0=sprintf('WARNING: Use of less-than-full-screen window may have impaired timing.\n');
