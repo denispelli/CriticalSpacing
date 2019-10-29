@@ -467,7 +467,7 @@ switch computer
         %% Windows
         % https://www.mathworks.com/matlabcentral/answers/288339-how-to-get-creation-date-of-files
         d=System.IO.File.GetCreationTime(filePath);
-        % The resulting .NET DateTime object can then be converted into a MATLAB datetime object.
+        % Convert the .NET DateTime d into a MATLAB datenum.
         creationDatenum=datenum(datetime(d.Year,d.Month,d.Day,d.Hour,d.Minute,d.Second));
 case 'GLNXA64'
         %% Linux
