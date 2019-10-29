@@ -35,9 +35,9 @@ function TestFlip(screen)
 % minutes and makes a pretty graph, clearly showing the temporal scatter
 % and sampled densely enough along the delay axis that you don't notice
 % bands.
-repetitions=100/10; % 100
-steps=100/10; % 100
-% BUG: NEED TO FIT TO FIND FRAME RATE.
+repetitions=100; % 100
+steps=100; % 100
+% BUG: NEED TO TREAT FRAME RATE AS A FREE PARAMETER IN THE FIT.
 
 if nargin<1
     screen=0; % 0 for main screen, 1 for next screen, etc.
@@ -108,7 +108,7 @@ fractionOfScreenUsed=1; % Set less than 1 only for debugging.
 screenBufferRect=Screen('Rect',screen);
 r=round(fractionOfScreenUsed*screenBufferRect);
 r=AlignRect(r,screenBufferRect,'right','bottom');
-if true
+if false
     PsychImaging('PrepareConfiguration');
     PsychImaging('AddTask','General','UseRetinaResolution');
     PsychImaging('AddTask','General','UseVirtualFramebuffer');
