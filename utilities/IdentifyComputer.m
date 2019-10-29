@@ -116,9 +116,28 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
 %
-% Unavailable answers are empty: '' or []. The psychtoolboxKernelDriver
-% field appears only for macOS. The bitsPlusPlus field appears only if
-% the Bits++ video hardware is detected.
+%                    model: 'MacBookPro9,2 1.0'
+%         modelDescription: ''
+%             manufacturer: 'Apple Inc.'
+%             psychtoolbox: 'Psychtoolbox 3.0.15'
+%                   matlab: 'MATLAB 9.5 (R2018b)'
+%                   system: 'Linux 5.2.0-3-amd64'
+%                screenMex: 'Screen.mexa64 21-Sep-2019'
+%                  screens: 0
+%                   screen: 0
+%                     size: [1920.00 2480.00]
+%               nativeSize: [800.00 1280.00]
+%                       mm: [504.00 651.00]
+%           openGLRenderer: 'Mesa DRI Intel(R) Ivybridge Mobile '
+%             openGLVendor: 'Intel Open Source Technology Center'
+%            openGLVersion: '3.0 Mesa 19.2.1'
+%           drawTextPlugin: 1
+%           psychPortAudio: 1
+%                  summary: 'MacBookPro9,2-1.0-Linux-5.2.0-3-amd64-PTB-3.0.15'
+%
+% Unavailable answers are '' or []. The psychtoolboxKernelDriver field
+% appears only for macOS. The bitsPlusPlus field appears only if the Bits++
+% video hardware is detected.
 %
 % IdentifyComputer is handy in testing, benchmarking, and bug reporting, to
 % easily record the test environment in a compact human-readable way.
