@@ -1,14 +1,13 @@
 function machine=IdentifyComputer(windowOrScreen,verbose)
 % machine=IdentifyComputer([windowOrScreen,verbose]);
-% Returns a struct with 19 fields (12 text , 5 numerical, and 2 logical)
+% Returns a struct with 19 fields (12 text, 5 numerical, and 2 logical)
 % that specify the basic configuration of your hardware and software with
 % regard to compatibility. Some fields (e.g. bitsPlusPlus) appear only if
 % the relevant feature is present.
 % OUTPUT ARGUMENT:
 % "machine" is a struct with many informative fields. The size, nativeSize,
 % mm, and openGL fields refer to the screen with the number specified by
-% the "screen" field. Mario Kleiner warns that under macOS the nativeSize
-% is not wholly reliable.
+% the "screen" field. 
 % INPUT ARGUMENTS:
 % Use the "windowOrScreen" argument to specify a window pointer or the
 % screen number. Default is screen 0, the main screen. This routine is
@@ -20,6 +19,11 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 % opening a window, at the cost of leaving the screen size and openGL
 % fields empty. The second argument, if present, should be the string
 % 'verbose', to not suppress warning messages.
+% COMPATIBILITY: 
+% Runs on MATLAB and Octave under macOS, Windows, and Linux, with any
+% number of screens. Under macOS without internet the
+% machine.modelDescription will be empty. Mario Kleiner warns that under
+% macOS the nativeSize may not be reliable.
 %
 % Here are examples of the output struct for macOS, Windows, and Linux:
 %
@@ -167,8 +171,10 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 
 %% HISTORY
 % August 24, 2019. DGP wrote it.
-% October 15, 2019 omkar.kumbhar@nyu.edu added support for linux.
-% October 28, 2019 DGP added machine.screenMex with creation date.
+% October 15, 2019. omkar.kumbhar@nyu.edu added support for linux.
+% October 28, 2019. DGP added machine.screenMex with creation date.
+% October 31, 2019. DGP replaced strip by strtrim, to extend compatibility
+%                      back to MATLAB 2006a. Requested by Mario Kleiner.
 if nargin<1
     windowOrScreen=0;
 end
@@ -187,17 +193,19 @@ machine.manufacturer='';
 machine.psychtoolbox='';
 machine.matlab='';
 machine.system='';
-s=which('Screen');
-d=dir(s);
-creationDatenum=GetFileCreationDatenum(s);
-if isempty(creationDatenum)
-    % If creation date is not available (i.e. under Linux) then fall back
-    % on modification date, which is always available.
-    creationDatenum=d.datenum; % File modification date.
+if exist('PsychtoolboxVersion','file')
+    s=which('Screen');
+    d=dir(s);
+    creationDatenum=GetFileCreationDatenum(s);
+    if isempty(creationDatenum)
+        % If creation date is not available (common under Linux) then fall
+        % back on modification date, which is always available.
+        creationDatenum=d.datenum; % File modification date.
+    end
+    machine.screenMex=[d.name ' ' datestr(creationDatenum,'dd-mmm-yyyy')];
 end
-machine.screenMex=[d.name ' ' datestr(creationDatenum,'dd-mmm-yyyy')];
 machine.screens=[];
-if exist('Screen','file')
+if exist('PsychtoolboxVersion','file')
     % PsychTweak 0 suppresses some early printouts made by Screen
     % Preference Verbosity.
     if ~verbose
@@ -215,7 +223,7 @@ machine.screen=0;
 machine.size=[];
 machine.nativeSize=[];
 machine.mm=[];
-if exist('Screen','file') && ~isempty(windowOrScreen)
+if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
     resolution=Screen('Resolution',windowOrScreen);
     machine.size=[resolution.height resolution.width];
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
@@ -253,7 +261,7 @@ if exist('ver','file')
 else
     warning('MATLAB/OCTAVE too old (pre 2006) to have "ver" command.');
 end
-if exist('Screen','file')
+if exist('PsychtoolboxVersion','file')
     c=Screen('Computer');
     machine.system=c.system;
     if isfield(c,'hw') && isfield(c.hw,'model')
@@ -271,16 +279,21 @@ switch computer
         serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
         report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
         x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
-        machine.modelDescription=x.description;
-        s=machine.modelDescription;
-        if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
-            machine
-            shell=evalc('!echo $0') % name of current shell.
-            warning(['Oops. Failed in getting modelDescription. '...
-                'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
+        if isempty(x)
+            % This will happen if there's no access to internet.
             machine.modelDescription='';
-            % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
-            % https://support.apple.com/en-us/HT208050
+        else
+            machine.modelDescription=x.description;
+            s=machine.modelDescription;
+            if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
+                machine
+                shell=evalc('!echo $0') % name of current shell.
+                warning(['Oops. Failed in getting modelDescription. '...
+                    'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
+                machine.modelDescription='';
+                % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
+                % https://support.apple.com/en-us/HT208050
+            end
         end
         % A python solution: https://gist.github.com/zigg/6174270
         
@@ -325,12 +338,14 @@ switch computer
         [statusVersion,productVersion]=system('cat /sys/class/dmi/id/product_version');
         [statusName,productName]=system('cat /sys/class/dmi/id/product_name');
         [statusBoard,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
-        machine.manufacturer=strip(boardVendor);
-        machine.model=[strip(productName) ' ' strip(productVersion)];
+        machine.manufacturer=strtrim(boardVendor);
+        machine.model=[strtrim(productName) ' ' strtrim(productVersion)];
 end
 % Clean up the Operating System name.
-machine.system=strip(machine.system);
-machine.system=strip(machine.system,'-');
+machine.system=strtrim(machine.system);
+if ~isempty(machine.system) && machine.system(end)=='-'
+    machine.system=machine.system(1:end-1);
+end
 % Modernize spelling.
 machine.system=strrep(machine.system,'Mac OS','macOS');
 if IsWin
@@ -357,7 +372,7 @@ if ismac
         machine.psychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v];
     end
 end
-if exist('Screen','file') && ~isempty(windowOrScreen)
+if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
     % From the provided windowOrScreen we find both the screen and a
     % window on that screen. If necessary we open a window.
     window=[];
@@ -440,8 +455,8 @@ if exist('Screen','file') && ~isempty(windowOrScreen)
             Screen('Close',window);
         end
     end
-end % if exist('Screen','file') && ~isempty(windowOrScreen)
-if exist('PsychPortAudio','file')
+end % if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
+if exist('PsychtoolboxVersion','file')
     try
         if ~verbose
             verbosity=PsychPortAudio('Verbosity',0);
@@ -457,13 +472,15 @@ if exist('PsychPortAudio','file')
         PsychPortAudio('Verbosity',verbosity);
     end
 end
-% LOOK FOR Bits++
-% Based on code provided by Rob Lee at Cambridge Research Systems Ltd. 
-list=PsychHID('Devices');
-for k=1:length(list)
-    if strcmp(list(k).product,'BITS++')
-        machine.bitsPlusPlus=true;
-        break
+if exist('PsychtoolboxVersion','file')
+    % Look for Bits++ video interface.
+    % Based on code provided by Rob Lee at Cambridge Research Systems Ltd.
+    list=PsychHID('Devices');
+    for k=1:length(list)
+        if strcmp(list(k).product,'BITS++')
+            machine.bitsPlusPlus=true;
+            break
+        end
     end
 end
 %% Produce summary string useful in a filename.
