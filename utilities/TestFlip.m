@@ -86,8 +86,8 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 % before it's done is SHIFT-CMD-OPTION-ESCAPE, which kills MATLAB. Ideally,
 % the program would periodically check for keyboard input, to allow it to
 % be interrupted by control-C.
-global deemphasizeTransitions
-deemphasizeTransitions=true;
+global deemphasizeSteps
+deemphasizeSteps=true;
 cleanup=onCleanup(@() sca);
 if nargin<1
     screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
@@ -349,16 +349,16 @@ bMin=[0.0  0.001];
 bMax=[0.05 0.1  ];
 % We use a grid to cover the whole space and use fminsearch locally. Thanks
 % to Ziyi Zhang and Omkar Kumbhar. November 5, 2019.
-b1=linspace(bMin(1),bMax(1),10);
+b1=linspace(bMin(1),bMax(1),3);
 options=optimset('fminsearch');
 if isempty(framesPerSec)
     numberString='Two';
-    b2=linspace(bMin(2),bMax(2),100);
+    b2=linspace(bMin(2),bMax(2),10);
     b2=[b2 1/50 1/60]; % Add common display frame rates.
     % I increased these limits to avoid getting warnings that it quit
     % early because it exceeded one of these limits.
-    options.MaxFunEvals=8000; % Default is 200*numberofvariables.
-    options.MaxIter=2000; % Default is 200*numberofvariables.
+    options.MaxFunEvals=800; % Default is 200*numberofvariables.
+    options.MaxIter=800; % Default is 200*numberofvariables.
 else
     numberString='One';
     b2=1/framesPerSec;
@@ -391,11 +391,13 @@ if printFit
         1000*delaySec,1000*periodSec,1/periodSec,...
         1000*Cost(requestSec,actualMedian,delaySec,periodSec));
     % figure(2)
+    % Plot residual.
     % model=periodSec*ceil((requestSec+delaySec)/periodSec);
     % plot(1000*requestSec,1000*(model-actualMedian));
     % ylabel('Model error (ms)');
     % xlabel('Request (ms)');
     % figure(3)
+    % Plot just the median and the model, without the data.
     % hold on
     % plot(1000*requestSec,1000*model,'-r');
     % plot(1000*requestSec,1000*actualMedian,'-g');
@@ -446,12 +448,12 @@ sdMidHalfFrameRePeriodic=std(dtOk(:));
 
 % Plot the median.
 % plot(1000*requestSec,1000*actualMedian,'-g','LineWidth',4); % Plot median.
-plot(1000*requestSec,1000*actualMedian,'og','MarkerSize',6); % Plot median.
+plot(1000*requestSec,1000*actualMedian,'xg','MarkerSize',16,'LineWidth',2); % Plot median.
 
 % Plot the data.
 for i=1:length(requestSec)
     % One point for each repetition.
-    plot(1000*requestSec(i),1000*actualSec(:,i),'ok','MarkerSize',3); % Plot data.
+    plot(1000*requestSec(i),1000*actualSec(:,i),'.k','MarkerSize',1.5); % Plot data.
 end
 
 % Plot the model.
@@ -477,7 +479,7 @@ daspect([1 1 1]);
 % which was designed to work when the height/width ratio was 2:1.
 fontScalar=0.95; 
 plot(1000*requestSec,1000*requestSec,'-k'); % Plot equality line
-text(0.75*g.XLim(2),0.75*g.XLim(2),'Request','FontSize',fontScalar*10);
+text(0.75*g.XLim(2),0.73*g.XLim(2),'Request','FontSize',fontScalar*10);
 title('Actual vs requested duration','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
@@ -569,19 +571,23 @@ if fractionOfScreenUsed~=1
 else
     s0='';
 end
-if deemphasizeTransitions
+if deemphasizeSteps
     weighted='weighted';
 else
     weighted='';
 end
-s1a=sprintf(['CAPTION: The median (green) '...
-    'of measured duration (black dots) is fit with ' weighted ' rms error %.1f ms '...
-    'by a model (red): '...
-    'The frames are periodic, and the flip occurs '...
+s0a='EXPLANATION: We called ';
+s0b=['\bf' 'time=Screen(''Flip'',window,when);' '\rm'];
+s0c=sprintf('%d times for each of %d requested durations. ',...
+    repetitions,steps);
+s1a=sprintf(['The median (green Xs) '...
+    'of measured duration (black dots) is fit '...
+    '(with ' weighted ' rms error %.1f ms) by a model (red line). '...
+    'The model assumes the frames are periodic, and the flip occurs '...
     'at the first frame after an extra delay after the requested time. '],...
     1000*cost);
-if deemphasizeTransitions
-    s1aa=['The error weighting deemphasizes times near the flip. '];
+if deemphasizeSteps
+    s1aa=['The error weighting deemphasizes times near the vertical steps. '];
 else
     s1aa='';
 end
@@ -593,10 +599,7 @@ else
         'period %.1f ms (%.1f Hz). '],1000*delaySec,1000*periodSec,1/periodSec);
 end
 s1c=sprintf(['The data are measured duration (VBLTimestamp re prior VBLTimestamp) vs. ' ...
-    'requested duration ("when" re prior VBLTimestamp). We call ']);
-s2=['\bf' 'time=Screen(''Flip'',window,when);' '\rm'];
-s3=sprintf('%d times for each of %d requested durations. ',...
-    repetitions,steps);
+    'requested duration ("when" re prior VBLTimestamp). ']);
 s6=[sprintf(['The %d measured durations include %d outliers exceeding '...
     'the request by at least two frames: '], ...
     repetitions*steps,length(times)) ...
@@ -614,7 +617,7 @@ s8=sprintf(['\n\nJITTER: Flip times on some computer displays show '...
     'and the sometimes-similar horizontal jitter (in the request time '...
     'at which the duration '...
     'increases suddenly by a whole frame), '],1000*sdMidHalfFrame);
-str={[s0 s1a s1aa s1b s1c s2] [s3  s6 s7 s8]};
+str={[s0 s0a] s0b [s0c s1a s1aa s1b s1c s6 s7 s8]};
 g=gca;
 g.Visible='off';
 position=[g.Position(1) 0 panelOnePosition(3) 1];
@@ -722,9 +725,9 @@ if periodSec<0 || delaySec<0
     cost=inf;
     return
 end
-global deemphasizeTransitions
+global deemphasizeSteps
 model=periodSec*ceil((requestSec+delaySec)/periodSec);
-if deemphasizeTransitions
+if deemphasizeSteps
     % Frame changes when t=(requestSec+delaySec)/periodSec is integer. Next
     % frame at next integer: ceil. Last frame at last integer: floor. Time
     % till frame is (ceil(t)-t)*periodSec. Time since frame is
