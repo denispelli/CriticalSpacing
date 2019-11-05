@@ -30,17 +30,17 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 % DETAILS:
 % TestFlip uses the 'when' argument of Screen Flip to request a flip time.
 % Our measurements support the theory (plotted as a red line in the graph)
-% that flip mostly occurs on the first available frame after a fixed delay.
-% According to this model, the possible delay of the flip relative to the
-% time requested in "when" ranges from the fixed delay to that plus a
-% frame. Thus, if all phases are equally likely, the mean time of the flip,
-% relative to the time you specify in "when" is the fixed delay plus half a
-% frame duration. ("phase" means the fraction of a period since the last
-% frame at the Screen flip is called.) So, if you want the Flip to occur as
-% near as possible to a given time, you should set the Screen Flip "when"
-% argument to a value before that time. The decrement should be the fixed
-% delay measured here (roughly 5 ms) plus half a frame period (about 17/2
-% ms).
+% that flip mostly occurs on the first available frame after a fixed extra
+% delay. According to this model, the possible delay of the flip relative
+% to the time requested in "when" ranges from the extra delay to that plus
+% a frame. Thus, if all phases are equally likely, the mean time of the
+% flip, relative to the time you specify in "when" is the extra delay plus
+% half a frame duration. ("phase" means the fraction of a period since the
+% last frame at the Screen flip is called.) So, if you want the Flip to
+% occur as near as possible to a given time, you should set the Screen Flip
+% "when" argument to a value before that time. The decrement should be the
+% extra delay measured here (roughly 5 ms) plus half a frame period (about
+% 17/2=8.5 ms).
 % denis.pelli@nyu.edu, October 31, 2019
 %
 % Related discusson on Psychtoolbox forum:
@@ -54,9 +54,9 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 %               Priority. Get user permission before changing resolution.
 %               For accuracy of reported resolution and speed, call
 %               IdentifyComputer and FrameRate only after window is open.
-% October 25, 2019. DGP Added "screen" argument. "clear Screen" to make a
+% October 25, 2019. DGP. Added "screen" argument. Call "clear Screen" to make a
 %               fresh start.
-% October 28, 2019. DGP Enhanced the model fitting to now treat both
+% October 28, 2019. DGP. Enhanced the model fitting to now treat both
 %               delaySec and periodSec as degrees of freedom. Formerly we
 %               set periodSec=1/FrameRate, but the frame rate was often off
 %               by a few percent. (FrameRate is based on much less data
@@ -65,23 +65,29 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 %               duration at each requestSec, to minimize sensitivity to
 %               outliers. Changed argument to be screenOrFilename to allow
 %               reanalysis of old data.
-% October 29, 2019. Ziyi Zhang, Omkar Kumbhar, and dgp. Replace fminsearch
-%               by simulannealbnd (if available) to robustly find the best
-%               model fit. Our model has a "ceil" call, making the error
-%               surface discontinuous, and the error probably also has
-%               local minima other than the global minimum. In practice,
-%               simulannealbnd makes good fits, even when fminsearch makes
-%               a bad fit. If simulannealbnd is not available, then
-%               systematically explore with fminsearch.
-% October 31, 2019. Allow specification of "steps" and "repetitions" as
-%               input arguments.
+% October 29, 2019. Ziyi Zhang. Now evaluate fminsearch on a grid of points
+%               to overcome local minima in cost function. After polish,
+%               this performs better than simulated annealing.
+% October 31, 2019. New input arguments, name-value pairs "stepsAndReps"
+%               and "framesPerSec".
+% November 5, 2019. Polished the fitting by fminsearch. Introduced 
+%               error weighting that deemphasizes times near the flip. 
+%               This makes the periodSec still estimates reliable even
+%               in the presence of minor temporal jitter that produces
+%               random variation of the delay by a full period at times
+%               near the flip time.
+
 %
 % Calling MATLAB's onCleanup requests that our cleanup routine (sca,
 % "Screen Close All") be run whenever TestFlip terminates for any reason,
 % whether by reaching the end, the posting of an error here (or in any
 % function called from here), or the user hits control-C. Alas, the program
 % ignores control-C while running. The only way I know to stop TestFlip
-% before it's done is SHIFT-CMD-OPTION-ESCAPE, which kills MATLAB.
+% before it's done is SHIFT-CMD-OPTION-ESCAPE, which kills MATLAB. Ideally,
+% the program would periodically check for keyboard input, to allow it to
+% be interrupted by control-C.
+global deemphasizeTransitions
+deemphasizeTransitions=true;
 cleanup=onCleanup(@() sca);
 if nargin<1
     screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
@@ -290,7 +296,7 @@ if isempty(dataFilename)
         folder=fileparts(mfilename('fullpath'));
         close all
         save(fullfile(folder,saveTitle));
-        fprintf('Data saved as <strong>''%s''</strong>, with %s.m.\n',...
+        fprintf('Data saved as <strong>''%s''</strong> with %s.m.\n',...
             saveTitle,mfilename);
     end
 end % if isempty(useSavedData)
@@ -309,7 +315,7 @@ end
 close all
 f=figure(1);
 screenRect=Screen('Rect',0);
-r=[0 0 819 557]; % Works well on MacBook so exporting to all computers.
+r=[0 0 819 600]; % Works well on MacBook so exporting to all computers.
 r=CenterRect(r,screenRect);
 r=OffsetRect(r,0,-r(2));
 % Convert Apple rect to MATLAB Position.
@@ -320,87 +326,82 @@ subplot(1,3,1);
 hold on
 
 %% ONE- OR TWO-PARAMETER FIT: delaySec and periodSec
-% There may be very late outliers, which cannot be fit by our model. We
-% more or less ignore them by fitting just the median actual duration.
+% There may be very late outliers which cannot be fit by our model. We
+% discount them by fitting just the median actual duration at each
+% requested duration.
 actualMedian=median(actualSec);
-delaySec=0.004;
+delaySec=0.004; % Initial guess, 4 ms.
 if isempty(framesPerSec)
-    periodSec=1/60;
+    periodSec=1/60; % Initial guess, 60 Hz frame rate.
 else
-    periodSec=1/framesPerSec;
+    periodSec=1/framesPerSec; % User-specified frame rate.
 end
 b=[delaySec periodSec];
-% Two-parameter search: delaySec and periodSec. b has length 2.
+% Two-parameter search: 
+% delaySec and periodSec. b has length 2.
 fun2=@(b) Cost(requestSec,actualMedian,b(1),b(2));
-% One-parameter search: delaySec. b has length 1.
+% One-parameter search: 
+% delaySec. b has length 1.
 fun1=@(b) Cost(requestSec,actualMedian,b,1/framesPerSec);
-% These min and max values allow a fixed delay of 0 to 50 ms, and a frame
+% These min and max values allow an extra delay of 0 to 50 ms, and a frame
 % rate of 10 to 1000 Hz.
 bMin=[0.0  0.001];
 bMax=[0.05 0.1  ];
-% Originally I used fminsearch (which uses the Simplex algorithm) but it
-% occasionally got stuck in local minima. So now we use simulated
-% annealing, which is a traditional way to avoid getting stuck in local
-% minima. If that function is not available (it requires the Optimization
-% Toolbox), then we resort to using a grid to cover the whole space and
-% use fminsearch locally. Thanks to Omkar Kumbhar and Ziyi Zhang.
-% October, 2019.
-if false && exist('simulannealbnd','file') % MATLAB Global Optimization Toolbox
-	% I DISABLED SIMULATED ANNEALING BECAUSE GRIDDED FMINSEARCH IS PRODUCING 
-	% MUCH BETTER FITS. November 2019.
-    optimizer='simulannealbnd';
-    options=optimoptions('simulannealbnd');
-    if isempty(framesPerSec)
-        numberString='Two';
-%         options.FunctionTolerance=options.FunctionTolerance/100000;
-        [b,cost,exitFlag,output]=simulannealbnd(fun2,b,bMin,bMax,options);
-    else
-        numberString='One';
-        b(1)=simulannealbnd(fun1,b(1),bMin(1),bMax(1),options);
-        b(2)=1/framesPerSec;
-    end
+% We use a grid to cover the whole space and use fminsearch locally. Thanks
+% to Ziyi Zhang and Omkar Kumbhar. November 5, 2019.
+b1=linspace(bMin(1),bMax(1),10);
+options=optimset('fminsearch');
+if isempty(framesPerSec)
+    numberString='Two';
+    b2=linspace(bMin(2),bMax(2),100);
+    b2=[b2 1/50 1/60]; % Add common display frame rates.
+    % I increased these limits to avoid getting warnings that it quit
+    % early because it exceeded one of these limits.
+    options.MaxFunEvals=8000; % Default is 200*numberofvariables.
+    options.MaxIter=2000; % Default is 200*numberofvariables.
 else
-    optimizer='fminsearch';
-    b1=linspace(bMin(1),bMax(1),10);
-    options=optimset('fminsearch');
-    if isempty(framesPerSec)
-        numberString='Two';
-        b2=linspace(bMin(2),bMax(2),20);
-        b2=[b2 1/50 1/60]; % Add these common frequencies exactly.
-        % Increase this optimization parameter to avoid getting warnings
-        % that it quit early because it exceeded "options.MaxFunEvals".
-        options.MaxFunEvals=1000; % Default, with 2 variables, is 400.
-    else
-        numberString='One';
-        b2=1/framesPerSec;
-    end
-    bestCost=inf;
-    bestB=[];
-    for i=1:length(b1)
-        for j=1:length(b2)
-            if isempty(framesPerSec)
-                [b,cost]=fminsearch(fun2,[b1(i) b2(j)],options);
-            else
-                [b(1),cost]=fminsearch(fun1,b1(i),options);
-                b(2)=b2;
-            end
-            if cost<bestCost
-                bestCost=cost;
-                bestB=b;
-            end
+    numberString='One';
+    b2=1/framesPerSec;
+end
+bestCost=inf;
+bestB=[];
+for i=1:length(b1)
+    for j=1:length(b2)
+        if isempty(framesPerSec)
+            [b,cost]=fminsearch(fun2,[b1(i) b2(j)],options);
+        else
+            [b(1),cost]=fminsearch(fun1,b1(i),options);
+            b(2)=b2;
+        end
+        if cost<bestCost
+            bestCost=cost;
+            bestB=b;
         end
     end
-    b=bestB;
 end
+cost=bestCost;
+b=bestB;
 delaySec=b(1);
 periodSec=b(2);
 printFit=true;
 if printFit
-    fprintf(['%s-parameter fit by %s: ' ...
+    fprintf(['%s-parameter fit by fminsearch: ' ...
         'delaySec %.1f ms, periodSec %.1f ms (%.1f Hz), rms error %.1f ms.\n'],...
-        numberString,optimizer,...
+        numberString,...
         1000*delaySec,1000*periodSec,1/periodSec,...
         1000*Cost(requestSec,actualMedian,delaySec,periodSec));
+    % figure(2)
+    % model=periodSec*ceil((requestSec+delaySec)/periodSec);
+    % plot(1000*requestSec,1000*(model-actualMedian));
+    % ylabel('Model error (ms)');
+    % xlabel('Request (ms)');
+    % figure(3)
+    % hold on
+    % plot(1000*requestSec,1000*model,'-r');
+    % plot(1000*requestSec,1000*actualMedian,'-g');
+    % ylabel('Duration (ms)');
+    % xlabel('Request (ms)');
+    % figure(1)
 end
 
 %% Analyze mid half of second frame duration, far from the transitions.
@@ -443,13 +444,25 @@ dtOk=dt(:,ok);
 sdMidHalfFrameRePeriodic=std(dtOk(:));
 % fprintf('%.1f ms SD re periodic times.\n',1000*sdMidHalfFrameRePeriodic);
 
-% Plot the data
+% Plot the median.
+% plot(1000*requestSec,1000*actualMedian,'-g','LineWidth',4); % Plot median.
+plot(1000*requestSec,1000*actualMedian,'og','MarkerSize',6); % Plot median.
+
+% Plot the data.
 for i=1:length(requestSec)
     % One point for each repetition.
-    plot(1000*requestSec(i),1000*actualSec(:,i),'.k'); % Plot data.
+    plot(1000*requestSec(i),1000*actualSec(:,i),'ok','MarkerSize',3); % Plot data.
 end
-% Plot the median
-plot(1000*requestSec,1000*actualMedian,'-g','LineWidth',4); % Plot median.
+
+% Plot the model.
+model=periodSec*ceil((requestSec+delaySec)/periodSec);
+if true
+    reqK=linspace(requestSec(1),requestSec(end),1000);
+    modelK=periodSec*ceil((reqK+delaySec)/periodSec);
+    plot(1000*reqK,1000*modelK,'-r','LineWidth',1.5); % Plot model.
+else
+    plot(1000*requestSec,1000*model,'-r','LineWidth',1.5); % Plot model.
+end
 
 g=gca;
 g.XLim=[0 1000*requestSec(end)];
@@ -458,20 +471,20 @@ g.Position(2)=g.Position(2)+0.05*g.Position(4);
 g.Position([3 4])=1.3*g.Position([3 4]);
 g.Position([1 2])=g.Position([1 2])-0.15*g.Position([3 4]);
 daspect([1 1 1]);
-% The plot width is stable, and the data aspect ratio is 1:1, so if
-% X or Y ranges change, then the height will change. When the height
-% is reduced, we need to proportionally reduce the font size, which
-% was designed by the case of a height/width ratio of 2:1.
+% The plot width is stable (across computers), and the data aspect ratio is
+% 1:1, so if the X or Y range changes, then the height will change. When
+% the height is reduced, we need to proportionally reduce the font size,
+% which was designed to work when the height/width ratio was 2:1.
 fontScalar=0.95; 
 plot(1000*requestSec,1000*requestSec,'-k'); % Plot equality line
-text(0.81*g.XLim(2),0.80*g.XLim(2),'Request','FontSize',fontScalar*10);
+text(0.75*g.XLim(2),0.75*g.XLim(2),'Request','FontSize',fontScalar*10);
 title('Actual vs requested duration','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
 y=0.97*g.YLim(2);
 dy=0.025*g.YLim(2)*fontScalar*12/10;
 text(1,y,...
-    sprintf('Estimated fixed delay %.1f ms.',1000*delaySec),...
+    sprintf('Estimated extra delay %.1f ms.',1000*delaySec),...
     'FontSize',fontScalar*12);
 y=y-dy;
 text(1,y,...
@@ -539,11 +552,10 @@ if length(model)>25 && ~isempty(i)
         'HorizontalAlignment','right','FontSize',fontScalar*10);
     y=y+dy;
 end
+y=y+dy/4; % Extra space below title.
 text(x,y,model,...
     'FontWeight','bold','HorizontalAlignment','right','FontSize',fontScalar*16);
 y=y+dy;
-model=periodSec*ceil((requestSec+delaySec)/periodSec);
-plot(1000*requestSec,1000*model,'-r','LineWidth',1.5); % Plot model.
 g.Units='normalized';
 g.Position=[.09 0 .28 1];
 panelOnePosition=g.Position;
@@ -557,23 +569,34 @@ if fractionOfScreenUsed~=1
 else
     s0='';
 end
+if deemphasizeTransitions
+    weighted='weighted';
+else
+    weighted='';
+end
 s1a=sprintf(['CAPTION: The median (green) '...
-    'of measured duration (black dots) is fit by a model (red). ']);
-if isempty(framesPerSec)
-    s1b=sprintf('The model has only one degree of freedom, an extra delay %.1f ms. ',...
+    'of measured duration (black dots) is fit with ' weighted ' rms error %.1f ms '...
+    'by a model (red): '...
+    'The frames are periodic, and the flip occurs '...
+    'at the first frame after an extra delay after the requested time. '],...
+    1000*cost);
+if deemphasizeTransitions
+    s1aa=['The error weighting deemphasizes times near the flip. '];
+else
+    s1aa='';
+end
+if ~isempty(framesPerSec)
+    s1b=sprintf('The model has only one degree of freedom: the extra delay %.1f ms. ',...
         1000*delaySec);
 else
-    s1b=sprintf(['The model has two degrees of freedom, an extra delay %.1f ms and the '...
-        'period %.1f ms (%.1f Hz).'],1000*delaySec,1000*periodSec);
+    s1b=sprintf(['The model has two degrees of freedom: the extra delay %.1f ms and the '...
+        'period %.1f ms (%.1f Hz). '],1000*delaySec,1000*periodSec,1/periodSec);
 end
 s1c=sprintf(['The data are measured duration (VBLTimestamp re prior VBLTimestamp) vs. ' ...
     'requested duration ("when" re prior VBLTimestamp). We call ']);
 s2=['\bf' 'time=Screen(''Flip'',window,when);' '\rm'];
-s3=sprintf([...
-    '%d times for each of %d requested durations. ' ...
-    'Requests range from %.0f to %.0f ms in steps of %.1f ms. '],...
-    repetitions,steps,...
-    1000*requestSec(1),1000*requestSec(end),1000*(requestSec(2)-requestSec(1)));
+s3=sprintf('%d times for each of %d requested durations. ',...
+    repetitions,steps);
 s6=[sprintf(['The %d measured durations include %d outliers exceeding '...
     'the request by at least two frames: '], ...
     repetitions*steps,length(times)) ...
@@ -589,9 +612,9 @@ s8=sprintf(['\n\nJITTER: Flip times on some computer displays show '...
     'autonomous devices should be immune to most things, including unix timesharing. '...
     'Thus the %.1f ms vertical jitter seen in the reported duration, '...
     'and the sometimes-similar horizontal jitter (in the request time '...
-    'at which the duration increases suddenly by a whole frame), '...
-    'must arise in the software reports of '],1000*sdMidHalfFrame);
-str={[s0 s1a s1b s1c s2] [s3  s6 s7 s8]};
+    'at which the duration '...
+    'increases suddenly by a whole frame), '],1000*sdMidHalfFrame);
+str={[s0 s1a s1aa s1b s1c s2] [s3  s6 s7 s8]};
 g=gca;
 g.Visible='off';
 position=[g.Position(1) 0 panelOnePosition(3) 1];
@@ -600,7 +623,9 @@ annotation('textbox',position,'String',str,...
 
 %% PANEL 3.
 subplot(1,3,3);
-s8=sprintf(['when flips occur and the implementation '...
+s8=sprintf([...
+    'must arise in the software reports of '...
+    'when flips occur and the implementation '...
     'of the "when" timer.\n\n'...
     'ISOLATING ONE JITTER: Our plotted duration is the interval between '...
     'two reported flip times. Its jitter is the difference between the  '...
@@ -609,15 +634,15 @@ s8=sprintf(['when flips occur and the implementation '...
     'difference. If they are independent then the '...
     'variance of the difference will be twice the jitter variance. '...
     'In that case, for duration requests that are far from the '...
-    'vertical lines, we can reduce our duration jitter by using the '...
+    'vertical steps, we can reduce the jitter in our estimates by using the '...
     'known periodicity of the frames to make a low-noise estimate '...
     'of the true flip time (across our %d repetitions) and use that as '...
-    'our reference, instead of the prior flip time. '...
+    'our reference, instead of the prior flip times. '...
     'This isolates one jitter. '...
     'Correlation predicts that isolation will increase SD. '...
     'Independence predicts reduction of jitter SD, by sqrt(2), '...
     'i.e. 1.4:1. In fact, isolation here changes the SD from '...
-    '%.2f to %.2f ms, a ratio of %.2f:1.\n'],...
+    '%.3f to %.3f ms, a ratio of %.2f:1.\n'],...
     repetitions,...
     1000*sdMidHalfFrame,1000*sdMidHalfFrameRePeriodic,...
     sdMidHalfFrame/sdMidHalfFrameRePeriodic);
@@ -637,7 +662,7 @@ position=[g.Position(1) 0 panelOnePosition(3) 1];
 a=annotation('textbox',position,'String',str,'LineStyle','none',...
     'FontSize',12);
 
-if 0
+if false
     % Not quite working.
     % Estimate the horizontal jitter.
     figure(2)
@@ -685,7 +710,7 @@ h.NumberTitle='off';
 h.Name=figureTitle;
 folder=fileparts(mfilename('fullpath'));
 saveas(gcf,fullfile(folder,figureTitle),'png');
-fprintf('Figure saved as <strong>''%s''</strong>, with %s.m.\n',...
+fprintf('Figure saved as <strong>''%s''</strong> with %s.m.\n',...
     figureTitle,mfilename);
 end
 
@@ -697,9 +722,34 @@ if periodSec<0 || delaySec<0
     cost=inf;
     return
 end
+global deemphasizeTransitions
 model=periodSec*ceil((requestSec+delaySec)/periodSec);
+if deemphasizeTransitions
+    % Frame changes when t=(requestSec+delaySec)/periodSec is integer. Next
+    % frame at next integer: ceil. Last frame at last integer: floor. Time
+    % till frame is (ceil(t)-t)*periodSec. Time since frame is
+    % (t-floor(t))*periodSec. Nearest is
+    % min(ceil(t)-t,t-floor(t))*periodSec. Furthest possible is
+    % periodSec/2. Nearness (range 0 to 1) is 2*min(ceil(t)-t,t-floor(t)).
+    % Give weight 1.1 at time furthest from transition, and weight 0.1 at
+    % time of transition. Weight is 0.1+2*min(ceil(t)-t,t-floor(t)). 
+    %
+    % That seems too abrupt, since the jitter may extend several ms before
+    % and after the frame time. So I create a raised sinusoid with the same
+    % period as the frame rate that is minimum 0.1 at the frame transition,
+    % and maximum 1.1 half a period before or after. Then I normalize it to
+    % have a mean of 1.
+    t=(requestSec+delaySec)/periodSec;
+    w=0.1+(1-cos(t*2*pi))/2;
+    w=w/mean(w);
+    % plot(requestSec,model,'-r');
+    % hold on
+    % plot(requestSec,w,'-k');
+else
+    w=ones(size(requestSec));
+end
 % RMS error of model of our data.
-cost=sqrt(mean(mean((actualSec-model).^2)));
+cost=sqrt(mean(mean((w.^2).*(actualSec-model).^2)));
 % fprintf('cost %.1f ms, delaySec %.1f ms, periodSec %.1f ms.\n',...
 %     1000*[cost delaySec periodSec]);
 end
