@@ -27,12 +27,13 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %
 % Here are examples of the output struct for macOS, Windows, and Linux:
 %
-%                    model: 'iMac15,1'
+%                   model: 'iMac15,1'
 %         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%                screenMex: 'Screen.mexmaci64 07-Aug-2019'
 %                  screens: 0
 %                   screen: 0
 %                     size: [1800 3200]
@@ -40,10 +41,11 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %                       mm: [341 602]
 %           openGLRenderer: 'AMD Radeon R9 M290X OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
-%            openGLVersion: '2.1 ATI-2.11.20'
+%            openGLVersion: '2.1 ATI-2.11.21'
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
+%                  summary: 'iMac15,1-macOS-10.14.6-PTB-3.0.16'
 %
 %                    model: 'MacBook10,1'
 %         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
@@ -64,21 +66,25 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %           psychPortAudio: 1
 %                  summary: 'MacBook10,1-macOS-10.14.6-PTB-3.0.16'
 %
-%                    model: 'MacBookPro11,5'
-%         modelDescription: 'MacBook Pro (Retina, 15-inch, Mid 2015)'
+%                    model: 'MacBookPro14,3'
+%         modelDescription: 'MacBook Pro (15-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
-%                   matlab: 'MATLAB 9.4 (R2018a)'
+%                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%                screenMex: 'Screen.mexmaci64 21-Oct-2019'
 %                  screens: 0
 %                   screen: 0
-%                     size: [1800 2880]
-%           openGLRenderer: 'AMD Radeon R9 M370X OpenGL Engine'
+%                     size: [2100 3360]
+%               nativeSize: [2100 3360]
+%                       mm: [206 330]
+%           openGLRenderer: 'AMD Radeon Pro 560 OpenGL Engine'
 %             openGLVendor: 'ATI Technologies Inc.'
 %            openGLVersion: '2.1 ATI-2.11.20'
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
+%                  summary: 'MacBookPro14,3-macOS-10.14.6-PTB-3.0.16'
 %
 %                    model: 'MacBookPro13,2'
 %         modelDescription: 'MacBook Pro (13-inch, 2016, Four Thunderbolt 3 Ports)'
@@ -224,6 +230,9 @@ machine.size=[];
 machine.nativeSize=[];
 machine.mm=[];
 if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
+    if ~ismember(windowOrScreen,machine.screens) && Screen('WindowKind',windowOrScreen)~=1
+        error('Invalid windowOrScreeen.');
+    end
     resolution=Screen('Resolution',windowOrScreen);
     machine.size=[resolution.height resolution.width];
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
@@ -277,6 +286,8 @@ switch computer
         % Whatever shell is running, we maintain compatibility by sending
         % each script to the bash shell.
         serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
+        % This uses the internet to access an Apple file. It returns '' without internet
+        % access.
         report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
         x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
         if isempty(x)
@@ -396,7 +407,15 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
             % Opening and closing a window takes a long time, on the order
             % of 30 s, so you may want to skip that, by passing an empty
             % argument [], if you don't need the openGL fields.
-            fractionOfScreenUsed=1;
+            if IsLinux
+                % This is safer, because one user reported a fatal error when
+                % attempting to open a less-than-full-screen window under
+                % Linux.
+                fractionOfScreenUsed=1;
+            else
+                % This is much less disturbing to watch.
+                fractionOfScreenUsed=0.2;
+            end
             screenBufferRect=Screen('Rect',machine.screen);
             r=round(fractionOfScreenUsed*screenBufferRect);
             r=AlignRect(r,screenBufferRect,'right','bottom');
@@ -433,13 +452,6 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
         end
     end
     if ~isempty(window)
-        %% DRAWTEXT PLUGIN
-        % Check for presence of DrawText Plugin, for best rendering. The
-        % first 'DrawText' call should trigger loading of the plugin, but
-        % may fail. Recommended by Mario Kleiner, July 2017.
-        Screen('DrawText',window,' ',0,0,0,1,1);
-        machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
-
         %% OpenGL DRIVER
         % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware
         % and driver by the combination of GLRenderer, GLVendor, and
@@ -448,6 +460,13 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
         machine.openGLRenderer=info.GLRenderer;
         machine.openGLVendor=info.GLVendor;
         machine.openGLVersion=info.GLVersion;
+
+        %% DRAWTEXT PLUGIN
+        % Check for presence of DrawText Plugin, for best rendering. The
+        % first 'DrawText' call should trigger loading of the plugin, but
+        % may fail. Recommended by Mario Kleiner, July 2017.
+        Screen('DrawText',window,' ',0,0,0,1,1);
+        machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
 
         %% CLOSE WINDOW
         if isNewWindow
@@ -481,6 +500,14 @@ if exist('PsychtoolboxVersion','file')
             machine.bitsPlusPlus=true;
             break
         end
+    end
+    h=BitsPlusPlus('OpenBits#');
+    if h~=0
+        % CAUTION: This will fail to notice your Bits# device if it's
+        % already open. Does anyone know a polite way to detect that case?
+        % Closing the user's device would be rude.
+        machine.bitsSharp=true;
+        BitsPlusPlus('Close',h);
     end
 end
 %% Produce summary string useful in a filename.
