@@ -345,7 +345,9 @@ bMax=[0.05 0.1  ];
 % Toolbox), then we resort to using a grid to cover the whole space and
 % use fminsearch locally. Thanks to Omkar Kumbhar and Ziyi Zhang.
 % October, 2019.
-if exist('simulannealbnd','file') % MATLAB Global Optimization Toolbox
+if false && exist('simulannealbnd','file') % MATLAB Global Optimization Toolbox
+	% I DISABLED SIMULATED ANNEALING BECAUSE GRIDDED FMINSEARCH IS PRODUCING 
+	% MUCH BETTER FITS. November 2019.
     optimizer='simulannealbnd';
     options=optimoptions('simulannealbnd');
     if isempty(framesPerSec)
@@ -364,29 +366,31 @@ else
     if isempty(framesPerSec)
         numberString='Two';
         b2=linspace(bMin(2),bMax(2),20);
-        b2=[b2 1/50 1/60];
+        b2=[b2 1/50 1/60]; % Add these common frequencies exactly.
+        % Increase this optimization parameter to avoid getting warnings
+        % that it quit early because it exceeded "options.MaxFunEvals".
         options.MaxFunEvals=1000; % Default, with 2 variables, is 400.
     else
         numberString='One';
         b2=1/framesPerSec;
     end
-    costBest=inf;
-    bBest=[];
+    bestCost=inf;
+    bestB=[];
     for i=1:length(b1)
         for j=1:length(b2)
             if isempty(framesPerSec)
                 [b,cost]=fminsearch(fun2,[b1(i) b2(j)],options);
             else
-                [b,cost]=fminsearch(fun1,b1(i),options);
-                b=[b b2];
+                [b(1),cost]=fminsearch(fun1,b1(i),options);
+                b(2)=b2;
             end
-            if cost<costBest
-                bBest=b;
-                costBest=cost;
+            if cost<bestCost
+                bestCost=cost;
+                bestB=b;
             end
         end
     end
-    b=bBest;
+    b=bestB;
 end
 delaySec=b(1);
 periodSec=b(2);
@@ -397,12 +401,6 @@ if printFit
         numberString,optimizer,...
         1000*delaySec,1000*periodSec,1/periodSec,...
         1000*Cost(requestSec,actualMedian,delaySec,periodSec));
-end
-if false
-    hold on
-    model=periodSec*ceil((requestSec+delaySec)/periodSec);
-    plot(1000*requestSec,1000*model,'-r','LineWidth',2.0); % Plot model.
-    plot(1000*requestSec,1000*actualMedian,'.g','MarkerSize',20); % Plot median.
 end
 
 %% Analyze mid half of second frame duration, far from the transitions.
@@ -455,7 +453,6 @@ plot(1000*requestSec,1000*actualMedian,'-g','LineWidth',4); % Plot median.
 
 g=gca;
 g.XLim=[0 1000*requestSec(end)];
-% g.YLim=[0 1000*4.5*periodSec];
 g.YLim=2*g.XLim; % Leave room at top for text.
 g.Position(2)=g.Position(2)+0.05*g.Position(4);
 g.Position([3 4])=1.3*g.Position([3 4]);
