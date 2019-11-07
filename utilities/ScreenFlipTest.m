@@ -1,16 +1,17 @@
-function TestFlip(screenOrFilename,name1,value1,name2,value2)
-% TestFlip([screenOrFilename][,'stepsAndReps',stepsAndReps][,'framesPerSec',framesPerSec]);
+function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
+% ScreenFlipTest([screenOrFilename][,'stepsAndReps',stepsAndReps][,'framesPerSec',framesPerSec]);
 % Measures timing of Screen Flip on your computer, producing a detailed
 % one-page PNG graph with caption. It records the display timing and your
 % computer's configuration. Modern displays have multiple frame buffers, so
 % you typically write to a hidden buffer and then call "flip" to make it
-% visible. TestFlip graphs the relation between the requested and actual
-% flip times. Supports macOS, Windows, and Linux.
+% visible. ScreenFlipTest graphs the relation between the requested and
+% actual flip times. Supports MATLAB and Octave under macOS, Windows, and
+% Linux.
 %
 % INPUT ARGUMENTS: 
 %% "screenOrFilename" (default 0), if present, can be an integer to specify
 % a screen (0 for main screen, 1 for next, etc.), or a filename to
-% reanalyze a MAT file of data from a past run of TestFlip. You can
+% reanalyze a MAT file of data from a past run of ScreenFlipTest. You can
 % optionally include one or two name-value pairs. The names can be either
 % 'stepsAndReps' or 'framesPerSec'.
 %% The name 'stepsAndReps' is followed by a 2-element array [steps repetitions]
@@ -20,35 +21,48 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 % each request duration. 100 steps is enough that you won't notice the gaps
 % along the horizontal axis. 100 repetitions is enough to clearly show the
 % distribution vertically. 100 x 100 takes about 3 minutes. "stepsAndReps"
-% only affects the measurements. 
+% only affects the measurements. The case of name arguments is ignored.
 %% The name 'framesPerSec' is followed by a float number representing that
 % rate in Hz, e.g. 'frameRate', 60. This locks that parameter in both
 % measurement and analysis. When timing is really bad, it is hard for
-% TestFlip to estimate the frame rate from the data (or by calling
-% FrameRate), and it can help a lot to impose the known frame rate.
+% ScreenFlipTest to estimate the frame rate from the data (or by calling
+% FrameRate), and it can help a lot to impose the known frame rate. The
+% case of name arguments is ignored.
 %
 % DETAILS:
-% TestFlip uses the 'when' argument of Screen Flip to request a flip time.
-% Our measurements support the theory (plotted as a red line in the graph)
-% that flip mostly occurs on the first available frame after a fixed extra
-% delay. According to this model, the possible delay of the flip relative
-% to the time requested in "when" ranges from the extra delay to that plus
-% a frame. Thus, if all phases are equally likely, the mean time of the
-% flip, relative to the time you specify in "when" is the extra delay plus
-% half a frame duration. ("phase" means the fraction of a period since the
-% last frame at the Screen flip is called.) So, if you want the Flip to
-% occur as near as possible to a given time, you should set the Screen Flip
-% "when" argument to a value before that time. The decrement should be the
-% extra delay measured here (roughly 5 ms) plus half a frame period (about
-% 17/2=8.5 ms).
-% denis.pelli@nyu.edu, October 31, 2019
+% ScreenFlipTest uses the 'when' argument of Screen Flip to request a flip
+% time. Our measurements support the theory (plotted as a red line in the
+% graph) that flip mostly occurs on the first available frame after a fixed
+% extra delay. According to this model, the possible delay of the flip
+% relative to the time requested in "when" ranges from the extra delay to
+% that plus a frame. Thus, if all phases are equally likely, the mean time
+% of the flip, relative to the time you specify in "when" is the extra
+% delay plus half a frame duration. ("phase" means the fraction of a period
+% since the last frame at the Screen flip is called.) So, if you want the
+% Flip to occur as near as possible to a given time, you should set the
+% Screen Flip "when" argument to a value before that time. The decrement
+% should be the extra delay measured here (roughly 5 ms) plus half a frame
+% period (about 17/2=8.5 ms).
+%
+% BAD FIT?
+% On some computer configurations the timing is really scattered, and
+% challenging to fit our model to. If ScreenFlipTest is failing to find the
+% right frame rate, and you know it, you can provide it, using the
+% 'framesPerSec' name-value pair. If ScreenFlipTest seems to be caught in a
+% local minimum, missing the global minimum, you can try increasing the
+% number of points in the grid of test locations. This is the third
+% argument in the two calls to "linspace" below. Try increasing them by a
+% factor of 10.
+%
+% denis.pelli@nyu.edu, November, 2019
 %
 % Related discusson on Psychtoolbox forum:
 % https://groups.yahoo.com/neo/groups/psychtoolbox/conversations/messages/23963
 %
 % See also: VBLSyncTest, FlipTest, "Screen Flip?", IdentifyComputer
 
-% September 24, 2019 DGP. Force native resolution, as requested by Mario
+% August, 2019. DGP. Wrote TestFlip.m
+% September 24, 2019. DGP. Force native resolution, as requested by Mario
 %               Kleiner.
 % October 25, 2019. Mario Kleiner. Make it a function (for speed). Set
 %               Priority. Get user permission before changing resolution.
@@ -66,8 +80,8 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 %               outliers. Changed argument to be screenOrFilename to allow
 %               reanalysis of old data.
 % October 29, 2019. Ziyi Zhang. Now evaluate fminsearch on a grid of points
-%               to overcome local minima in cost function. After polish,
-%               this performs better than simulated annealing.
+%               to overcome local minima in cost function. This performs
+%               better than simulated annealing.
 % October 31, 2019. New input arguments, name-value pairs "stepsAndReps"
 %               and "framesPerSec".
 % November 5, 2019. Polished the fitting by fminsearch. Introduced 
@@ -76,39 +90,47 @@ function TestFlip(screenOrFilename,name1,value1,name2,value2)
 %               in the presence of minor temporal jitter that produces
 %               random variation of the delay by a full period at times
 %               near the flip time.
+% November 6, 2019. Median is now plotted as a green X.
+% November 7, 2019. Renamed to ScreenFlipTest.m. Improved compatibility
+%                   with Octave re unicode and dot notation with graphic
+%                   handles returned by gca and gcf. MATLAB's dot notation
+%                   for graphic handles is prettier, but is not yet
+%                   supported by Octave.
 
-%
 % Calling MATLAB's onCleanup requests that our cleanup routine (sca,
-% "Screen Close All") be run whenever TestFlip terminates for any reason,
-% whether by reaching the end, the posting of an error here (or in any
-% function called from here), or the user hits control-C. Alas, the program
-% ignores control-C while running. The only way I know to stop TestFlip
-% before it's done is SHIFT-CMD-OPTION-ESCAPE, which kills MATLAB. Ideally,
-% the program would periodically check for keyboard input, to allow it to
-% be interrupted by control-C.
+% "Screen Close All") be run whenever ScreenFlipTest terminates for any
+% reason, whether by reaching the end, the posting of an error here (or in
+% any function called from here), or the user hits control-C. Alas, the
+% program ignores control-C while running. The only way I know to stop
+% ScreenFlipTest before it's done is SHIFT-CMD-OPTION-ESCAPE, which kills
+% MATLAB. Ideally, the program would periodically check for keyboard input,
+% to allow it to be interrupted by control-C. I think that would require
+% periodically returning focus to the Command Window.
+cleanup=onCleanup(@() sca);
+commandwindow; % Put focus on Command Window, to detect control-c.
+
 global deemphasizeSteps
 deemphasizeSteps=true;
-cleanup=onCleanup(@() sca);
 if nargin<1
     screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
 end
 stepsAndReps=[100 100];
 framesPerSec=[];
 if nargin>2
-    switch name1
-        case {'stepsAndReps' 'stepsandreps'}
+    switch lower(name1)
+        case 'stepsandreps'
             stepsAndReps=value1;
-        case {'framesPerSec' 'framespersec'}
+        case 'framespersec'
             framesPerSec=value1;
         otherwise
             error('The name must be either ''stepsAndReps'' or ''framesPerSec''.');
     end
 end
 if nargin>4
-    switch name2
-        case {'stepsAndReps' 'stepsandreps'}
+    switch lower(name2)
+        case 'stepsandreps'
             stepsAndReps=value2;
-        case {'framesPerSec' 'framespersec'}
+        case 'framespersec'
             framesPerSec=value2;
         otherwise
             error('The name must be either ''stepsAndReps'' or ''framesPerSec''.');
@@ -144,9 +166,26 @@ elseif ischar(screenOrFilename)
 else
     error('Illegal "screenOrFilename" argument. It''s optional.');
 end
+if exist('IsOctave','file')
+    isoctave=IsOctave;
+else
+    if ismember(exist('OCTAVE_VERSION','builtin'),[102 5])
+        isoctave=true;
+    else
+        isoctave=false;
+    end
+end
+if isoctave
+    % Cope with Octave's limited unicode support.
+%     plusMinus='+-';
+%     micro='u';
+    plusMinus=char([194 177]);
+    micro=char([194 181]);
+else
+    plusMinus=char(177);
+    micro=char(181);
+end
 clf;
-plusMinus=char(177);
-micro=char(181);
 if isempty(dataFilename)
     %% SET RESOLUTION TO NATIVE
     % Are we using the screen at its maximum native resolution?
@@ -263,7 +302,7 @@ if isempty(dataFilename)
     Screen('Close',window);
     Priority(0);
     fprintf(['Across all duration requests, ' ...
-        'the excess duration was %.0f%c%.0f ms (mean%csd), '...
+        'the excess duration was %.0f%s%.0f ms (mean%ssd), '...
         'with range [%.0f %.0f] ms.\n'],...
         1000*mean(excess(:)),plusMinus,1000*std(excess(:)),...
         plusMinus,...
@@ -276,8 +315,8 @@ if isempty(dataFilename)
     flipMean=mean(s(:));
     flipSD=std(s(:));
     fprintf(['Relative to VBLTimestamp, '...
-        'StimulusOnsetTime is %.0f%c%.0f %cs (mean%csd), '...
-        'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
+        'StimulusOnsetTime is %.0f%s%.0f %ss (mean%ssd), '...
+        'and FlipTimestamp is %.0f%s%.0f %ss.\n'],...
         1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
         1e6*flipMean,plusMinus,1e6*flipSD,micro);
     
@@ -301,10 +340,10 @@ if isempty(dataFilename)
     end
 end % if isempty(useSavedData)
 
-% To analyze saved data, from any computer, just call TestFlip with the
+% To analyze saved data, from any computer, just call ScreenFlipTest with the
 % full .mat filename as an argument.
 if ~isempty(dataFilename)
-    fprintf('Now loading your old TestFlip data: ''%s''.\n',...
+    fprintf('Now loading your old ScreenFlipTest data: ''%s''.\n',...
         dataFilename);
     load(dataFilename,'requestSec','actualSec','excess','machine',...
         'fractionOfScreenUsed','stimulusMean','stimulusSD',...
@@ -467,11 +506,13 @@ else
 end
 
 g=gca;
-g.XLim=[0 1000*requestSec(end)];
-g.YLim=2*g.XLim; % Leave room at top for text.
-g.Position(2)=g.Position(2)+0.05*g.Position(4);
-g.Position([3 4])=1.3*g.Position([3 4]);
-g.Position([1 2])=g.Position([1 2])-0.15*g.Position([3 4]);
+set(g,'XLim',[0 1000*requestSec(end)]);
+set(g,'YLim',2*get(g,'XLim')); % Leave room at top for text.
+Position=get(g,'Position');
+Position(2)=Position(2)+0.05*Position(4);
+Position([3 4])=1.3*Position([3 4]);
+Position([1 2])=Position([1 2])-0.15*Position([3 4]);
+set(g,'Position',Position);
 daspect([1 1 1]);
 % The plot width is stable (across computers), and the data aspect ratio is
 % 1:1, so if the X or Y range changes, then the height will change. When
@@ -479,12 +520,14 @@ daspect([1 1 1]);
 % which was designed to work when the height/width ratio was 2:1.
 fontScalar=0.95; 
 plot(1000*requestSec,1000*requestSec,'-k'); % Plot equality line
-text(0.75*g.XLim(2),0.73*g.XLim(2),'Request','FontSize',fontScalar*10);
+XLim=get(g,'XLim');
+text(0.75*XLim(2),0.73*XLim(2),'Request','FontSize',fontScalar*10);
 title('Actual vs requested duration','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
-y=0.97*g.YLim(2);
-dy=0.025*g.YLim(2)*fontScalar*12/10;
+YLim=get(g,'YLim');
+y=0.97*YLim(2);
+dy=0.025*YLim(2)*fontScalar*12/10;
 text(1,y,...
     sprintf('Estimated extra delay %.1f ms.',1000*delaySec),...
     'FontSize',fontScalar*12);
@@ -513,9 +556,9 @@ if ~isempty(machine.modelDescription)
 else
     model=machine.model;
 end
-y=0.02*g.YLim(2);
-x=0.99*g.XLim(2);
-dy=0.025*g.YLim(2)*fontScalar*10/10;
+y=0.02*YLim(2);
+x=0.99*XLim(2);
+dy=0.025*YLim(2)*fontScalar*10/10;
 if ~isempty(machine.openGLVersion)
     text(x,y,machine.openGLVersion,...
         'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
@@ -558,9 +601,9 @@ y=y+dy/4; % Extra space below title.
 text(x,y,model,...
     'FontWeight','bold','HorizontalAlignment','right','FontSize',fontScalar*16);
 y=y+dy;
-g.Units='normalized';
-g.Position=[.09 0 .28 1];
-panelOnePosition=g.Position;
+set(g,'Units','normalized');
+set(g,'Position',[.09 0 .28 1]);
+panelOnePosition=get(g,'Position');
 
 %% PANEL 2
 subplot(1,3,2);
@@ -576,7 +619,7 @@ if deemphasizeSteps
 else
     weighted='';
 end
-s0a='EXPLANATION: We called ';
+s0a='MEASURE FLIP TIMING: We called ';
 s0b=['\bf' 'time=Screen(''Flip'',window,when);' '\rm'];
 s0c=sprintf('%d times for each of %d requested durations. ',...
     repetitions,steps);
@@ -592,19 +635,21 @@ else
     s1aa='';
 end
 if ~isempty(framesPerSec)
-    s1b=sprintf('The model has only one degree of freedom: the extra delay %.1f ms. ',...
-        1000*delaySec);
+    s1b=sprintf(['The model has only one degree of freedom: '...
+        'the extra delay %.1f ms. '],1000*delaySec);
 else
-    s1b=sprintf(['The model has two degrees of freedom: the extra delay %.1f ms and the '...
-        'period %.1f ms (%.1f Hz). '],1000*delaySec,1000*periodSec,1/periodSec);
+    s1b=sprintf(['The model has two degrees of freedom: '...
+        'the extra delay %.1f ms and the period %.1f ms (%.1f Hz). '],...
+        1000*delaySec,1000*periodSec,1/periodSec);
 end
-s1c=sprintf(['The data are measured duration (VBLTimestamp re prior VBLTimestamp) vs. ' ...
+s1c=sprintf(['The data are measured duration '...
+    '(VBLTimestamp re prior VBLTimestamp) vs. ' ...
     'requested duration ("when" re prior VBLTimestamp). ']);
 s6=[sprintf(['The %d measured durations include %d outliers exceeding '...
     'the request by at least two frames: '], ...
     repetitions*steps,length(times)) ...
-    sprintf('%.0f ',1000*times) ' ms. '];
-s7='Measured by TestFlip.m, available from denis.pelli@nyu.edu. ';
+    sprintf('%.0f ',1000*times) 'ms. '];
+s7='Measured by ScreenFlipTest.m, available from denis.pelli@nyu.edu. ';
 s8=sprintf(['\n\nJITTER: Flip times on some computer displays show '...
     'half a ms of jitter (for requests far from a vertical step, '...
     'much more when near a step), '...
@@ -619,8 +664,9 @@ s8=sprintf(['\n\nJITTER: Flip times on some computer displays show '...
     'increases suddenly by a whole frame), '],1000*sdMidHalfFrame);
 str={[s0 s0a] s0b [s0c s1a s1aa s1b s1c s6 s7 s8]};
 g=gca;
-g.Visible='off';
-position=[g.Position(1) 0 panelOnePosition(3) 1];
+set(g,'Visible','off');
+Position=get(g,'Position');
+position=[Position(1) 0 panelOnePosition(3) 1];
 annotation('textbox',position,'String',str,...
     'LineStyle','none','FontSize',12);
 
@@ -654,14 +700,15 @@ s9=sprintf([...
     'values: VBLTimestamp, StimulusOnsetTime, and FlipTimestamp. '...
     'Typically StimulusOnsetTime is identical to VBLTimestamp. '...
     'On this computer, relative to VBLTimestamp, '...
-    'StimulusOnsetTime is %.0f%c%.0f %cs (mean%csd), '...
-    'and FlipTimestamp is %.0f%c%.0f %cs.\n'],...
+    'StimulusOnsetTime is %.0f%s%.0f %ss (mean%ssd), '...
+    'and FlipTimestamp is %.0f%s%.0f %ss.\n'],...
     1e6*stimulusMean,plusMinus,1e6*stimulusSD,micro,plusMinus,...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
 str={s8 s9};
 g=gca;
-g.Visible='off';
-position=[g.Position(1) 0 panelOnePosition(3) 1];
+set(g,'Visible','off');
+Position=get(g,'Position');
+position=[Position(1) 0 panelOnePosition(3) 1];
 a=annotation('textbox',position,'String',str,'LineStyle','none',...
     'FontSize',12);
 
@@ -697,8 +744,8 @@ if false
     plot(1000*requestSec,1000*model,'-k',1000*requestSec,1000*modelg,'-g',...
         'LineWidth',2); % Plot model.
     g=gca;
-    % g.YLim=[0 1000*4*periodSec];
-    g.XLim=[0 1000*requestSec(end)];
+    % set(g,'YLim',[0 1000*4*periodSec]);
+    set(g,'XLim',[0 1000*requestSec(end)]);
     daspect([1 1 1]);
 end
 
@@ -709,8 +756,8 @@ else
     figureTitle=[mfilename '.png'];
 end
 h=gcf;
-h.NumberTitle='off';
-h.Name=figureTitle;
+set(h,'NumberTitle','off');
+set(h,'Name',figureTitle);
 folder=fileparts(mfilename('fullpath'));
 saveas(gcf,fullfile(folder,figureTitle),'png');
 fprintf('Figure saved as <strong>''%s''</strong> with %s.m.\n',...
@@ -728,26 +775,25 @@ end
 global deemphasizeSteps
 model=periodSec*ceil((requestSec+delaySec)/periodSec);
 if deemphasizeSteps
-    % Frame changes when t=(requestSec+delaySec)/periodSec is integer. Next
-    % frame at next integer: ceil. Last frame at last integer: floor. Time
-    % till frame is (ceil(t)-t)*periodSec. Time since frame is
-    % (t-floor(t))*periodSec. Nearest is
+    % The display flips when t=(requestSec+delaySec)/periodSec is integer.
+    % Next frame at next integer: ceil(t). Previous frame at preceding
+    % integer: floor(t). Time till frame is (ceil(t)-t)*periodSec. Time
+    % since frame is (t-floor(t))*periodSec. Nearest is
     % min(ceil(t)-t,t-floor(t))*periodSec. Furthest possible is
     % periodSec/2. Nearness (range 0 to 1) is 2*min(ceil(t)-t,t-floor(t)).
-    % Give weight 1.1 at time furthest from transition, and weight 0.1 at
-    % time of transition. Weight is 0.1+2*min(ceil(t)-t,t-floor(t)). 
-    %
+    % Give weight 1.1 at time furthest from step, and weight 0.1 at time of
+    % step. For a linear transition, the weight would be
+    % 0.1+2*min(ceil(t)-t,t-floor(t)).
     % That seems too abrupt, since the jitter may extend several ms before
-    % and after the frame time. So I create a raised sinusoid with the same
+    % and after the step time. So we create a raised sinusoid with the same
     % period as the frame rate that is minimum 0.1 at the frame transition,
-    % and maximum 1.1 half a period before or after. Then I normalize it to
-    % have a mean of 1.
+    % and maximum 1.1 half a period before or after. Then we normalize it
+    % so it has a norm of 1, i.e. sum(w.^2)==1.
     t=(requestSec+delaySec)/periodSec;
     w=0.1+(1-cos(t*2*pi))/2;
-    w=w/mean(w);
-    % plot(requestSec,model,'-r');
-    % hold on
-    % plot(requestSec,w,'-k');
+    w=w/norm(w);
+    % We use the weighting w to compute a weighted average of error across
+    % request durations, deemphasizing request durations near the steps.
 else
     w=ones(size(requestSec));
 end
