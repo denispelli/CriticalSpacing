@@ -286,12 +286,13 @@ switch computer
         % Whatever shell is running, we maintain compatibility by sending
         % each script to the bash shell.
         serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
-        % This uses the internet to access an Apple file. It returns '' without internet
-        % access.
+        % This uses the internet to enter our serial number into an Apple
+        % web page to get a description of our computer. Without internet
+        % access we get ''.
         report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
         x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
         if isempty(x)
-            % This will happen if there's no access to internet.
+            % This happens when there's no internet access.
             machine.modelDescription='';
         else
             machine.modelDescription=x.description;
@@ -351,6 +352,12 @@ switch computer
         [statusBoard,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
         machine.manufacturer=strtrim(boardVendor);
         machine.model=[strtrim(productName) ' ' strtrim(productVersion)];
+        
+        % APPLE? If we know that we're running on an Apple Macintosh, I
+        % wonder if the macOS technique used above could be adapted to
+        % work here under Linux to get the modelDescription. The strategy
+        % is to get the hardware serial number, and then look up the serial
+        % number in an Apple online web page.
 end
 % Clean up the Operating System name.
 machine.system=strtrim(machine.system);
@@ -385,7 +392,7 @@ if ismac
 end
 if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
     % From the provided windowOrScreen we find both the screen and a
-    % window on that screen. If necessary we open a window.
+    % window on that screen. If there's no window open, we open one.
     window=[];
     isNewWindow=false;
     if ismember(windowOrScreen,machine.screens)
@@ -522,7 +529,7 @@ function creationDatenum=GetFileCreationDatenum(filePath)
 switch computer
     case 'MACI64'
         %% macOS
-        [a,b]=system(sprintf('GetFileInfo "%s"',filePath));
+        [~,b]=system(sprintf('GetFileInfo "%s"',filePath));
         filePath=strfind(b,'created: ')+9;
         crdat=b(filePath:filePath+18);
         creationDatenum=datenum(crdat);
