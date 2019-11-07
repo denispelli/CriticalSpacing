@@ -1,14 +1,19 @@
 function machine=IdentifyComputer(windowOrScreen,verbose)
 % machine=IdentifyComputer([windowOrScreen,verbose]);
-% Returns a struct with 19 fields (12 text, 5 numerical, and 2 logical)
-% that specify the basic configuration of your hardware and software with
-% regard to compatibility. Some fields (e.g. bitsPlusPlus) appear only if
-% the relevant feature is present.
-% OUTPUT ARGUMENT:
+% IdentifyComputer is handy in testing, benchmarking, and bug reporting, to
+% easily record the computer environment in a compact human-readable way.
+% Runs on MATLAB and Octave under macOS, Windows, and Linux, with any
+% number of screens. It returns a struct with 19 fields (12 text, 5
+% numerical, and 2 logical) that specify the basic configuration of your
+% hardware and software with regard to compatibility. Some fields (e.g.
+% bitsPlusPlus) appear only if the relevant feature is present.
+% machine.modelDescription will be empty unless your computer is made by
+% Apple and we have internet access.
+%% OUTPUT ARGUMENT:
 % "machine" is a struct with many informative fields. The size, nativeSize,
 % mm, and openGL fields refer to the screen with the number specified by
-% the "screen" field. 
-% INPUT ARGUMENTS:
+% the "screen" field.
+%% INPUT ARGUMENTS:
 % Use the "windowOrScreen" argument to specify a window pointer or the
 % screen number. Default is screen 0, the main screen. This routine is
 % quick if windowOrScreen is empty [], or points to an open window, or
@@ -19,13 +24,8 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 % opening a window, at the cost of leaving the screen size and openGL
 % fields empty. The second argument, if present, should be the string
 % 'verbose', to not suppress warning messages.
-% COMPATIBILITY: 
-% Runs on MATLAB and Octave under macOS, Windows, and Linux, with any
-% number of screens. Under macOS without internet the
-% machine.modelDescription will be empty. Mario Kleiner warns that under
-% macOS the nativeSize may not be reliable.
 %
-% Here are examples of the output struct for macOS, Windows, and Linux:
+%% EXAMPLES of output struct for macOS, Windows, and Linux:
 %
 %                   model: 'iMac15,1'
 %         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
@@ -149,15 +149,12 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 % appears only for macOS. The bitsPlusPlus field appears only if the Bits++
 % video hardware is detected.
 %
-% IdentifyComputer is handy in testing, benchmarking, and bug reporting, to
-% easily record the test environment in a compact human-readable way.
-%
 % The machine.summary field helps you make a filename that identifies your
 % configuration. For example:
 % machine=IdentifyComputer([]);
-% filename=['TestFlip-' machine.summary '.png'];
+% filename=['ScreenFlipTest-' machine.summary '.png'];
 % produces a string like this:
-% TestFlip-MacBook10,1-macOS-10.14.6-PTB-3.0.16.png
+% ScreenFlipTest-MacBook10,1-macOS-10.14.6-PTB-3.0.16.png
 %
 % JUST ONE SCREEN. In principle, one might want to separately report the
 % openGL driver info for each screen, but, in practice, there's typically
@@ -286,27 +283,7 @@ switch computer
         % Whatever shell is running, we maintain compatibility by sending
         % each script to the bash shell.
         serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
-        % This uses the internet to enter our serial number into an Apple
-        % web page to get a description of our computer. Without internet
-        % access we get ''.
-        report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
-        x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
-        if isempty(x)
-            % This happens when there's no internet access.
-            machine.modelDescription='';
-        else
-            machine.modelDescription=x.description;
-            s=machine.modelDescription;
-            if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
-                machine
-                shell=evalc('!echo $0') % name of current shell.
-                warning(['Oops. Failed in getting modelDescription. '...
-                    'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
-                machine.modelDescription='';
-                % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
-                % https://support.apple.com/en-us/HT208050
-            end
-        end
+        machine.modelDescription=GetAppleModelDescription(serialNumber);
         % A python solution: https://gist.github.com/zigg/6174270
         
     case 'PCWIN64'
@@ -347,17 +324,18 @@ switch computer
         % https://www.2daygeek.com/how-to-check-system-hardware-manufacturer-model-and-serial-number-in-linux/
         % Tested in MATLAB under Ubuntu 18.04.
         % Written by omkar.kumbhar@nyu.edu, October 22, 2019.
+        % Now get serialNumber (thanks Hormet Yiltiz) to look up Apple
+        % modelDescription.
+        
         [statusVersion,productVersion]=system('cat /sys/class/dmi/id/product_version');
         [statusName,productName]=system('cat /sys/class/dmi/id/product_name');
         [statusBoard,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
         machine.manufacturer=strtrim(boardVendor);
         machine.model=[strtrim(productName) ' ' strtrim(productVersion)];
-        
-        % APPLE? If we know that we're running on an Apple Macintosh, I
-        % wonder if the macOS technique used above could be adapted to
-        % work here under Linux to get the modelDescription. The strategy
-        % is to get the hardware serial number, and then look up the serial
-        % number in an Apple online web page.
+        [statusSerial,serialNumber]=system('cat /sys/class/dmi/id/product_serial');
+        if ismember(machine.manufacturer,{'Apple Inc.'})
+            machine.modelDescription=GetAppleModelDescription(serialNumber);
+        end
 end
 % Clean up the Operating System name.
 machine.system=strtrim(machine.system);
@@ -467,14 +445,14 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
         machine.openGLRenderer=info.GLRenderer;
         machine.openGLVendor=info.GLVendor;
         machine.openGLVersion=info.GLVersion;
-
+        
         %% DRAWTEXT PLUGIN
         % Check for presence of DrawText Plugin, for best rendering. The
         % first 'DrawText' call should trigger loading of the plugin, but
         % may fail. Recommended by Mario Kleiner, July 2017.
         Screen('DrawText',window,' ',0,0,0,1,1);
         machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
-
+        
         %% CLOSE WINDOW
         if isNewWindow
             % If we opened the window, then close it.
@@ -539,10 +517,46 @@ switch computer
         d=System.IO.File.GetCreationTime(filePath);
         % Convert the .NET DateTime d into a MATLAB datenum.
         creationDatenum=datenum(datetime(d.Year,d.Month,d.Day,d.Hour,d.Minute,d.Second));
-case 'GLNXA64'
+    case 'GLNXA64'
         %% Linux
         % Alas, depending on the file system used, Linux typically does not
         % retain the creation date.
         creationDatenum='';
+end % switch
+end % function IdentifyComputer
+
+function modelDescription=GetAppleModelDescription(serialNumber)
+% This uses the internet to enter our serial number into an Apple web page
+% to get a model description of our Apple computer. Returns '' if the
+% serial number is not in Apple's database, or we lack internet access.
+% Currently we get the error code if the lookup fails, but we don't report
+% it.
+if nargin<1
+    error('Input argument string "serialNumber" is required.');
 end
+if length(serialNumber)<11
+    error('serialNumber string must be more than 10 characters long.');
 end
+report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
+x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
+if isempty(x)
+    if isempty(err)
+        % warning('Apple serial number lookup failed, possibly because of no internet access.');
+    else
+        % Probably tried to look up a non-Apple product.
+        warning('Apple serial number lookup failed with error ''%s''.',err.error);
+    end
+    modelDescription='';
+else
+    modelDescription=x.description;
+    s=modelDescription;
+    if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
+        shell=evalc('!echo $0') % name of current shell.
+        warning(['Oops. Failed in getting modelDescription. '...
+            'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
+        modelDescription='';
+        % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
+        % https://support.apple.com/en-us/HT208050
+    end
+end
+end % function GetAppleModelDescription
