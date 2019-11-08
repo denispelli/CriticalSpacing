@@ -204,7 +204,7 @@ if exist('PsychtoolboxVersion','file')
     islinux=IsLinux;
     isoctave=IsOctave;
 else
-    islinux=streq(computer,'GLNX86') || streq(computer,'GLNXA64') || ~isempty(strfind(computer, 'linux-gnu'));
+    islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) || ~isempty(strfind(computer,'linux-gnu'));
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
 machine.model='';
@@ -516,9 +516,19 @@ if exist('PsychtoolboxVersion','file')
 end
 %% Produce summary string useful in a filename.
 machine.summary=[machine.model '-' machine.system '-' machine.psychtoolbox];
+machine.summary=strrep(machine.summary,'--','-');
+if machine.summary(1)=='-'
+    machine.summary=machine.summary(2:end);
+end
+if ~isempty(machine.summary) && machine.summary(end)=='-'
+    machine.summary=machine.summary(1:end-1);
+end
 machine.summary=strrep(machine.summary,'Windows','Win');
 machine.summary=strrep(machine.summary,'Psychtoolbox','PTB');
 machine.summary=strrep(machine.summary,' ','-');
+if isempty(machine.summary)
+    machine.summary='';
+end
 end % function IdentifyComputer
 
 function creationDatenum=GetFileCreationDatenum(filePath)
@@ -528,7 +538,7 @@ iswin=ispc;
 if exist('PsychtoolboxVersion','file')
     islinux=IsLinux;
 else
-    islinux=streq(computer,'GLNX86') || streq(computer,'GLNXA64') || ~isempty(strfind(computer, 'linux-gnu'));
+    islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) || ~isempty(strfind(computer,'linux-gnu'));
 end
 switch 4*ismacos+2*iswin+islinux
     case 4
