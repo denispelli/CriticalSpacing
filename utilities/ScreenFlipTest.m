@@ -8,19 +8,19 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % actual flip times. Supports MATLAB and Octave under macOS, Windows, and
 % Linux.
 %
-% INPUT ARGUMENTS: 
+% INPUT ARGUMENTS:
 %% "screenOrFilename" (default 0), if present, can be an integer to specify
 % a screen (0 for main screen, 1 for next, etc.), or a filename to
 % reanalyze a MAT file of data from a past run of ScreenFlipTest. You can
 % optionally include one or two name-value pairs. The names can be either
 % 'stepsAndReps' or 'framesPerSec'.
 %% The name 'stepsAndReps' is followed by a 2-element array [steps repetitions]
-% consisting of "steps" (default 100) which is the number of points you
-% want along the Request duration axis, and "repetitions" (default 100)
+% consisting of "steps" (default 30) which is the number of points you
+% want along the Request duration axis, and "repetitions" (default 30)
 % which is the number of times you want to measure the actual duration for
 % each request duration. 100 steps is enough that you won't notice the gaps
-% along the horizontal axis. 100 repetitions is enough to clearly show the
-% distribution vertically. 100 x 100 takes about 3 minutes. "stepsAndReps"
+% along the horizontal axis. 30 repetitions is enough to clearly show the
+% distribution vertically. 100 x 30 takes about 3 minutes. "stepsAndReps"
 % only affects the measurements. The case of name arguments is ignored.
 %% The name 'framesPerSec' is followed by a float number representing that
 % rate in Hz, e.g. 'frameRate', 60. This locks that parameter in both
@@ -84,8 +84,8 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 %               better than simulated annealing.
 % October 31, 2019. New input arguments, name-value pairs "stepsAndReps"
 %               and "framesPerSec".
-% November 5, 2019. Polished the fitting by fminsearch. Introduced 
-%               error weighting that deemphasizes times near the flip. 
+% November 5, 2019. Polished the fitting by fminsearch. Introduced
+%               error weighting that deemphasizes times near the flip.
 %               This makes the periodSec still estimates reliable even
 %               in the presence of minor temporal jitter that produces
 %               random variation of the delay by a full period at times
@@ -107,14 +107,24 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % to allow it to be interrupted by control-C. I think that would require
 % periodically returning focus to the Command Window.
 cleanup=onCleanup(@() sca);
-commandwindow; % Put focus on Command Window, to detect control-c.
+if exist('commandwindow','file') % Missing in Octave.
+    cleanup=onCleanup(@() sca);
+    % Put focus on Command Window, to help detect control-c.
+    commandwindow; 
+end
+
+if exist('PsychtoolboxVersion','file')
+    isoctave=IsOctave;
+else
+    isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
+end
 
 global deemphasizeSteps
 deemphasizeSteps=true;
 if nargin<1
     screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
 end
-stepsAndReps=[100 100];
+stepsAndReps=[100 30];
 framesPerSec=[];
 if nargin>2
     switch lower(name1)
@@ -149,7 +159,7 @@ if ~isempty(framesPerSec)
 end
 steps=stepsAndReps(1);
 repetitions=stepsAndReps(2);
-clear Screen % Make sure we use fresh copy from disk. 
+clear Screen % Make sure we use fresh copy from disk.
 screens=Screen('Screens');
 if isfloat(screenOrFilename)
     dataFilename='';
@@ -166,19 +176,10 @@ elseif ischar(screenOrFilename)
 else
     error('Illegal "screenOrFilename" argument. It''s optional.');
 end
-if exist('IsOctave','file')
-    isoctave=IsOctave;
-else
-    if ismember(exist('OCTAVE_VERSION','builtin'),[102 5])
-        isoctave=true;
-    else
-        isoctave=false;
-    end
-end
 if isoctave
     % Cope with Octave's limited unicode support.
-%     plusMinus='+-';
-%     micro='u';
+    %     plusMinus='+-';
+    %     micro='u';
     plusMinus=char([194 177]);
     micro=char([194 181]);
 else
@@ -341,24 +342,35 @@ if isempty(dataFilename)
 end % if isempty(useSavedData)
 
 % To analyze saved data, from any computer, just call ScreenFlipTest with the
-% full .mat filename as an argument.
+% full .mat filename as an argument. Alas, Octave seems to SAVE in a ASCII format
+% that MATLAB cannot read, even with the "-ascii" switch.
 if ~isempty(dataFilename)
     fprintf('Now loading your old ScreenFlipTest data: ''%s''.\n',...
         dataFilename);
-    load(dataFilename,'requestSec','actualSec','excess','machine',...
-        'fractionOfScreenUsed','stimulusMean','stimulusSD',...
-        'flipMean','flipSD','steps','repetitions');
+    try
+        load(dataFilename,'requestSec','actualSec','excess','machine',...
+            'fractionOfScreenUsed','stimulusMean','stimulusSD',...
+            'flipMean','flipSD','steps','repetitions');
+    catch
+        % If we failed trying to read the MAT file as a binary file, try
+        % again, but now reading it as an ascii file. "save" in Octave
+        % under Linux seems to produce an ascii file.
+        load(dataFilename,'-ascii','requestSec','actualSec','excess','machine',...
+            'fractionOfScreenUsed','stimulusMean','stimulusSD',...
+            'flipMean','flipSD','steps','repetitions');
+    end
 end
 
 %% ANALYZE AND PLOT RESULTS
 close all
 f=figure(1);
+set(f,'Units','pixels');
 screenRect=Screen('Rect',0);
 r=[0 0 819 600]; % Works well on MacBook so exporting to all computers.
 r=CenterRect(r,screenRect);
 r=OffsetRect(r,0,-r(2));
 % Convert Apple rect to MATLAB Position.
-f.Position=[r(1) screenRect(4)-r(4) RectWidth(r) RectHeight(r)];
+set(f,'Position',[r(1) screenRect(4)-r(4) RectWidth(r) RectHeight(r)]);
 
 %% PANEL 1
 subplot(1,3,1);
@@ -376,10 +388,10 @@ else
     periodSec=1/framesPerSec; % User-specified frame rate.
 end
 b=[delaySec periodSec];
-% Two-parameter search: 
+% Two-parameter search:
 % delaySec and periodSec. b has length 2.
 fun2=@(b) Cost(requestSec,actualMedian,b(1),b(2));
-% One-parameter search: 
+% One-parameter search:
 % delaySec. b has length 1.
 fun1=@(b) Cost(requestSec,actualMedian,b,1/framesPerSec);
 % These min and max values allow an extra delay of 0 to 50 ms, and a frame
@@ -487,7 +499,7 @@ sdMidHalfFrameRePeriodic=std(dtOk(:));
 
 % Plot the median.
 % plot(1000*requestSec,1000*actualMedian,'-g','LineWidth',4); % Plot median.
-plot(1000*requestSec,1000*actualMedian,'xg','MarkerSize',16,'LineWidth',2); % Plot median.
+plot(1000*requestSec,1000*actualMedian,'xg','MarkerSize',10,'LineWidth',1.5); % Plot median.
 
 % Plot the data.
 for i=1:length(requestSec)
@@ -506,26 +518,27 @@ else
 end
 
 g=gca;
-set(g,'XLim',[0 1000*requestSec(end)]);
-set(g,'YLim',2*get(g,'XLim')); % Leave room at top for text.
-Position=get(g,'Position');
+set(g,'units','normalized');
+set(g,'xlim',[0 1000*requestSec(end)]);
+set(g,'ylim',2*get(g,'xlim')); % Leave room at top for text.
+Position=get(g,'position');
 Position(2)=Position(2)+0.05*Position(4);
 Position([3 4])=1.3*Position([3 4]);
 Position([1 2])=Position([1 2])-0.15*Position([3 4]);
-set(g,'Position',Position);
+set(g,'position',Position);
 daspect([1 1 1]);
 % The plot width is stable (across computers), and the data aspect ratio is
 % 1:1, so if the X or Y range changes, then the height will change. When
 % the height is reduced, we need to proportionally reduce the font size,
 % which was designed to work when the height/width ratio was 2:1.
-fontScalar=0.95; 
+fontScalar=0.95;
 plot(1000*requestSec,1000*requestSec,'-k'); % Plot equality line
-XLim=get(g,'XLim');
+XLim=get(g,'xlim');
 text(0.75*XLim(2),0.73*XLim(2),'Request','FontSize',fontScalar*10);
 title('Actual vs requested duration','FontSize',16);
 xlabel('Requested duration (ms)','FontSize',16);
 ylabel('Duration (ms)','FontSize',16);
-YLim=get(g,'YLim');
+YLim=get(g,'ylim');
 y=0.97*YLim(2);
 dy=0.025*YLim(2)*fontScalar*12/10;
 text(1,y,...
@@ -601,9 +614,9 @@ y=y+dy/4; % Extra space below title.
 text(x,y,model,...
     'FontWeight','bold','HorizontalAlignment','right','FontSize',fontScalar*16);
 y=y+dy;
-set(g,'Units','normalized');
-set(g,'Position',[.09 0 .28 1]);
-panelOnePosition=get(g,'Position');
+set(g,'units','normalized');
+set(g,'position',[.09 0 .28 1]);
+panelOnePosition=get(g,'position');
 
 %% PANEL 2
 subplot(1,3,2);
@@ -661,19 +674,31 @@ s8=sprintf(['\n\nJITTER: Flip times on some computer displays show '...
     'Thus the %.1f ms vertical jitter seen in the reported duration, '...
     'and the sometimes-similar horizontal jitter (in the request time '...
     'at which the duration '...
-    'increases suddenly by a whole frame), '],1000*sdMidHalfFrame);
+    'increases suddenly '],1000*sdMidHalfFrame);
 str={[s0 s0a] s0b [s0c s1a s1aa s1b s1c s6 s7 s8]};
 g=gca;
-set(g,'Visible','off');
-Position=get(g,'Position');
-position=[Position(1) 0 panelOnePosition(3) 1];
-annotation('textbox',position,'String',str,...
-    'LineStyle','none','FontSize',12);
+set(g,'units','normalized');
+set(g,'visible','off');
+Position=get(g,'position');
+position=[Position(1) 0 panelOnePosition(3) 0.98]; %  0.41641   0.00000   0.28000   1.00000
+fontSize=10;
+fontName='Consolas';
+a=annotation('textbox',position,'String',' ','LineStyle','none',...
+   'fontname',fontName,'FontSize',fontSize,'units','normalized',...
+   'fitboxtotext','on','verticalalignment','top');
+   set(a,'units','pixels');
+   p=get(a,'position');
+   lineLength=round(1.85*p(3)/get(a,'fontsize'));
+   wrapped=WrapString2(str,lineLength);
+a=annotation('textbox',position,'String',wrapped,...
+    'fontname',fontName,'FontSize',fontSize,...
+    'LineStyle','none','units','normalized','fitboxtotext','on',...
+   'fitboxtotext','on','verticalalignment','top');
 
 %% PANEL 3.
 subplot(1,3,3);
 s8=sprintf([...
-    'must arise in the software reports of '...
+    'by a whole frame), must arise in the software reports of '...
     'when flips occur and the implementation '...
     'of the "when" timer.\n\n'...
     'ISOLATING ONE JITTER: Our plotted duration is the interval between '...
@@ -706,12 +731,15 @@ s9=sprintf([...
     1e6*flipMean,plusMinus,1e6*flipSD,micro);
 str={s8 s9};
 g=gca;
-set(g,'Visible','off');
-Position=get(g,'Position');
-position=[Position(1) 0 panelOnePosition(3) 1];
-a=annotation('textbox',position,'String',str,'LineStyle','none',...
-    'FontSize',12);
-
+set(g,'units','normalized');
+set(g,'visible','off');
+Position=get(g,'position');
+position=[Position(1) 0 panelOnePosition(3) 0.98];
+wrapped=WrapString2(str,lineLength);
+a=annotation('textbox',position,...
+        'fontname',fontName,'FontSize',fontSize,...
+    'LineStyle','none','units','normalized','fitboxtotext','on',...
+   'verticalalignment','top','String',wrapped);
 if false
     % Not quite working.
     % Estimate the horizontal jitter.
@@ -744,6 +772,10 @@ if false
     plot(1000*requestSec,1000*model,'-k',1000*requestSec,1000*modelg,'-g',...
         'LineWidth',2); % Plot model.
     g=gca;
+    if isoctave
+        g=get(g);
+    end
+    set(g,'Units','normalized');
     % set(g,'YLim',[0 1000*4*periodSec]);
     set(g,'XLim',[0 1000*requestSec(end)]);
     daspect([1 1 1]);
@@ -756,10 +788,13 @@ else
     figureTitle=[mfilename '.png'];
 end
 h=gcf;
-set(h,'NumberTitle','off');
-set(h,'Name',figureTitle);
+set(h,'units','pixels');
+set(h,'numbertitle','off');
+set(h,'name',figureTitle);
 folder=fileparts(mfilename('fullpath'));
-saveas(gcf,fullfile(folder,figureTitle),'png');
+f=gcf;
+file=fullfile(folder,figureTitle);
+saveas(f,file);
 fprintf('Figure saved as <strong>''%s''</strong> with %s.m.\n',...
     figureTitle,mfilename);
 end
@@ -803,4 +838,95 @@ cost=sqrt(mean(mean((w.^2).*(actualSec-model).^2)));
 %     1000*[cost delaySec periodSec]);
 end
 
+function wrappedString=WrapString2(string,maxLineLength)
+% wrappedString=WrapString2(string,[maxLineLength])
+%
+% Wraps text by changing spaces into linebreaks '\n', making each line as
+% long as possible without exceeding maxLineLength (default 74
+% characters). WrapString does not break words, even if you have a word
+% that exceeds maxLineLength. The returned "wrappedString" is identical to
+% the supplied "string" except for the conversion of some spaces into
+% linebreaks. Besides making the text look pretty, wrapping the text will
+% make the printout narrow enough that it can be sent by email and
+% received as sent, not made hard to read by mindless breaking of every
+% line.
+%
+% ARGUMENTS: "string" can be a string, or a cell array of strings. Each
+% string will be wrapped.
+%
+% Note that this schemes is based on counting characters, not pixels, so
+% it will give a fairly even right margin only for monospaced fonts, not
+% proportionally spaced fonts. The more general solution would be based on
+% counting pixels, not characters, using either Screen 'TextWidth' or
+% TextBounds.
+%
+% Special case: When the above algorithm would break a line before a space,
+% we instead keep the (invisible) space in the old line, even though it's
+% past the margin. This avoids beginning the new line with a space. The
+% margin overrun is harmless because spaces are invisible.
 
+% 6/30/02 dgp Wrote it.
+% 10/2/02 dgp Make it clear that maxLineLength is in characters, not pixels.
+% 09/20/09 mk Improve argument handling as per suggestion of Peter April.
+% 10/31/14 mk Fix Octave-4 warning, white-space/indentation cleanup.
+% 7/16/19 dgp Wrapping will now never begin new line with a space.
+% 11/8/19 dgp Enhanced to accept a cell array of strings, each of which
+%             is wrapped, independently of each other.
+
+if nargin>2 || nargout>1
+    error('Usage: wrappedString=WrapString(string,[maxLineLength])\n');
+end
+if nargin<2
+    maxLineLength=[];
+end
+if isempty(maxLineLength) || isnan(maxLineLength)
+    maxLineLength=74;
+end
+if iscell(string)
+    wrappedString={};
+    for i=1:length(string)
+        wrappedString{i}=WrapString2(string{i},maxLineLength);
+    end
+    return
+end
+% In MATLAB 2018a and 2019a, inexplicably, even though "newline" is present
+% as a built-in function, I am unable to call it from this routine. So we
+% call char(10) instead. This must be a bug in MATLAB.
+wrapped='';
+while length(string)>maxLineLength
+    l=strfind(char(string),char(10));
+    l=min([l length(string)+1]);
+    if l<maxLineLength
+        % line is already short enough
+        [wrapped,string]=onewrap(wrapped,string,l);
+    else
+        s=strfind(char(string),' ');
+        n=find(s<maxLineLength);
+        if ~isempty(n)
+            % ignore spaces before the furthest one before maxLineLength
+            s=s(max(n):end);
+        end
+        % break at nearest space, linebreak, or end.
+        s=sort([s l]);
+        [wrapped,string]=onewrap(wrapped,string,s(1));
+    end
+end
+wrappedString=[wrapped string];
+return
+end
+function [wrapped,string]=onewrap(wrapped,string,n)
+if n>length(string)
+    wrapped=[wrapped string];
+    string='';
+    return
+end
+while n<length(string) && string(n+1)==' '
+    % Wrapping should not produce a new line that begins with a space, so
+    % we have the old line retain any spaces that would end up at the
+    % beginning of the new line.
+    n=n+1;
+end
+wrapped=[wrapped string(1:n-1) char(10)];
+string=string(n+1:end);
+return
+end
