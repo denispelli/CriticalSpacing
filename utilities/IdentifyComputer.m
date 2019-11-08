@@ -2,13 +2,14 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 % machine=IdentifyComputer([windowOrScreen,verbose]);
 % IdentifyComputer is handy in testing, benchmarking, and bug reporting, to
 % easily record the computer environment in a compact human-readable way.
-% Runs on MATLAB and Octave under macOS, Windows, and Linux, with any
+% Runs on MATLAB and Octave 5.1 under macOS, Windows, and Linux, with any
 % number of screens. It returns a struct with 19 fields (12 text, 5
 % numerical, and 2 logical) that specify the basic configuration of your
 % hardware and software with regard to compatibility. Some fields (e.g.
 % bitsPlusPlus) appear only if the relevant feature is present.
 % machine.modelDescription will be empty unless your computer is made by
-% Apple and we have internet access.
+% Apple and we have internet access. It can run without the Psychtoolbox,
+% but then returns much less information.
 %% OUTPUT ARGUMENT:
 % "machine" is a struct with many informative fields. The size, nativeSize,
 % mm, and openGL fields refer to the screen with the number specified by
@@ -178,6 +179,13 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 % October 28, 2019. DGP added machine.screenMex with creation date.
 % October 31, 2019. DGP replaced strip by strtrim, to extend compatibility
 %                      back to MATLAB 2006a. Requested by Mario Kleiner.
+% November 8, 2019. DGP. Now compatible with Octave 5.1. Use strfind
+% instead of "contains", which is missing in Octave. Use "switch
+% 4*ismacos+2*iswin+islinux" instead of "switch computer" because
+% "computer" differs between MATLAB and Octave. Use "system" instead of
+% "evalc", which is missing in Octave. Provide format to datenum, which
+% otherwise fails under Octave.
+
 if nargin<1
     windowOrScreen=0;
 end
@@ -189,6 +197,15 @@ else
     else
         error('Second argument, if present, must be the string ''verbose''');
     end
+end
+ismacos=ismac;
+iswin=ispc;
+if exist('PsychtoolboxVersion','file')
+    islinux=IsLinux;
+    isoctave=IsOctave;
+else
+    islinux=streq(computer,'GLNX86') || streq(computer,'GLNXA64') || ~isempty(strfind(computer, 'linux-gnu'));
+    isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
 machine.model='';
 machine.modelDescription=''; % Currently non-empty only for macOS.
@@ -250,7 +267,7 @@ if exist('PsychtoolboxVersion','file')
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',...
         p.major,p.minor,p.point);
 end
-if ismac
+if ismacos
     machine.psychtoolboxKernelDriver='';
 end
 machine.drawTextPlugin=logical([]);
@@ -275,20 +292,20 @@ if exist('PsychtoolboxVersion','file')
     end
 end
 %% For each OS, get computer model and manufacturer.
-switch computer
-    case 'MACI64'
+switch 4*ismacos+2*iswin+islinux
+    case 4
         %% macOS
         machine.manufacturer='Apple Inc.';
         % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         % Whatever shell is running, we maintain compatibility by sending
         % each script to the bash shell.
-        serialNumber=evalc('!bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
+        [~,serialNumber]=system('bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
         machine.modelDescription=GetAppleModelDescription(serialNumber);
         % A python solution: https://gist.github.com/zigg/6174270
         
-    case 'PCWIN64'
+    case 2
         %% Windows
-        wmicString=evalc('!wmic computersystem get manufacturer, model');
+        [~,wmicString]=system('wmic computersystem get manufacturer, model');
         % Here's a typical result:
         % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
         % '     Dell Inc.     Inspiron 5379    ']);
@@ -317,7 +334,7 @@ switch computer
             warning('Failed to retrieve manufacturer and model from WMIC.');
         end
         
-    case 'GLNXA64'
+    case 1
         %% Linux
         % Most methods for getting the computer model require root
         % privileges, which we cannot assume here. We use method 4 from:
@@ -336,6 +353,8 @@ switch computer
         if ismember(machine.manufacturer,{'Apple Inc.'})
             machine.modelDescription=GetAppleModelDescription(serialNumber);
         end
+    otherwise
+        error('Unknown OS.');
 end
 % Clean up the Operating System name.
 machine.system=strtrim(machine.system);
@@ -344,7 +363,7 @@ if ~isempty(machine.system) && machine.system(end)=='-'
 end
 % Modernize spelling.
 machine.system=strrep(machine.system,'Mac OS','macOS');
-if IsWin
+if iswin
     % Prepend "Windows".
     if ~all('win'==lower(machine.system(1:3)))
         machine.system=['Windows ' machine.system];
@@ -353,10 +372,10 @@ end
 
 %% PSYCHTOOLBOX KERNEL DRIVER
 % http://psychtoolbox.org/docs/psychtoolboxKernelDriver';
-if ismac
+if ismacos
     machine.psychtoolboxKernelDriver='';
     [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
-    if contains(result,'PsychtoolboxKernelDriver')
+    if ~isempty(strfind(result,'PsychtoolboxKernelDriver'))
         % Get version number of Psychtoolbox kernel driver.
         v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
         if ~isempty(v)
@@ -392,7 +411,7 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
             % Opening and closing a window takes a long time, on the order
             % of 30 s, so you may want to skip that, by passing an empty
             % argument [], if you don't need the openGL fields.
-            if IsLinux
+            if islinux
                 % This is safer, because one user reported a fatal error when
                 % attempting to open a less-than-full-screen window under
                 % Linux.
@@ -500,30 +519,40 @@ machine.summary=[machine.model '-' machine.system '-' machine.psychtoolbox];
 machine.summary=strrep(machine.summary,'Windows','Win');
 machine.summary=strrep(machine.summary,'Psychtoolbox','PTB');
 machine.summary=strrep(machine.summary,' ','-');
-end % function
+end % function IdentifyComputer
 
 function creationDatenum=GetFileCreationDatenum(filePath)
-% Get the file's creation date.
-switch computer
-    case 'MACI64'
+% Try to get the file's creation date.
+ismacos=ismac;
+iswin=ispc;
+if exist('PsychtoolboxVersion','file')
+    islinux=IsLinux;
+else
+    islinux=streq(computer,'GLNX86') || streq(computer,'GLNXA64') || ~isempty(strfind(computer, 'linux-gnu'));
+end
+switch 4*ismacos+2*iswin+islinux
+    case 4
         %% macOS
         [~,b]=system(sprintf('GetFileInfo "%s"',filePath));
         filePath=strfind(b,'created: ')+9;
         crdat=b(filePath:filePath+18);
-        creationDatenum=datenum(crdat);
-    case 'PCWIN64'
+        % Octave fails without the explicit format.
+        creationDatenum=datenum(crdat,'mm/dd/yyyy HH:MM:SS');
+    case 2
         %% Windows
         % https://www.mathworks.com/matlabcentral/answers/288339-how-to-get-creation-date-of-files
         d=System.IO.File.GetCreationTime(filePath);
         % Convert the .NET DateTime d into a MATLAB datenum.
         creationDatenum=datenum(datetime(d.Year,d.Month,d.Day,d.Hour,d.Minute,d.Second));
-    case 'GLNXA64'
+    case 1
         %% Linux
         % Alas, depending on the file system used, Linux typically does not
         % retain the creation date.
         creationDatenum='';
+    otherwise
+        error('Unknown OS.');
 end % switch
-end % function IdentifyComputer
+end % function GetFileCreationDatenum
 
 function modelDescription=GetAppleModelDescription(serialNumber)
 % This uses the internet to enter our serial number into an Apple web page
@@ -537,7 +566,7 @@ end
 if length(serialNumber)<11
     error('serialNumber string must be more than 10 characters long.');
 end
-report=evalc(['!bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
+[~,report]=system(['bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
 x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
 if isempty(x)
     if isempty(err)
@@ -551,7 +580,7 @@ else
     modelDescription=x.description;
     s=modelDescription;
     if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
-        shell=evalc('!echo $0') % name of current shell.
+        [~,shell]=system('echo $0') % name of current shell.
         warning(['Oops. Failed in getting modelDescription. '...
             'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
         modelDescription='';
