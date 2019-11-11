@@ -85,6 +85,7 @@ for oi=1:length(oo)
 end
 
 %% REPORT spacingRatio of crowding vs P of 'fixation check' for each block.
+%{
 b=struct('block',1:oo(end).block);
 b(1).fixationP=[];
 b(1).P=[];
@@ -105,22 +106,14 @@ for oi=1:length(oo)
     end
 end
 b=b(~isempty([b.fixationP]) & ~isempty([b.spacingRatio]));
-if ~isempty(b)
-    t=struct2table(b);
-    t
-    plot(b.fixationP,abs(log10(b.spacingRatio)));
-end
+t=struct2table(b);
+t
+plot(b.fixationP,abs(log10(b.spacingRatio)));
 return
-
-%% ELIMINATING DATA
-%for oi=1:length(oi)
-%   if oo(oi)b.fixationP < .7
-%       oo(oi)b.fixationP = []
-%       oo(oi)b.spacingRatio = []
-%   end
-%end
+%}
 
 %% SELECT CONDITION(S)
+%{
 if isempty(oo)
     error('No conditions selected.');
 end
@@ -152,9 +145,11 @@ filename=sprintf('%sData.xls',oo(1).experiment);
 fprintf('<strong>Writing data to ''%s''.\n</strong>',filename);
 writetable(t,fullfile(dataFolder,filename));
 % return
+%}
 
 %% SUMMARIZE WHAT WE HAVE FOR EACH OBSERVER
 observers=unique({oo.observer});
+t=struct2table(oo,'AsArray',true);
 s=[];
 for si=1:length(observers)
     s(si).observer=observers{si};
@@ -467,7 +462,7 @@ disp(t(:,{'thresholdParameter','observer','n','eccentricityXYDeg', ...
     'flankingDirection'}));
 
 if false % SKIP HISTOGRAMS
-    %% PLOT HISTOGRAMS (ACROSS OBSERVERS) OF SEVERAL KINDS OF THRESHOLD. AT ±10, ±5, ±2.5, 0 DEG.
+    %% PLOT HISTOGRAMS (ACROSS OBSERVERS) OF SEVERAL KINDS OF THRESHOLD. AT ï¿½10, ï¿½5, ï¿½2.5, 0 DEG.
     figure;
     graphWidth=25;
     graphHeight=50;
@@ -567,4 +562,10 @@ if false % SKIP HISTOGRAMS
     if printConditions
         disp(t(:,vars));
     end
+end
+
+
+function res = streq(str1, str2)
+
+    res = (strcmp(str1, str2) == 1);
 end
