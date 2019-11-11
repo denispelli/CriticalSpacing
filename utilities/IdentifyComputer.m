@@ -28,7 +28,7 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %
 %% EXAMPLES of output struct for macOS, Windows, and Linux:
 %
-%                   model: 'iMac15,1'
+%                    model: 'iMac15,1'
 %         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
@@ -87,22 +87,6 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %           psychPortAudio: 1
 %                  summary: 'MacBookPro14,3-macOS-10.14.6-PTB-3.0.16'
 %
-%                    model: 'MacBookPro13,2'
-%         modelDescription: 'MacBook Pro (13-inch, 2016, Four Thunderbolt 3 Ports)'
-%             manufacturer: 'Apple Inc.'
-%             psychtoolbox: 'Psychtoolbox 3.0.15'
-%                   matlab: 'MATLAB 9.5 (R2018b)'
-%                   system: 'macOS 10.14.5'
-%                  screens: 0
-%                   screen: 0
-%                     size: []
-%           openGLRenderer: 'Intel(R) Iris(TM) Graphics 550'
-%             openGLVendor: 'Intel Inc.'
-%            openGLVersion: '2.1 INTEL-12.9.22?
-% psychtoolboxKernelDriver: ''
-%           drawTextPlugin: 1
-%           psychPortAudio: 1
-%
 %                    model: 'Inspiron 5379'
 %             manufacturer: 'Dell Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
@@ -128,7 +112,7 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %           psychPortAudio: 1
 %
 %                    model: 'MacBookPro9,2 1.0'
-%         modelDescription: ''
+%         modelDescription: 'MacBook Pro (13-inch, Mid 2012)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.15'
 %                   matlab: 'MATLAB 9.5 (R2018b)'
@@ -341,16 +325,19 @@ switch 4*ismacos+2*iswin+islinux
         % https://www.2daygeek.com/how-to-check-system-hardware-manufacturer-model-and-serial-number-in-linux/
         % Tested in MATLAB under Ubuntu 18.04.
         % Written by omkar.kumbhar@nyu.edu, October 22, 2019.
-        % Now get serialNumber (thanks Hormet Yiltiz) to look up Apple
-        % modelDescription.
-        
-        [statusVersion,productVersion]=system('cat /sys/class/dmi/id/product_version');
-        [statusName,productName]=system('cat /sys/class/dmi/id/product_name');
-        [statusBoard,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
+        % Hormet Yiltiz helped add the serialNumber.
+        [~,productVersion]=system('cat /sys/class/dmi/id/product_version');
+        [~,productName]=system('cat /sys/class/dmi/id/product_name');
+        [~,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
         machine.manufacturer=strtrim(boardVendor);
         machine.model=[strtrim(productName) ' ' strtrim(productVersion)];
-        [statusSerial,serialNumber]=system('cat /sys/class/dmi/id/product_serial');
-        if ismember(machine.manufacturer,{'Apple Inc.'})
+        try
+        	% This fails if we lack root priviledges.
+        	[~,serialNumber]=system('cat /sys/class/dmi/id/product_serial');
+        catch me
+        	serialNumber='';
+        end
+        if ismember(machine.manufacturer,{'Apple Inc.'}) && ~isempty(serialNumber)
             machine.modelDescription=GetAppleModelDescription(serialNumber);
         end
     otherwise
@@ -501,17 +488,15 @@ if exist('PsychtoolboxVersion','file')
     list=PsychHID('Devices');
     for k=1:length(list)
         if strcmp(list(k).product,'BITS++')
-            machine.bitsPlusPlus=true;
+            configurationFile=fullfile('~','Library','Preferences',...
+                'Psychtoolbox','BitsSharpConfig.txt');
+            if exist(configurationFile,'file')==2
+                machine.bitsPlusPlus='bits#';
+            else
+                machine.bitsPlusPlus='bits++';
+            end
             break
         end
-    end
-    h=BitsPlusPlus('OpenBits#');
-    if h~=0
-        % CAUTION: This will fail to notice your Bits# device if it's
-        % already open. Does anyone know a polite way to detect that case?
-        % Closing the user's device would be rude.
-        machine.bitsSharp=true;
-        BitsPlusPlus('Close',h);
     end
 end
 %% Produce summary string useful in a filename.
@@ -565,16 +550,17 @@ end % switch
 end % function GetFileCreationDatenum
 
 function modelDescription=GetAppleModelDescription(serialNumber)
-% This uses the internet to enter our serial number into an Apple web page
-% to get a model description of our Apple computer. Returns '' if the
-% serial number is not in Apple's database, or we lack internet access.
-% Currently we get the error code if the lookup fails, but we don't report
-% it.
+% This uses the internet to enter our serial number (a text string) into an
+% Apple web page to get a model description of our Apple computer. Returns
+% '' if the serial number is not in Apple's database, or we lack internet
+% access. Currently we get the error code if the lookup fails, but we don't
+% report it.
 if nargin<1
     error('Input argument string "serialNumber" is required.');
 end
 if length(serialNumber)<11
-    error('serialNumber string must be more than 10 characters long.');
+    modelDescription='';
+    return
 end
 [~,report]=system(['bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
 x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
