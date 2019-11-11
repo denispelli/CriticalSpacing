@@ -119,7 +119,7 @@ else
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
 
-global deemphasizeSteps
+global deemphasizeSteps % Used in our Cost function, below.
 deemphasizeSteps=true;
 if nargin<1
     screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
@@ -178,8 +178,6 @@ else
 end
 if isoctave
     % Cope with Octave's limited unicode support.
-    %     plusMinus='+-';
-    %     micro='u';
     plusMinus=char([194 177]);
     micro=char([194 181]);
 else
@@ -254,7 +252,24 @@ if isempty(dataFilename)
         window=Screen('OpenWindow',screen,white,r);
     end
     % We call IdentifyComputer only after the possible change in
-    % resolution, so it correctly reports the final resolution.
+    % resolution, so it correctly reports the final resolution. Also we
+    % call it after our window is open, because IdentifyComputer needs a
+    % psychtoolbox window in order to get some key info from Screen. It
+    % saves time for IdentifyComputer to use our window without having to
+    % open its own. Opening and closing a psychtoolbox window takes on the
+    % order of 30 s, which is an annoying long time to wait.
+     
+    % Getting the Apple computer serial number is easy under macOS, but
+    % under Linux, that requires root privileges. It would be possible to
+    % allow the user to type a password into a sudo request to the shell,
+    % but here we open a full screen window before calling
+    % IdentifyComputer, preventing the user from responding. One solution,
+    % to allow Linux users to give sudo permission, would be to get the
+    % serial number earlier in ScreenFlipTest, before opening the window,
+    % or later, after the window is closed. Getting the serial number is
+    % one line of code. My routine GetAppleModelDescription inside
+    % IdentifyComputer converts the serial number into a model description.
+
     machine=IdentifyComputer(window);
     if isempty(framesPerSec)
         % We call FrameRate only after our window is open so FrameRate can
@@ -266,6 +281,8 @@ if isempty(dataFilename)
     % I have the impression that FrameRate is unreliable at high Priority,
     % so we raise Priority only after calling FrameRate.
     Priority(MaxPriority(0)); % Minimize interruptions.
+    
+    % MEASURE TIMING
     requestSec=2.5*periodSec*(0:steps-1)/steps;
     when=zeros(repetitions,steps);
     actualSec=zeros(repetitions,steps);
@@ -341,9 +358,9 @@ if isempty(dataFilename)
     end
 end % if isempty(useSavedData)
 
-% To analyze saved data, from any computer, just call ScreenFlipTest with the
-% full .mat filename as an argument. Alas, Octave seems to SAVE in a ASCII format
-% that MATLAB cannot read, even with the "-ascii" switch.
+% To analyze saved data, from any computer, just call ScreenFlipTest with
+% the full .mat filename as an argument. Alas, Octave seems to SAVE in a
+% ASCII format that MATLAB cannot read, even with the "-ascii" switch.
 if ~isempty(dataFilename)
     fprintf('Now loading your old ScreenFlipTest data: ''%s''.\n',...
         dataFilename);
@@ -810,33 +827,41 @@ end
 global deemphasizeSteps
 model=periodSec*ceil((requestSec+delaySec)/periodSec);
 if deemphasizeSteps
-    % The display flips when t=(requestSec+delaySec)/periodSec is integer.
-    % Next frame at next integer: ceil(t). Previous frame at preceding
-    % integer: floor(t). Time till frame is (ceil(t)-t)*periodSec. Time
-    % since frame is (t-floor(t))*periodSec. Nearest is
+    % According to our model, the display flips when
+    % t=(requestSec+delaySec)/periodSec is integer. The next frame is at
+    % the next integer value of t: ceil(t). The previous frame was at the
+    % previous integer: floor(t). Time till frame is (ceil(t)-t)*periodSec.
+    % Time since frame is (t-floor(t))*periodSec. Nearest is
     % min(ceil(t)-t,t-floor(t))*periodSec. Furthest possible is
-    % periodSec/2. Nearness (range 0 to 1) is 2*min(ceil(t)-t,t-floor(t)).
-    % Give weight 1.1 at time furthest from step, and weight 0.1 at time of
-    % step. For a linear transition, the weight would be
-    % 0.1+2*min(ceil(t)-t,t-floor(t)).
-    % That seems too abrupt, since the jitter may extend several ms before
-    % and after the step time. So we create a raised sinusoid with the same
-    % period as the frame rate that is minimum 0.1 at the frame transition,
-    % and maximum 1.1 half a period before or after. Then we normalize it
-    % so it has a norm of 1, i.e. sum(w.^2)==1.
+    % periodSec/2. Dividing by that max to get a range of 0 to 1, the
+    % "nearness" is 2*min(ceil(t)-t,t-floor(t)). Let us give weight 1.1 to
+    % errors at times farthest from step, and weight 0.1 at time of step.
+    % For a linear transition, the weight would be
+    % 0.1+2*min(ceil(t)-t,t-floor(t)). That seems too abrupt, since the
+    % jitter may extend several ms before and after the step time. So we
+    % create a raised sinusoid with the same period as the frame rate that
+    % is minimum 0.1 at the frame transition, and maximum 1.1 half a period
+    % before and after. Then we normalize it so it has a norm of 1, i.e.
+    % sum(w.^2)==1.
     t=(requestSec+delaySec)/periodSec;
     w=0.1+(1-cos(t*2*pi))/2;
-    w=w/norm(w);
-    % We use the weighting w to compute a weighted average of error across
-    % request durations, deemphasizing request durations near the steps.
 else
     w=ones(size(requestSec));
 end
-% RMS error of model of our data.
+w=w/norm(w);
+% We use the weighting w.^2 to compute a weighted average of squared
+% error across request durations, deemphasizing request durations near
+% the steps.
+%
+% RMS error of our model of the data.
 cost=sqrt(mean(mean((w.^2).*(actualSec-model).^2)));
 % fprintf('cost %.1f ms, delaySec %.1f ms, periodSec %.1f ms.\n',...
 %     1000*[cost delaySec periodSec]);
 end
+
+%% WrapString2 is an enhanced version of the Psychtoolbox WrapString to 
+% accept a cell array of strings instead of just one string. Someday
+% this enhancement should be folded into the original'
 
 function wrappedString=WrapString2(string,maxLineLength)
 % wrappedString=WrapString2(string,[maxLineLength])
@@ -854,8 +879,8 @@ function wrappedString=WrapString2(string,maxLineLength)
 % ARGUMENTS: "string" can be a string, or a cell array of strings. Each
 % string will be wrapped.
 %
-% Note that this schemes is based on counting characters, not pixels, so
-% it will give a fairly even right margin only for monospaced fonts, not
+% Note that this scheme is based on counting characters, not pixels, so it
+% will give a fairly even right margin only for monospaced fonts, not
 % proportionally spaced fonts. The more general solution would be based on
 % counting pixels, not characters, using either Screen 'TextWidth' or
 % TextBounds.
