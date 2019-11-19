@@ -232,14 +232,14 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
         error('Invalid windowOrScreeen.');
     end
     resolution=Screen('Resolution',windowOrScreen);
-    machine.size=[resolution.height resolution.width];
+    machine.size=[resolution.width resolution.height];
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
-    machine.mm=[screenHeightMm,screenWidthMm];
+    machine.mm=[screenWidthMm screenHeightMm];
     res=Screen('Resolutions',machine.screen);
     machine.nativeSize=[0 0];
     for i=1:length(res)
-        if res(i).width>machine.nativeSize(2)
-            machine.nativeSize=[res(i).height res(i).width];
+        if res(i).width>machine.nativeSize(1)
+            machine.nativeSize=[res(i).width res(i).height];
         end
     end
 end
