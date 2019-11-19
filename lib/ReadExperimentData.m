@@ -190,7 +190,7 @@ for oi=1:length(oo)
     oo(oi).date=sprintf('%04d.%02d.%02d, %02d:%02d:%02.0f',y,m,d,h,mi,s);
 end
 tt=struct2table(oo,'AsArray',true);
-% TEMPORARILY PROTECT 'read' DATA THAT UNDER REPORTS responseCount.
+% WARN AND DELETE 'read' DATA THAT UNDERREPORTS responseCount.
 if isfield(oo,'responseCount') && sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'}))>0
     fprintf('\nWARNING: Discarding %d threshold(s) with fewer than desiredTrials:\n',...
         sum(tt.responseCount<tt.trialsDesired & ~ismember(tt.task,{'read'})));
