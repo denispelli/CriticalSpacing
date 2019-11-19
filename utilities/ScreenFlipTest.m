@@ -1,5 +1,5 @@
 function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
-% ScreenFlipTest([screenOrFilename][,'stepsAndReps',stepsAndReps][,'framesPerSec',framesPerSec]);
+% ScreenFlipTest([screenOrFilename][,'stepsAndReps',stepsAndReps][,'framePerSec',framePerSec]);
 % Measures timing of Screen Flip on your computer, producing a detailed
 % one-page PNG graph with caption. It records the display timing and your
 % computer's configuration. Modern displays have multiple frame buffers, so
@@ -13,7 +13,7 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % a screen (0 for main screen, 1 for next, etc.), or a filename to
 % reanalyze a MAT file of data from a past run of ScreenFlipTest. You can
 % optionally include one or two name-value pairs. The names can be either
-% 'stepsAndReps' or 'framesPerSec'.
+% 'stepsAndReps' or 'framePerSec'.
 %% The name 'stepsAndReps' is followed by a 2-element array [steps repetitions]
 % consisting of "steps" (default 30) which is the number of points you
 % want along the Request duration axis, and "repetitions" (default 30)
@@ -22,7 +22,7 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % along the horizontal axis. 30 repetitions is enough to clearly show the
 % distribution vertically. 100 x 30 takes about 3 minutes. "stepsAndReps"
 % only affects the measurements. The case of name arguments is ignored.
-%% The name 'framesPerSec' is followed by a float number representing that
+%% The name 'framePerSec' is followed by a float number representing that
 % rate in Hz, e.g. 'frameRate', 60. This locks that parameter in both
 % measurement and analysis. When timing is really bad, it is hard for
 % ScreenFlipTest to estimate the frame rate from the data (or by calling
@@ -48,7 +48,7 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % On some computer configurations the timing is really scattered, and
 % challenging to fit our model to. If ScreenFlipTest is failing to find the
 % right frame rate, and you know it, you can provide it, using the
-% 'framesPerSec' name-value pair. If ScreenFlipTest seems to be caught in a
+% 'framePerSec' name-value pair. If ScreenFlipTest seems to be caught in a
 % local minimum, missing the global minimum, you can try increasing the
 % number of points in the grid of test locations. This is the third
 % argument in the two calls to "linspace" below. Try increasing them by a
@@ -83,7 +83,7 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 %               to overcome local minima in cost function. This performs
 %               better than simulated annealing.
 % October 31, 2019. New input arguments, name-value pairs "stepsAndReps"
-%               and "framesPerSec".
+%               and "framePerSec".
 % November 5, 2019. Polished the fitting by fminsearch. Introduced
 %               error weighting that deemphasizes times near the flip.
 %               This makes the periodSec still estimates reliable even
@@ -119,43 +119,71 @@ else
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
 
-global deemphasizeSteps % Used in our Cost function, below.
+global deemphasizeSteps % Used in our Cost function, at end of file.
 deemphasizeSteps=true;
 if nargin<1
     screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
 end
+if isfloat(screenOrFilename)
+    if length(screenOrFilename)~=1
+        error('You can only specify one screen at a time: 0 (main), or 1 (first external), etc.');
+    end
+end
 stepsAndReps=[100 30];
-framesPerSec=[];
+framePerSec=[];
+global framePerSecRange extraDelaySecRange % Share with Cost function.
+framePerSecRange=[30 200];
+extraDelaySecRange=[0 0.020];
 if nargin>2
     switch lower(name1)
-        case 'stepsandreps'
+        case lower('stepsAndReps')
             stepsAndReps=value1;
-        case 'framespersec'
-            framesPerSec=value1;
+        case lower('framePerSec')
+            framePerSec=value1;
+        case lower('framePerSecRange')
+            framePerSecRange=value1;
+        case lower('extraDelaySecRange')
+            extraDelaySecRange=value1;
         otherwise
-            error('The name must be either ''stepsAndReps'' or ''framesPerSec''.');
+            error('The name must be: ''stepsAndReps'' or ''framePerSec'' or ''framePerSecRange'' or ''extraDelaySecRange''.');
     end
 end
 if nargin>4
     switch lower(name2)
-        case 'stepsandreps'
+        case lower('stepsAndReps')
             stepsAndReps=value2;
-        case 'framespersec'
-            framesPerSec=value2;
+        case lower('framePerSec')
+            framePerSec=value2;
+        case lower('framePerSecRange')
+            framePerSecRange=value2;
+        case lower('extraDelaySecRange')
+            extraDelaySecRange=value2;
         otherwise
-            error('The name must be either ''stepsAndReps'' or ''framesPerSec''.');
+            error('The name must be: ''stepsAndReps'' or ''framePerSec'' or ''framePerSecRange'' or ''extraDelaySecRange''.');
     end
 end
 if ismember(nargin,[2 4])
     error('Illegal number of arguments.');
 end
 if ~all(size(stepsAndReps)==[1 2])
-    error('If present, the value for ''stepsAndReps'' should be a two-element array [steps repetition].');
+    error('The value for ''stepsAndReps'' must be a positive two-element array [steps repetition].');
 end
-if ~isempty(framesPerSec)
-    if ~isfloat(framesPerSec) || ~isfloat(framesPerSec)
-        error('framesPerSec must be a float number like 60.');
+if ~isempty(framePerSec)
+    if ~isfloat(framePerSec) || framePerSec<=0
+        error('framePerSec must be a positive float number like 60.');
     end
+end
+if ~all(size(framePerSecRange)==[1 2]) ...
+        || ~all(isfloat(framePerSecRange))...
+        || ~all(framePerSecRange>0)...
+        || framePerSecRange(1)>framePerSecRange(2)
+    error('The value for ''framePerSecRange'' must be a positive two-element array [min max].');
+end
+if ~all(size(extraDelaySecRange)==[1 2]) ...
+        || ~all(isfloat(extraDelaySecRange))...
+        || ~all(extraDelaySecRange>=0)...
+        || extraDelaySecRange(1)>extraDelaySecRange(2)
+    error('The value for ''extraDelaySecRange'' must be a positive two-element array [min max].');
 end
 steps=stepsAndReps(1);
 repetitions=stepsAndReps(2);
@@ -247,9 +275,17 @@ if isempty(dataFilename)
         PsychImaging('PrepareConfiguration');
         PsychImaging('AddTask','General','UseRetinaResolution');
         PsychImaging('AddTask','General','UseVirtualFramebuffer');
-        window=PsychImaging('OpenWindow',screen,white,r);
+        if fractionOfScreenUsed~=1
+            window=PsychImaging('OpenWindow',screen,white,r);
+        else
+            window=PsychImaging('OpenWindow',screen,white);
+        end
     else
-        window=Screen('OpenWindow',screen,white,r);
+        if fractionOfScreenUsed~=1
+            window=Screen('OpenWindow',screen,white,r);
+        else
+            window=Screen('OpenWindow',screen,white);
+        end
     end
     % We call IdentifyComputer only after the possible change in
     % resolution, so it correctly reports the final resolution. Also we
@@ -271,12 +307,12 @@ if isempty(dataFilename)
     % IdentifyComputer converts the serial number into a model description.
 
     machine=IdentifyComputer(window);
-    if isempty(framesPerSec)
+    if isempty(framePerSec)
         % We call FrameRate only after our window is open so FrameRate can
         % use the open window instead of opening its own.
         periodSec=1/FrameRate(window);
     else
-        periodSec=1/framesPerSec;
+        periodSec=1/framePerSec;
     end
     % I have the impression that FrameRate is unreliable at high Priority,
     % so we raise Priority only after calling FrameRate.
@@ -398,11 +434,11 @@ hold on
 % discount them by fitting just the median actual duration at each
 % requested duration.
 actualMedian=median(actualSec);
-delaySec=0.004; % Initial guess, 4 ms.
-if isempty(framesPerSec)
+delaySec=median(extraDelaySecRange); % Initial guess.
+if isempty(framePerSec)
     periodSec=1/60; % Initial guess, 60 Hz frame rate.
 else
-    periodSec=1/framesPerSec; % User-specified frame rate.
+    periodSec=1/framePerSec; % User-specified frame rate.
 end
 b=[delaySec periodSec];
 % Two-parameter search:
@@ -410,32 +446,32 @@ b=[delaySec periodSec];
 fun2=@(b) Cost(requestSec,actualMedian,b(1),b(2));
 % One-parameter search:
 % delaySec. b has length 1.
-fun1=@(b) Cost(requestSec,actualMedian,b,1/framesPerSec);
+fun1=@(b) Cost(requestSec,actualMedian,b,1/framePerSec);
 % These min and max values allow an extra delay of 0 to 50 ms, and a frame
 % rate of 10 to 1000 Hz.
-bMin=[0.0  0.001];
-bMax=[0.05 0.1  ];
+bMin=[extraDelaySecRange(1) 1/framePerSecRange(2)];
+bMax=[extraDelaySecRange(2) 1/framePerSecRange(1)];
 % We use a grid to cover the whole space and use fminsearch locally. Thanks
 % to Ziyi Zhang and Omkar Kumbhar. November 5, 2019.
 b1=linspace(bMin(1),bMax(1),3);
 options=optimset('fminsearch');
-if isempty(framesPerSec)
+if isempty(framePerSec)
     numberString='Two';
     b2=linspace(bMin(2),bMax(2),10);
     b2=[b2 1/50 1/60]; % Add common display frame rates.
-    % I increased these limits to avoid getting warnings that it quit
-    % early because it exceeded one of these limits.
+    % I increased these limits to avoid getting warnings that fminsearch
+    % quit early because it exceeded one of these limits.
     options.MaxFunEvals=800; % Default is 200*numberofvariables.
     options.MaxIter=800; % Default is 200*numberofvariables.
 else
     numberString='One';
-    b2=1/framesPerSec;
+    b2=1/framePerSec;
 end
 bestCost=inf;
 bestB=[];
 for i=1:length(b1)
     for j=1:length(b2)
-        if isempty(framesPerSec)
+        if isempty(framePerSec)
             [b,cost]=fminsearch(fun2,[b1(i) b2(j)],options);
         else
             [b(1),cost]=fminsearch(fun1,b1(i),options);
@@ -664,7 +700,7 @@ if deemphasizeSteps
 else
     s1aa='';
 end
-if ~isempty(framesPerSec)
+if ~isempty(framePerSec)
     s1b=sprintf(['The model has only one degree of freedom: '...
         'the extra delay %.1f ms. '],1000*delaySec);
 else
@@ -824,7 +860,14 @@ if periodSec<0 || delaySec<0
     cost=inf;
     return
 end
-global deemphasizeSteps
+global framePerSecRange extraDelaySecRange % Share with main program.
+if 1/periodSec<framePerSecRange(1) || 1/periodSec>framePerSecRange(2)...
+        || delaySec<extraDelaySecRange(1) || delaySec>extraDelaySecRange(2)
+    % Enforce the bounds on delaySec and periodSec.
+    cost=inf;
+    return
+end
+global deemphasizeSteps % Share with main program.
 model=periodSec*ceil((requestSec+delaySec)/periodSec);
 if deemphasizeSteps
     % According to our model, the display flips when
