@@ -222,8 +222,9 @@ switch mfilename
         ooo=ooo(1:5);
     case 'runCrowdingSurvey2'
         ooo=ooo(6:end);
+    case 'runCrowdingSurveyAshley'
     otherwise
-        error('Illegal file name');
+        error('Illegal filename ''%s''.',mfilename);
 end
 
 %% NUMBER THE BLOCKS
