@@ -1,5 +1,5 @@
-function machine=IdentifyComputer(windowOrScreen,verbose)
-% machine=IdentifyComputer([windowOrScreen,verbose]);
+function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
+% machine=IdentifyComputer([windowsOrScreens,modifier1,modifier2]);
 % IdentifyComputer is handy in testing, benchmarking, and bug reporting, to
 % easily record the computer environment in a compact human-readable way.
 % Runs on MATLAB and Octave 5.1 under macOS, Windows, and Linux, with any
@@ -11,42 +11,25 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 % Apple and we have internet access. It can run without the Psychtoolbox,
 % but then returns much less information.
 %% OUTPUT ARGUMENT:
-% "machine" is a struct with many informative fields. The size, nativeSize,
-% mm, and openGL fields refer to the screen with the number specified by
-% the "screen" field.
+% "machine" is a struct with many informative fields. The screen, size,
+% nativeSize, mm, and openGL fields are cell arrays, with one element per
+% screen. By default, all screens are reported, but you can specify any
+% subset by using the screens argument to IdentifyComputer2.
 %% INPUT ARGUMENTS:
-% Use the "windowOrScreen" argument to specify a window pointer or the
-% screen number. Default is screen 0, the main screen. This routine is
-% quick if windowOrScreen is empty [], or points to an open window, or
-% specifies a screen on which a window is already open, and it's slow
-% otherwise. That's because if you provide a screen number (or use the
-% default screen 0) without a window then it has to open and close a
-% window, which may take 30 s. Passing an empty windowOrScreen skips
-% opening a window, at the cost of leaving the screen size and openGL
-% fields empty. The second argument, if present, should be the string
-% 'verbose', to not suppress warning messages.
+% Use the "windowsOrScreens" argument scalar or array to specify screen numbers or window pointers for the screens
+% you want to test. (You can mix screen numbers and window pointers.) The main screen is 0, the next is 1, and so on. Default
+% is all screens. This routine is quick if "windowsOrScreens" is empty [] or
+% specifies screens on which windows are already open, and it's slow
+% otherwise. That's because for each requested screen that lacks a window,
+% IdentifyComputer has to open and close a window on that screen, which may
+% take 30 s. Passing an empty "windowsOrScreens" argument skips opening a window, at
+% the cost of leaving the screen size and openGL fields empty.
+% The "modifier1" and "modifier2" arguments, if present, can be (in any
+% order) the strings 'verbose', to not suppress warning messages, and/or
+% 'noInternet' to prevent using the internet to access an Apple web page to
+% get the modelDescription.
 %
 %% EXAMPLES of output struct for macOS, Windows, and Linux:
-%
-%                    model: 'iMac15,1'
-%         modelDescription: 'iMac (Retina 5K, 27-inch, Late 2014)'
-%             manufacturer: 'Apple Inc.'
-%             psychtoolbox: 'Psychtoolbox 3.0.16'
-%                   matlab: 'MATLAB 9.6 (R2019a)'
-%                   system: 'macOS 10.14.6'
-%                screenMex: 'Screen.mexmaci64 07-Aug-2019'
-%                  screens: 0
-%                   screen: 0
-%                     size: [1800 3200]
-%               nativeSize: [2880 5120]
-%                       mm: [341 602]
-%           openGLRenderer: 'AMD Radeon R9 M290X OpenGL Engine'
-%             openGLVendor: 'ATI Technologies Inc.'
-%            openGLVersion: '2.1 ATI-2.11.21'
-% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
-%           drawTextPlugin: 1
-%           psychPortAudio: 1
-%                  summary: 'iMac15,1-macOS-10.14.6-PTB-3.0.16'
 %
 %                    model: 'MacBook10,1'
 %         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
@@ -54,133 +37,79 @@ function machine=IdentifyComputer(windowOrScreen,verbose)
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
+%                screenMex: 'Screen.mexmaci64 06-Aug-2019'
 %                  screens: 0
-%                   screen: 0
-%                     size: [1440 2304]
-%               nativeSize: [1600 2560]
-%                       mm: [161 258]
-%           openGLRenderer: 'Intel(R) HD Graphics 615'
-%             openGLVendor: 'Intel Inc.'
-%            openGLVersion: '2.1 INTEL-12.10.12'
+%                   screen: {[0]}
+%                     size: {[2560 1600]}
+%               nativeSize: {[2560 1600]}
+%                       mm: {[259 161]}
+%           openGLRenderer: {'Intel(R) HD Graphics 615'}
+%             openGLVendor: {'Intel Inc.'}
+%            openGLVersion: {'2.1 INTEL-12.10.14'}
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
 %                  summary: 'MacBook10,1-macOS-10.14.6-PTB-3.0.16'
 %
-%                    model: 'MacBookPro14,3'
-%         modelDescription: 'MacBook Pro (15-inch, 2017)'
-%             manufacturer: 'Apple Inc.'
-%             psychtoolbox: 'Psychtoolbox 3.0.16'
-%                   matlab: 'MATLAB 9.6 (R2019a)'
-%                   system: 'macOS 10.14.6'
-%                screenMex: 'Screen.mexmaci64 21-Oct-2019'
-%                  screens: 0
-%                   screen: 0
-%                     size: [2100 3360]
-%               nativeSize: [2100 3360]
-%                       mm: [206 330]
-%           openGLRenderer: 'AMD Radeon Pro 560 OpenGL Engine'
-%             openGLVendor: 'ATI Technologies Inc.'
-%            openGLVersion: '2.1 ATI-2.11.20'
-% psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
-%           drawTextPlugin: 1
-%           psychPortAudio: 1
-%                  summary: 'MacBookPro14,3-macOS-10.14.6-PTB-3.0.16'
-%
-%                    model: 'Inspiron 5379'
-%             manufacturer: 'Dell Inc.'
-%             psychtoolbox: 'Psychtoolbox 3.0.16'
-%                   matlab: 'MATLAB 9.6 (R2019a)'
-%                   system: 'Windows NT-10.0.9200'
-%                  screens: 0
-%
-%                    model: '80WK Lenovo Y520-15IKBN'
-%         modelDescription: ''
-%             manufacturer: 'LENOVO'
-%             psychtoolbox: 'Psychtoolbox 3.0.16'
-%                   matlab: 'MATLAB 9.6 (R2019a)'
-%                   system: 'Linux 4.15.0-65-generic'
-%                  screens: 0
-%                   screen: 0
-%                     size: [1080 1920]
-%               nativeSize: []
-%                       mm: [286 508]
-%           openGLRenderer: 'GeForce GTX 1050 Ti/PCIe/SSE2'
-%             openGLVendor: 'NVIDIA Corporation'
-%            openGLVersion: '4.6.0 NVIDIA 396.54'
-%           drawTextPlugin: 1
-%           psychPortAudio: 1
-%
-%                    model: 'MacBookPro9,2 1.0'
-%         modelDescription: 'MacBook Pro (13-inch, Mid 2012)'
-%             manufacturer: 'Apple Inc.'
-%             psychtoolbox: 'Psychtoolbox 3.0.15'
-%                   matlab: 'MATLAB 9.5 (R2018b)'
-%                   system: 'Linux 5.2.0-3-amd64'
-%                screenMex: 'Screen.mexa64 21-Sep-2019'
-%                  screens: 0
-%                   screen: 0
-%                     size: [1920.00 2480.00]
-%               nativeSize: [800.00 1280.00]
-%                       mm: [504.00 651.00]
-%           openGLRenderer: 'Mesa DRI Intel(R) Ivybridge Mobile '
-%             openGLVendor: 'Intel Open Source Technology Center'
-%            openGLVersion: '3.0 Mesa 19.2.1'
-%           drawTextPlugin: 1
-%           psychPortAudio: 1
-%                  summary: 'MacBookPro9,2-1.0-Linux-5.2.0-3-amd64-PTB-3.0.15'
-%
-% Unavailable answers are '' or []. The psychtoolboxKernelDriver field
-% appears only for macOS. The bitsPlusPlus field appears only if the Bits++
-% video hardware is detected.
+% Unavailable answers are empty. Inapplicable fields are left undefined.
+% E.g. the psychtoolboxKernelDriver field appears only for macOS. The
+% bitsPlusPlus field appears only if the Bits++ video hardware is detected.
 %
 % The machine.summary field helps you make a filename that identifies your
 % configuration. For example:
 % machine=IdentifyComputer([]);
 % filename=['ScreenFlipTest-' machine.summary '.png'];
 % produces a string like this:
-% ScreenFlipTest-MacBook10,1-macOS-10.14.6-PTB-3.0.16.png
+% 'ScreenFlipTest-MacBook10,1-macOS-10.14.6-PTB-3.0.16.png'
 %
-% JUST ONE SCREEN. In principle, one might want to separately report the
-% openGL driver info for each screen, but, in practice, there's typically
-% no gain in doing that. In the old days one could plug in arbitrary video
-% cards and have different drivers for each screen. Today, most of us use
-% computers with no slots. At most we plug in a cable connected to an
-% external display (or two) and thus use the same video driver on all
-% screens. Thus some properties, e.g. resolution and frame rate, can differ
-% from screen to screen, but not the openGL fields we report here. If it
-% becomes useful to report screen-dependent information we could drop the
-% screen field, and change each of the screen-dependent fields to be a cell
-% array.
-%
-% LIMITATIONS: needs more testing on computers with multiple screens.
+% LIMITATIONS: 
+% Needs more testing on computers with multiple screens.
+% Currently it does not detect mirroring. I wish it did
+% because mirroring will typically greatly slows performance,
+% which is typically not good for experiments.
 %
 % denis.pelli@nyu.edu
 
 %% HISTORY
-% August 24, 2019. DGP wrote it.
+% August 24, 2019.  DGP wrote it.
 % October 15, 2019. omkar.kumbhar@nyu.edu added support for linux.
 % October 28, 2019. DGP added machine.screenMex with creation date.
 % October 31, 2019. DGP replaced strip by strtrim, to extend compatibility
-%                      back to MATLAB 2006a. Requested by Mario Kleiner.
+%                   back to MATLAB 2006a. Requested by Mario Kleiner.
 % November 8, 2019. DGP. Now compatible with Octave 5.1. Use strfind
-% instead of "contains", which is missing in Octave. Use "switch
-% 4*ismacos+2*iswin+islinux" instead of "switch computer" because
-% "computer" differs between MATLAB and Octave. Use "system" instead of
-% "evalc", which is missing in Octave. Provide format to datenum, which
-% otherwise fails under Octave.
-
-if nargin<1
-    windowOrScreen=0;
-end
+%                   instead of "contains", which is missing in Octave. Use
+%                   "switch 4*ismacos+2*iswin+islinux" instead of "switch
+%                   computer" because "computer" differs between MATLAB and
+%                   Octave. Use "system" instead of "evalc('!...')", which
+%                   was failing in Octave. Provide format to datenum, which
+%                   otherwise fails in Octave.
+% November 18, 2019. DGP. New argument 'noInternet' to prevent use of
+%                   Internet to look up the modelDescription.
 if nargin<2
-    verbose=false;
-else
-    if ismember(verbose,{'verbose'})
+    modifier1='';
+end
+if nargin<3
+    modifier2='';
+end
+verbose=false;
+useInternet=true;
+switch lower(modifier1)
+    case 'verbose'
         verbose=true;
-    else
-        error('Second argument, if present, must be the string ''verbose''');
-    end
+    case lower('noInternet')
+        useInternet=false;
+    case ''
+    otherwise
+        error('Illegal argument ''%s''. Must be ''verbose'' or ''noInternet''.',modifier1);
+end
+switch lower(modifier2)
+    case 'verbose'
+        verbose=true;
+    case lower('noInternet')
+        useInternet=false;
+    case ''
+    otherwise
+        error('Illegal argument ''%s''. Must be ''verbose'' or ''noInternet''.',modifier2);
 end
 ismacos=ismac;
 iswin=ispc;
@@ -188,11 +117,14 @@ if exist('PsychtoolboxVersion','file')
     islinux=IsLinux;
     isoctave=IsOctave;
 else
-    islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) || ~isempty(strfind(computer,'linux-gnu'));
+    % For clarity, MATLAB recommends "contains" instead of
+    % "~isempty(strfind(...))", but it's not available in Octave.
+    islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) ...
+        || ~isempty(strfind(computer,'linux-gnu'));
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
 machine.model='';
-machine.modelDescription=''; % Currently non-empty only for macOS.
+machine.modelDescription=''; % Currently non-empty only for Apple hardware.
 machine.manufacturer='';
 machine.psychtoolbox='';
 machine.matlab='';
@@ -223,29 +155,41 @@ if exist('PsychtoolboxVersion','file')
         Screen('Preference','Verbosity',verbosity);
     end
 end
-machine.screen=0;
-machine.size=[];
-machine.nativeSize=[];
-machine.mm=[];
-if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
-    if ~ismember(windowOrScreen,machine.screens) && Screen('WindowKind',windowOrScreen)~=1
-        error('Invalid windowOrScreeen.');
-    end
-    resolution=Screen('Resolution',windowOrScreen);
-    machine.size=[resolution.width resolution.height];
-    [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowOrScreen);
-    machine.mm=[screenWidthMm screenHeightMm];
-    res=Screen('Resolutions',machine.screen);
-    machine.nativeSize=[0 0];
-    for i=1:length(res)
-        if res(i).width>machine.nativeSize(1)
-            machine.nativeSize=[res(i).width res(i).height];
+if nargin<1
+    windowsOrScreens=machine.screens;
+end
+% ALLOCATE VARIABLES; SET VALUES LATER.
+machine.screen=num2cell(windowsOrScreens);
+machine.size=cell(size(windowsOrScreens));
+machine.nativeSize=cell(size(windowsOrScreens));
+machine.mm=cell(size(windowsOrScreens));
+if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
+    for iScreen=1:length(windowsOrScreens)
+		if ~ismember(windowsOrScreens(iScreen),machine.screens) ...
+		&& Screen('WindowKind',windowsOrScreens(iScreen))~=1
+			error(['Invalid windowsOrScreens(' num2str(iScreen) ') ' num2str(windowsOrScreens((iScreen))) '.']);
+		end
+        resolution=Screen('Resolution',windowsOrScreens(iScreen));
+        machine.size{iScreen}=[resolution.width resolution.height];
+        [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowsOrScreens(iScreen));
+        machine.mm{iScreen}=[screenWidthMm screenHeightMm];
+        res=Screen('Resolutions',windowsOrScreens(iScreen));
+        machine.nativeSize{iScreen}=[0 0];
+        for i=1:length(res)
+            if res(i).width>machine.nativeSize{iScreen}(1)
+                machine.nativeSize{iScreen}=[res(i).width res(i).height];
+            end
         end
     end
 end
-machine.openGLRenderer='';
-machine.openGLVendor='';
-machine.openGLVersion='';
+machine.openGLRenderer=cell(size(windowsOrScreens));
+machine.openGLVendor=cell(size(windowsOrScreens));
+machine.openGLVersion=cell(size(windowsOrScreens));
+for iScreen=1:length(windowsOrScreens)
+    machine.openGLRenderer{iScreen}='';
+    machine.openGLVendor{iScreen}='';
+    machine.openGLVersion{iScreen}='';
+end
 if exist('PsychtoolboxVersion','file')
     [~,p]=PsychtoolboxVersion;
     machine.psychtoolbox=sprintf('Psychtoolbox %d.%d.%d',...
@@ -280,16 +224,18 @@ switch 4*ismacos+2*iswin+islinux
     case 4
         %% macOS
         machine.manufacturer='Apple Inc.';
-        % https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
         % Whatever shell is running, we maintain compatibility by sending
         % each script to the bash shell.
-        [~,serialNumber]=system('bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
-        machine.modelDescription=GetAppleModelDescription(serialNumber);
-        % A python solution: https://gist.github.com/zigg/6174270
+        [~,serialNumber]=system(...
+            'bash -c ''system_profiler SPHardwareDataType'' | awk ''/Serial/ {print $4}''');
+        if useInternet
+            machine.modelDescription=GetAppleModelDescription(serialNumber);
+        end
         
     case 2
         %% Windows
-        [~,wmicString]=system('wmic computersystem get manufacturer, model');
+        [~,wmicString]=system(...
+            'wmic computersystem get manufacturer, model');
         % Here's a typical result:
         % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
         % '     Dell Inc.     Inspiron 5379    ']);
@@ -325,7 +271,6 @@ switch 4*ismacos+2*iswin+islinux
         % https://www.2daygeek.com/how-to-check-system-hardware-manufacturer-model-and-serial-number-in-linux/
         % Tested in MATLAB under Ubuntu 18.04.
         % Written by omkar.kumbhar@nyu.edu, October 22, 2019.
-        % Hormet Yiltiz helped add the serialNumber.
         [~,productVersion]=system('cat /sys/class/dmi/id/product_version');
         [~,productName]=system('cat /sys/class/dmi/id/product_name');
         [~,boardVendor]=system('cat /sys/class/dmi/id/board_vendor');
@@ -337,11 +282,12 @@ switch 4*ismacos+2*iswin+islinux
         catch me
         	serialNumber='';
         end
-        if ismember(machine.manufacturer,{'Apple Inc.'}) && ~isempty(serialNumber)
+        if useInternet && ismember(machine.manufacturer,{'Apple Inc.'}) ...
+                && ~isempty(serialNumber)
             machine.modelDescription=GetAppleModelDescription(serialNumber);
         end
     otherwise
-        error('Unknown OS.');
+        error('Unknown OS %d.',4*ismacos+2*iswin+islinux);
 end
 % Clean up the Operating System name.
 machine.system=strtrim(machine.system);
@@ -362,6 +308,7 @@ end
 if ismacos
     machine.psychtoolboxKernelDriver='';
     [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
+    % MATLAB recommends "contains", but Octave doesn't provide it.
     if ~isempty(strfind(result,'PsychtoolboxKernelDriver'))
         % Get version number of Psychtoolbox kernel driver.
         v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
@@ -374,98 +321,105 @@ if ismacos
         machine.psychtoolboxKernelDriver=['PsychtoolboxKernelDriver ' v];
     end
 end
-if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
-    % From the provided windowOrScreen we find both the screen and a
-    % window on that screen. If there's no window open, we open one.
-    window=[];
-    isNewWindow=false;
-    if ismember(windowOrScreen,machine.screens)
-        % It's a screen. We need a window on it.
-        machine.screen=windowOrScreen;
-        % Try to find a window already open on the specified screen.
-        windows=Screen('Windows');
-        for i=1:length(windows)
-            if machine.screen==Screen('WindowScreenNumber',windows(i))
-                % This window is on specified screen.
-                if Screen('WindowKind',windows(i))==1
-                    % This window belongs to Psychtoolbox, so use it.
-                    window=windows(i);
-                    break
-                end
+if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
+    for iScreen=1:length(windowsOrScreens)
+		% For each windowsOrScreens we find both the screen and a
+		% window on that screen. If there's no window open, we open one.
+		window=[];
+		isNewWindow=false;
+		if ismember(windowsOrScreens(iScreen),machine.screens)
+			% It's a screen. We need a window on it.
+			machine.screen{iScreen}=windowsOrScreens(iScreen);
+			% Try to find a window already open on the specified screen.
+			windows=Screen('Windows');
+			for i=1:length(windows)
+				if machine.screen{iScreen}==Screen('WindowScreenNumber',windows(i))
+					% This window is on specified screen.
+					if Screen('WindowKind',windows(i))==1
+						% This window belongs to Psychtoolbox, so use it.
+						window=windows(i);
+						break
+					end
+				end
+			end
+			if isempty(window)
+				% Opening and closing a window takes a long time, on the order
+				% of 30 s, so you may want to skip that, by passing an empty
+				% argument [], if you don't need the openGL fields.
+				if islinux
+					% This is safer, because one user reported a fatal error when
+					% attempting to open a less-than-full-screen window under
+					% Linux.
+					fractionOfScreenUsed=1;
+				else
+					% This is much less disturbing to watch.
+					fractionOfScreenUsed=0.2;
+				end
+				screenBufferRect=Screen('Rect',machine.screen{iScreen});
+				r=round(fractionOfScreenUsed*screenBufferRect);
+				r=AlignRect(r,screenBufferRect,'right','bottom');
+				if ~verbose
+					PsychTweak('ScreenVerbosity',0);
+					verbosity=Screen('Preference','Verbosity',0);
+				end
+				try
+					Screen('Preference','SkipSyncTests',1);
+					window=Screen('OpenWindow',machine.screen{iScreen},255,r);
+					isNewWindow=true;
+				catch em
+					warning(em.message);
+					warning('Unable to open window on screen %d.',...
+						machine.screen{iScreen});
+				end
+				if ~verbose
+					Screen('Preference','Verbosity',verbosity);
+				end
+			end
+		elseif Screen('WindowKind',windowsOrScreens(iScreen))==1
+			% It's a window pointer. Get the screen number.
+			window=windowsOrScreens(iScreen);
+			machine.screen{iScreen}=Screen('WindowScreenNumber',window);
+			if ~ismember(machine.screen{iScreen},Screen('Screens'))
+				% This failed only with an experimental version of Screen.
+				error('Could not get screen number of window pointer.');
+			end
+		else
+			if ~isempty(windowsOrScreens)
+				error(['Illegal windowsOrScreens [' num2str(windowsOrScreens) '], '...
+					'should be an array of window pointers '...
+					'and/or screen numbers, or empty.']);
+			end
+		end
+        if ~isempty(window)
+            %% OpenGL DRIVER
+            % Mario Kleiner suggests (1.9.2019) identifying the gpu
+            % hardware and driver by the combination of GLRenderer,
+            % GLVendor, and GLVersion, which are provided by
+            % Screen('GetWindowInfo',window).
+            info=Screen('GetWindowInfo',window);
+            machine.openGLRenderer{iScreen}=info.GLRenderer;
+            machine.openGLVendor{iScreen}=info.GLVendor;
+            machine.openGLVersion{iScreen}=info.GLVersion;
+
+        	%% DRAWTEXT PLUGIN
+            if isempty(machine.drawTextPlugin)
+                % Check for presence of DrawText Plugin, for best
+                % rendering. The first 'DrawText' call should trigger
+                % loading of the plugin, but may fail. Recommended by Mario
+                % Kleiner, July 2017.
+                Screen('DrawText',window,' ',0,0,0,1,1);
+                machine.drawTextPlugin=...
+                    Screen('Preference','TextRenderer')>0;
+            end
+            
+            %% CLOSE WINDOW
+            if isNewWindow
+                % If we opened the window, then close it.
+                Screen('Close',window);
             end
         end
-        if isempty(window)
-            % Opening and closing a window takes a long time, on the order
-            % of 30 s, so you may want to skip that, by passing an empty
-            % argument [], if you don't need the openGL fields.
-            if islinux
-                % This is safer, because one user reported a fatal error when
-                % attempting to open a less-than-full-screen window under
-                % Linux.
-                fractionOfScreenUsed=1;
-            else
-                % This is much less disturbing to watch.
-                fractionOfScreenUsed=0.2;
-            end
-            screenBufferRect=Screen('Rect',machine.screen);
-            r=round(fractionOfScreenUsed*screenBufferRect);
-            r=AlignRect(r,screenBufferRect,'right','bottom');
-            if ~verbose
-                PsychTweak('ScreenVerbosity',0);
-                verbosity=Screen('Preference','Verbosity',0);
-            end
-            try
-                Screen('Preference','SkipSyncTests',1);
-                window=Screen('OpenWindow',machine.screen,255,r);
-                isNewWindow=true;
-            catch em
-                warning(em.message);
-                warning('Unable to open window on screen %d.',...
-                    machine.screen);
-            end
-            if ~verbose
-                Screen('Preference','Verbosity',verbosity);
-            end
-        end
-    elseif Screen('WindowKind',windowOrScreen)==1
-        % It's a window pointer. Get the screen number.
-        window=windowOrScreen;
-        machine.screen=Screen('WindowScreenNumber',window);
-        if ~ismember(machine.screen,Screen('Screens'))
-            % This failed only with an experimental version of Screen.
-            error('Could not get screen number of window pointer.');
-        end
-    else
-        if ~isempty(windowOrScreen)
-            error(['Illegal windowOrScreen=%.0f, '...
-                'should be a window pointer, '...
-                'a screen number, or empty.'],windowOrScreen);
-        end
-    end
-    if ~isempty(window)
-        %% OpenGL DRIVER
-        % Mario Kleiner suggests (1.9.2019) identifying the gpu hardware
-        % and driver by the combination of GLRenderer, GLVendor, and
-        % GLVersion, which are provided by Screen('GetWindowInfo',window).
-        info=Screen('GetWindowInfo',window);
-        machine.openGLRenderer=info.GLRenderer;
-        machine.openGLVendor=info.GLVendor;
-        machine.openGLVersion=info.GLVersion;
-        
-        %% DRAWTEXT PLUGIN
-        % Check for presence of DrawText Plugin, for best rendering. The
-        % first 'DrawText' call should trigger loading of the plugin, but
-        % may fail. Recommended by Mario Kleiner, July 2017.
-        Screen('DrawText',window,' ',0,0,0,1,1);
-        machine.drawTextPlugin=Screen('Preference','TextRenderer')>0;
-        
-        %% CLOSE WINDOW
-        if isNewWindow
-            % If we opened the window, then close it.
-            Screen('Close',window);
-        end
-    end
-end % if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
+    end % for iScreen=1:length(windowsOrScreens)
+end % if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
 if exist('PsychtoolboxVersion','file')
     try
         if ~verbose
@@ -523,7 +477,10 @@ iswin=ispc;
 if exist('PsychtoolboxVersion','file')
     islinux=IsLinux;
 else
-    islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) || ~isempty(strfind(computer,'linux-gnu'));
+    % MATLAB recommends calling "contains" instead of "~isempty(strfind(",
+    % but it's not available in Octave.
+    islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) ...
+        || ~isempty(strfind(computer,'linux-gnu'));
 end
 switch 4*ismacos+2*iswin+islinux
     case 4
@@ -531,14 +488,15 @@ switch 4*ismacos+2*iswin+islinux
         [~,b]=system(sprintf('GetFileInfo "%s"',filePath));
         filePath=strfind(b,'created: ')+9;
         crdat=b(filePath:filePath+18);
-        % Octave fails without the explicit format.
+        % In Octave, datenum fails without the explicit format.
         creationDatenum=datenum(crdat,'mm/dd/yyyy HH:MM:SS');
     case 2
         %% Windows
         % https://www.mathworks.com/matlabcentral/answers/288339-how-to-get-creation-date-of-files
         d=System.IO.File.GetCreationTime(filePath);
         % Convert the .NET DateTime d into a MATLAB datenum.
-        creationDatenum=datenum(datetime(d.Year,d.Month,d.Day,d.Hour,d.Minute,d.Second));
+        creationDatenum=datenum(datetime(...
+            d.Year,d.Month,d.Day,d.Hour,d.Minute,d.Second));
     case 1
         %% Linux
         % Alas, depending on the file system used, Linux typically does not
@@ -550,33 +508,38 @@ end % switch
 end % function GetFileCreationDatenum
 
 function modelDescription=GetAppleModelDescription(serialNumber)
-% This uses the internet to enter our serial number (a text string) into an
-% Apple web page to get a model description of our Apple computer. Returns
-% '' if the serial number is not in Apple's database, or we lack internet
-% access. Currently we get the error code if the lookup fails, but we don't
-% report it.
+% This uses the internet to enter the last four characters of our
+% 12-character serial number into an Apple web page to get a model
+% description of our Apple computer. Returns '' if the serial number is not
+% in Apple's database, or we lack internet access. Currently we get the
+% error code if the lookup fails, but we don't report it.
+% https://apple.stackexchange.com/questions/98080/can-a-macs-model-year-be-determined-with-a-terminal-command/98089
+% A version of this in python: https://gist.github.com/zigg/6174270
 if nargin<1
     error('Input argument string "serialNumber" is required.');
 end
 if length(serialNumber)<11
-    modelDescription='';
-    return
+    error('serialNumber string must be more than 10 characters long.');
 end
-[~,report]=system(['bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' serialNumber(9:end-1) '''']);
+[~,report]=system(...
+    ['bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' ...
+    serialNumber(9:end-1) '''']);
 x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
 if isempty(x)
     if isempty(err)
-        % warning('Apple serial number lookup failed, possibly because of no internet access.');
+        % warning(['Apple serial number lookup failed, '...
+        % 'possibly because of no internet access.']);
     else
         % Probably tried to look up a non-Apple product.
-        warning('Apple serial number lookup failed with error ''%s''.',err.error);
+        warning('Apple serial number lookup failed with error ''%s''.',...
+            err.error);
     end
     modelDescription='';
 else
     modelDescription=x.description;
     s=modelDescription;
     if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
-        [~,shell]=system('echo $0') % name of current shell.
+        [~,shell]=system('echo $0') % Display shell name.
         warning(['Oops. Failed in getting modelDescription. '...
             'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
         modelDescription='';
