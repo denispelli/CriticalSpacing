@@ -6,28 +6,38 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % you typically write to a hidden buffer and then call "flip" to make it
 % visible. ScreenFlipTest graphs the relation between the requested and
 % actual flip times. Supports MATLAB and Octave under macOS, Windows, and
-% Linux.
+% Linux. Timing under macOS greatly improved in release 3.0.16 of Psychtoolbox,
+% on November 27, 2019.
 %
 % INPUT ARGUMENTS:
-%% "screenOrFilename" (default 0), if present, can be an integer to specify
-% a screen (0 for main screen, 1 for next, etc.), or a filename to
-% reanalyze a MAT file of data from a past run of ScreenFlipTest. You can
-% optionally include one or two name-value pairs. The names can be either
-% 'stepsAndReps' or 'framePerSec'.
-%% The name 'stepsAndReps' is followed by a 2-element array [steps repetitions]
-% consisting of "steps" (default 30) which is the number of points you
-% want along the Request duration axis, and "repetitions" (default 30)
-% which is the number of times you want to measure the actual duration for
-% each request duration. 100 steps is enough that you won't notice the gaps
-% along the horizontal axis. 30 repetitions is enough to clearly show the
-% distribution vertically. 100 x 30 takes about 3 minutes. "stepsAndReps"
-% only affects the measurements. The case of name arguments is ignored.
+%% "screenOrFilename" (default is highest available screen number), 
+% if present, can be an integer to specify a screen (0 for main screen, 1
+% for next, etc.), or a filename to reanalyze a MAT file of data from a
+% past run of ScreenFlipTest. You can optionally provide one or two
+% name-value pairs. The names can be either 'stepsAndReps' or
+% 'framePerSec'.
+%% The name 'stepsAndReps' is followed by a 2-element array 
+% [steps repetitions] consisting of "steps" (default 30) which is the
+% number of points you want along the Request duration axis, and
+% "repetitions" (default 30) which is the number of times you want to
+% measure the actual duration for each request duration. 100 steps is
+% enough that you won't notice the gaps along the horizontal axis. 30
+% repetitions is enough to clearly show the distribution vertically. 100 x
+% 30 takes about 3 minutes. "stepsAndReps" only affects the measurements.
+% The upper/lower case of name arguments is ignored.
 %% The name 'framePerSec' is followed by a float number representing that
-% rate in Hz, e.g. 'frameRate', 60. This locks that parameter in both
-% measurement and analysis. When timing is really bad, it is hard for
+% rate in Hz, e.g. 'framePerSec', 60. This locks that parameter in both
+% measurement and analysis. When timing is very bad, it is hard for
 % ScreenFlipTest to estimate the frame rate from the data (or by calling
-% FrameRate), and it can help a lot to impose the known frame rate. The
-% case of name arguments is ignored.
+% FrameRate), and in that case it can help a lot to impose the known frame
+% rate. The upper/lower case of name arguments is ignored.
+%% The name 'framePerSecRange' is followed by an array of two float numbers 
+% representing the minimum and maximum allowed rate in Hz, 
+% e.g. 'framePerSecRange', [50 60]. This affects only the fitting. 
+%% The name 'extraDelaySecRange' is followed by an array of two float  
+% numbers representing the minimum and maximum allowed values for
+% extraDelay, e.g. 'extraDelaySecRange', [0 0.005]. This affects only the
+% fitting.
 %
 % DETAILS:
 % ScreenFlipTest uses the 'when' argument of Screen Flip to request a flip
@@ -44,7 +54,7 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % should be the extra delay measured here (roughly 5 ms) plus half a frame
 % period (about 17/2=8.5 ms).
 %
-% BAD FIT?
+% TIPS
 % On some computer configurations the timing is really scattered, and
 % challenging to fit our model to. If ScreenFlipTest is failing to find the
 % right frame rate, and you know it, you can provide it, using the
@@ -96,6 +106,8 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 %                   handles returned by gca and gcf. MATLAB's dot notation
 %                   for graphic handles is prettier, but is not yet
 %                   supported by Octave.
+% November 27, 2019. Updated to support new IdentifyComputer that returns
+%                   cell arrays for data that are screen-specific.
 
 % Calling MATLAB's onCleanup requests that our cleanup routine (sca,
 % "Screen Close All") be run whenever ScreenFlipTest terminates for any
@@ -106,7 +118,6 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % MATLAB. Ideally, the program would periodically check for keyboard input,
 % to allow it to be interrupted by control-C. I think that would require
 % periodically returning focus to the Command Window.
-cleanup=onCleanup(@() sca);
 if exist('commandwindow','file') % Missing in Octave.
     cleanup=onCleanup(@() sca);
     % Put focus on Command Window, to help detect control-c.
@@ -121,12 +132,14 @@ end
 
 global deemphasizeSteps % Used in our Cost function, at end of file.
 deemphasizeSteps=true;
+clear Screen % Make sure we use fresh copy from disk.
+screens=Screen('Screens');
 if nargin<1
-    screenOrFilename=0; % 0 for main screen, 1 for next screen, etc.
+    screenOrFilename=max(screens); % 0 for main screen, 1 for next screen, etc.
 end
 if isfloat(screenOrFilename)
     if length(screenOrFilename)~=1
-        error('You can only specify one screen at a time: 0 (main), or 1 (first external), etc.');
+        error('If the first argument is present, it must specify exactly one screen: 0 (main), or 1 (first external), etc.');
     end
 end
 stepsAndReps=[100 30];
@@ -187,13 +200,11 @@ if ~all(size(extraDelaySecRange)==[1 2]) ...
 end
 steps=stepsAndReps(1);
 repetitions=stepsAndReps(2);
-clear Screen % Make sure we use fresh copy from disk.
-screens=Screen('Screens');
 if isfloat(screenOrFilename)
     dataFilename='';
     screen=screenOrFilename;
     if ~ismember(screen,screens)
-        error('Sorry the requested screen number %d is not valid on this computer.',screen);
+        error('Sorry, the requested screen number %d is not available on this computer.',screen);
     end
 elseif ischar(screenOrFilename)
     screen=0;
@@ -626,19 +637,19 @@ y=0.02*YLim(2);
 x=0.99*XLim(2);
 dy=0.025*YLim(2)*fontScalar*10/10;
 if ~isempty(machine.openGLVersion)
-    text(x,y,machine.openGLVersion,...
+    text(x,y,machine.openGLVersion{1},...
         'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
 end
 if ~isempty(machine.openGLVendor)
-    text(x,y,machine.openGLVendor,...
+    text(x,y,machine.openGLVendor{1},...
         'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
 end
 if ~isempty(machine.openGLRenderer)
-    text(x,y,machine.openGLRenderer,...
+    text(x,y,machine.openGLRenderer{1},...
         'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
 end
 text(x,y,sprintf('screen %d, %d x %d, %.0f x %.0f mm',...
-    screen,machine.size,machine.mm),...
+    screen,machine.size{1},machine.mm{1}),...
     'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
 text(x,y,machine.system,...
     'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
