@@ -57,7 +57,7 @@ if ~isempty(newVolume)
     str=sprintf('osascript -e "set volume output volume %d"',round(100*newVolume));
     [failed,msg]=system(str);
     if failed
-        warning('Applescript failed to set volume.');
+        warning('Applescript failed to set sound volume.');
         failed
         msg
     end
