@@ -35,7 +35,7 @@ function [oo,tt]=ReadExperimentData(experiment,vars)
 
 myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
-% THe lib and data folders are in the same folder.
+% The lib and data folders are in the same folder.
 dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data');
 matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
 
@@ -43,9 +43,10 @@ matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
 % just before we start running trials. I think that we could read all the
 % data files, accumulating both block files, with an "oo" struct,
 % and summary files which contain a whole experiment "ooo", consisting of
-% multiple blocks "oo", each of which contains several thresholds "o".  We
-% can safely discard duplicate blocks with the same identifier and neither
-% lose data, nor retain any duplicate data.
+% multiple blocks "oo", each of which contains several thresholds "o".  
+% If we first discard instances with zero trials then we can safely discard
+% duplicates with the same identifier and neither lose data, nor retain any
+% duplcate data.
 
 % The summary file retains the organization of trials into blocks and
 % experiments. The individual threshold files do not, but they do have
@@ -167,6 +168,8 @@ oo=oo([oo.trialsDesired]>0); % Discard conditions with no data.
 if isempty(oo)
     return;
 end
+[~,ii]=unique({oo.dataFilename}); % Discard duplicates.
+oo=oo(ii);
 missingFields=unique(cat(2,oo.missingFields));
 if ~isempty(missingFields)
     warning OFF BACKTRACE
@@ -198,7 +201,7 @@ if isfield(oo,'responseCount') && sum(tt.responseCount<tt.trialsDesired & ~ismem
         {'date' 'observer' 'task' 'thresholdParameter' 'eccentricityXYDeg' 'responseCount' 'trialsDesired' })) % 'experiment'  'conditionName'
 end
 for oi=length(oo):-1:1
-    if isfield(oo,'responseCount') && oo(oi).responseCount<oo(oi).trialsDesired && ~ismember(tt.task,{'read'})
+    if isfield(oo,'responseCount') && oo(oi).responseCount<oo(oi).trialsDesired && ~ismember(oo(oi).task,{'read'})
         oo(oi)=[];
         tt(oi,:)=[];
     end
