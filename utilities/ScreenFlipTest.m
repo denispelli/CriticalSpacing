@@ -227,7 +227,7 @@ clf;
 if isempty(dataFilename)
     %% SET RESOLUTION TO NATIVE
     % Are we using the screen at its maximum native resolution?
-    permissionToChangeResolution=true;
+    permissionToChangeResolution=false;
     res=Screen('Resolutions',screen);
     nativeWidth=0;
     nativeHeight=0;
@@ -298,6 +298,20 @@ if isempty(dataFilename)
             window=Screen('OpenWindow',screen,white);
         end
     end
+%     r
+%     rect=Screen('Rect',window)
+%     globalRect=Screen('GlobalRect',window)
+%     Screen('DrawLine',window,0,rect(1),rect(2),rect(3),rect(4),4);
+%     Screen('DrawLine',window,0,rect(1),rect(4),rect(3),rect(2),4);
+%     y=20;
+%     Screen('DrawText',window,['[0 ' num2str(y) ']'],0,y);
+%     y=rect(4)/2+20;
+%     Screen('DrawText',window,['[0 ' num2str(y) ']'],0,y);
+%     Screen('Flip',window);
+%     WaitSecs(5);
+%     sca
+%     return
+
     % We call IdentifyComputer only after the possible change in
     % resolution, so it correctly reports the final resolution. Also we
     % call it after our window is open, because IdentifyComputer needs a
