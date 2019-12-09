@@ -16,18 +16,20 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 % screen. By default, all screens are reported, but you can specify any
 % subset by using the screens argument to IdentifyComputer2.
 %% INPUT ARGUMENTS:
-% Use the "windowsOrScreens" argument scalar or array to specify screen numbers or window pointers for the screens
-% you want to test. (You can mix screen numbers and window pointers.) The main screen is 0, the next is 1, and so on. Default
-% is all screens. This routine is quick if "windowsOrScreens" is empty [] or
-% specifies screens on which windows are already open, and it's slow
-% otherwise. That's because for each requested screen that lacks a window,
-% IdentifyComputer has to open and close a window on that screen, which may
-% take 30 s. Passing an empty "windowsOrScreens" argument skips opening a window, at
-% the cost of leaving the screen size and openGL fields empty.
-% The "modifier1" and "modifier2" arguments, if present, can be (in any
-% order) the strings 'verbose', to not suppress warning messages, and/or
-% 'noInternet' to prevent using the internet to access an Apple web page to
-% get the modelDescription.
+% Use the "windowsOrScreens" argument scalar or array to specify screen
+% numbers or window pointers for the screens you want to test. (You can mix
+% screen numbers and window pointers.) The main screen is 0, the next is 1,
+% and so on. Default is all screens. This routine is quick if
+% "windowsOrScreens" is empty [] or specifies screens on which windows are
+% already open, and it's slow otherwise. That's because for each requested
+% screen that lacks a window, IdentifyComputer has to open and close a
+% window on that screen, which may take 30 s. Passing an empty
+% "windowsOrScreens" argument skips opening a window, at the cost of
+% leaving the screen size and openGL fields empty. The "modifier1" and
+% "modifier2" arguments, if present, can be (in any order) the strings
+% 'verbose', to not suppress warning messages, and/or 'noInternet' to
+% prevent using the internet to access an Apple web page to get the
+% modelDescription.
 %
 %% EXAMPLES of output struct for macOS, Windows, and Linux:
 %
@@ -63,10 +65,9 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 % 'ScreenFlipTest-MacBook10,1-macOS-10.14.6-PTB-3.0.16.png'
 %
 % LIMITATIONS: 
-% Needs more testing on computers with multiple screens.
-% Currently it does not detect mirroring. I wish it did
-% because mirroring will typically greatly slows performance,
-% which is typically not good for experiments.
+% Needs more testing on computers with multiple screens. Currently it does
+% not detect mirroring. I wish it did because mirroring will typically
+% greatly slows performance, which is typically not good for experiments.
 %
 % denis.pelli@nyu.edu
 
@@ -118,7 +119,7 @@ if exist('PsychtoolboxVersion','file')
     isoctave=IsOctave;
 else
     % For clarity, MATLAB recommends "contains" instead of
-    % "~isempty(strfind(...))", but it's not available in Octave.
+    % "~isempty(strfind(...))", but that's not available in Octave.
     islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) ...
         || ~isempty(strfind(computer,'linux-gnu'));
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
@@ -239,6 +240,9 @@ switch 4*ismacos+2*iswin+islinux
         % Here's a typical result:
         % wmicString=sprintf(['    ''Manufacturer  Model            \n'...
         % '     Dell Inc.     Inspiron 5379    ']);
+        % MATLAB recommends "newline" instead of char(10), but I've had
+        % problems with "newline" being undefined. That doesn't make sense,
+        % but it's not worth fighting since char(10) works fine.
         s=strrep(wmicString,char(10),' '); % Change to space.
         s=strrep(s,char(13),' '); % Change to space.
         s=regexprep(s,'  +',char(9)); % Change run of 2+ spaces to a tab.
@@ -541,7 +545,7 @@ else
     if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
         [~,shell]=system('echo $0') % Display shell name.
         warning(['Oops. Failed in getting modelDescription. '...
-            'Please send the lines above to denis.pelli@nyu.edu: "%s"'],s);
+            'Please send this line and those above to denis.pelli@nyu.edu: "%s"'],s);
         modelDescription='';
         % http://osxdaily.com/2007/02/27/how-to-change-from-bash-to-tcsh-shell/
         % https://support.apple.com/en-us/HT208050
