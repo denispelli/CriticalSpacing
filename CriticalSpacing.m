@@ -510,7 +510,7 @@ o.permissionToChangeResolution=false; % Works for main screen only, due to Psych
 o.getAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=false; % To illustrate your talk or paper.
-o.task='identify'; % identify, read
+o.task='identify'; % identify, read, readAloud
 o.textFont='Verdana';
 o.textSizeDeg=0.4;
 o.thresholdParameter='spacing'; % 'spacing' or 'size'
@@ -810,7 +810,7 @@ for oi=1:conditions
 end
 for oi=1:conditions
     switch oo(oi).task
-        case 'read'
+        case {'read' 'readAloud'}
             o.relationOfSpacingToSize='fixed by font';
     end
     if ~isfinite(oo(oi).targetSizeIsHeight)
@@ -2102,7 +2102,7 @@ try
             oo(oi).spacingDeg=oo(oi).normalCrowdingDistanceDeg; % initial guess for distance from center of middle letter
         end
         switch oo(oi).task
-            case 'read'
+            case {'read' 'readAloud'}
                 oo(oi).spacingDeg=oo(oi).readSpacingDeg;
         end
         oo(oi).spacings=oo(oi).spacingDeg*2.^[-1 -.5 0 .5 1]; % five spacings logarithmically spaced, centered on the guess, spacingDeg.
@@ -2477,7 +2477,8 @@ try
         end
     end
     for oi=1:conditions
-        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing') && ~streq(oo(oi).task,'read')
+        if ~oo(oi).repeatedTargets && streq(oo(oi).thresholdParameter,'spacing') ...
+                && ~ismember(oo(oi).task,{'read' 'readAloud'})
             string=[string 'When you see three letters, please report just the middle letter. '];
             break;
         end
@@ -2544,6 +2545,8 @@ try
             switch oo(1).task
                 case 'read'
                     string=[string 'On each trial, you''ll read a paragraph. '];
+                case 'readAloud'
+                    string=[string 'On each trial, you''ll read aloud one word. '];
                 otherwise
                     string=[string 'On each trial, '...
                         'try to identify the target letter by typing that key. '];
@@ -2553,7 +2556,7 @@ try
             end
             if ~oo(oi).repeatedTargets ...
                     && streq(oo(oi).thresholdParameter,'spacing') ...
-                    && ~streq(oo(oi).task,'read')
+                    && ~ismember(oo(oi).task,{'read' 'readAloud'})
                 string=[string 'When you see three letters, please report just the middle one. '];
             end
             if false
@@ -2610,7 +2613,9 @@ try
     
     
     % Remind to fixate, then wait for RETURN.
-    if any([oo.useFixation]) && ~ismember(oo(1).task,{'read'}) && ~oo(1).repeatedTargets
+    if any([oo.useFixation]) ...
+            && ~ismember(oo(1).task,{'read' 'readAloud'}) ...
+            && ~oo(1).repeatedTargets
         tryAgain=true;
         while tryAgain
             string=['IMPORTANT: Please resist the temptation to type your response as '...
@@ -2756,7 +2761,7 @@ try
                     maxSpacingDeg=max(0,maxSpacingDeg); % Stay positive.
                     % maxSpacingDeg is ready.
                     switch oo(oi).task
-                        case 'read'
+                        case {'read' 'readAloud'}
                             oo(oi).spacingDeg=oo(oi).readSpacingDeg;
                         otherwise
                             if ~oo(oi).fixationCheck
@@ -3211,7 +3216,7 @@ try
                 end
                 if ~isfinite(oo(oi).readSize) || oo(oi).readSize<=0
                     error(['Condition %d, o.readSize %.1f is not a positive integer. ' ...
-                        'Are you sure you want o.task=''read''? '],oi,oo(oi).readSize);
+                        'Are you sure you want o.task=''%s''? '],oi,oo(oi).readSize,oo(oi).task);
                 end
                 if ~streq(corpusFilename,oo(oi).readFilename) || isempty(corpusLineEndings)
                     msg='Analyzing text statistics ...';
@@ -3246,6 +3251,47 @@ try
                 %                     oo(1).textSize,1.5*oo(1).textSize,black,...
                 %                     oo(1).textLineLength,[],[],1.3);
                 % Reuse readInstructions if user escapes and resumes.
+            case 'readAloud'
+                % Compute desired font size o.readSize for the text to be read.
+                Screen('TextFont',window,oo(oi).targetFont);
+                Screen('TextSize',window,oo(1).textSize);
+                switch oo(oi).thresholdParameter
+                    case 'spacing'
+                        % Driven by o.readSpacingDeg.
+                        string='abcdefghijklmnopqrstuvwxyz';
+                        boundsRect=Screen('TextBounds',window,string);
+                        spacingPerNominal=RectWidth(boundsRect)/length(string)/oo(1).textSize;
+                        oo(oi).readSize=oo(oi).readSpacingDeg*pixPerDeg/spacingPerNominal;
+                        oo(oi).readSize=round(oo(oi).readSize);
+                        oo(oi).spacingDeg=oo(oi).readSize*spacingPerNominal/pixPerDeg;
+                        oo(oi).targetDeg=oo(oi).readSize*oo(oi).targetFontHeightOverNominal/pixPerDeg;
+                        if ~oo(oi).targetSizeIsHeight
+                            oo(oi).targetDeg=oo(oi).targetDeg/oo(oi).targetHeightOverWidth;
+                        end
+                    case 'size'
+                        % Driven by o.targetDeg.
+                        oo(oi).readSize=oo(oi).targetDeg*pixPerDeg/...
+                            oo(oi).targetFontHeightOverNominal;
+                        if ~oo(oi).targetSizeIsHeight
+                            oo(oi).readSize=oo(oi).readSize/oo(oi).targetHeightOverWidth;
+                        end
+                        oo(oi).readSize=round(oo(oi).readSize);
+                        oo(oi).targetDeg=oo(oi).readSize*oo(oi).targetFontHeightOverNominal/pixPerDeg;
+                        if  ~oo(oi).targetSizeIsHeight
+                            oo(oi).targetDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
+                        end
+                end
+                if ~isfinite(oo(oi).readSize) || oo(oi).readSize<=0
+                    error(['Condition %d: o.readSize %.1f is not a positive integer. ' ...
+                        'Are you sure you want o.task=''%s''? '],...
+                        oi,oo(oi).readSize,oo(oi).task);
+                end
+                % Display instructions.
+                readInstructions=['When you''re ready, '...
+                    'look at fixation cross and press the SPACE bar. '...
+                    'Fixate until a word appears. ' ...
+                    'Read the word aloud as soon as you see it. '...
+                    ];
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
@@ -3624,8 +3670,10 @@ try
         if oo(1).showCounter
             DrawCounter(oo);
         end
-        % If o.task='read' then ask observer to press and hold the SPACE
-        % bar. Otherwise display both the stimulus & the optional fixation.
+        % If o.task=='read' then ask observer to press and hold the SPACE
+        % bar. If o.task=='readAloud' then ask observer to press space bar
+        % and read one word aloud. Otherwise display both the stimulus &
+        % the optional fixation.
         [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1);
         stimulusFlipSecs=GetSecs;
         if oo(oi).recordGaze
@@ -3641,14 +3689,14 @@ try
             end
             clear lineTexture
         end
-        if ~ismember(oo(oi).task,{'read'})
+        if ~ismember(oo(oi).task,{'read' 'readAloud'})
             if oo(oi).repeatedTargets
                 targets=stimulus(1:2);
             else
                 targets=stimulus(2);
             end
         end
-        if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
+        if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read' 'readAloud'})
             % WaitSecs(oo(oi).durationSec); % Display letters. OLD CODE before 4/30/2019
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
             %             fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-stimulusFlipSecs));
@@ -3671,7 +3719,8 @@ try
             % that desired. We assess that in three ways, and print it out
             % at the end of the block.
             deadSec=GetSecs-stimulusFlipSecs;
-            [stimulusEndVBLSec,stimulusEndSec]=Screen('Flip',window,...
+            [stimulusEndVBLSec,stimulusEndSec]=...
+                Screen('Flip',window,...
                 stimulusBeginSec+oo(oi).durationSec-oo(1).flipIntervalSec,...
                 1); % Remove stimulus. Eventually display fixation.
             % fprintf('Dead time between flips %.0f ms.\n',1000*deadSec);
@@ -3736,7 +3785,7 @@ try
             alphabetBounds=round(alphabetBounds);
             x=2*oo(oi).textSize;
             if ~exist('counterBounds','var') || isempty(counterBounds)
-               counterBounds=DrawCounter(oo);
+                counterBounds=DrawCounter(oo);
             end
             switch oo(oi).alphabetPlacement
                 case 'bottom'
@@ -3753,14 +3802,14 @@ try
                             % Leave room for instructions at the bottom of
                             % the screen. Assuming the instructions are
                             % raised above the counter.
-                            y=y-2*oo(oi).textSize; 
+                            y=y-2*oo(oi).textSize;
                     end
                 case 'top'
                     y=oo(oi).stimulusRect(2)+1.1*RectHeight(alphabetBounds);
                     switch oo(oi).instructionPlacement
                         case 'topLeft'
                             % Leave room for instructions at the top of the
-                            % screen. 
+                            % screen.
                             y=y+2*oo(oi).textSize;
                     end
             end
@@ -3803,7 +3852,7 @@ try
             % Don't clear screen back buffer until after we've called
             % GetKeypressWithHelp, because it needs it.
             % Screen('FillRect',window,white,oo(oi).stimulusRect);
-        end % if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read'})
+        end % if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read' 'readAloud'})
         if oo(oi).takeSnapshot
             TakeSnapshot(oo);
         end
@@ -4074,6 +4123,149 @@ try
                         ffprintf(ff,'Response %10s\n',corpusWord{answer});
                     end
                 end % for iQuestion= ...
+            case 'readAloud'
+                % Show a word. Measure vocal reaction time.
+                oo(oi).readMethod=sprintf(...
+                    ['Random word from list that is equated for frequency. '...
+                    '%.1f deg spacing. \n'...
+                    '%s font size set to %d point with %d point leading. '...
+                    'Viewed from %.0f cm.'],...
+                    oo(oi).spacingDeg, ...
+                    oo(oi).targetFont,oo(oi).readSize,round(1.5*oo(oi).readSize),...
+                    oo(oi).viewingDistanceCm);
+                while true % Repeat until pronounced correctly.
+                    while true % Repeat until observer hits SPACE.
+                        string='WORD';
+                        oo(oi).readString{end+1}=string;
+                        % There are three ways to get here:
+                        % 1. ordinary begin a new trial;
+                        % 2. observer hit ESC SPACE after last word;
+                        % 3. reaction time was too short or too long, so do
+                        % the trial again with a fresh word.
+                        Screen('FillRect',window,[],clearRect);
+                        Screen('TextFont',window,oo(oi).textFont);
+                        % Tell observer to press SPACE to reveal word.
+                        DrawFormattedText(window,...
+                            [preface readInstructions],...
+                            oo(1).textSize,1.5*oo(1).textSize,black,...
+                            oo(1).textLineLength,[],[],1.3);
+                        Screen('Flip',window);
+                        oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
+                        [keySecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
+                        answer=KbName(keyCode);
+                        if ismember(answer,{'ESCAPE' '`~'})
+                            [oo,tryAgain]=ProcessEscape(oo);
+                            if tryAgain
+                                continue
+                            else
+                                oo=SortFields(oo);
+                                return
+                            end % if tryAgain
+                        else % if is SPACE.
+                            break
+                        end % if ismember
+                    end % while true, repeat until SPACE.
+                    Screen('TextFont',window,oo(oi).targetFont);
+                    Screen('TextSize',window,oo(oi).readSize);
+                    Screen('FillRect',window);
+                    % Display word to be read.
+                    [~,y]=DrawFormattedText(window,double(string),...
+                        2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
+                        oo(oi).readCharPerLine,[],[],1.5);
+                    WaitSecs(keySecs+0.8);
+                    % Zoccoloti et al. (2005) showed fixation for 750 ms,
+                    % plus blank for 250 ms.
+                    % Zoccolotti, P., De Luca, M., Di Pace, E., Gasperini,
+                    % F., Judica, A., & Spinelli, D. (2005). Word length
+                    % effect in early reading and in developmental
+                    % dyslexia. Brain and language, 93(3), 369-373.
+                    beginSecs=Screen('Flip',window,[],1);
+                    % Time the interval from image to speech.
+                    endSecs=WaitForSpeech();
+                    RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
+                    if false
+                        cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
+                        fprintf('%.2f cm/deg at %.1f cm, size %.0f.\n',...
+                            cmPerDeg,oo(oi).viewingDistanceCm,oo(oi).readSize);
+                    end
+                    if ~IsInRect(0,y,oo(oi).stimulusRect)
+                        warning('The text extends below the screen. %d lines of %d chars.',...
+                            oo(oi).readLines,oo(oi).readCharPerLine);
+                        ffprintf(ff,'y %.0f, stimulusRect [%.0f %.0f %.0f %.0f], screenRect [%.0f %.0f %.0f %.0f]\n',...
+                            y,oo(oi).stimulusRect,screenRect);
+                        oo(oi).readError='The text does not fit on screen.';
+                    end
+                    Screen('TextSize',window,oo(1).textSize);
+                    Screen('TextFont',window,oo(1).textFont);
+                    Screen('FillRect',window,white,oo(oi).stimulusRect);
+                    % The word remained on the screen for an additional 250
+                    % msec after voice onset, then the word was erased from
+                    % the screen.
+                    % https://elexicon.wustl.edu/about.html
+                    % Balota, D. A., Yap, M. J., Hutchison, K. A., Cortese,
+                    % M. J., Kessler, B., Loftis, B., ... & Treiman, R.
+                    % (2007). The English lexicon project. Behavior
+                    % research methods, 39(3), 445-459.
+                    % https://link.springer.com/content/pdf/10.3758/BF03193014.pdf
+                    WaitSecs(endSecs+0.25);
+                    Screen('Flip',window,[],1);
+                    i=length(oo(oi).readString);
+                    oo(oi).readSecs(i)=endSecs-beginSecs;
+                    oo(oi).readChars(i)=length(oo(oi).readString{i});
+                    oo(oi).readWords(i)=1;
+                    oo(oi).readCharPerSec(i)=oo(oi).readChars(i)/oo(oi).readSecs(i);
+                    oo(oi).readWordPerMin(i)=60*oo(oi).readWords(i)/oo(oi).readSecs(i);
+                    ffprintf(ff,'%d: Read word with %.1f deg letter spacing (%.1f deg size) at %.0f char/s %.0f word/min.\n',...
+                        oi,oo(oi).spacingDeg,oo(oi).targetDeg,...
+                        oo(oi).readCharPerSec(i),oo(oi).readWordPerMin(i));
+                    if oo(oi).readSecs(i)<0.1
+                        preface='Oops. Too quick. Please try again. ';
+                        continue;
+                    end
+                    if oo(oi).readSecs(i)>4
+                        preface='Oops. Too slow. Please try again. ';
+                        continue;
+                    end
+                    % If the response latency for the vocal response was
+                    % less than 4,000 msec, a screen appeared asking the
+                    % participant to manually code the accuracy of their
+                    % response. The four choices were 1) correct
+                    % pronunciation, 2) uncertain of pronunciation, 3)
+                    % mispronunciation, and 4) microphone error.
+                    % Participants were instructed beforehand regarding the
+                    % importance and use of these coding options.
+                    msg=sprintf(['How well did you pronounce "%s"?\n'...
+                        '1. Correctly.\n2. Uncertain of pronunciation.\n3. Mispronounced.\n'...
+                        'Type 1, 2 or 3.\n'],oo(oi).readString{end});
+                    Screen('FillRect',window);
+                    DrawFormattedText(window,msg,...
+                        2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
+                        oo(oi).textLineLength,[],[],1.5);
+                    DrawCounter(oo);
+                    Screen('Flip',window);
+                    choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#') escapeKeyCode graveAccentKeyCode];
+                    response=GetKeypress(choiceKeycodes);
+                    switch response
+                        case {escapeChar graveAccentChar}
+                            [oo,tryAgain]=ProcessEscape(oo);
+                            if tryAgain
+                                continue
+                            else
+                                oo=SortFields(oo);
+                                return
+                            end
+                        case '1'
+                            % Correctly pronounced. Done.
+                            break
+                        case {'2' '3'}
+                            % Uncertain or wrong pronunciation.
+                            % Discard and try again.
+                            continue
+                        otherwise
+                            error('Unexpected response: ''%s''.',response);
+                    end
+                end % while true % Repeat until pronounced correctly.
+                oo(oi).responseCount=oo(oi).responseCount+1;
             case 'identify'
                 responseString='';
                 skipping=false;
