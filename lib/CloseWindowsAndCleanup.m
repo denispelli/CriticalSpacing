@@ -17,7 +17,12 @@ function CloseWindowsAndCleanup
 %
 % denis.pelli@nyu.edu, May 5, 2019
 global skipScreenCalibration keepWindowOpen % Copy to your main program.
-global scratchWindow
+global scratchWindow isSoundOpen
+
+if isSoundOpen
+    WaitForSpeech('close');
+    isSoundOpen=false;
+end
 
 if ~isempty(Screen('Windows')) && ~keepWindowOpen
     fprintf('CloseWindowsAndCleanup. ... ');
