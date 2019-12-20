@@ -1,21 +1,27 @@
-function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
-% ScreenFlipTest([screenOrFilename][,'stepsAndReps',stepsAndReps][,'framePerSec',framePerSec]);
+function ScreenFlipTest(varargin)
+% ScreenFlipTest([screenOrFilename][,'stepsAndReps',stepsAndReps]...
+%    [,'bits',bits][,'framePerSec',framePerSec]...
+%    [,'framePerSecRange',framePerSecRange]...
+%    [,'extraDelaySecRange',extraDelaySecRange]);
 % Measures timing of Screen Flip on your computer, producing a detailed
 % one-page PNG graph with caption. It records the display timing and your
 % computer's configuration. Modern displays have multiple frame buffers, so
 % you typically write to a hidden buffer and then call "flip" to make it
 % visible. ScreenFlipTest graphs the relation between the requested and
 % actual flip times. Supports MATLAB and Octave under macOS, Windows, and
-% Linux. Timing under macOS greatly improved in release 3.0.16 of Psychtoolbox,
-% on November 27, 2019.
+% Linux. Timing under macOS improved greatly in the November 27, 2019
+% release of Psychtoolbox 3.0.16. All ScreenFlipTest arguments are
+% optional. The screenOrFilename argument, if present, must be first. The
+% remaining arguments are all name-value pairs and may appear in any order.
+% If you use great-than-8-bit depth, then specify your bit depth, as this
+% may affect the flip timing.
 %
 % INPUT ARGUMENTS:
 %% "screenOrFilename" (default is highest available screen number), 
 % if present, can be an integer to specify a screen (0 for main screen, 1
 % for next, etc.), or a filename to reanalyze a MAT file of data from a
-% past run of ScreenFlipTest. You can optionally provide one or two
-% name-value pairs. The names can be either 'stepsAndReps' or
-% 'framePerSec'.
+% past run of ScreenFlipTest. This argument is optional, but if present
+% must be first. 
 %% The name 'stepsAndReps' is followed by a 2-element array 
 % [steps repetitions] consisting of "steps" (default 30) which is the
 % number of points you want along the Request duration axis, and
@@ -25,6 +31,13 @@ function ScreenFlipTest(screenOrFilename,name1,value1,name2,value2)
 % repetitions is enough to clearly show the distribution vertically. 100 x
 % 30 takes about 3 minutes. "stepsAndReps" only affects the measurements.
 % The upper/lower case of name arguments is ignored.
+%% The name 'bits' is followed by an integer: 8, 10, or 11. The default
+% is 8-bit imaging, but you can instead request 10 or 11 bit imaging. This
+% requests a call to PsychImaging with the appropriate argument: 
+% EnableNative10BitFramebuffer or EnableNative11BitFramebuffer. THis
+% affects only the timing measurement, with no effect on the fitting. Mario
+% warned me that the timing may not be as good with higher-than-8-bit
+% imaging.
 %% The name 'framePerSec' is followed by a float number representing that
 % rate in Hz, e.g. 'framePerSec', 60. This locks that parameter in both
 % measurement and analysis. When timing is very bad, it is hard for
@@ -123,60 +136,60 @@ if exist('commandwindow','file') % Missing in Octave.
     % Put focus on Command Window, to help detect control-c.
     commandwindow; 
 end
-
 if exist('PsychtoolboxVersion','file')
     isoctave=IsOctave;
 else
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
-
 global deemphasizeSteps % Used in our Cost function, at end of file.
+% This helps a lot in fitting, discounting data points at times near
+% a transition.
 deemphasizeSteps=true;
-clear Screen % Make sure we use fresh copy from disk.
+% Users will often be running this immediately after updating, so we make
+% sure we use a fresh copy from disk, rather than a stale copy loaded
+% before updating.
+clear Screen
 screens=Screen('Screens');
-if nargin<1
-    screenOrFilename=max(screens); % 0 for main screen, 1 for next screen, etc.
+% Default value.
+screenOrFilename=max(screens); % 0 for main screen, 1 for next screen, etc.
+firstPairArgIn=1;
+if nargin>0
+    if isfloat(varargin{1}) || ...
+            (ischar(varargin{1}) && ...
+            ~ismember(varargin{1},{'stepsAndReps' 'bits' 'framePerSec' 'framePerSecRange' 'extraDelaySecRange'}))
+        screenOrFilename=varargin{1};
+        firstPairArgIn=2;
+    end
 end
 if isfloat(screenOrFilename)
     if length(screenOrFilename)~=1
-        error('If the first argument is present, it must specify exactly one screen: 0 (main), or 1 (first external), etc.');
+        error('If the first argument is present and numerical, it must specify exactly one screen: 0 (main), or 1 (first external), etc.');
     end
 end
 stepsAndReps=[100 30];
+bits=8;
 framePerSec=[];
 global framePerSecRange extraDelaySecRange % Share with Cost function.
 framePerSecRange=[30 200];
 extraDelaySecRange=[0 0.020];
-if nargin>2
-    switch lower(name1)
-        case lower('stepsAndReps')
-            stepsAndReps=value1;
-        case lower('framePerSec')
-            framePerSec=value1;
-        case lower('framePerSecRange')
-            framePerSecRange=value1;
-        case lower('extraDelaySecRange')
-            extraDelaySecRange=value1;
-        otherwise
-            error('The name must be: ''stepsAndReps'' or ''framePerSec'' or ''framePerSecRange'' or ''extraDelaySecRange''.');
-    end
+if nargin>0 && mod(length(varargin)-firstPairArgIn,2)~=1
+    error('Last ''name'' argument ''%s'' is missing a ''value''.',varargin{end});
 end
-if nargin>4
-    switch lower(name2)
+for i=firstPairArgIn:2:length(varargin)
+    switch lower(varargin{i})
         case lower('stepsAndReps')
-            stepsAndReps=value2;
+            stepsAndReps=varargin{i+1};
+        case lower('bits')
+            bits=varargin{i+1};
         case lower('framePerSec')
-            framePerSec=value2;
+            framePerSec=varargin{i+1};
         case lower('framePerSecRange')
-            framePerSecRange=value2;
+            framePerSecRange=varargin{i+1};
         case lower('extraDelaySecRange')
-            extraDelaySecRange=value2;
+            extraDelaySecRange=varargin{i+1};
         otherwise
-            error('The name must be: ''stepsAndReps'' or ''framePerSec'' or ''framePerSecRange'' or ''extraDelaySecRange''.');
+            error('The name must be: ''stepsAndReps'' or ''bits'' or ''framePerSec'' or ''framePerSecRange'' or ''extraDelaySecRange''.');
     end
-end
-if ismember(nargin,[2 4])
-    error('Illegal number of arguments.');
 end
 if ~all(size(stepsAndReps)==[1 2])
     error('The value for ''stepsAndReps'' must be a positive two-element array [steps repetition].');
@@ -274,7 +287,7 @@ if isempty(dataFilename)
     resolution=Screen('Resolution',screen);
     
     %% MEASURE TIMING
-    Screen('Preference','SkipSyncTests',1); % Needed to run on many computers.
+    Screen('Preference','SkipSyncTests',1); % Was once needed to run on some computers.
     steps=round(steps);
     repetitions=round(repetitions);
     white=255;
@@ -286,6 +299,15 @@ if isempty(dataFilename)
         PsychImaging('PrepareConfiguration');
         PsychImaging('AddTask','General','UseRetinaResolution');
         PsychImaging('AddTask','General','UseVirtualFramebuffer');
+        switch bits
+            case 8
+            case 10
+                PsychImaging('AddTask','General','EnableNative10BitFramebuffer');
+            case 11
+                PsychImaging('AddTask','General','EnableNative11BitFramebuffer');
+            otherwise
+                error('''bits'' value %.1f is illegal. Must be 8, 10, or 11.',bits);
+        end
         if fractionOfScreenUsed~=1
             window=PsychImaging('OpenWindow',screen,white,r);
         else
@@ -355,7 +377,7 @@ if isempty(dataFilename)
         prior=Screen('Flip',window,0);
         for j=1:repetitions
             Screen('FillRect',window);
-            msg=sprintf('Now timing request for %.0f ms.  %d of %d.',...
+            msg=sprintf('ScreenFlipTest.  Now timing request for %.0f ms.  %d of %d.',...
                 1000*requestSec(i),j+(i-1)*repetitions,steps*repetitions);
             Screen('TextBackgroundColor',window,255); % Set background.
             Screen('DrawText',window,double(msg),...
@@ -406,18 +428,29 @@ if isempty(dataFilename)
         Screen('Resolution',screen,oldResolution.width,oldResolution.height);
     end
     
+    %% DEFINE folder AND filename FOR SAVING DATA AND RESULTS
+    % We do this after calling IdentifyComputer, above, in the right
+    % resolution, and before saving data, below.
+    folder=fileparts(mfilename('fullpath'));
+    filename=mfilename;
+    if exist('machine','var') && isfield(machine,'summary')
+        filename=[filename '-' machine.summary];
+    end
+    if bits>8
+        filename=[filename '-bits-' num2str(bits)];
+    end
+    
     %% OPTIONALLY, SAVE DATA TO DISK
     if true
         % This saves all the measurements as a MAT file, so that the data
         % can be analyzed later or remotely.
-        saveTitle=[mfilename '-' machine.summary '.mat'];
-        folder=fileparts(mfilename('fullpath'));
+        saveTitle=[filename '.mat'];
         close all
         save(fullfile(folder,saveTitle));
         fprintf('Data saved as <strong>''%s''</strong> with %s.m.\n',...
             saveTitle,mfilename);
     end
-end % if isempty(useSavedData)
+end % if isempty(dataFilename)
 
 % To analyze saved data, from any computer, just call ScreenFlipTest with
 % the full .mat filename as an argument. Alas, Octave seems to SAVE in a
@@ -662,6 +695,10 @@ if ~isempty(machine.openGLRenderer)
     text(x,y,machine.openGLRenderer{1},...
         'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
 end
+if bits>8
+    text(x,y,sprintf('bits %d',bits),...
+        'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
+end
 text(x,y,sprintf('screen %d, %d x %d, %.0f x %.0f mm',...
     screen,machine.size{1},machine.mm{1}),...
     'HorizontalAlignment','right','FontSize',fontScalar*10); y=y+dy;
@@ -860,17 +897,13 @@ if false
 end
 
 %% SAVE PLOT TO DISK
-if exist('machine','var') && isfield(machine,'summary')
-    figureTitle=[mfilename '-' machine.summary '.png'];
-else
-    figureTitle=[mfilename '.png'];
-end
+figureTitle=[filename '.png'];
 h=gcf;
 set(h,'units','pixels');
 set(h,'numbertitle','off');
 set(h,'name',figureTitle);
-folder=fileparts(mfilename('fullpath'));
 f=gcf;
+folder=fileparts(mfilename('fullpath'));
 file=fullfile(folder,figureTitle);
 saveas(f,file);
 fprintf('Figure saved as <strong>''%s''</strong> with %s.m.\n',...
@@ -929,7 +962,7 @@ end
 
 %% WrapString2 is an enhanced version of the Psychtoolbox WrapString to 
 % accept a cell array of strings instead of just one string. Someday
-% this enhancement should be folded into the original'
+% this enhancement should be folded into the original.
 
 function wrappedString=WrapString2(string,maxLineLength)
 % wrappedString=WrapString2(string,[maxLineLength])
