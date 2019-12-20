@@ -323,7 +323,7 @@ end
 %% TRY-CATCH BLOCK CONTAINS ALL CODE IN WHICH THE WINDOW IS OPEN
 try
     %% OPEN WINDOW
-    Screen('Preference','SkipSyncTests',1);
+    % Screen('Preference','SkipSyncTests',1);
     Screen('Preference','TextAntiAliasing',1);
     if o.useFractionOfScreenToDebug
         %         fprintf('Using tiny window for debugging.\n');
