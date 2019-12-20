@@ -25,11 +25,11 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 % screen that lacks a window, IdentifyComputer has to open and close a
 % window on that screen, which may take 30 s. Passing an empty
 % "windowsOrScreens" argument skips opening a window, at the cost of
-% leaving the screen size and openGL fields empty. The "modifier1" and
-% "modifier2" arguments, if present, can be (in any order) the strings
-% 'verbose', to not suppress warning messages, and/or 'noInternet' to
-% prevent using the internet to access an Apple web page to get the
-% modelDescription.
+% leaving the screen size and openGL fields empty.
+% The "modifier1" and "modifier2" arguments, if present, can be (in any
+% order) the strings 'verbose', to not suppress warning messages, and/or
+% 'noInternet' to prevent using the internet to access an Apple web page to
+% get the modelDescription.
 %
 %% EXAMPLES of output struct for macOS, Windows, and Linux:
 %
@@ -39,7 +39,7 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
-%                screenMex: 'Screen.mexmaci64 06-Aug-2019'
+%                screenMex: 'Screen.mexmaci64 08-Dec-2019'
 %                  screens: 0
 %                   screen: {[0]}
 %                     size: {[2560 1600]}
@@ -119,7 +119,7 @@ if exist('PsychtoolboxVersion','file')
     isoctave=IsOctave;
 else
     % For clarity, MATLAB recommends "contains" instead of
-    % "~isempty(strfind(...))", but that's not available in Octave.
+    % "~isempty(strfind(...))", but it's not available in Octave.
     islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) ...
         || ~isempty(strfind(computer,'linux-gnu'));
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
@@ -130,16 +130,12 @@ machine.manufacturer='';
 machine.psychtoolbox='';
 machine.matlab='';
 machine.system='';
-if exist('PsychtoolboxVersion','file')
+if exist('Screen','file')
     s=which('Screen');
     d=dir(s);
-    creationDatenum=GetFileCreationDatenum(s);
-    if isempty(creationDatenum)
-        % If creation date is not available (common under Linux) then fall
-        % back on modification date, which is always available.
-        creationDatenum=d.datenum; % File modification date.
-    end
-    machine.screenMex=[d.name ' ' datestr(creationDatenum,'dd-mmm-yyyy')];
+    v=Screen('version');
+    dt=strrep(v.date,'  ',' ');
+    machine.screenMex=[d.name ' ' dt];
 end
 machine.screens=[];
 if exist('PsychtoolboxVersion','file')
@@ -150,6 +146,11 @@ if exist('PsychtoolboxVersion','file')
         verbosity=Screen('Preference','Verbosity',0);
     end
     machine.screens=Screen('Screens');
+    physicalScreens=Screen('Screens',1);
+    if length(machine.screens)~=physicalScreens
+        fprintf('Unequal numbers of logical and physical screens. Guessing that you''re mirroring.\n');
+        machine.mirroring=true;
+    end
     % Restore former settings.
     if ~verbose
         PsychTweak('ScreenVerbosity',3);
@@ -362,6 +363,10 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
 				screenBufferRect=Screen('Rect',machine.screen{iScreen});
 				r=round(fractionOfScreenUsed*screenBufferRect);
 				r=AlignRect(r,screenBufferRect,'right','bottom');
+                % screen=machine.screen{iScreen}
+                % screenBufferRect
+                % r
+                % globalRect=Screen('GlobalRect',machine.screen{iScreen})
 				if ~verbose
 					PsychTweak('ScreenVerbosity',0);
 					verbosity=Screen('Preference','Verbosity',0);
@@ -425,10 +430,10 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
     end % for iScreen=1:length(windowsOrScreens)
 end % if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
 if exist('PsychtoolboxVersion','file')
+    if ~verbose
+        verbosity=PsychPortAudio('Verbosity',0);
+    end
     try
-        if ~verbose
-            verbosity=PsychPortAudio('Verbosity',0);
-        end
         InitializePsychSound;
         machine.psychPortAudio=true;
     catch em
