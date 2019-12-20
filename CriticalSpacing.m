@@ -390,7 +390,7 @@ function oo=CriticalSpacing(oIn)
 % You can use o.stimulusMarginFraction to shrink stimulusRect e.g. 10% so
 % that letters have white above and below.
 %
-% Copyright © 2016, 2017, 2018, 2019 Denis Pelli, denis.pelli@nyu.edu
+% Copyright (c) 2016, 2017, 2018, 2019 Denis Pelli, denis.pelli@nyu.edu
 
 % HISTORY:
 % August 12, 2019. o.askExperimenterToSetDistance=true asks observer to get
@@ -489,6 +489,7 @@ plusMinus=char(177);
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
 global skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
+global isSoundOpen
 global scratchWindow
 global screenRect % For ProcessEscape
 persistent drawTextWarning
@@ -660,7 +661,7 @@ o.showAlphabet=false;
 o.showBounds=false;
 o.showLineOfLetters=false;
 o.speakSizeAndSpacing=false;
-o.useFractionOfScreenToDebug=false;
+o.useFractionOfScreenToDebug=0;
 o.willTakeMin=0;
 
 % BLOCKS AND BRIGHTNESS
@@ -800,7 +801,7 @@ skipScreenCalibration=oo(1).skipScreenCalibration; % Global used by CloseWindows
 Screen('Preference','SuppressAllWarnings',1);
 Screen('Preference','VisualDebugLevel',0);
 Screen('Preference','Verbosity',0); % Mute Psychtoolbox's INFOs and WARNINGs
-Screen('Preference','SkipSyncTests',1);
+% Screen('Preference','SkipSyncTests',1);
 
 % Set up defaults. Clumsy.
 for oi=1:conditions
@@ -935,6 +936,7 @@ if oo(1).nativeWidth==RectWidth(actualScreenRect)
 else
     warning backtrace off
     if oo(1).permissionToChangeResolution
+% CAUTION: Screen forbids changing video display settings via Screen('Resolutions'); while onscreen windows are open!
         s=GetSecs;
         fprintf('WARNING: Trying to optimize screen resolution for this test. ... ');
         oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
@@ -2316,7 +2318,7 @@ try
         cal.macModelName=[];
     elseif computer.osx || computer.macintosh
         cal.processUserLongName=computer.processUserLongName;
-        cal.machineName=strrep(computer.machineName,'éˆ??',''''); % work around bug in Screen('Computer')
+        cal.machineName=strrep(computer.machineName,[char([200 224]) '??'],''''); % work around bug in Screen('Computer')
         if streq(cal.machineName,'UNKNOWN! QUERY FAILED DUE TO EMPTY OR PROBLEMATIC NAME.')
             cal.machineName='';
         end
@@ -2700,6 +2702,18 @@ try
     skipTrial=false;
     encourageFixation=false;
     encourageFixationString='';
+    if oo(1).isFirstBlock
+        for oi=1:conditions
+            switch oo(oi).task 
+            case 'readAloud'
+                if ~isSoundOpen % Global used by CloseWindowsAndCleanup
+                WaitForSpeech('open');
+                isSoundOpen=true;
+                end
+                break
+            end
+        end 
+    end
     
     % THIS IS THE MAIN LOOP
     while presentation<length(condList)
@@ -4181,7 +4195,7 @@ try
                     % dyslexia. Brain and language, 93(3), 369-373.
                     beginSecs=Screen('Flip',window,[],1);
                     % Time the interval from image to speech.
-                    endSecs=WaitForSpeech();
+                    endSecs=WaitForSpeech('measure',string);
                     RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
                     if false
                         cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 1 mm subtense.
@@ -4840,7 +4854,7 @@ end
 end % function SetUpFixatiom
 
 function [ooOut,skipTrial]=ProcessEscape(oo)
-global window keepWindowOpen
+global window keepWindowOpen isSoundOpen
 skipTrial=false;
 switch nargout
     case 2
