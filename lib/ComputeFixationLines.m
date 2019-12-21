@@ -20,21 +20,28 @@ function fixationLines=ComputeFixationLines(fix)
 %                                       % target eccentricity. We also
 %                                       % blank a radius proportional to
 %                                       % target radius.
-% fix.blankingRadiusReTargetHeight=1.5; % Make vertical blanking radius 1.5
-%                                       % times target height.
+% fix.blankingRadiusReTargetHeight=1.5; % Make blanking radius 1.5 times
+%                                       % target height. That's a good
+%                                       % value for letters, which are
+%                                       % strong right up to the edge of
+%                                       % the target height. For gabors,
+%                                       % which are greatly diminished
+%                                       % there, I recommend a value of
+%                                       % 0.5.
 % fix.blankingRadiusReTargetWidth=1.5;  % Make horizontal blanking radius 
 %                                       % 1.5 times target width.
 % fix.targetHeightOverWidth=1;          % 1 for Sloan. 5 for Pelli font.
 % fix.targetHeightPix=targetHeightPix;  % Blanking radius is proportional
 %                                       % to specified target height.
-% fix.markTargetLocation=true;                    % Draw vertical line indicating
+% fix.markTargetLocation=true;          % Draw vertical line indicating
 %                                       % target location.
 % fixationLines=ComputeFixationLines(fix);
 % Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
 %
 % History:
 % October, 2015. Denis Pelli wrote it.
-% November 1, 2015. Enhanced to cope with off-screen fixation or target.
+% November 1, 2015. Enhanced to cope with fixation or target being
+% off screen.
 if ~isfield(fix,'bouma') || ~isfinite(fix.bouma)
     fix.bouma=0.5;
 end
