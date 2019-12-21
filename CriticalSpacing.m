@@ -812,7 +812,7 @@ end
 for oi=1:conditions
     switch oo(oi).task
         case {'read' 'readAloud'}
-            o.relationOfSpacingToSize='fixed by font';
+            oo(oi).relationOfSpacingToSize='fixed by font';
     end
     if ~isfinite(oo(oi).targetSizeIsHeight)
         switch oo(oi).thresholdParameter
@@ -1514,6 +1514,9 @@ try
                 case 'none'
                     oo(oi).minimumSpacingDeg=1.1*oo(oi).minimumTargetPix/pixPerDeg;
                 case 'fixed by font'
+                    % THIS IS JUST A QUICK HACK TO GET THINGS WORKING. DGP.
+                    % 12/20/2019.
+                    oo(oi).minimumSpacingDeg=oo(oi).fixedSpacingOverSize*oo(oi).minimumSizeDeg;
             end
         end
         sizeDeg=max([oo.minimumSizeDeg]);
@@ -1869,7 +1872,7 @@ try
     response=GetKeypress([allowedCode escapeKeyCode graveAccentKeyCode],oo(1).deviceIndex);
     if ismember(response,[escapeChar,graveAccentChar])
         [oo(1).quitExperiment,oo(1).quitBlock,oo(1).skipTrial]=...
-            OfferEscapeOptions(oo(1).window,o);
+            OfferEscapeOptions(oo(1).window,oo(1));
         if oo(1).quitExperiment
             ffprintf(ff,'*** User typed ESCAPE twice. Experiment terminated.\n');
             oo=SortFields(oo);
@@ -2138,7 +2141,7 @@ try
         
         %% Measure targetHeightOverWidth
         oo(oi).targetFontHeightOverNominal=nan;
-        oo(oi).targetPix=200; % Font size.
+        oo(oi).targetPix=20; % Font size.
         % Get bounds.
         % This is quick for small letter size, under 100, but can take many
         % seconds for a font size of 300.
@@ -2961,6 +2964,8 @@ try
                 case 'none'
                     pix=oo(oi).targetPix;
                 case 'fixed by font'
+                    % QUICK HACK TO GET IT WORKING. 12/20/2019 DGP
+                    pix=spacingPix/oo(oi).fixedSpacingOverSize;
             end
             if oo(oi).targetSizeIsHeight
                 height=pix;
@@ -3136,6 +3141,15 @@ try
                 encourageFixationString='';
                 % Compute fixation lines during first trial, for the
                 % remaining trials in the block.
+                if ismember(oo(oi).task,{'readAloud'})
+                    % Blank a disk with radius of 5 character widths.
+                    radius=5*pixPerDeg*oo(oi).targetDeg;
+                    if oo(oi).targetSizeIsHeight
+                        radius=radius/oo(oi).targetHeightOverWidth;
+                    end
+                    assert(isfinite(radius));
+                    oo(oi).fix.blankingRadiusPix=round(radius);
+                end
                 fixationLines=ComputeFixationLines2(oo(oi).fix);
                 % Draw fixation.
                 if ~oo(oi).repeatedTargets && oo(oi).useFixation
@@ -4139,6 +4153,10 @@ try
                 end % for iQuestion= ...
             case 'readAloud'
                 % Show a word. Measure vocal reaction time.
+                preface='';
+                readInstructions=['While your eye is on the fixation cross, '...
+                    'hit SPACE to make a word appear. When it appears, immediately '...
+                    'read it aloud, into the microphone.'];
                 oo(oi).readMethod=sprintf(...
                     ['Random word from list that is equated for frequency. '...
                     '%.1f deg spacing. \n'...
@@ -4152,7 +4170,7 @@ try
                         string='WORD';
                         oo(oi).readString{end+1}=string;
                         % There are three ways to get here:
-                        % 1. ordinary begin a new trial;
+                        % 1. begin a new trial;
                         % 2. observer hit ESC SPACE after last word;
                         % 3. reaction time was too short or too long, so do
                         % the trial again with a fresh word.
@@ -4163,6 +4181,12 @@ try
                             [preface readInstructions],...
                             oo(1).textSize,1.5*oo(1).textSize,black,...
                             oo(1).textLineLength,[],[],1.3);
+                        if oo(oi).useFixation
+                            if ~isempty(fixationLines)
+                                Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                                Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                            end
+                        end
                         Screen('Flip',window);
                         oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
                         [keySecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
@@ -4182,11 +4206,20 @@ try
                     Screen('TextFont',window,oo(oi).targetFont);
                     Screen('TextSize',window,oo(oi).readSize);
                     Screen('FillRect',window);
+                    if oo(oi).useFixation
+                        if ~isempty(fixationLines)
+                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
+                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        end
+                    end
                     % Display word to be read.
+                    xyPix=XYPixOfXYDeg(oo(oi),[0 0]);
                     [~,y]=DrawFormattedText(window,double(string),...
-                        2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
+                        xyPix(1)-2.5*oo(oi).textSize,...
+                        xyPix(2)+oo(oi).textSize/2,...
+                        black,...
                         oo(oi).readCharPerLine,[],[],1.5);
-                    WaitSecs(keySecs+0.8);
+                    WaitSecs('UntilTime',keySecs+0.8);
                     % Zoccoloti et al. (2005) showed fixation for 750 ms,
                     % plus blank for 250 ms.
                     % Zoccolotti, P., De Luca, M., Di Pace, E., Gasperini,
