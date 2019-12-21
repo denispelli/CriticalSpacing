@@ -19,7 +19,9 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 % Use the "windowsOrScreens" argument scalar or array to specify screen
 % numbers or window pointers for the screens you want to test. (You can mix
 % screen numbers and window pointers.) The main screen is 0, the next is 1,
-% and so on. Default is all screens. This routine is quick if
+% and so on. Default is all screens. [Under macOS if mirroring is enabled,
+% then IdentifyComputer will think the mirrored displays are one. Mirroring
+% results in very slow timing.] IdentifyComputer is quick if
 % "windowsOrScreens" is empty [] or specifies screens on which windows are
 % already open, and it's slow otherwise. That's because for each requested
 % screen that lacks a window, IdentifyComputer has to open and close a
@@ -77,7 +79,7 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 % October 28, 2019. DGP added machine.screenMex with creation date.
 % October 31, 2019. DGP replaced strip by strtrim, to extend compatibility
 %                   back to MATLAB 2006a. Requested by Mario Kleiner.
-% November 8, 2019. DGP. Now compatible with Octave 5.1. Use strfind
+% November 8, 2019. DGP. Now compatible with Octave 5.1. Use "strfind"
 %                   instead of "contains", which is missing in Octave. Use
 %                   "switch 4*ismacos+2*iswin+islinux" instead of "switch
 %                   computer" because "computer" differs between MATLAB and
@@ -85,7 +87,7 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 %                   was failing in Octave. Provide format to datenum, which
 %                   otherwise fails in Octave.
 % November 18, 2019. DGP. New argument 'noInternet' to prevent use of
-%                   Internet to look up the modelDescription.
+%                   the internet to look up the modelDescription.
 if nargin<2
     modifier1='';
 end
