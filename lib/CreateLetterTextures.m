@@ -20,9 +20,10 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 %
 % RETURNED VALUES:
 %
-% letterStruct(i).letter
-% letterStruct(i).texture
-% letterStruct(i).rect
+% letterStruct(i).letter % char
+% letterStruct(i).image % image
+% letterStruct(i).texture % Screen texture containing the image
+% letterStruct(i).rect % rect of that image
 % letterStruct(i).bounds
 % letterStruct(i).width
 % letterStruct(i).dx
@@ -50,7 +51,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % o.showLineOfLetters
 % o.contrast % Typically 1. Positive for black letters.
 %
-% window used as scratch space by DrawText.
+% "window" is used as scratch space by DrawText.
 %
 % Enhanced checking of image size now gives detailed report if an error is
 % detected, for instance:
@@ -216,8 +217,8 @@ else % if o.getAlphabetFromDisk
         end
         t=toc(t1);
         r=Screen('Rect',scratchWindow);
-        %         fprintf('TextBounds %.2f s, scratchWindow %dx%d\n',...
-        %             t,RectHeight(r),RectWidth(r));
+        % fprintf('TextBounds %.2f s, scratchWindow %dx%d\n',...
+        %    t,RectHeight(r),RectWidth(r));
         if o.showLineOfLetters
             b=Screen('TextBounds',scratchWindow, letters(i));
             fprintf('%d: %s "%c" textSize %d, TextBounds [%d %d %d %d] width x height %d x %d, Screen TextBounds %.0f x %.0f\n', ...
@@ -236,7 +237,7 @@ else % if o.getAlphabetFromDisk
     end
     assert(RectHeight(bounds)>0);
     for i=1:length(letters)
-        %       letterStruct(i).width=RectWidth(letterStruct(i).bounds); % Redundant
+        % letterStruct(i).width=RectWidth(letterStruct(i).bounds); % Redundant
         desiredBounds=CenterRect(letterStruct(i).bounds,bounds);
         letterStruct(i).dx=desiredBounds(1)-letterStruct(i).bounds(1);
     end
