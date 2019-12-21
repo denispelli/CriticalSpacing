@@ -1,9 +1,10 @@
 function timeSec=WaitForSpeech(action, targetWord, saveAudio, plotWave, deviceName, maxWaitSec)
-% timeSec=WaitForSpeech(action, targetWord[, saveAudio=false][, plotWave=false][, deviceName=[]][, maxWaitSec=5])
-% Return absolute time when speech is detected. If none detected after
-% maxWaitSec (default 5 s), then return [].
-% Ziyi Zhang, November, 2019.
-% December 1, 2019. DGP. Polished.
+% timeSec=WaitForSpeech(action,targetWord[,saveAudio=false]...
+%      [,plotWave=false][,deviceName=[]][,maxWaitSec=5]);
+% Return absolute time at which speech is first detected. If no speach
+% detected after maxWaitSec (default 5 s), then return [].
+% Written by Ziyi Zhang, December, 2019.
+% Polished by DGP, December, 2019.
 
 if nargin<1
     action='open';
@@ -24,24 +25,22 @@ if nargin<6
     maxWaitSec=5;
 end
 if isempty(deviceName)
-    if (action == 'open') 
+    if ismember(action,{'open'}) 
         disp('Using default microphone.');
     end
     deviceName=[];
 else
     disp(['Using ''' deviceName ''' microphone.']);
 end
-
 persistent pahandle
 % Set voiceTrigger: the threshold amplitude
 voiceTrigger = 0.05;
 % Set recordSecs: the time span in seconds recorded and stored
 recordSecs = 0.2;
-
 switch(action)
     case 'open'
         if nargin>1
-            error('Too many arguments. Only one allowed for open/close.');
+            error('Too many arguments. Only one allowed for open.');
         end
         % Running on PTB-3? Abort otherwise.
         AssertOpenGL;
@@ -54,23 +53,29 @@ switch(action)
         pahandle = PsychPortAudio('Open', deviceName, 2, 1, [], 1);
         % Preallocate an internal audio recording buffer
         PsychPortAudio('GetAudioData', pahandle, maxWaitSec+recordSecs);
-        % 
         PsychPortAudio('Start', pahandle, 0, 0, 1);
         PsychPortAudio('Stop', pahandle);
         return
     case 'close'
         if nargin>1
-            error('Too many arguments. Only one allowed for open/close.');
+            sca;
+            error('Too many arguments. Only one allowed for close.');
         end
-        % Close the audio device:
-        PsychPortAudio('Close', pahandle);
+        if ~isempty(pahandle)
+            % Close the audio device:
+            PsychPortAudio('Close', pahandle);
+            pahandle=[];
+        end
         return
     case 'measure'
         % Run code below.
     otherwise
         error('Unknown "action" ''%s''.',action);
 end
-
+if isempty(pahandle)
+    sca;
+    error('You must call PsychPortAudio(''open'') before using it.');
+end
 s = PsychPortAudio('GetStatus', pahandle);
 % Get what frequency we are actually using:
 freq = s.SampleRate;
@@ -130,7 +135,6 @@ if success
         recordedAudio = [recordedAudio audioData];  %#ok
     end
 end
-
 % Stop capture
 PsychPortAudio('Stop', pahandle);
 % If no voice found
