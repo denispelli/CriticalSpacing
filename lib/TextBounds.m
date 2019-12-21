@@ -1,5 +1,5 @@
 function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
-% bounds=TextBounds(window,string [,yPositionIsBaseline=0][,centerTheText=0])
+% [bounds,ok]=TextBounds(window,string [,yPositionIsBaseline=0][,centerTheText=0])
 %
 % Returns "bounds", the smallest enclosing rect for the drawn text,
 % relative to the current location. This bound is based on the actual
@@ -85,19 +85,19 @@ function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
 %              double.
 % 8/7/19   dgp Detect clipping of bounds by window, issue warning, and
 %              return second argument "ok". Updated comments about speed.
+% 12/20/19 dgp Roughly center letter in the window, to minimize chance of
+%              exceeding window bounds.
 
-if nargin < 2 || isempty(text)
-    error('Require at least 2 arguments. bounds=TextBounds(window, string [, yPositionIsBaseline][, centerTheText])');
+if nargin<2 || isempty(text)
+    error(['Require at least 2 arguments. bounds=TextBounds(window, '...
+        'string [, yPositionIsBaseline][, centerTheText])']);
 end
-
-if nargin < 3 || isempty(yPositionIsBaseline)
-    yPositionIsBaseline = 0;
+if nargin<3 || isempty(yPositionIsBaseline)
+    yPositionIsBaseline = false;
 end
-
 if nargin<4
-    centerTheText=0;
+    centerTheText=false;
 end
-
 white = 1;
 
 % Clear scratch window to background color black:
@@ -110,11 +110,14 @@ if yPositionIsBaseline
     % the many fonts with descenders, and the occasional fonts that have
     % fancy capital letters with flourishes that extend to the left of the
     % starting point.
+    % We set margin to roughly center the letter in the winow, hoping to
+    % minimize the chance that the letter will exceed the window bounds.
     % To pass our test below, we must end up with a margin of at least 2
     % pixels on all four sides between the text and the window.
     screenRect=Screen('Rect',window);
-    margin=min(2*Screen('TextSize',window),RectWidth(screenRect)/20);
+    margin=RectWidth(screenRect)/2-Screen('TextSize',window)/2;
     margin=max(margin,2);
+    margin=round(margin);
     x0=screenRect(1)+margin;
     y0=screenRect(4)-margin;
 else
@@ -186,6 +189,7 @@ r=OffsetRect(r,-x0,-y0);
 % Compute the bounding rect and return it:
 if isempty(y) || isempty(x)
     bounds=[0 0 0 0];
+    ok=false;
 else
     bounds=SetRect(min(x)-1,min(y)-1,max(x),max(y));
     % Are the bounds at least 2 pixels within the window rect on every
