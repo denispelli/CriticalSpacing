@@ -225,6 +225,7 @@ elseif ischar(screenOrFilename)
     if isempty(which(dataFilename))
         error('Sorry, your data file ''%s'' cannot be found.',dataFilename);
     end
+    [~,filename]=fileparts(dataFilename); % Strip extension.
 else
     error('Illegal "screenOrFilename" argument. It''s optional.');
 end
