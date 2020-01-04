@@ -1,6 +1,8 @@
 function CheckExperimentFonts(ooo)
 % CheckExperimentFonts(ooo)
 %% MAKE SURE NEEDED FONTS ARE AVAILABLE
+fonts={};
+diskFonts={};
 if isfield(ooo{1}(1),'targetFont')
     fonts={};
     diskFonts={};
