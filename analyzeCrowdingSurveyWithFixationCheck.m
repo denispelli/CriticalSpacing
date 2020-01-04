@@ -17,7 +17,7 @@ vars={'experiment' 'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
     'contrast' 'pixPerCm' 'nearPointXYPix' 'beginningTime'...
-    'block' 'blocksDesired' 'brightnessSetting' 'trialData' 'targetFont' 'script' 'task'};
+    'block' 'blocksDesired' 'brightnessSetting' 'trialData' 'targetFont' 'script' 'task' 'trialsDesired'};
 oo1=ReadExperimentData(experiment,vars);
 fprintf('%4.0f conditions for experiment %s\n',length(oo1),experiment);
 % oo2=ReadExperimentData('CrowdingSurvey2',vars);
@@ -110,7 +110,7 @@ if ~isempty(b)
     t
     plot(b.fixationP,abs(log10(b.spacingRatio)));
 end
-return
+% return
 
 %% ELIMINATING DATA
 %for oi=1:length(oi)
