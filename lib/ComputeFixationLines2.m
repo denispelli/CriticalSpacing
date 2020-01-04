@@ -20,7 +20,7 @@ function fixationLines=ComputeFixationLines2(fix)
 % fix.blankingRadiusPix=100;            % >0 for user-specified blanking.
 % fix.blankingRadiusPix=[];             % [] for automatic blanking.
 % fix.blankingRadiusReEccentricity=0.5; % default
-% fix.blankingRadiusReTargetHeight=1;   % default
+% fix.blankingRadiusReTargetHeight=2;   % default
 %
 % fixationLines=ComputeFixationLines2(fix);
 % Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
@@ -66,7 +66,7 @@ if ~isfield(fix,'fixationLineMinimumLengthPix')
     fix.fixationLineMinimumLengthDeg=100;
 end
 if isempty(fix.blankingRadiusPix) || fix.blankingRadiusPix>0
-    % Added March, 2019 by denis.pelli@nyu.edu.
+    % Added March, 2019, by denis.pelli@nyu.edu.
     % Here we apply a ceiling on the blanking radius so that fixation
     % marking is not entirely blanked, and still indicates to the observer
     % where to fixate. First we restrict the blanking radius to be less
@@ -110,7 +110,11 @@ if isempty(fix.blankingRadiusPix) || fix.blankingRadiusPix>0
     r=min(max([d(1:2)' d(3:4)'])); % Spare at least one horiz. and one vert. crossing.
     minPix=fix.fixationLineMinimumLengthPix;
     r=r-minPix; % spare at least this (e.g. 0.5 deg).
-    fix.blankingRadiusPix=round(min([fix.blankingRadiusPix r]));
+    if ~isfinite(fix.blankingRadiusPix)
+        % If we have a definite blanking radius, then use it. If not,
+        % then use this rule of thumb to limit it.
+        fix.blankingRadiusPix=round(min([fix.blankingRadiusPix r]));
+    end
     % We make sure that we display least a minimal amount
     % fix.fixationLineMinimumLengthDeg of each fixation mark, by making
     % sure that the requested fixation mark extends beyond blanking by that
