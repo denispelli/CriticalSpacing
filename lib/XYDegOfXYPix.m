@@ -1,4 +1,5 @@
 function xyDeg=XYDegOfXYPix(o,xyPix)
+% xyDeg=XYDegOfXYPix(o,xyPix);
 % Convert position from (x,y) screen coordinate in o.stimulusRect to deg
 % (relative to fixation). Deg increase right and up. Pix are in Apple
 % screen coordinates which increase down and right. The perspective
