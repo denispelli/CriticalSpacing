@@ -499,6 +499,7 @@ persistent drawTextWarning
 global corpusFilename corpusText corpusFrequency corpusWord corpusSentenceBegins corpusLineEndings
 persistent oldViewingDistanceCm
 global blockTrial blockTrials % used in DrawCounter.
+persistent isMicrophonePermissionGranted
 keepWindowOpen=false; % Enable only in normal return.
 rotate90=[cosd(90) -sind(90); sind(90) cosd(90)];
 % THESE STATEMENTS PROVIDE DEFAULT VALUES FOR ALL THE "o" parameters.
@@ -979,6 +980,47 @@ else
     end
 end
 oo(1).resolution=Screen('Resolution',oo(1).screen);
+
+% MAKE SURE WE HAVE PERMISSION TO USE MICROPHONE
+% Under macOS, MATLAB requires the user's permission to use the microphone.
+% The user grants permission by going to
+%      System Preferences : Security & Privacy : Privacy
+% and clicking the checkbox next to "MATLAB". 
+% https://support.apple.com/guide/mac-help/control-access-to-your-microphone-on-mac-mchla1b1e1fe/mac
+% Note that each time we upgrade MATLAB, the user will again have to grant
+% permission to the new MATLAB application. If we call
+% WaitForSpeech('Open') while MATLAB does not yet have permission, then
+% either InitializePsychSound or PsychPortAudio puts up a modal dialog
+% asking the user to grant permission. Alas, if this comes up while we have
+% a full-screen window from Screen, then the dialog is displayed behind our
+% window and cannot be seen. MATLAB waits forever for the user to click the
+% invisible dialog box. I think the only way for the user to recover
+% control is to kill MATLAB.
+%
+% An easy way to avoid the hang up is to always call WaitForSpeech('open')
+% and 'close' once, very early, the first time CriticalSpacing runs, before
+% the Screen window is open. Then, if permission is needed, the dialog will
+% open and the user will see it and grant permission. The only downside is
+% that the roughly 1 s taken by these calls will be wasted in experiments
+% that never use the microphone. To avoid needlessly checking for
+% microphone permission we'd have to check not just this block for
+% o.task=='readAloud', but the whole experiment, because once the window is
+% open, we keep it open for the whole experiment.
+%
+% Denis Pelli raised this as a Psychtoolbox issue in January 2020,
+% suggesting a fix inside InitializePsychSound or PsychPortAudio, whichever
+% opens the modal dialog.
+% https://github.com/Psychtoolbox-3/Psychtoolbox-3/issues/637
+% We make these calls soley to allow a modal dialog to grant permission to
+% use the microphone, if needed. It is needed only once each time you
+% upgrade MATLAB.
+if isempty(isMicrophonePermissionGranted)
+    t=GetSecs;
+    WaitForSpeech('open'); % 0.8 s.
+    WaitForSpeech('close');% 0.1 s.
+    fprintf('Open and close WaitForSpeech took %.1f s.\n',GetSecs-t);
+    isMicrophonePermissionGranted=true;
+end
 
 try
     oo(1).screen=max(Screen('Screens'));
@@ -4275,7 +4317,7 @@ try
                 % dyslexia. Brain and language, 93(3), 369-373.
                 beginSecs=Screen('Flip',window,[],1);
                 % Time the interval from image to speech.
-                endSecs=WaitForSpeech('measure',[string '-' oo(oi).observer],true,true); % Save audio & waveplot
+                endSecs=WaitForSpeech('measure',{[string '-' oo(oi).observer], beginSecs},true); % Save audio & waveplot
                 RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
                 if false
                     % Use 0.1 cm subtense to compute ratio cmPerDeg.
