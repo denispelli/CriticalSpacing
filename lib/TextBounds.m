@@ -87,6 +87,9 @@ function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
 %              return second argument "ok". Updated comments about speed.
 % 12/20/19 dgp Roughly center letter in the window, to minimize chance of
 %              exceeding window bounds.
+% 1/7/20   dgp if yPositionIsBaseline: In horizontal centering, don't 
+%              assume it's a single character. Use length(text).
+% 1/9/20   dgp if yPositionIsBaseline: Polish the vertical centering.
 
 if nargin<2 || isempty(text)
     error(['Require at least 2 arguments. bounds=TextBounds(window, '...
@@ -104,26 +107,30 @@ white = 1;
 Screen('FillRect',window,0);
 
 if yPositionIsBaseline
-    % Draw text string with origin vertically at letter baseline and
-    % horizontally at nominal letter beginning. Allow a wide margin from
-    % lower left corner of screen. The left and lower margins accommodate
-    % the many fonts with descenders, and the occasional fonts that have
-    % fancy capital letters with flourishes that extend to the left of the
-    % starting point.
-    % We set margin to roughly center the letter in the winow, hoping to
-    % minimize the chance that the letter will exceed the window bounds.
-    % To pass our test below, we must end up with a margin of at least 2
-    % pixels on all four sides between the text and the window.
+    % Draw text string with vertical origin at letter baseline and
+    % horizontal origin at nominal letter beginning. Allow a wide margin
+    % from lower left corner of screen. The left and lower margins
+    % accommodate the many fonts with descenders, and the occasional fonts
+    % that have fancy capital letters with flourishes that extend to the
+    % left of the starting point.
+    % We set originXY (from lefth and bottom of window) to roughly center
+    % the text in the window, hoping to minimize the chance that the text
+    % will exceed the window bounds. To pass our test below, we must end up
+    % with a margin of at least 2 pixels on all four sides between the text
+    % and the window.
     screenRect=Screen('Rect',window);
-    margin=RectWidth(screenRect)/2-Screen('TextSize',window)/2;
-    margin=max(margin,2);
-    margin=round(margin);
-    x0=screenRect(1)+margin;
-    y0=screenRect(4)-margin;
+    sizeXY=[length(text) 1]*Screen('TextSize',window); % Rough size.
+    originXY=([RectWidth(screenRect) RectHeight(screenRect)] - sizeXY)/2;
+    originXY=max(originXY,[2 2]);
+    originXY=originXY+[0 sizeXY(2)/3]; % Estimate of descender height.
+    originXY=ceil(originXY);
+    x0=screenRect(1)+originXY(1); % From left edge.
+    y0=screenRect(4)-originXY(2); % From bottom edge.
 else
     % Draw text string with origin near upper left corner of bounding box.
-    % To avoid clipping by the window, we here introduce a 2-pixel clear margin
-    % to enable our test below for clipping of the bounds by the window.
+    % To avoid clipping by the window, we here introduce a 2-pixel clear
+    % margin to enable our test below for clipping of the bounds by the
+    % window.
     x0=2;
     y0=2;
 end
@@ -205,7 +212,7 @@ else
             'Make text smaller or window bigger.'],...
             bounds(1),bounds(2),bounds(3),bounds(4),...
             boundsAbs(1),boundsAbs(2),boundsAbs(3),boundsAbs(4),...
-            RectHeight(wRect),RectWidth(wRect));
+            RectWidth(wRect),RectHeight(wRect));
     end
 end
 
