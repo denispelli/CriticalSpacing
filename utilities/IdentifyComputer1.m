@@ -403,7 +403,7 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowOrScreen)
                 verbosity=Screen('Preference','Verbosity',0);
             end
             try
-                Screen('Preference','SkipSyncTests',1);
+                % Screen('Preference','SkipSyncTests',1);
                 window=Screen('OpenWindow',machine.screen,255,r);
                 isNewWindow=true;
             catch em
