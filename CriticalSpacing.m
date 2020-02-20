@@ -2799,7 +2799,16 @@ try
     % Read word list from mat
     temp = load(fullfile(mainFolder,'words','wordList.mat'));
     stringArray = temp.wordList;
-    stringArray = Shuffle(stringArray); % Shuffle each column independently
+    if true
+		s = RandStream('mt19937ar', 'Seed', 0);
+		% s = RandStream('mt19937ar','Seed','shuffle');
+		permArr = randperm(s, size(stringArray, 1));
+		stringArray = stringArray(permArr, :);
+    else
+    	% use PsychToolbox Shuffle
+    	% Shuffle each column independently
+    	stringArray = Shuffle(stringArray); 
+    end
     % Currently there are no words of length 1 and 2, so those sublists
     % will be empty.
     wordList{1}=[];
