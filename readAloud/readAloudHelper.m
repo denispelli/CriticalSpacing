@@ -202,7 +202,7 @@ if strcmp(operation, 'data')
     end
     if nnz(~observerTable(:, 3)) % discrepency in observer response
         
-        warning('The following observer responses are not complete. At least one file is missing for each response.');
+        warning('The following observer responses are not complete. Observer''s self rating result is missing.');
         for i = 1:size(observerTable, 1)
             if ~observerTable(i, 3)
                 fprintf('- %s [matFile=1 selfRate=%d]\n', resFiles{i}, observerTable(i, 2));
@@ -211,10 +211,10 @@ if strcmp(operation, 'data')
     end
     
     % 2. scan all decision files
-    res = cell2table(cell(0, 15), 'VariableNames', ...
-        {'word', 'audioValid', 'onsetType', 'reoperationTime', 'observer', 'grader', ...
+    res = cell2table(cell(0, 16), 'VariableNames', ...
+        {'word', 'audioValid', 'onsetType', 'reactionTime', 'observer', 'grader', ...
         'selfRating', 'trialTime', 'gradingTime', 'beginSec', 'endSec', ...
-        'idxOnset', 'idxLength', 'frequency', 'observerFileName'});
+        'idxOnset', 'idxLength', 'frequency', 'thresholdValue', 'observerFileName'});
     for i = 1:length(decFiles)
         
         fileName = decFiles{i};
@@ -224,6 +224,10 @@ if strcmp(operation, 'data')
 
             observerFileName = t{j, 1}{1};
             logFilesIndex = find(contains(logFiles(:, 1), observerFileName));
+            if isempty(logFilesIndex)
+                % this response does not have self rating record 
+                continue;
+            end
             if nnz(strcmp(observerFileName, res{:, 'observerFileName'}))
                 % if this observer response has been graded
                 
@@ -231,7 +235,7 @@ if strcmp(operation, 'data')
             end
             newRow = {t{j, 4}{1}, t{j, 3}, t{j, 2}, t{j, 8}-t{j, 7}, t{j, 5}{1}, t{j, 6}{1}, ...
                 logFiles{logFilesIndex, 2}, observerFileName(1:19), t{j, 9}{1}, t{j, 7}, t{j, 8}, ...
-                t{j, 10}, t{j, 11}, t{j, 12}, observerFileName}; %#ok
+                t{j, 10}, t{j, 11}, t{j, 12}, t{j, 13}, observerFileName};
             res = [res; newRow]; %#ok
         end
     end
@@ -241,14 +245,14 @@ end
 
 
 % should not reach here
-disp('Option not recognized.');
+disp('Operation not recognized.');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ask for confirmation
 function [res] = confirmation(option)
 
-    answer = questdlg(['Please confirm this option: ', option], 'Confirm', 'Cancel', 'Confirm', 'Cancel');
+    answer = questdlg(['Please confirm this operation:  ', option], 'Confirm', 'Cancel', 'Confirm', 'Cancel');
     switch answer
         case 'Cancel'
             res = 0;
