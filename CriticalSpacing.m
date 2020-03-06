@@ -4684,18 +4684,20 @@ try
                             warning('Illegal o.flankingDirection "%s".',oo(oi).flankingDirection)
                     end
                 end
-                ffprintf(ff,'Threshold log %s spacing deg (mean%csd) is %.2f%c%.2f, which is %.3f deg.\n',...
-                    ori,plusMinus,t,plusMinus,sd,10^t);
-                if 10^t<oo(oi).minimumSpacingDeg
-                    ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
-                end
-                if oo(oi).responseCount>1
-                    trials=QuestTrials(oo(oi).q);
-                    if any(~isreal([trials.intensity]))
-                        error('trials.intensity returned by Quest should be real, but is complex.');
+                if oo(oi).useQuest
+                    ffprintf(ff,'Threshold log %s spacing deg (mean%csd) is %.2f%c%.2f, which is %.3f deg.\n',...
+                        ori,plusMinus,t,plusMinus,sd,10^t);
+                    if 10^t<oo(oi).minimumSpacingDeg
+                        ffprintf(ffError,'WARNING: Estimated threshold %.3f deg is smaller than minimum displayed spacing %.3f deg. Please increase viewing distance.\n',10^t,oo(oi).minimumSpacingDeg);
                     end
-                    ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
-                    ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+                    if oo(oi).responseCount>1 && oo(oi).useQuest
+                            trials=QuestTrials(oo(oi).q);
+                            if any(~isreal([trials.intensity]))
+                                error('trials.intensity returned by Quest should be real, but is complex.');
+                            end
+                            ffprintf(ff,'Spacing(deg)	P fit	P       Trials\n');
+                            ffprintf(ff,'%.3f           %.2f    %.2f    %d\n',[10.^trials.intensity;QuestP(oo(oi).q,trials.intensity-oo(oi).tGuess);trials.responses(2,:)./sum(trials.responses);sum(trials.responses)]);
+                    end
                 end
             case 'size'
                 if oo(oi).targetSizeIsHeight
