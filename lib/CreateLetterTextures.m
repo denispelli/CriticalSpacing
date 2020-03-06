@@ -73,7 +73,7 @@ function [letterStruct,alphabetBounds]=CreateLetterTextures(condition,o,window)
 % have a tight window because you'll know immediately, before collecting
 % data, if it's too tight. This allows a much smaller scratchWindow and
 % thus greatly sped up CreateLetterTextures.
-% tic
+
 if ~isfinite(o.targetHeightOverWidth)
     o.targetHeightOverWidth=1;
 end
