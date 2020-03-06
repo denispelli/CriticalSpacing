@@ -117,7 +117,7 @@ switch action
         if isempty(fileName)
             sca;
             clear PsychPortAudio
-            error('You must ''measure'' before you ''storeRating''.');
+            error('You must ''measure'' before you ''storeRating''. A common cause is that the microphone failed to capture your response.');
         end
         fclose(fopen(sprintf('%s-%d.log',fileName,rating), 'w'));
         return
