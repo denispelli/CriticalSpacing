@@ -6,8 +6,8 @@ clear KbWait o
 mainFolder=fileparts(mfilename('fullpath'));
 addpath(fullfile(mainFolder,'lib'));
 
-% o.useFractionOfScreenToDebug=0.4;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
+o.useFractionOfScreenToDebug=0.4;
+o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.permissionToChangeResolution=true;
@@ -18,7 +18,7 @@ o.useSpeech=false;
 o.viewingDistanceCm=100;
 o.setNearPointEccentricityTo='fixation';
 o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
-% For 2018-April 2019 this was nominally 200 ms, but actually delivered 280
+% From 2018 until April 2019 this was nominally 200 ms, but actually delivered 280
 % ms when tested in April. I've now improved the code to more accurately
 % deliver the requested duration, and reduced the request to 150 m.
 o.durationSec=0.150; % duration of display of target and flankers
@@ -41,12 +41,13 @@ ooo={};
 
 if true
     o.conditionName='reading';
+    o.useQuest=false;
     o.task='read';
     o.thresholdParameter='spacing';
     o.targetFont='Monaco';
     o.getAlphabetFromDisk=false;
     o.targetDeg=nan;
-    o.trialsDesired=4;
+    o.trialsDesired=1;
     o.minimumTargetPix=8;
     o.eccentricityXYDeg=[0 0];
     % The reading test fills a 15" MacBook Pro screen with 1 deg letters at
@@ -74,6 +75,7 @@ if true
     ooo{end+1}=o;
 end
 o.trialsDesired=40;
+o.useQuest=true;
 if true
     for ecc=[5 2.5]
         o.conditionName='crowding';
@@ -271,12 +273,12 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
+disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'thresholdParameter' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 
 ooo{end}(end)
-return
+% return
 
 %% RUN.
 for block=1:length(ooo)
