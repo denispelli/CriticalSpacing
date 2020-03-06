@@ -90,6 +90,7 @@ function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
 % 1/7/20   dgp if yPositionIsBaseline: In horizontal centering, don't 
 %              assume it's a single character. Use length(text).
 % 1/9/20   dgp if yPositionIsBaseline: Polish the vertical centering.
+% 3/5/20   dgp In line 125, increased bottom margin from 2 to 3.
 
 if nargin<2 || isempty(text)
     error(['Require at least 2 arguments. bounds=TextBounds(window, '...
@@ -109,23 +110,23 @@ Screen('FillRect',window,0);
 if yPositionIsBaseline
     % Draw text string with vertical origin at letter baseline and
     % horizontal origin at nominal letter beginning. Allow a wide margin
-    % from lower left corner of screen. The left and lower margins
+    % from lower left corner of window. The left and lower margins
     % accommodate the many fonts with descenders, and the occasional fonts
     % that have fancy capital letters with flourishes that extend to the
     % left of the starting point.
-    % We set originXY (from lefth and bottom of window) to roughly center
-    % the text in the window, hoping to minimize the chance that the text
-    % will exceed the window bounds. To pass our test below, we must end up
-    % with a margin of at least 2 pixels on all four sides between the text
-    % and the window.
-    screenRect=Screen('Rect',window);
+    % We set originXY (relative to left bottom corner of window) to roughly
+    % center the text in the window, hoping to minimize the chance that the
+    % text will exceed the window bounds. To pass our test below, we must
+    % end up with a margin of at least 2 pixels on all four sides between
+    % the text and the window.
+    windowRect=Screen('Rect',window);
     sizeXY=[length(text) 1]*Screen('TextSize',window); % Rough size.
-    originXY=([RectWidth(screenRect) RectHeight(screenRect)] - sizeXY)/2;
-    originXY=max(originXY,[2 2]);
+    originXY=([RectWidth(windowRect) RectHeight(windowRect)] - sizeXY)/2;
+    originXY=max(originXY,[2 3]); % DGP 3/5/20 increased vertical margin from 2 to 3.
     originXY=originXY+[0 sizeXY(2)/3]; % Estimate of descender height.
     originXY=ceil(originXY);
-    x0=screenRect(1)+originXY(1); % From left edge.
-    y0=screenRect(4)-originXY(2); % From bottom edge.
+    x0=windowRect(1)+originXY(1); % From left edge.
+    y0=windowRect(4)-originXY(2); % From bottom edge.
 else
     % Draw text string with origin near upper left corner of bounding box.
     % To avoid clipping by the window, we here introduce a 2-pixel clear
@@ -135,7 +136,7 @@ else
     y0=2;
 end
 if centerTheText
-    x0=(screenRect(1)+screenRect(3))/2;
+    x0=(windowRect(1)+windowRect(3))/2;
 end
 % We've only got one scratch window, so we compute the widths for centering
 % in advance, so as not to mess up the accumulation of letters for the
