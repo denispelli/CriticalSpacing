@@ -105,7 +105,7 @@ function oo=CriticalSpacing(oIn)
 % https://www.mathworks.com/
 % http://psychtoolbox.org/
 %
-% OPTIONAL: MEASURE YOUR SCREEN SIZE IN CM. Psychtoolbox automatically
+% OPTIONAL: SPECIFY YOUR SCREEN SIZE IN CM. Psychtoolbox automatically
 % reads your display screen's resolution in pixels and size in cm, and
 % reports them in every data file. Alas, the reported size in cm is
 % sometimes very wrong in Windows, and is often not available for external
@@ -125,12 +125,12 @@ function oo=CriticalSpacing(oIn)
 % CONTROL SCREEN. When you run CriticalSpacing, the first screen you see is
 % the "control" screen. It tells you several useful things about your
 % display and stimuli. Most prominently, it asks you to adjust the actual
-% viewing distance to match the nominal value. I also alows you to change
-% the nominal value. Further, it tells you the min and view viewing
-% distance to be able to measure acuity at the specified acuity and to put
-% both your target and fixation point on the display. Further options
-% include mirroring, optimizing resolution,and  helping you to attach a
-% wireless keyboard.
+% viewing distance to match the nominal value. It also allows you to change
+% the nominal value. Further, it tells you the min and max viewing distance
+% that will allow you to measure acuity at the specified eccentricity and
+% to put both your target and fixation point on the display. (We also
+% support off-screen fixation.) Further options include mirroring,
+% optimizing resolution,and helping you to attach a wireless keyboard.
 %
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable because a normally
 % sighted observer viewing foveally has excellent vision and must be many
@@ -227,7 +227,7 @@ function oo=CriticalSpacing(oIn)
 % viewing distance (or declare that you're using a mirror) at the beginning
 % of each block. You need a long distance to display tiny letters, and, if
 % fixation is on-screen, you need short viewing distance to display
-% peripheral letters. (We plan to add support for off-screen fixation.)
+% peripheral letters. (We also support off-screen fixation.)
 % When viewing foveally, please err on the side of making the viewing
 % distance longer than necessary. Observers don't like being closer than 40
 % cm. Also, if you use too short a viewing distance then the minimum size
@@ -511,7 +511,7 @@ o.experimenter=''; % Assign your name to skip the runtime question.
 o.flipScreenHorizontally=false; % Set to true when using a mirror.
 o.fractionEasyTrials=0;
 o.observer=''; % Assign the name to skip the runtime question.
-o.permissionToChangeResolution=false; % Works for main screen only, due to Psychtoolbox bug.
+o.permissionToChangeResolution=false; % Works for main screen only, due to Psychtoolbox limitations.
 o.getAlphabetFromDisk=true; % true makes the program more portable.
 o.secsBeforeSkipCausesGuess=8;
 o.takeSnapshot=false; % To illustrate your talk or paper.
@@ -620,6 +620,8 @@ o.flankerLetter='';
 % o.targetFont='Retina Micro';
 
 % GEOMETRY
+% Default to external monitor if there is one.
+o.screen=max(Screen('screens'));
 o.nearPointXYDeg=[0 0]; % Set this explicitly if you set setNearPointEccentricityTo='value'.
 o.setNearPointEccentricityTo='target'; % 'target' or 'fixation' or 'value'
 
@@ -638,7 +640,7 @@ o.recordGaze=false;
 o.fixationCheck=false; % True designates condition as a fixation check.
 o.fixationCheckMakeupPresentations=1; % After a mistake, how many correct presentation to require.
 
-% RESPONSE SCREEN
+% RESPONSE
 o.labelAnswers=false; % Useful for non-Roman fonts, like Chinese and Animals.
 o.responseLabels='abcdefghijklmnopqrstuvwxyz123456789';
 o.alphabetPlacement='bottom'; % 'top' placement currently collides with instructions.
@@ -889,8 +891,7 @@ for oi=1:conditions
     end
 end % for oi=1:conditions
 
-% Set up for Screen
-oo(1).screen=max(Screen('Screens'));
+% SET UP SCREEN
 % The screen size in cm is valuable when the OS provides it, via the
 % Psychtoolbox, but it's sometimes wrong on Windows computers, and may
 % not always be available for external monitors. So we allow users to
@@ -1023,7 +1024,6 @@ if isempty(isMicrophonePermissionGranted)
 end
 
 try
-    oo(1).screen=max(Screen('Screens'));
     computer=Screen('Computer');
     oo(1).computer=computer;
     if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration
@@ -2272,7 +2272,14 @@ try
         range=6;
     end % for oi=1:conditions % Prepare all the conditions.
     
-    cal.screen=max(Screen('Screens'));
+    if length(unique([oo.screen]))~=1
+        for oi=1:length(oo)
+            fprintf('Condition %d: screen %d\n',oi,oo(oi).screen);
+        end
+        error('All conditions must use the same screen.');
+    end
+
+    cal.screen=oo(1).screen;
     if cal.screen>0
         ffprintf(ff,'Using external monitor.\n');
     end
@@ -2368,7 +2375,7 @@ try
     end
     
     % Identify the computer
-    cal.screen=0;
+    cal.screen=oo(oi).screen;
     computer=Screen('Computer');
     computer.system=strrep(computer.system,'Mac OS','macOS'); % Modernize the spelling.
     [cal.screenWidthMm,cal.screenHeightMm]=Screen('DisplaySize',cal.screen);
@@ -2611,6 +2618,8 @@ try
         end
         if true
             switch oo(1).task
+                case 'partialReport'
+                    string=[string 'On each trial, you''ll read a string of letters.'];
                 case 'read'
                     string=[string 'On each trial, you''ll read a paragraph. '];
                 case 'readAloud'
@@ -3395,6 +3404,20 @@ try
                     'Fixate until a word appears. ' ...
                     'Read the word aloud as soon as you see it. '...
                     ];
+            case 'partialReport'
+                % Display a letter string. 
+                % o.PRLength is number of letters in string.
+                % Use o.durationSec for duration.
+                % o.contrast for contrast.
+                % o.targetFont for font.
+                % o.targetHeightDeg for letter size.
+                % Draw letters randomly from o.alphabet
+                % Center string on fixation.
+                % o.PRIntervalSec is wait interval.
+                % Then reshow string with one letter missing, and leave it
+                % up. Use the response code for 'identify' since it too is
+                % collecting a one-letter response and any letter in
+                % o.alphabet is valid.
             case 'identify'
                 stimulus=shuffle(oo(oi).alphabet);
                 stimulus=shuffle(stimulus); % Make it more random if shuffle isn't utterly random.
@@ -4436,7 +4459,7 @@ try
                         continue % while presentation<length(condList)
                 end
                 % Here: response is an integer and skipTrial is false.
-            case 'identify'
+            case {'identify' 'partialReport'}
                 responseString='';
                 skipping=false;
                 flipSecs=GetSecs;
