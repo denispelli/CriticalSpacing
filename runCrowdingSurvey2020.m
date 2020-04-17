@@ -1,16 +1,26 @@
+% runCrowdingSurvey2020.m
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2019,2020, denis.pelli@nyu.edu
+% denis.pelli@nyu.edu
+% February 2020
+% 646-258-7524
 
 %% DEFINE CONDITIONS
-clear KbWait o
+clear KbWait o oo ooo
 mainFolder=fileparts(mfilename('fullpath'));
-addpath(fullfile(mainFolder,'lib'));
-
-o.useFractionOfScreenToDebug=0.4;
-o.skipScreenCalibration=true; % Skip calibration to save time.
+addpath(fullfile(mainFolder,'lib')); % Folder in same directory as this M file.
+addpath(fullfile(mainFolder,'utilities')); % Folder in same directory as this M file.
+clear KbWait o oo 
+ooo={};
+o.simulateObserver=false;
+o.dontWait=false;
+% o.useFractionOfScreenToDebug=0.4;
+% o.skipScreenCalibration=true; % Skip calibration to save time.
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingSurvey';
 o.permissionToChangeResolution=true;
+o.fixationOffsetBeforeTargetOnsetSecs=0.5;
+o.fixationOnsetAfterTargetOffsetSecs=0.5;
 o.experimenter='';
 o.observer='';
 o.showProgressBar=false;
@@ -22,13 +32,11 @@ o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 
 % ms when tested in April. I've now improved the code to more accurately
 % deliver the requested duration, and reduced the request to 150 m.
 o.durationSec=0.150; % duration of display of target and flankers
-o.getAlphabetFromDisk=true;
-o.trialsDesired=30;
+o.getAlphabetFromDisk=false;
 o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 o.fixationCheck=false;
 o.flankingDirection='radial';
-o.fixationCrossBlankedUntilSecsAfterTarget=0;
 o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
@@ -39,7 +47,7 @@ o.fixationCrossBlankedNearTarget=true;
 
 ooo={};
 
-if true
+if false
     o.conditionName='reading';
     o.useQuest=false;
     o.task='read';
@@ -137,7 +145,7 @@ if true
         end
     end
 end
-if true
+if false
     for ecc=[0 5]
         o.conditionName='acuity';
         o.task='identify';
@@ -165,7 +173,7 @@ if true
         ooo{end+1}=[o o2];
     end
 end
-if 1
+if false
     for ecc=0
         o.conditionName='crowding';
         o.task='identify';
@@ -196,7 +204,7 @@ for block=1:length(ooo)
         o.conditionName='fixation check';
         o.task='identify';
         o.fixationCheck=true;
-        o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
+%         o.fixationOnsetAfterTargetOffsetSecs=0.5;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
@@ -213,7 +221,15 @@ for block=1:length(ooo)
         ooo{block}=oo;
     end
 end
-
+%% ADD NOMINAL THRESHOLD FOR SIMULATION.
+% This is ignored unless o.simulateObserver=true.
+for block=1:length(ooo)
+    oo=ooo{block};
+    for oi=1:length(oo)
+        oo(oi).simulatedLogThreshold=log10(NominalCrowdingDistanceDeg(oo(oi).eccentricityXYDeg));
+    end
+    ooo{block}=oo;
+end
 if rand>0.5
     %         ooo=fliplr(ooo);
 end
@@ -235,15 +251,15 @@ for block=length(ooo):-1:1
 end
 
 %% ESTIMATE TIME
-willTakeMin=0;
+endsAtMin=0;
 for block=1:length(ooo)
     oo=ooo{block};
     for oi=1:length(oo)
         if ~ismember(oo(oi).observer,{'ideal'})
-            willTakeMin=willTakeMin+[oo(oi).trialsDesired]/10;
+            endsAtMin=endsAtMin+[oo(oi).trialsDesired]/10;
         end
     end
-    [ooo{block}(:).willTakeMin]=deal(willTakeMin);
+    [ooo{block}(:).endsAtMin]=deal(endsAtMin);
 end
 
 %% MAKE SURE NEEDED FONTS ARE AVAILABLE
@@ -273,7 +289,11 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'thresholdParameter' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
+disp(t(:,{'block' 'endsAtMin' 'experiment' 'conditionName' ...
+    'thresholdParameter' 'targetFont' 'eccentricityXYDeg' ...
+    'flankingDirection' 'viewingDistanceCm' 'trialsDesired' ...
+    'fixationOnsetAfterTargetOffsetSecs' ...
+    'fixationOffsetBeforeTargetOnsetSecs'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 
