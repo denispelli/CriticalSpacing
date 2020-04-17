@@ -91,6 +91,7 @@ function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
 %              assume it's a single character. Use length(text).
 % 1/9/20   dgp if yPositionIsBaseline: Polish the vertical centering.
 % 3/5/20   dgp In line 125, increased bottom margin from 2 to 3.
+% 3/21/20   dgp In line 125, minimum bottom margin is back to 2.
 
 if nargin<2 || isempty(text)
     error(['Require at least 2 arguments. bounds=TextBounds(window, '...
@@ -120,13 +121,28 @@ if yPositionIsBaseline
     % end up with a margin of at least 2 pixels on all four sides between
     % the text and the window.
     windowRect=Screen('Rect',window);
-    sizeXY=[length(text) 1]*Screen('TextSize',window); % Rough size.
+    % Estimating the font and descender heights is tricky because we must
+    % cope with special cases, including Sloan whose font height equals the
+    % nominal size and has no descender. As a compromise rule, we estimate
+    % that font height (bottom of g to top of G) is 1.25 the nominal size
+    % and that one fifth of that is descender. 
+    sizeXY=[length(text) 1.25]*Screen('TextSize',window); % Rough size.
+    % originXY is in cartesian coordinates (y increases up) relative to
+    % lower left of window rect.
     originXY=([RectWidth(windowRect) RectHeight(windowRect)] - sizeXY)/2;
-    originXY=max(originXY,[2 3]); % DGP 3/5/20 increased vertical margin from 2 to 3.
-    originXY=originXY+[0 sizeXY(2)/3]; % Estimate of descender height.
-    originXY=ceil(originXY);
-    x0=windowRect(1)+originXY(1); % From left edge.
-    y0=windowRect(4)-originXY(2); % From bottom edge.
+    originXY=max(originXY,[2 2]); 
+    originXY=originXY+[0 sizeXY(2)/5]; % Estimate of descender height.
+    originXY=round(originXY);
+    x0=windowRect(1)+originXY(1); % Inset from left edge.
+    % y0 is in Apple coordinates (y increases down) relative to top of
+    % window.
+    y0=windowRect(4)-originXY(2); % Inset from bottom edge.
+
+    % Helpful in debugging.
+    % warning(['TextBounds136: windowRect [%.0f %.0f %.0f %.0f], x0 y0 [%.0f %.0f], originXY [%.0f %.0f], sizeXY [%.0f %.0f]\n'],...
+    %     windowRect(1),windowRect(2),windowRect(3),windowRect(4),...
+    %     x0,y0,originXY(1),originXY(1),sizeXY(1),sizeXY(2));
+
 else
     % Draw text string with origin near upper left corner of bounding box.
     % To avoid clipping by the window, we here introduce a 2-pixel clear
@@ -205,6 +221,10 @@ else
     r=InsetRect(r,2,2);
     ok=IsRectInRect(bounds,r);
     if ~ok
+        font=Screen(window,'TextFont');
+        fontSize=Screen(window,'TextSize');
+        fprintf('font ''%s'', fontSize %.1f, text ''%s'', yPositionIsBaseline %d, centerTheText %d\n',...
+            font,fontSize,text,yPositionIsBaseline,centerTheText);
         wRect=Screen('Rect',window);
         boundsAbs=OffsetRect(bounds,x0,y0);
         warning(['bounds [%.0f %.0f %.0f %.0f], '...

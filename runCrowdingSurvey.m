@@ -28,7 +28,7 @@ o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 pain
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 o.fixationCheck=false;
 o.flankingDirection='radial';
-o.fixationCrossBlankedUntilSecsAfterTarget=0;
+o.fixationOnsetAfterTargetOffsetSecs=0;
 o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
@@ -185,7 +185,7 @@ for block=1:length(ooo)
         o.conditionName='fixation check';
         o.task='identify';
         o.fixationCheck=true;
-        o.fixationCrossBlankedUntilSecsAfterTarget=0.5;
+        o.fixationOnsetAfterTargetOffsetSecs=0.5;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
@@ -224,15 +224,15 @@ for block=length(ooo):-1:1
 end
 
 %% ESTIMATE TIME
-willTakeMin=0;
+endsAtMin=0;
 for block=1:length(ooo)
     oo=ooo{block};
     for oi=1:length(oo)
         if ~ismember(oo(oi).observer,{'ideal'})
-            willTakeMin=willTakeMin+[oo(oi).trialsDesired]/10;
+            endsAtMin=endsAtMin+[oo(oi).trialsDesired]/10;
         end
     end
-    [ooo{block}(:).willTakeMin]=deal(willTakeMin);
+    [ooo{block}(:).endsAtMin]=deal(endsAtMin);
 end
 
 %% MAKE SURE NEEDED FONTS ARE AVAILABLE
@@ -262,7 +262,7 @@ for block=1:length(ooo)
 end
 t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
-disp(t(:,{'block' 'willTakeMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationCrossBlankedUntilSecsAfterTarget'}));
+disp(t(:,{'block' 'endsAtMin' 'experiment' 'conditionName' 'targetFont' 'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' 'trialsDesired' 'fixationOnsetAfterTargetOffsetSecs'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 

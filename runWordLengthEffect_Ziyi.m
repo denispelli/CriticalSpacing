@@ -1,4 +1,4 @@
-% runCriticalSpacing_Ziyi.m
+% runWordLengthEffect_Ziyi.m
 % MATLAB script to run CriticalSpacing.m
 % Copyright 2015,2016, Denis G. Pelli, denis.pelli@nyu.edu
 % This script is used to develop and test the 'readAloud' part of
@@ -65,12 +65,14 @@ clear o
 % o.showLineOfLetters=false;
 % o.speakSizeAndSpacing=false;
 
+%%
 o.experiment='WordLengthEffect';
 o.experimenter='Junk'; % Put name here to skip the runtime question.
 o.observer='Junk'; % Put name here to skip the runtime question.
 o.permissionToChangeResolution=false; 
 o.task='readAloud';
-o.trialsDesired=20; % Number of trials (i.e. responses) for the threshold estimate.
+o.trialsDesired=2; % Number of trials (i.e. responses) for the threshold estimate.
+o.batch=2;
 o.viewingDistanceCm=50;
 o.eccentricityXYDeg=[0 0]; % Distance of target from fixation. Positive up and to right.
 o.flankingDirection='horizontal';
@@ -90,7 +92,7 @@ if false
     o.thresholdParameter='size';
 else
     % Specify letter spacing.
-    o.readSpacingDeg=2;
+    o.readSpacingDeg=1;
     o.thresholdParameter='spacing';
 end
 o.useFixation=true;
@@ -98,14 +100,15 @@ o.fixationCrossBlankedNearTarget=true;
 o.blankingRadiusReTargetHeight=4;
 o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
 o.fixationLineWeightDeg=0.04;
-% Specify word length
-o.wordLength=4; % {3, 4, 5, 6}
+
+%% Snapshots
+o.takeSnapshot=true; % run TakeSnapshotWordLengthEffect, not TakeSnapshot
 
 %% USE THESE ONLY FOR DEBUGGING!!
-% o.skipScreenCalibration=true; % Skip calibration to save time.
-% o.useFractionOfScreenToDebug=0.3; 
+o.skipScreenCalibration=true; % Skip calibration to save time.
+o.useFractionOfScreenToDebug=0.35; 
 
-% Interleave conditions with different word lengths.
+%% Interleave conditions with different word lengths.
 oo=[o o o o];
 oo(1).wordLength=3;
 oo(2).wordLength=4;

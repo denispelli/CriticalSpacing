@@ -1,5 +1,5 @@
-function [] = analyzeFixationCheck()
-% [] = analyzeFixationCheck()
+function [dataTable, blockTable, observerTable] = analyzeFixationCheck()
+% [dataTable, blockTable, observerTable] = analyzeFixationCheck();
 % This function is used to analyze the 'fixation check' data 
 % Ziyi Zhang, November, 2019.
 
@@ -7,7 +7,7 @@ function [] = analyzeFixationCheck()
     oo = ReadData();
     % Pre-process data
     [dataTable, blockTable, observerTable] = Preprocess(oo);
-    % load('/Users/ziyizhang/Downloads/dataTable.mat');  % Debug use, save time
+    if isempty(dataTable) || isempty(observerTable), return;end
     % Assess data quality
     DataQualityAssessment(dataTable, blockTable, observerTable);
 
@@ -53,6 +53,7 @@ function [oo] = ReadData()
         'block' 'blocksDesired' 'brightnessSetting' 'trialData' 'targetFont' 'script' 'task' 'responseCount'};
     oo = ReadExperimentData(experiment, vars);
     fprintf('Raw data contains %4.0f conditions for experiment ''%s''\n', length(oo), experiment);
+    cd('..');
 end
 
 
@@ -65,6 +66,12 @@ function [dataTable, blockTable, observerTable] = Preprocess(oo)
     % dont care 'acuity' or 'reading'
     % convert to catogorical for comparison purpose
     dataTable.conditionName = categorical(dataTable.conditionName);
+    if ~nnz(dataTable.conditionName == 'fixation check')
+        warning('No fixation block found in the provided experiment.');
+        observerTable=[];
+        blockTable=[];
+        return;
+    end
     mask = (dataTable.conditionName == 'fixation check') ...
          | (dataTable.conditionName == 'crowding');
     dataTable = dataTable(mask, :);
@@ -284,7 +291,7 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
     plotLearning = true;
     if plotLearning
 
-        % 1
+        % fig-1 Learning
         f11 = figure('Name', 'Learning (block)');
         f11(1) = subplot(1, 2, 1);
         title('Fixation check accuracy vs. block number for each observer', 'FontSize', fontSize);
@@ -333,7 +340,7 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
         if ~verLessThan('matlab', '9.5')
             sgtitle('Fixation check accuracy vs. block number');
         end
-        % 2 - Per block (trial)
+        % fig-2 Learning - Per block (trial)
         f12 = figure('Name', 'Moving average of fixation check accuracy for each block (trials)');
         colNumber = 10;
         rowNumber = ceil(height(fixationTable) / colNumber);
@@ -361,13 +368,14 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
                 colCount = 1;
             end
         end
-        set(f12, 'XMinorGrid', 'on')
-        set(f12, 'YMinorGrid', 'on')
-        ylim(f12, [0.6, 1.2]);
+        ax = gca;  % get current axes
+        set(ax, 'XMinorGrid', 'on')
+        set(ax, 'YMinorGrid', 'on')
+        ylim(ax, [0.6, 1.2]);
         if ~verLessThan('matlab', '9.5')
             sgtitle('Moving average of fixation check accuracy for each block');
         end
-        % 3
+        % fig-3 Learning
         f13 = figure('Name', 'Moving average of fixation check accuracy for each observer (concatenated blocks) (concatenated trials)');
         colNumber = 2;
         rowNumber = ceil(height(observerTable) / colNumber);
@@ -387,9 +395,10 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
             xlabel('Trial number', 'FontSize', fontSize);
             ylabel('Movmean of acc', 'FontSize', fontSize);
         end
-        set(f13, 'XMinorGrid', 'on')
-        set(f13, 'YMinorGrid', 'on')
-        ylim(f13, [0.6, 1.1]);
+        ax = gca;  % get current axes
+        set(ax, 'XMinorGrid', 'on')
+        set(ax, 'YMinorGrid', 'on')
+        ylim(ax, [0.6, 1.1]);
         if ~verLessThan('matlab', '9.5')
             sgtitle('Moving average of fixation check accuracy for each observer (concatenated blocks)');
         end
@@ -430,7 +439,7 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
     if plotLeftRight
 
         f3 = figure('Name', 'pos-neg vs. fixation check');
-        % 1
+        % subplot-1
         f3(1) = subplot(2, 2, 1);
         hold on
         grid on
@@ -443,7 +452,7 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
         end
         xlabel('Fixation check accuracy', 'FontSize', fontSize);
         ylabel('Pos-neg spacing deg', 'FontSize', fontSize);
-        % 2
+        % subplot-2
         f3(2) = subplot(2, 2, 2);
         hold on
         grid on
@@ -456,7 +465,7 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
         end
         xlabel('Fixation check accuracy', 'FontSize', fontSize);
         ylabel('Pos-neg spacing deg', 'FontSize', fontSize);
-        % 3
+        % subplot-3
         f3(3) = subplot(2, 2, 3);
         hold on
         grid on
@@ -469,13 +478,13 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
         end
         xlabel('Fixation check accuracy', 'FontSize', fontSize);
         ylabel('Neg spacing deg (left or down)', 'FontSize', fontSize);
-        % 4
+        % subplot-4
         f3(4) = subplot(2, 2, 4);
         hold on
         grid on
         for i = 1:height(blockTable)
 
-            % add salt
+            % add salt (to distinguish adjacent points)
             randx = (rand()-0.5) / 300;
             plot(f3(4), blockTable{i, 'fixationP'}+randx, ...
                  [blockTable{i, 'posP'}], ...
@@ -493,13 +502,13 @@ function [] = DataQualityAssessment(dataTable, blockTable, observerTable)
     if plot3d
 
         f4 = figure('Name', '3D hist of spacing deg');
-        % 1
+        % subplot-1
         f4(1) = subplot(1, 2, 1);
         hist3(f4(1), [blockTable.posSpacingDeg, blockTable.negSpacingDeg], 'CDataMode', 'auto', 'FaceColor', 'interp', 'Nbins', [12, 12]);
         xlabel('Pos spacing deg (right/up)', 'FontSize', fontSize);
         ylabel('Neg spacing deg (left/down)', 'FontSize', fontSize);
         set(gca, 'XDir','reverse')  % flip x-axis
-        % 2
+        % subplot-2
         f4(2) = subplot(1, 2, 2);
         hist3(f4(2), [[blockTable.fixationP; blockTable.fixationP], [blockTable.posSpacingDeg; blockTable.negSpacingDeg]], 'CDataMode', 'auto', 'FaceColor', 'interp', 'Nbins', [12, 12]);
         xlabel('Fixation check accuracy', 'FontSize', fontSize);
@@ -630,6 +639,7 @@ function [alpha, beta] = EmpiricalBayesianModel(X, N)
 %                     pbar(1-pbar)
 % beta = (1 - pbar) ( ------------  - 1)
 %                        s_p^2
+% [DEPRECATED]
     
     alpha = zeros(length(X), 1);
     beta = zeros(length(X), 1);

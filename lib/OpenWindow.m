@@ -5,8 +5,8 @@ function [window,r]=OpenWindow(o)
 % a mirror.
 white=255;
 % Detect HiDPI mode, e.g. on a Retina display.
-screenBufferRect=Screen('Rect',o.screen);
-screenRect=Screen('Rect',o.screen,1);
+screenBufferRect=Screen('Rect',o.screen); % What the software sees.
+screenRect=Screen('Rect',o.screen,1); % What the observer sees.
 o.hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
 if true
     PsychImaging('PrepareConfiguration');
@@ -19,13 +19,14 @@ if true
     % Mario says the virtual frame buffer makes the back buffer more
     % reliable, for better performance.
     PsychImaging('AddTask','General','UseVirtualFramebuffer');
-    if ~o.useFractionOfScreenToDebug
+    if o.useFractionOfScreenToDebug==0
         [window,r]=PsychImaging('OpenWindow',o.screen,white);
     else
+        screenBufferRect=Screen('Rect',o.screen); % What the software sees.
         r=round(o.useFractionOfScreenToDebug*screenBufferRect);
         r=AlignRect(r,screenBufferRect,'right','bottom');
         [window,r]=PsychImaging('OpenWindow',o.screen,white,r);
-    end
+    end        
 else
     [window,r]=Screen('OpenWindow',o.screen,white,screenBufferRect);
 end

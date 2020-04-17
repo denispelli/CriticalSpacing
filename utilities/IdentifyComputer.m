@@ -12,7 +12,7 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 % but then returns much less information.
 %% OUTPUT ARGUMENT:
 % "machine" is a struct with many informative fields. The screen, size,
-% nativeSize, mm, and openGL fields are cell arrays, with one element per
+% maxSize, mm, and openGL fields are cell arrays, with one element per
 % screen. By default, all screens are reported, but you can specify any
 % subset by using the screens argument to IdentifyComputer2.
 %% INPUT ARGUMENTS:
@@ -35,29 +35,35 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 %
 %% EXAMPLES of output struct for macOS, Windows, and Linux:
 %
-%                    model: 'MacBook10,1'
-%         modelDescription: 'MacBook (Retina, 12-inch, 2017)'
+%                    model: 'MacBookPro14,3'
+%         modelDescription: 'MacBook Pro (15-inch, 2017)'
 %             manufacturer: 'Apple Inc.'
 %             psychtoolbox: 'Psychtoolbox 3.0.16'
 %                   matlab: 'MATLAB 9.6 (R2019a)'
 %                   system: 'macOS 10.14.6'
-%                screenMex: 'Screen.mexmaci64 08-Dec-2019'
+%                 hostName: 'Pelli-Mac-1'
+%                 userName: 'Denis Pelli'
+%               MACAddress: '8c:85:90:ad:83:56'
+%                screenMex: 'Screen.mexmaci64 Jan 30 2020'
 %                  screens: 0
 %                   screen: {[0]}
-%                     size: {[2560 1600]}
-%               nativeSize: {[2560 1600]}
-%                       mm: {[259 161]}
-%           openGLRenderer: {'Intel(R) HD Graphics 615'}
-%             openGLVendor: {'Intel Inc.'}
-%            openGLVersion: {'2.1 INTEL-12.10.14'}
+%                     size: {[2880 1800]}
+%                  maxSize: {[3360 2100]}
+%                       mm: {[331 206]}
+%           openGLRenderer: {'AMD Radeon Pro 560 OpenGL Engine'}
+%             openGLVendor: {'ATI Technologies Inc.'}
+%            openGLVersion: {'2.1 ATI-2.11.21'}
 % psychtoolboxKernelDriver: 'PsychtoolboxKernelDriver 1.1'
 %           drawTextPlugin: 1
 %           psychPortAudio: 1
-%                  summary: 'MacBook10,1-macOS-10.14.6-PTB-3.0.16'
+%                  summary: 'MacBookPro14,3-macOS-10.14.6-PTB-3.0.16'
 %
 % Unavailable answers are empty. Inapplicable fields are left undefined.
 % E.g. the psychtoolboxKernelDriver field appears only for macOS. The
 % bitsPlusPlus field appears only if the Bits++ video hardware is detected.
+%
+% MACAddress is used by MATLAB to identify the host computer for license
+% control.
 %
 % The machine.summary field helps you make a filename that identifies your
 % configuration. For example:
@@ -88,6 +94,20 @@ function machine=IdentifyComputer(windowsOrScreens,modifier1,modifier2)
 %                   otherwise fails in Octave.
 % November 18, 2019. DGP. New argument 'noInternet' to prevent use of
 %                   the internet to look up the modelDescription.
+% March 26, 2020. DGP. Three new fields: hostName, userName, and
+%                   MACAddress. Also renamed "nativeSize" to "maxSize",
+%                   which is we actually compute, as Mario notes that this
+%                   may exceed the native size. Mario said he doesn't know
+%                   any general way to discover the native size. That's
+%                   unfortunate because good video performance requires
+%                   running at native resoluton.
+% Mach 30, 2020. DGP. Added work around for bug in Screen Resolution. 
+%                   The second call, nominally of no effect, is a work
+%                   around for a bug in Screen. Otherwise when we change
+%                   resolution, subsequent calls to OpenWindow put the
+%                   window in the wrong place. With the extra call,
+%                   window placement is correct. Bug reported March 28,
+%                   2020.
 if nargin<2
     modifier1='';
 end
@@ -127,11 +147,26 @@ else
     isoctave=ismember(exist('OCTAVE_VERSION','builtin'),[102 5]);
 end
 machine.model='';
-machine.modelDescription=''; % Currently non-empty only for Apple hardware.
+% Currently modelDescription is non-empty only for Apple hardware.
+machine.modelDescription=''; 
 machine.manufacturer='';
 machine.psychtoolbox='';
 machine.matlab='';
 machine.system='';
+screenComputer=Screen('Computer');
+if IsWin
+    machine.hostName=getenv('USERDOMAIN');
+    machine.userName=getenv('USERNAME');
+elseif IsLinux
+    % strrep corrects for bug in Screen('Computer').
+    machine.hostName=strrep(screenComputer.localHostName,'鈄1�7',''''); 
+    machine.userName=getenv('USER');
+elseif ismac
+    % strrep corrects for bug in Screen('Computer').
+    machine.hostName=strrep(screenComputer.localHostName,'鈄1�7',''''); 
+    machine.userName=screenComputer.processUserLongName;
+end
+machine.MACAddress=MACAddress; % Use subroutine to read it.
 if exist('Screen','file')
     s=which('Screen');
     d=dir(s);
@@ -150,7 +185,8 @@ if exist('PsychtoolboxVersion','file')
     machine.screens=Screen('Screens');
     physicalScreens=Screen('Screens',1);
     if length(machine.screens)~=physicalScreens
-        fprintf('Unequal numbers of logical and physical screens. Guessing that you''re mirroring.\n');
+        fprintf(['Unequal numbers of logical and physical screens. ' ...
+            'Guessing that you''re mirroring.\n']);
         machine.mirroring=true;
     end
     % Restore former settings.
@@ -165,23 +201,25 @@ end
 % ALLOCATE VARIABLES; SET VALUES LATER.
 machine.screen=num2cell(windowsOrScreens);
 machine.size=cell(size(windowsOrScreens));
-machine.nativeSize=cell(size(windowsOrScreens));
+machine.maxSize=cell(size(windowsOrScreens));
 machine.mm=cell(size(windowsOrScreens));
 if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
     for iScreen=1:length(windowsOrScreens)
 		if ~ismember(windowsOrScreens(iScreen),machine.screens) ...
 		&& Screen('WindowKind',windowsOrScreens(iScreen))~=1
-			error(['Invalid windowsOrScreens(' num2str(iScreen) ') ' num2str(windowsOrScreens((iScreen))) '.']);
+			error(['Invalid windowsOrScreens(' num2str(iScreen) ') ' ...
+                num2str(windowsOrScreens((iScreen))) '.']);
 		end
         resolution=Screen('Resolution',windowsOrScreens(iScreen));
         machine.size{iScreen}=[resolution.width resolution.height];
-        [screenWidthMm,screenHeightMm]=Screen('DisplaySize',windowsOrScreens(iScreen));
+        [screenWidthMm,screenHeightMm]=...
+            Screen('DisplaySize',windowsOrScreens(iScreen));
         machine.mm{iScreen}=[screenWidthMm screenHeightMm];
         res=Screen('Resolutions',windowsOrScreens(iScreen));
-        machine.nativeSize{iScreen}=[0 0];
+        machine.maxSize{iScreen}=[0 0];
         for i=1:length(res)
-            if res(i).width>machine.nativeSize{iScreen}(1)
-                machine.nativeSize{iScreen}=[res(i).width res(i).height];
+            if res(i).width>machine.maxSize{iScreen}(1)
+                machine.maxSize{iScreen}=[res(i).width res(i).height];
             end
         end
     end
@@ -315,7 +353,8 @@ end
 if ismacos
     machine.psychtoolboxKernelDriver='';
     [~,result]=system('kextstat -l -b PsychtoolboxKernelDriver');
-    % MATLAB recommends "contains", but Octave doesn't provide it.
+    % For clarity, MATLAB recommends "contains" instead of
+    % "~isempty(strfind(...))", but it's not available in Octave.
     if ~isempty(strfind(result,'PsychtoolboxKernelDriver'))
         % Get version number of Psychtoolbox kernel driver.
         v=regexp(result,'(?<=\().*(?=\))','match'); % find (version)
@@ -350,25 +389,43 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
 				end
 			end
 			if isempty(window)
-				% Opening and closing a window takes a long time, on the order
-				% of 30 s, so you may want to skip that, by passing an empty
-				% argument [], if you don't need the openGL fields.
+				% Opening and closing a window takes a long time, on the
+				% order of 30 s, so, if you don't need the openGL fields,
+				% you may want to skip the delay by passing an empty
+				% argument [] when you call IdentifyComputer.
 				if islinux
-					% This is safer, because one user reported a fatal error when
-					% attempting to open a less-than-full-screen window under
-					% Linux.
+					% This is safer, because one user reported a fatal
+					% error when attempting to open a less-than-full-screen
+					% window under Linux.
 					fractionOfScreenUsed=1;
 				else
 					% This is much less disturbing to watch.
 					fractionOfScreenUsed=0.2;
-				end
+                end
+                testScreenBug=false;
+                if testScreenBug
+                    if true
+                        width=2880;
+                        height=1800;
+                    else
+                        width=3360;
+                        height=2100;
+                    end
+                    oldResolution=Screen('Resolution',machine.screen{iScreen},width,height);
+                    % This second call to Screen Resolution, nominally of
+                    % no effect, is a work-around for a bug in Screen.
+                    % Otherwise when we change resolution, subsequent calls
+                    % to OpenWindow put the window in the wrong place. With
+                    % the extra call, window placement is correct. Bug
+                    % reported to Psychtoolbox github March 28, 2020.
+                    Screen('Resolution',machine.screen{iScreen},width,height);
+                    fprintf('oldResolution %.0f %.0f\n',oldResolution.width,oldResolution.height);
+                    resolution=Screen('Resolution',machine.screen{iScreen});
+                    fprintf('new resolution %.0f %.0f\n',resolution.width,resolution.height);
+                end
 				screenBufferRect=Screen('Rect',machine.screen{iScreen});
 				r=round(fractionOfScreenUsed*screenBufferRect);
 				r=AlignRect(r,screenBufferRect,'right','bottom');
-                % screen=machine.screen{iScreen}
-                % screenBufferRect
-                % r
-                % globalRect=Screen('GlobalRect',machine.screen{iScreen})
 				if ~verbose
 					PsychTweak('ScreenVerbosity',0);
 					verbosity=Screen('Preference','Verbosity',0);
@@ -377,6 +434,13 @@ if exist('PsychtoolboxVersion','file') && ~isempty(windowsOrScreens)
 					Screen('Preference','SkipSyncTests',1);
 					window=Screen('OpenWindow',machine.screen{iScreen},255,r);
 					isNewWindow=true;
+                    if testScreenBug
+                        fprintf('r requested [%.0f %.0f %.0f %.0f ]\n',r);
+                        fprintf('Screen(''GlobalRect'',window) [%.0f %.0f %.0f %.0f ]\n',Screen('GlobalRect',window));
+                        fprintf('Screen(''Rect'',window) [%.0f %.0f %.0f %.0f ]\n',Screen('Rect',window));
+                        fprintf('Screen(''GlobalRect'',0) [%.0f %.0f %.0f %.0f ]\n',Screen('GlobalRect',0));
+                        fprintf('Screen(''Rect'',0) [%.0f %.0f %.0f %.0f ]\n',Screen('Rect',0));
+                    end
 				catch em
 					warning(em.message);
 					warning('Unable to open window on screen %d.',...
@@ -488,8 +552,8 @@ iswin=ispc;
 if exist('PsychtoolboxVersion','file')
     islinux=IsLinux;
 else
-    % MATLAB recommends calling "contains" instead of "~isempty(strfind(",
-    % but it's not available in Octave.
+    % For clarity, MATLAB recommends "contains" instead of
+    % "~isempty(strfind(...))", but it's not available in Octave.
     islinux=ismember(computer,{'GLNX86' 'GLNXA64'}) ...
         || ~isempty(strfind(computer,'linux-gnu'));
 end
@@ -550,7 +614,8 @@ else
     modelDescription=x.description;
     s=modelDescription;
     if length(s)<3 || ~all(isstrprop(s(1:3),'alpha'))
-        [~,shell]=system('echo $0') % Display shell name.
+        [~,shell]=system('echo $0');
+        shell % Display shell name.
         warning(['Oops. Failed in getting modelDescription. '...
             'Please send this line and those above to denis.pelli@nyu.edu: "%s"'],s);
         modelDescription='';
