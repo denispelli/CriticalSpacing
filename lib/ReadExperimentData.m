@@ -1,15 +1,16 @@
 function [oo,tt]=ReadExperimentData(experiment,vars)
-% [oo,tt]=ReadExperimentData(experiment,vars); Returns all the thresholds
-% contains in all the MAT files in the data folder whose names begin with
-% the string specified in the "experiment" argument. The MAT file may
-% contain a whole experiment ooo{}, or a block oo(), with one element per
-% condition. ooo{} is a cell array of oo. oo is a struct array of o. Each o
-% is a condition with a threshold. The thresholds are extracted from all
-% the MAT files in the data folder whose names begin with the string in
-% "experiment". We add two new fields to each threshold record. "date" is a
-% readable string indicating the date and time of measurement.
-% "missingField" is a cell list of strings of all the fields that were
-% requested in vars, but not available in the threshold record.
+% [oo,tt]=ReadExperimentData(experiment,vars); 
+% Returns all the thresholds contains in all the MAT files in the data
+% folder whose names begin with the string specified in the "experiment"
+% argument. Altenatively "experiment" can be a cell array of strings. The
+% MAT file may contain a whole experiment ooo{}, or a block oo(), with one
+% element per condition. ooo{} is a cell array of oo. oo is a struct array
+% of o. Each o is a condition with a threshold. The thresholds are
+% extracted from all the MAT files in the data folder whose names begin
+% with the string in "experiment". We add two new fields to each threshold
+% record. "date" is a readable string indicating the date and time of
+% measurement. "missingField" is a cell list of strings of all the fields
+% that were requested in vars, but not available in the threshold record.
 %
 % NOTE: Thresholds with fewer than minimumTrials (currently 25) are
 % ignored.
@@ -37,7 +38,18 @@ myPath=fileparts(mfilename('fullpath')); % Takes 0.1 s.
 addpath(myPath); % We are in the "lib" folder.
 % The lib and data folders are in the same folder.
 dataFolder=fullfile(fileparts(fileparts(mfilename('fullpath'))),'data');
-matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
+if iscell(experiment)
+    for i=1:length(experiment)
+        m=dir(fullfile(dataFolder,['run' experiment{i} '*.mat']));
+        if i==1
+            matFiles=m;
+        else
+            matFiles=[matFiles m];
+        end
+    end
+else
+    matFiles=dir(fullfile(dataFolder,['run' experiment '*.mat']));
+end
 
 % Each block has a unique identifier: o.dataFilename. It is created
 % just before we start running trials. I think that we could read all the
@@ -120,6 +132,7 @@ for iFile=1:length(matFiles) % One file per iteration.
         end
         for oi=1:length(ooo{block}) % Iterate through conditions within a block.
             ooo{block}(oi).localHostName=ooo{block}(oi).cal.localHostName; % Expose computer name, to help identify observer.
+            ooo{block}(oi).condition=oi;
             if isempty(ooo{block}(oi).dataFilename)
                 % Make sure every condition has this field.
                 ooo{block}(oi).dataFilename=ooo{block}(1).dataFilename;
@@ -133,7 +146,7 @@ for iFile=1:length(matFiles) % One file per iteration.
                 ooo{block}(oi).beginSecs=ooo{block}(1).beginSecs;
             end
             o=ooo{block}(oi); % "o" holds one condition.
-            oo(end+1).missingFields={}; % Create new element.
+            oo(end+1).missingFields={}; % Create new element of our oo array.
             usesSecsPlural=isfield(o,'targetDurationSecs');
             for i=1:length(vars)
                 field=vars{i};
@@ -159,7 +172,7 @@ for iFile=1:length(matFiles) % One file per iteration.
 end
 fprintf('ReadExperimentData read %d thresholds from %d files. Now discarding empties and duplicates.\n',length(oo),length(matFiles));
 
-%% CLEAN UP THE LIST, DISCARDING WHAT WE DON'T WANT.
+%% CLEAN UP THE LIST, DISCARD EMPTIES
 % We've now gotten all the thresholds into oo.
 if ~isfield(oo,'trialsDesired')
     error('No data');
@@ -168,8 +181,25 @@ oo=oo([oo.trialsDesired]>0); % Discard conditions with no data.
 if isempty(oo)
     return;
 end
-[~,ii]=unique({oo.dataFilename}); % Discard duplicates.
-oo=oo(ii);
+
+%% CLEAN UP THE LIST, DISCARD DUPLICATES
+% To facilitate easy interruption and resumption of data collection for an
+% experiment, the data are saved in two ways. To be sure of not missing
+% anything, ReadExperimentData reads both. However, that might result in
+% reading in the same data twice. So we look for and discard duplicates.
+% Each run of an experiment has one (or more) unique values of
+% beginningTime. (Just one if not interrupted. Several if interrupted.)
+% Within the run, the blocks are numbered from 1, and within a block the
+% conditions are numbered from 1. Our ID specifies oo(oi).beginningTime and
+% block and condition number which is enough to uniquely identify each set
+% of data. We retain only conditions with unique IDs.
+for oi=1:length(oo)
+    oo(oi).id=sprintf('%d:%d:%30.15f',oo(oi).block,oo(oi).condition,oo(oi).beginningTime);
+end
+[~,ii]=unique({oo.id}); % Discard duplicates.
+oo=oo(sort(ii));
+
+%% CLEAN UP THE LIST, LIST MISSING FIELDS, DISCARD EMPTIES
 missingFields=unique(cat(2,oo.missingFields));
 if ~isempty(missingFields)
     warning OFF BACKTRACE
@@ -189,7 +219,7 @@ for oi=length(oo):-1:1
     end
 end
 for oi=1:length(oo)
-    [y,m,d,h,mi,s] = datevec(oo(oi).beginningTime) ;
+    [y,m,d,h,mi,s] = datevec(oo(oi).beginningTime);
     oo(oi).date=sprintf('%04d.%02d.%02d, %02d:%02d:%02.0f',y,m,d,h,mi,s);
 end
 tt=struct2table(oo,'AsArray',true);
