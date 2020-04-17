@@ -2,6 +2,7 @@ function [res] = readAloudHelper(operation, option)
 % [data] = readAloudHelper('data');
 % readAloudHelper('deleteLastDecisionFile');
 % readAloudHelper('deleteLastObserverResponse');
+% readAloudHelper('showLastObserverResponse');
 % readAloudHelper('showWave' | 'showSpec' [, fileName]);
 % readAloudHelper('play'[, fileName]);
 % readAloudHelper('clearAllDecisions' | 'clearObserverData');
@@ -168,6 +169,21 @@ if strcmp(operation, 'deletelastobserverresponse')
     return;
 end
 
+% showLastObserverResponse
+if strcmp(operation, 'showlastobserverresponse')
+    
+    timeArray = sortFile('response');
+    if isempty(timeArray)
+        fprintf('No observer response mat file exists in this folder: %s\n', fileparts(mfilename('fullpath')));
+        return;
+    end
+    file = char(timeArray(1, 2));
+    fprintf('Last observer''s response is %s\n', file);
+    
+    res = [];
+    return;
+end
+
 % summary
 if strcmp(operation, 'data')
 
@@ -236,6 +252,9 @@ if strcmp(operation, 'data')
             newRow = {t{j, 4}{1}, t{j, 3}, t{j, 2}, t{j, 8}-t{j, 7}, t{j, 5}{1}, t{j, 6}{1}, ...
                 logFiles{logFilesIndex, 2}, observerFileName(1:19), t{j, 9}{1}, t{j, 7}, t{j, 8}, ...
                 t{j, 10}, t{j, 11}, t{j, 12}, t{j, 13}, observerFileName};
+            if ~(size(res) == size(newRow))
+                newRow = newRow([1:7, 9:end])
+            end
             res = [res; newRow]; %#ok
         end
     end
