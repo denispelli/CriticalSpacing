@@ -1,7 +1,32 @@
 function oo=QuestPlusEstimateThresholdAndSteepness(oo)
 % oo=QuestPlusEstimateThresholdAndSteepness(oo)
 % QUESTPlus: Estimate steepness and threshold contrast.
+% Note that Quest and mQUESTPlus have slightly different implementations of
+% a paramater to limit the asymptotic proportion correct at high intensity.
+% Quest uses delta and the asymptotic proportion correct is
+% 1-delta*(1-gamma). QuestPlus uses what I'll call lapsePlus, and the
+% asymptotic proportion correct is 1-lapsePlus. The formulas are equivalent
+% if the paramaters are converted as follows:
+% lapsePlus=delta*(1-gamma)
+% delta=lapsePlus/(1-gamma)
+% In our printouts, "true lapse" means delta, the proportion of easy trials
+% in which the observer responded blindly.
+% mQUESTPlus threshold
+
+% In Quest we can specify the threshold criterion. In QuestPlus, we have to
+% add that. Based on the Weibull formula in qpPFStandardWeibull.m, we have
+% pThreshold=guess+(1-guess-lapse)*(1-exp(-(c/QPThreshold)^slope))
+% Thus 
+% c=QPThreshold*(-log(1-(pThreshold-guess)/(1-guess-lapse)))^(1/slope);
+% where c is threshold at criterion pThreshold, QPThreshold is the
+% standard value returned by QuestPlus, and guess, lapse, and slope are
+% standard parameters. ("lapse" is the frequency of wrong answers at high
+% contrast, not the frequency of blind answers.)
+
+
+
 onlyOneConditionPerFigure=true;
+plusMinus=char(177);
 for oi=1:length(oo)
     if oo(oi).questPlusEnable && isfield(oo(oi).questPlusData,'trialData')
         steepnesses=oo(oi).questPlusSteepnesses;
@@ -12,19 +37,26 @@ for oi=1:length(oo)
         psiParamsIndex=qpListMaxArg(oo(oi).questPlusData.posterior);
         psiParamsBayesian=oo(oi).questPlusData.psiParamsDomain(psiParamsIndex,:);
         if oo(oi).questPlusPrint
-            fprintf('%s, block %d, condition %d %s, trialsDesired %d.\n',...
-                oo(oi).experiment,oo(oi).block,oo(oi).condition,oo(oi).conditionName,oo(oi).trialsDesired);
-            fprintf('model:     log %s %0.2f, steepness %0.1f, guessing %0.2f, lapse %0.3f\n', ...
+            fprintf('%s, block %d, condition %d %s, trialsDesired %d, observer %s.\n',...
+                oo(oi).experiment,oo(oi).block,oo(oi).condition,oo(oi).conditionName,...
+                oo(oi).trialsDesired,oo(oi).observer);
+            if oo(oi).simulateObserver
+                fprintf('Quest source: log %s %0.2f,      steepness %0.1f, guessing %0.2f, true lapse %0.3f\n', ...
+                    oo(oi).thresholdParameter,...
+                    oo(oi).simulatedLogThreshold,oo(oi).q.beta,oo(oi).q.gamma,oo(oi).q.delta);
+            end
+            fprintf('Quest fit:    log %s %.2f%s%.2f, steepness %0.1f, guessing %0.2f, true lapse %0.3f\n', ...
                 oo(oi).thresholdParameter,...
-                oo(oi).simulatedLogThreshold,oo(oi).q.beta,oo(oi).q.gamma,oo(oi).q.delta);
+                oo(oi).questMean,plusMinus,oo(oi).questSD,...
+                oo(oi).q.beta,oo(oi).q.gamma,oo(oi).q.delta);
         end
         psiParamsFit=qpFit(oo(oi).questPlusData.trialData,oo(oi).questPlusData.qpPF,psiParamsBayesian,oo(oi).questPlusData.nOutcomes,...,
             'lowerBounds', [min(contrastDB) min(steepnesses) min(guessingRates) min(lapseRates)],...
             'upperBounds',[max(contrastDB) max(steepnesses) max(guessingRates) max(lapseRates)]);
         if oo(oi).questPlusPrint
-            fprintf('QuestPlus: log %s %0.2f, steepness %0.1f, guessing %0.2f, lapse %0.3f\n', ...
+            fprintf('QuestPlus:    log %s %0.2f,      steepness %0.1f, guessing %0.2f, true lapse %0.3f\n', ...
                 oo(oi).thresholdParameter,...
-                psiParamsFit(1)/20,psiParamsFit(2),psiParamsFit(3),psiParamsFit(4));
+                psiParamsFit(1)/20,psiParamsFit(2),psiParamsFit(3),psiParamsFit(4)/(1-psiParamsFit(3)));
         end
         oo(oi).qpThreshold=oo(oi).contrastPolarity*10^(psiParamsFit(1)/20);	% threshold
         switch oo(oi).thresholdParameter
@@ -97,15 +129,27 @@ for oi=1:length(oo)
             end
             noteString={};
             noteString{1}=sprintf('%s',oo(oi).dataFilename);
-            noteString{2}=sprintf('%s, block %.0f, condition %.0f, %s',oo(oi).experiment,oo(oi).block,oo(oi).condition);
-            noteString{3}=sprintf('%s: %s %s, ecc [%.1f %.1f] deg, %.2f s\n%.0f cd/m^2, %s eye(s), %d trials',...
-                oo(oi).conditionName,oo(oi).targetKind,spec,oo(oi).eccentricityXYDeg,oo(oi).targetDurationSecs,oo(oi).LBackground,oo(oi).eyes,oo(oi).trials);
-            noteString{4}=sprintf('%8s   %7s %5s %9s %8s %5s','observer','noiseSD','log threshold','steepness','guessing','lapse');
-            noteString{end+1}=sprintf('%10s %7.2f %13.2f %9.1f %8.2f %5.3f', ...
-                oo(oi).observer,oo(oi).noiseSD,log10(oo(oi).qpThreshold),oo(oi).qpSteepness,oo(oi).qpGuessing,oo(oi).qpLapse);
+            noteString{2}=sprintf('%s, block %.0f, condition %.0f, %s, trials %d',...
+                oo(oi).experiment,oo(oi).block,oo(oi).condition,...
+                oo(oi).conditionName,oo(oi).trials);
+            noteString{3}=sprintf('%s: %s %s, ecc [%.1f %.1f] deg, %.2f s\n',...
+                oo(oi).conditionName,oo(oi).targetKind,...
+                spec,oo(oi).eccentricityXYDeg,oo(oi).targetDurationSecs);
+            noteString{4}=sprintf('%13s %7s %5s %9s %8s %5s',...
+                'observer','noiseSD','log threshold',...
+                'steepness','guessing','true lapse');
+            qpThresholdP=oo(oi).qpThreshold*...
+                (-log(1-(oo(oi).q.pThreshold-oo(oi).qpGuessing)/...
+                (1-oo(oi).qpGuessing-oo(oi).qpLapse)))^(1/oo(oi).qpSteepness);
+            noteString{end+1}=sprintf('%13s %7.2f %13.2f %9.1f %8.2f %10.3f', ...
+                oo(oi).observer,oo(oi).noiseSD,...
+                log10(qpThresholdP),oo(oi).qpSteepness,oo(oi).qpGuessing,...
+                oo(oi).qpLapse/(1-oo(oi).qpGuessing));
             if oo(oi).simulateObserver
-                noteString{end+1}=sprintf('%10s %7.2f %13.2f %9.1f %8.2f %5.3f', ...
-                    'model',oo(oi).noiseSD,oo(oi).simulatedLogThreshold,oo(oi).q.beta,oo(oi).q.gamma,oo(oi).q.delta);
+                noteString{end+1}=sprintf('%13s %7.2f %13.2f %9.1f %8.2f %10.3f', ...
+                    'Quest source:',oo(oi).noiseSD,...
+                    oo(oi).simulatedLogThreshold,...
+                    oo(oi).q.beta,oo(oi).q.gamma,oo(oi).q.delta);
             end
             legend('show','Location','southeast');
             legend('boxoff');
@@ -116,16 +160,16 @@ for oi=1:length(oo)
             if onlyOneConditionPerFigure
                 hold off
             end
-            
+
             %% SAVE PLOT TO DISK
-            figureTitle=sprintf('%s-psychometric-%d:%d-%s',...
-                oo(oi).experiment,oo(oi).block,oo(oi).condition,...
-                oo(oi).conditionName);
+            figureTitle=sprintf('%s-psychometric-%s-%d:%d-%s.%d.%d.%d.%d.%d.%d',...
+                oo(oi).experiment,oo(oi).observer,oo(oi).block,oo(oi).condition,...
+                oo(oi).conditionName,round(datevec(oo(oi).beginningTime)));
             mainFolder=fileparts(fileparts(mfilename('fullpath')));
             dataFolder=fullfile(mainFolder,'data');
             graphFile=fullfile(dataFolder,[figureTitle '.png']);
             saveas(gcf,graphFile,'png')
-            fprintf('Figure saved as ''/data/%s.png''\n',figureTitle);
+            fprintf('Figure saved as ''/data/%s.png''\n\n',figureTitle);
         end % if oo(oi).questPlusPlot
     end % if oo(oi).questPlusEnable
 end
