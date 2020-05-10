@@ -1788,7 +1788,7 @@ try
         end
         DrawCounter(oo);
         if ~oo(oi).simulateObserver
-            [d,terminatorChar]=GetEchoString(window,'viewing distance in cm or a command (r, m, or k):'...
+            [d,terminatorChar]=GetEchoString2(window,'viewing distance in cm or a command (r, m, or k):'...
                 ,2*oo(1).textSize,0.86*screenRect(4)+scalar*oo(1).textSize*0.5,black,background,1,oo(1).deviceIndex);
         else
             d='';
@@ -1905,7 +1905,7 @@ try
             background=WhiteIndex(window);
         end
         DrawCounter(oo);
-        [name,terminatorChar]=GetEchoString(window,'Experimenter name:',...
+        [name,terminatorChar]=GetEchoString2(window,'Experimenter name:',...
             2*oo(1).textSize,0.82*screenRect(4),black,...
             background,1,oo(1).deviceIndex);
         name=strip(name); % Remove leading and trailing whitespace.
@@ -1970,7 +1970,7 @@ try
             background=WhiteIndex(window);
         end
         DrawCounter(oo);
-        [name,terminatorChar]=GetEchoString(window,'Observer name:',...
+        [name,terminatorChar]=GetEchoString2(window,'Observer name:',...
             2*oo(1).textSize,0.82*screenRect(4),...
             black,background,1,oo(1).deviceIndex);
         name=strip(name); % Remove leading and trailing whitespace.
