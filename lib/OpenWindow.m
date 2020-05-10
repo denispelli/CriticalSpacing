@@ -8,6 +8,7 @@ white=255;
 screenBufferRect=Screen('Rect',o.screen); % What the software sees.
 screenRect=Screen('Rect',o.screen,1); % What the observer sees.
 o.hiDPIMultiple=RectWidth(screenRect)/RectWidth(screenBufferRect);
+% setenv('PSYCH_ALLOW_DANGEROUS','1'); % Suggested by Ian-Max-Andolina, April 18
 if true
     PsychImaging('PrepareConfiguration');
     if o.flipScreenHorizontally
