@@ -208,7 +208,7 @@ if useWindow
    end
    Screen('TextSize',scratchWindow,letterPix);
    for i=1:length(letters)
-      bounds=TextBounds(scratchWindow,letters(i),1);
+      bounds=TextBounds2(scratchWindow,letters(i),1);
       if i==1
          alphabetBounds=bounds;
       else
@@ -219,7 +219,7 @@ if useWindow
    heightOverWidth=RectHeight(bounds)/RectWidth(bounds);
    savedAlphabet.rect=OffsetRect(bounds,-bounds(1),-bounds(2));
    for i=1:length(letters)
-      letterBounds=TextBounds(scratchWindow,letters(i),1);
+      letterBounds=TextBounds2(scratchWindow,letters(i),1);
       desiredBounds=CenterRect(letterBounds,bounds);
       savedAlphabet.dx(i)=desiredBounds(1)-letterBounds(1);
       savedAlphabet.width(i)=RectWidth(letterBounds);
