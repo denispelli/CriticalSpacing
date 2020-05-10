@@ -46,7 +46,7 @@ oldTextSize=Screen('TextSize',window,counterSize);
 Screen('TextSize',scratchWindow,counterSize);
 oldFont=Screen('TextFont',window,'Verdana');
 Screen('TextFont',scratchWindow,Screen('TextFont',window));
-counterBounds=TextBounds(scratchWindow,message,1);
+counterBounds=TextBounds2(scratchWindow,message,1);
 if isfield(o,'screenRect')
     r=o.screenRect;
 else

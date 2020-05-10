@@ -211,7 +211,7 @@ else % if o.getAlphabetFromDisk
     for i=1:length(letters)
         lettersInCells{i}=letters(i);
         t1=tic;
-        [bounds,ok]=TextBounds(scratchWindow,letters(i),1);
+        [bounds,ok]=TextBounds2(scratchWindow,letters(i),1);
         if ~ok
             error('Scratch window not big enough for text.');
         end
