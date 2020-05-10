@@ -17,7 +17,7 @@ function CloseWindowsAndCleanup
 %
 % denis.pelli@nyu.edu, May 5, 2019
 global skipScreenCalibration keepWindowOpen % Copy to your main program.
-global scratchWindow isSoundOpen
+global scratchWindow isSoundOpen oldDisplaySettings
 
 if isSoundOpen
     WaitForSpeech('close');
@@ -32,8 +32,13 @@ if ~isempty(Screen('Windows')) && ~keepWindowOpen
     scratchWindow=[];
     if ~skipScreenCalibration
         if IsOSX
-            AutoBrightness(0,1); % May take a minute.
-            fprintf('(AutoB done %.0f s). ',GetSecs-s);
+            if true
+                MacDisplaySettings(oldDisplaySettings);
+                fprintf('(MacDisplaySettings done %.0f s). ',GetSecs-s);
+            else
+                AutoBrightness(0,1); % May take a minute.
+                fprintf('(AutoBrightness done %.0f s). ',GetSecs-s);
+            end
         end
         RestoreCluts;
     end
