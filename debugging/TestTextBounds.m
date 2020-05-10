@@ -38,7 +38,7 @@ x=50;
 y=50+textSize;
 for yPositionIsBaseline=0:1
    t=GetSecs;
-   textBounds=TextBounds(wScratch,string,yPositionIsBaseline);
+   textBounds=TextBounds2(wScratch,string,yPositionIsBaseline);
    fprintf('Width %4.0f, Height %4.0f, TextBounds took %.2f ms. Green.\n',RectWidth(textBounds),RectHeight(textBounds),1000*(GetSecs-t));
    t=GetSecs;
    [screenTextBounds,screenOffsetTextBounds]=Screen('TextBounds',wScratch,string,0,0,yPositionIsBaseline);

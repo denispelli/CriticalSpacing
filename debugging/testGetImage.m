@@ -16,7 +16,7 @@ try
    Screen('TextFont',window,'Arial');
    Screen('TextSize',scratchWindow,letterPix);
    letter='A';
-   %    bounds=TextBounds(scratchWindow,letter,1);
+   %    bounds=TextBounds2(scratchWindow,letter,1);
    bounds=[4 -192 182 0];
    Screen('FillRect',scratchWindow,white);
    Screen('DrawText',scratchWindow,letter,-bounds(1),-bounds(2),black,white,1);
