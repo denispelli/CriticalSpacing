@@ -1,5 +1,5 @@
-function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
-% [bounds,ok]=TextBounds(window,string [,yPositionIsBaseline=0][,centerTheText=0])
+function [bounds,ok]=TextBounds2(window,text,yPositionIsBaseline,centerTheText)
+% [bounds,ok]=TextBounds2(window,string [,yPositionIsBaseline=0][,centerTheText=0])
 %
 % Returns "bounds", the smallest enclosing rect for the drawn text,
 % relative to the current location. This bound is based on the actual
@@ -29,7 +29,7 @@ function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
 % Screen(woff,'TextFont','Arial');
 % Screen(woff,'TextSize',textSize);
 % t=GetSecs;
-% bounds=TextBounds(woff,string,yPositionIsBaseline)
+% bounds=TextBounds2(woff,string,yPositionIsBaseline)
 % fprintf('TextBounds took %.3f seconds.\n',GetSecs-t);
 % Screen('Close',woff);
 %
@@ -94,7 +94,7 @@ function [bounds,ok]=TextBounds(window,text,yPositionIsBaseline,centerTheText)
 % 3/21/20   dgp In line 125, minimum bottom margin is back to 2.
 
 if nargin<2 || isempty(text)
-    error(['Require at least 2 arguments. bounds=TextBounds(window, '...
+    error(['Require at least 2 arguments. bounds=TextBounds2(window, '...
         'string [, yPositionIsBaseline][, centerTheText])']);
 end
 if nargin<3 || isempty(yPositionIsBaseline)
