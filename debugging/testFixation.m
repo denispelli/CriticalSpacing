@@ -74,9 +74,9 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.isFixationBlankedNearTarget=1;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.fixationLocation='center'; % 'center', 'left', 'right'
 o.targetCross=0; % 1 to mark target location
 
@@ -122,7 +122,7 @@ o.eccentricityDeg=20;
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trialsDesired=40; % Number of trials (i.e. responses) for the threshold estimate.
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
+o.fixationMarkDeg=3; % 0, 3, and inf are a typical values.
 o.useFractionOfScreen=0.2;
 
    o.oneFlanker=0;
