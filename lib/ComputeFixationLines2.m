@@ -18,7 +18,7 @@ function [fixationLines,isTargetLocationMarked]=ComputeFixationLines2(fix)
 % INPUT:
 % fix.xy==XYPixOfXYDeg(o,[0 0]);        % screen location of fixation
 % fix.eccentricityXYPix=eccentricityXYPix;  % xy offset of target from fixation.
-% fix.fixationCrossPix=fixationCrossPix;% Diameter of fixation cross.
+% fix.fixationMarkPix=fixationMarkPix;% Diameter of fixation cross.
 %                                       % 0 for none.
 % fix.isTargetLocationMarked=true;
 % fix.targetMarkPix=targetMarkPix;      % Diameter of target mark X
@@ -27,13 +27,13 @@ function [fixationLines,isTargetLocationMarked]=ComputeFixationLines2(fix)
 % fix.blankingClipRect=InsetRect(screenRect,unblankableMarginPix,unblankableMarginPix);
 %
 % COMPUTE blankingRadiusPix FROM:
-% fix.isFixationCrossBlankedNearTarget=true;
+% fix.isFixationBlankedNearTarget=true;
 % fix.fixationBlankingRadiusReEccentricity=0.5;
 % fix.fixationBlankingRadiusReTargetHeight=1;
 % fix.targetHeightPix=o.targetHeightPix;
 %
 % fixationLines=ComputeFixationLines2(fix);
-% Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+% Screen('DrawLines',window,fixationLines,fixationThicknessPix,black);
 %
 % The many calls to round() don't noticeably affect the display. They are
 % just to make the values easier to examine while debugging.
@@ -48,13 +48,13 @@ function [fixationLines,isTargetLocationMarked]=ComputeFixationLines2(fix)
 % locations of fixation and target. The target mark is now an X, to
 % distinguish it from the fixation cross.
 % February 18, 2020. Now support the flag
-% fix.isFixationCrossBlankedNearTarget.
+% fix.isFixationBlankedNearTarget.
 % June 21, 2020. dgp. ComputeFixationLines2.m now accepts
 % fix.blankingClipRect to clip the blanking. This supports a new parameter
 % added to CriticalSpacing.m, o.fixationUnblankableScreenMarginDeg
 % requesting that fixation lines be protected from blanking in the
 % specified screen margin (specified in deg). This guarantees that if
-% fixation is onscreen and fix.fixationCrossPix is infinite then there will
+% fixation is onscreen and fix.fixationMarkPix is infinite then there will
 % be some visible on-screen residual part of each of the 4 radii of the
 % fixation cross. The observer instructions typically ask the observer to
 % keep her eyes on the fixation cross, which makes no sense if there isn't
@@ -63,11 +63,11 @@ function [fixationLines,isTargetLocationMarked]=ComputeFixationLines2(fix)
 % blankingClipRect. I coded it to apply the same blankingClipRect to
 % both, but perhaps it should apply only to fixation.
 
-if ~isfield(fix,'isFixationCrossBlankedNearTarget')
-    fix.isFixationCrossBlankedNearTarget=true;
+if ~isfield(fix,'isFixationBlankedNearTarget')
+    fix.isFixationBlankedNearTarget=true;
 end
-if ~isfield(fix,'fixationCrossPix')
-    fix.fixationCrossPix=100;
+if ~isfield(fix,'fixationMarkPix')
+    fix.fixationMarkPix=100;
 end
 if ~isfield(fix,'isTargetLocationMarked')
     fix.isTargetLocationMarked=false; % Default is no mark indicating target location.
@@ -93,7 +93,7 @@ if ~isfield(fix,'blankingRadiusPix') || isempty(fix.blankingRadiusPix)
     fix.blankingRadiusPix=fix.fixationBlankingRadiusReEccentricity*eccentricityPix; % 0 for no blanking.
     fix.blankingRadiusPix=max(fix.blankingRadiusPix,fix.fixationBlankingRadiusReTargetHeight*fix.targetHeightPix);
 end
-if ~fix.isFixationCrossBlankedNearTarget
+if ~fix.isFixationBlankedNearTarget
     fix.fixationBlankingRadiusReTargetHeight=0;
     fix.fixationBlankingRadiusReEccentricity=0;
     fix.blankingRadiusPix=0;
@@ -111,8 +111,8 @@ fix.xy=round(fix.xy); % Printout is more readable for integers.
 x0=fix.xy(1); % fixation
 y0=fix.xy(2);
 % Two lines create a cross at fixation.
-x=[x0-fix.fixationCrossPix/2 x0+fix.fixationCrossPix/2 x0 x0];
-y=[y0 y0 y0-fix.fixationCrossPix/2 y0+fix.fixationCrossPix/2];
+x=[x0-fix.fixationMarkPix/2 x0+fix.fixationMarkPix/2 x0 x0];
+y=[y0 y0 y0-fix.fixationMarkPix/2 y0+fix.fixationMarkPix/2];
 % Target location
 tXY=fix.xy+fix.eccentricityXYPix;
 tX=tXY(1);
@@ -140,7 +140,7 @@ if ~isempty(x) && fix.blankingRadiusPix>0
     blankingRect=OffsetRect(blankingRect,tX,tY);
     blankingRect=round(blankingRect);
     %    'fixation cross pix'
-    %    fix.fixationCrossPix
+    %    fix.fixationMarkPix
     %    'Fixation, and marks (at fixation and target), before blanking'
     %    x0,y0
     %    x

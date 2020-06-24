@@ -9,9 +9,9 @@ function fixationLines=ComputeFixationLines(fix)
 % fix.bouma=0.5;                        % Critical spacing multiple of
 %                                       % eccentricity.
 % fix.clipRect=screenRect;              % Restrict lines to this rect.
-% fix.fixationCrossPix=fixationCrossPix;% Full width & height of fixation
+% fix.fixationMarkPix=fixationMarkPix;% Full width & height of fixation
 %                                       % cross.
-% fix.fixationCrossBlankedNearTarget=1; % 0 or 1. Blank the fixation line
+% fix.isFixationBlankedNearTarget=1; % 0 or 1. Blank the fixation line
 %                                       % near the target. We blank within
 %                                       % one critical spacing of the
 %                                       % target location, left and right,
@@ -20,7 +20,7 @@ function fixationLines=ComputeFixationLines(fix)
 %                                       % target eccentricity. We also
 %                                       % blank a radius proportional to
 %                                       % target radius.
-% fix.blankingRadiusReTargetHeight=1.5; % Make blanking radius 1.5 times
+% fix.fixationBlankingRadiusReTargetHeight=1.5; % Make blanking radius 1.5 times
 %                                       % target height. That's a good
 %                                       % value for letters, which are
 %                                       % strong right up to the edge of
@@ -36,7 +36,7 @@ function fixationLines=ComputeFixationLines(fix)
 % fix.markTargetLocation=true;          % Draw vertical line indicating
 %                                       % target location.
 % fixationLines=ComputeFixationLines(fix);
-% Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+% Screen('DrawLines',window,fixationLines,fixationThicknessPix,black);
 %
 % History:
 % October, 2015. Denis Pelli wrote it.
@@ -48,14 +48,14 @@ end
 if ~isfield(fix,'markTargetLocation')
     fix.markTargetLocation=false; % Default is no vertical line indicating target location.
 end
-if ~isfield(fix,'fixationCrossBlankedNearTarget')
-    fix.fixationCrossBlankedNearTarget=1; % Default is yes.
+if ~isfield(fix,'isFixationBlankedNearTarget')
+    fix.isFixationBlankedNearTarget=1; % Default is yes.
 end
-if ~isfield(fix,'blankingRadiusReTargetHeight')
-    fix.blankingRadiusReTargetHeight=1.5; % Blank a radius of 1.5 times target height.
+if ~isfield(fix,'fixationBlankingRadiusReTargetHeight')
+    fix.fixationBlankingRadiusReTargetHeight=2; % Blank a radius of 2 times target height.
 end
 if ~isfield(fix,'blankingRadiusReTargetWidth')
-    fix.blankingRadiusReTargetWidth=1.5; % Blank a radius of 1.5 times target width.
+    fix.blankingRadiusReTargetWidth=2; % Blank a radius of 2 times target width.
 end
 if ~isfield(fix,'targetHeightOverWidth') || ~isfinite(fix.targetHeightOverWidth)
    warning('fix.targetHeightOverWidth is undefined. Assuming it is 1.');
@@ -70,8 +70,10 @@ end
 %%%%%%%% increase or decrease the list length. Finally we should rotate the
 %%%%%%%% lines back to the original orientation.
 
-blankingHeightPix=fix.blankingRadiusReTargetHeight*fix.targetHeightPix;
+blankingHeightPix=fix.fixationBlankingRadiusReTargetHeight*fix.targetHeightPix;
 blankingWidthPix=fix.blankingRadiusReTargetWidth*fix.targetHeightPix/fix.targetHeightOverWidth;
+blankingPix=max([blankingHeightPix blankingWidthPix]);
+clear blankingHeightPix blankingWidthPix
 
 % We initially use abs(eccentricity) and assume fixation is at (0,0). At
 % the end, we adjust for polarity of eccentricity and the actual location
@@ -83,14 +85,14 @@ r=OffsetRect(fix.clipRect,-fix.x,-fix.y);
 
 % Horizontal line indicating fixation 
 if 0>=r(2) && 0<=r(4) % Fixation is on screen.
-    lineStart=-fix.fixationCrossPix/2;
-    lineEnd=fix.fixationCrossPix/2;
+    lineStart=-fix.fixationMarkPix/2;
+    lineEnd=fix.fixationMarkPix/2;
     lineStart=max(lineStart,r(1)); % clip to fix.clipRect
     lineEnd=min(lineEnd,r(3)); % clip to fix.clipRect
     eccentricityPix=sqrt(sum(fix.eccentricityXYPix.^2));
-    if fix.fixationCrossBlankedNearTarget
-        blankStart=min(abs(eccentricityPix)*(1-fix.bouma),abs(eccentricityPix)-blankingWidthPix);
-        blankEnd=max(abs(eccentricityPix)*(1+fix.bouma),abs(eccentricityPix)+blankingWidthPix);
+    if fix.isFixationBlankedNearTarget
+        blankStart=min(abs(eccentricityPix)*(1-fix.bouma),abs(eccentricityPix)-blankingPix);
+        blankEnd=max(abs(eccentricityPix)*(1+fix.bouma),abs(eccentricityPix)+blankingPix);
     else
         blankStart=lineStart-1;
         blankEnd=blankStart;
@@ -124,18 +126,18 @@ end
 
 % Vertical fixation line
 if 0>=r(1) && 0<=r(3) % Fixation is on screen.
-    lineStart=-fix.fixationCrossPix/2;
-    lineEnd=fix.fixationCrossPix/2;
+    lineStart=-fix.fixationMarkPix/2;
+    lineEnd=fix.fixationMarkPix/2;
     lineStart=max(lineStart,r(2)); % clip to fix.clipRect
     lineEnd=min(lineEnd,r(4)); % clip to fix.clipRect
     fixationLinesV=[];
-    if ~fix.fixationCrossBlankedNearTarget || abs(eccentricityPix)>blankingHeightPix
+    if ~fix.isFixationBlankedNearTarget || abs(eccentricityPix)>blankingPix
         % no blanking of line
         fixationLinesV(1:2,1:2)=[0 0;lineStart lineEnd];
-    elseif lineStart<-blankingHeightPix
+    elseif lineStart<-blankingPix
         % blank breaks the line
-        fixationLinesV(1:2,1:2)=[0 0; lineStart -blankingHeightPix];
-        fixationLinesV(1:2,3:4)=[0 0; blankingHeightPix lineEnd];
+        fixationLinesV(1:2,1:2)=[0 0; lineStart -blankingPix];
+        fixationLinesV(1:2,3:4)=[0 0; blankingPix lineEnd];
     else
         % whole line is blanked
         fixationLinesV=[0 0;0 0];
@@ -147,18 +149,18 @@ end
 if fix.markTargetLocation && eccentricityPix>=r(1) && eccentricityPix<=r(3)
     % Compute at eccentricity zero, and then offset to desired target
     % eccentricity.
-    lineStart=-fix.fixationCrossPix/2;
-    lineEnd=fix.fixationCrossPix/2;
+    lineStart=-fix.fixationMarkPix/2;
+    lineEnd=fix.fixationMarkPix/2;
     lineStart=max(lineStart,r(2)); % vertical clip to fix.clipRect
     lineEnd=min(lineEnd,r(4)); % vertical clip to fix.clipRect
     fixationLinesV=[];
-    if ~fix.fixationCrossBlankedNearTarget
+    if ~fix.isFixationBlankedNearTarget
         % no blanking of line
         fixationLinesV(1:2,1:2)=[0 0;lineStart lineEnd];
-    elseif lineStart<-blankingHeightPix
+    elseif lineStart<-blankingPix
         % blank breaks the line
-        fixationLinesV(1:2,1:2)=[0 0; lineStart -blankingHeightPix];
-        fixationLinesV(1:2,3:4)=[0 0; blankingHeightPix lineEnd];
+        fixationLinesV(1:2,1:2)=[0 0; lineStart -blankingPix];
+        fixationLinesV(1:2,3:4)=[0 0; blankingPix lineEnd];
     else
         % whole line is blanked
         fixationLinesV=[0 0;0 0];
