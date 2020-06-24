@@ -9,6 +9,13 @@ function [xClipped,yClipped]=ErasePartOfLineSegment(x,y,r)
 assert(length(x)>=2 && length(x)/2==round(length(x)/2))
 assert(length(y)==length(x));
 assert(length(r)==4);
+if RectWidth(r)==0 || RectHeight(r)==0
+    % Empty rect has no effect on our line.
+    xClipped=x;
+    yClipped=y;
+    return
+end
+% If multiple lines, process each one.
 if length(x)>2
    xClipped=[];
    yClipped=[];
@@ -18,7 +25,8 @@ if length(x)>2
       yClipped=[yClipped yTemp];
    end
    return
-end 
+end
+% Now processing just one line.
 % Discard zero-length line.
 if diff(x)^2+diff(y)^2==0
    xClipped=[];
@@ -63,7 +71,7 @@ if length(xHit)>1
             else
                xHit=xHit([1:i-1 i+1:end]);
                yHit=yHit([1:i-1 i+1:end]);
-            end;
+            end
             break;
          end
       end
@@ -71,10 +79,10 @@ if length(xHit)>1
 end
 assert(length(xHit)<3);
 switch length(xHit)
-   case 0;
+   case 0
       % Line is outside clip rect.
       return
-   case 1;
+   case 1
       % Clip rect cut off one end of line segment.
       if IsInRect(x(1),y(1),r)
          xClipped(1)=xHit;
@@ -84,7 +92,7 @@ switch length(xHit)
          xClipped(2)=xHit;
          yClipped(2)=yHit;
       end
-   case 2;
+   case 2
       % Clip rect cut line in two.
       % Retain direction.
       if sign(x(1)-x(2))~=sign(xHit(1)-xHit(2)) || ...
