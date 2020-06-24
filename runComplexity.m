@@ -195,9 +195,9 @@ for block=1:length(ooo)
             oo(oi).observer=old.observer;
             oo(oi).viewingDistanceCm=old.viewingDistanceCm;
         end
-        oo(oi).fixationCrossBlankedNearTarget=false;
-        oo(oi).fixationLineWeightDeg=0.1;
-        oo(oi).fixationCrossDeg=1; % 0, 3, and inf are typical values.
+        oo(oi).isFixationBlankedNearTarget=false;
+        oo(oi).fixationThicknessDeg=0.1;
+        oo(oi).fixationMarkDeg=1; % 0, 3, and inf are typical values.
         oo(oi).trialsDesired=50;
         oo(oi).practicePresentations=0;
         oo(oi).durationSec=0.2; % duration of display of target and flankers

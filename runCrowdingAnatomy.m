@@ -73,9 +73,9 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.isFixationBlankedNearTarget=1;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.markTargetLocation=false; % 1 to mark target location
 
@@ -111,8 +111,8 @@ clear conditions
 o.trialsDesired=40; 
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.fixationMarkDeg=3; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.markTargetLocation=false; % 1 to mark target location
 o.durationSec=0.2; % duration of display of target and flankers
 

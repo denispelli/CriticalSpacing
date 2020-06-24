@@ -73,9 +73,9 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.isFixationBlankedNearTarget=1;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.markTargetLocation=false; % 1 to mark target location
 
@@ -120,7 +120,7 @@ o.eccentricityXYDeg=[30 0];
 o.durationSec=0.2;
 o.fourFlankers=0;
 o.trialsDesired=40; % Number of trials (i.e. responses) for the threshold estimate.
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
+o.fixationMarkDeg=3; % 0, 3, and inf are a typical values.
 % o.useFractionOfScreenToDebug=0.2;
 
 % TEST FOVEA
@@ -131,7 +131,7 @@ o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
 o.targetSizeIsHeight=1;
 o.flankingDirection='radial'; % horizontally arranged flankers for single target
 o.nearPointXYInUnitSquare=[0.5 0.5];
-o.fixationCrossBlankedNearTarget=1;
+o.isFixationBlankedNearTarget=1;
 o.fixedSpacingOverSize=1.4; % Requests size proportional to spacing, horizontally and vertically.
 o.viewingDistanceCm=300; % Default for runtime question.
 o.eccentricityXYDeg=[0 0];

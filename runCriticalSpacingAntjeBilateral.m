@@ -23,8 +23,8 @@ o.targetDeg=2;
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
 o.setNearPointEccentricityTo='fixation';
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.fixationMarkDeg=3; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 
 % Randomly interleave testing left and right.
 oo=[o o];

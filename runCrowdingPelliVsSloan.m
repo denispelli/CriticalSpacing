@@ -53,9 +53,9 @@ if 1
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         o.minimumTargetPix=8;
-        o.fixationLineWeightDeg=0.03;
-        o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=false;
+        o.fixationThicknessDeg=0.03;
+        o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=false;
         o.flankingDirection='radial';
         o.viewingDistanceCm=50;
         o2=o; % Copy the condition
@@ -82,15 +82,15 @@ if 0
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         if ecc>0
-            o.fixationLineWeightDeg=0.03;
-            o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=false;
+            o.fixationThicknessDeg=0.03;
+            o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=false;
             o.flankingDirection='radial';
             o.viewingDistanceCm=100;
         else
-            o.fixationLineWeightDeg=0.02;
-            o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=true;
+            o.fixationThicknessDeg=0.02;
+            o.fixationMarkDeg=inf; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=true;
             o.flankingDirection='horizontal';
             o.viewingDistanceCm=100;
         end
@@ -110,9 +110,9 @@ if 1
         o.alphabet='123456789';
         o.borderLetter='$';
         o.minimumTargetPix=4;
-        o.fixationLineWeightDeg=0.02;
-        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=true;
+        o.fixationThicknessDeg=0.02;
+        o.fixationMarkDeg=40; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=true;
         o.flankingDirection='horizontal';
         o.viewingDistanceCm=250;
         o2=o; % Copy the condition

@@ -33,9 +33,9 @@ o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
 o.spacingDeg=[];
-o.fixationLineWeightDeg=0.02;
-o.fixationCrossDeg=inf;
-o.fixationCrossBlankedNearTarget=true;
+o.fixationThicknessDeg=0.02;
+o.fixationMarkDeg=inf;
+o.isFixationBlankedNearTarget=true;
 
 ooo={};
 
@@ -89,9 +89,9 @@ if true
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         o.minimumTargetPix=8;
-        o.fixationLineWeightDeg=0.03;
-        o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=false;
+        o.fixationThicknessDeg=0.03;
+        o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=false;
         o.flankingDirection='radial';
         o.viewingDistanceCm=40;
         o2=o; % Copy the condition
@@ -139,15 +139,15 @@ if true
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         if ecc>0
-            o.fixationLineWeightDeg=0.03;
-            o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=false;
+            o.fixationThicknessDeg=0.03;
+            o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=false;
             o.flankingDirection='radial';
             o.viewingDistanceCm=100;
         else
-            o.fixationLineWeightDeg=0.02;
-            o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=true;
+            o.fixationThicknessDeg=0.02;
+            o.fixationMarkDeg=inf; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=true;
             o.flankingDirection='horizontal';
             o.viewingDistanceCm=100;
         end
@@ -168,9 +168,9 @@ if 1
         o.alphabet='123456789';
         o.borderLetter='$';
         o.minimumTargetPix=4;
-        o.fixationLineWeightDeg=0.02;
-        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=true;
+        o.fixationThicknessDeg=0.02;
+        o.fixationMarkDeg=40; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=true;
         o.flankingDirection='horizontal';
         o.viewingDistanceCm=250;
         o2=o; % Copy the condition
@@ -190,8 +190,8 @@ for block=1:length(ooo)
         o.task='identify';
         o.fixationCheck=true;
         o.fixationOnsetAfterTargetOffsetSecs=0;
-        o.fixationCrossBlankedNearTarget=true;
-        o.fixationCrossDeg=4;
+        o.isFixationBlankedNearTarget=true;
+        o.fixationMarkDeg=4;
         o.eccentricityXYDeg=[0 0];
         o.thresholdParameter='spacing';
         o.flankingDirection='horizontal';
@@ -283,7 +283,7 @@ t=struct2table(oo,'AsArray',true);
 % Print the conditions in the Command Window.
 disp(t(:,{'block' 'endsAtMin' 'experiment' 'conditionName' 'targetFont' ...
     'eccentricityXYDeg' 'flankingDirection' 'viewingDistanceCm' ...
-    'trialsDesired' 'fixationCrossDeg' 'fixationCrossBlankedNearTarget' ...
+    'trialsDesired' 'fixationMarkDeg' 'isFixationBlankedNearTarget' ...
     'fixationOnsetAfterTargetOffsetSecs'}));
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);

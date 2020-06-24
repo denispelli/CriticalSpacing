@@ -13,14 +13,16 @@ addpath(fullfile(mainFolder,'utilities')); % Folder in same directory as this M 
 clear KbWait o oo 
 ooo={};
 o.askForPartingComments=false;
-% o.useFractionOfScreenToDebug=0.4;
-% o.skipScreenCalibration=true; % Skip calibration to save time.
-if true
-    o.simulateObserver=true;
-    o.dontWait=true;
-    o.trialsDesired=400;
+% o.useFractionOfScreenToDebug=0.4; o.skipScreenCalibration=true; % Skip calibration to save time.
+o.procedure='Constant stimuli';
+o.simulateObserver=false;
+if o.simulateObserver
+    o.dontWait=1;
+    o.trialsDesired=800;
+    o.beta=3;
+    o.delta=0.02;
 else
-    o.trialsDesired=40;
+    o.trialsDesired=400;
 end
 % o.printSizeAndSpacing=true;
 o.experiment='CrowdingBeta';
@@ -33,13 +35,16 @@ o.showProgressBar=false;
 o.useSpeech=false;
 o.viewingDistanceCm=100;
 o.setNearPointEccentricityTo='fixation';
-o.nearPointXYInUnitSquare=[0.5 0.5]; % location on screen. [0 0] lower left, [1 1] upper right.
-% From 2018 until April 2019 this was nominally 200 ms, but actually delivered 280
-% ms when tested in April. I've now improved the code to more accurately
-% deliver the requested duration, and reduced the request to 150 m.
+% Location on screen. [0 0] is lower left. [1 1] is upper right.
+o.nearPointXYInUnitSquare=[0.5 0.5]; 
+% From 2018 until April 2019 this was nominally 200 ms, but actually
+% delivered 280 ms when tested in April. I've now improved the code to more
+% accurately deliver the requested duration, and reduced the request to 150
+% m.
 o.durationSec=0.150; % duration of display of target and flankers
 o.getAlphabetFromDisk=false;
-o.brightnessSetting=0.87; % Roughly half luminance. Some observers find 1.0 painfully bright.
+% Roughly half luminance. Some observers find 1.0 painfully bright.
+o.brightnessSetting=0.87; 
 % o.takeSnapshot=true; % To illustrate your talk or paper.
 o.fixationCheck=false;
 o.flankingDirection='radial';
@@ -47,19 +52,16 @@ o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
 o.spacingDeg=[];
-o.fixationLineWeightDeg=0.02;
-o.fixationCrossDeg=inf;
-o.fixationCrossBlankedNearTarget=true;
+o.fixationThicknessDeg=0.02;
+o.fixationMarkDeg=inf;
+o.isFixationBlankedNearTarget=true;
 o.procedure='Constant stimuli';
 
 ooo={};
 
 %% MEASURE RADIAL CROWDING
-o.procedure='Constant stimuli';
-o.beta=2;
-o.delta=0.02;
 if true
-    for ecc=5 % [5 2.5]
+    for ecc= 5 %[5 2.5]
         o.conditionName='crowding';
         o.task='identify';
         o.useFixation=true;
@@ -71,9 +73,9 @@ if true
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         o.minimumTargetPix=8;
-        o.fixationLineWeightDeg=0.03;
-        o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=false;
+        o.fixationThicknessDeg=0.03;
+        o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=false;
         o.flankingDirection='radial';
         o.viewingDistanceCm=40;
         % Mirror the condition to negative eccentricity.
@@ -110,6 +112,14 @@ if true
     end
 end
 
+%% SIMULATE 100 BLOCKS
+if ooo{1}(1).simulateObserver
+    for block=2:10
+        ooo{block}=ooo{1};
+        [ooo{block}.block]=deal(block);
+    end
+end
+
 %% MEASURE ACUITY
 if false
     for ecc=[0 5]
@@ -122,15 +132,15 @@ if false
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         if ecc>0
-            o.fixationLineWeightDeg=0.03;
-            o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=false;
+            o.fixationThicknessDeg=0.03;
+            o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=false;
             o.flankingDirection='radial';
             o.viewingDistanceCm=100;
         else
-            o.fixationLineWeightDeg=0.02;
-            o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=true;
+            o.fixationThicknessDeg=0.02;
+            o.fixationMarkDeg=inf; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=true;
             o.flankingDirection='horizontal';
             o.viewingDistanceCm=100;
         end
@@ -163,6 +173,7 @@ for block=1:length(ooo)
         o.targetFont='Sloan';
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
+        o.trialsDesired=o.trialsDesired/2;
         oo(end+1)=o;
         ooo{block}=oo;
     end
@@ -183,6 +194,11 @@ for block=1:length(ooo)
     oo=ooo{block};
     for oi=1:length(oo)
         oo(oi).spacings=2.^[-4:3]*NominalCrowdingDistanceDeg(oo(oi).eccentricityXYDeg);
+        if oo(oi).simulateObserver
+            fprintf('%d: spacings:',oi);
+            fprintf(' %.1f',oo(oi).spacings);
+            fprintf('\n');
+        end
     end
     ooo{block}=oo;
 end

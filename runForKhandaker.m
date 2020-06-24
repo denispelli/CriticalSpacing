@@ -73,9 +73,9 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.isFixationBlankedNearTarget=1;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.markTargetLocation=false; % 1 to mark target location
 
@@ -117,7 +117,7 @@ o.useFractionOfScreenToDebug=0;
 
 o.repeatedTargets=0;
 o.thresholdParameter='spacing';
-o.fixationCrossBlankedNearTarget=1;
+o.isFixationBlankedNearTarget=1;
 o.nearPointXYInUnitSquare=[0.8  0.5];
 o.durationSec=0.2; % duration of display of target and flankers
 o.viewingDistanceCm=400; % Default for runtime question.
@@ -128,11 +128,11 @@ o.practicePresentations=0;
 for ecc=[0  2  8]
    o=o(1);
    if ecc<1
-      o.fixationCrossBlankedNearTarget=1;
-      o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
+      o.isFixationBlankedNearTarget=1;
+      o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
    else
-      o.fixationCrossBlankedNearTarget=0;
-      o.fixationCrossDeg=ecc/2; % 0, 3, and inf are a typical values.
+      o.isFixationBlankedNearTarget=0;
+      o.fixationMarkDeg=ecc/2; % 0, 3, and inf are a typical values.
    end
    o.viewingDistanceCm=400/(ecc+1); % Default for runtime question.
    o.eccentricityXYDeg=[ecc 0];
