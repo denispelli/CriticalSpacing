@@ -4,6 +4,12 @@ function [x,y]=IntersectionOfLineSegments(lineA,lineB)
 % 2016 denis.pelli@nyu.edu
 % March 14, 2016, Add jnd of 1e-10 to tolerate numerical error, which was
 % 1e-14 in the case I encountered.
+if norm(diff(lineA'))==0
+    warning('lineA has zero length.');
+end
+if norm(diff(lineB'))==0
+    warning('lineB has zero length.');
+end
 [x,y]=IntersectionOfInfiniteLines(lineA,lineB);
 if isnan(x) || isnan(y)
    return
