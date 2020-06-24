@@ -2,7 +2,7 @@ function InstallationCheck(screen)
 % InstallationCheck(screen);
 % Are this computer and screen ready to run CriticalSpacing and
 % NoiseDiscrimination?
-global window
+global window oldDisplaySettings
 window=[];
 clear Snd % Clear persistent variables in Snd.
 % clear PsychPortAudio % A mex file.
@@ -20,6 +20,12 @@ o.useNative11Bit=true;
 o.screenVerbosity=0; % 0 for no messages, 1 for critical, 2 for warnings, 3 default
 % See https://github.com/Psychtoolbox-3/Psychtoolbox-3/wiki/FAQ:-Control-Verbosity-and-Debugging
 o.textSize=40;
+newDisplaySettings.brightness=1;
+newDisplaySettings.automatically=false;
+newDisplaySettings.trueTone=false;
+newDisplaySettings.nightShiftSchedule='Off';
+newDisplaySettings.nightShiftManual=false;
+[oldDisplaySettings,errorMsg]=MacDisplaySettings(o.screen,newDisplaySettings)
 
 %% FILES
 mainFolder=fileparts(fileparts(mfilename('fullpath')));
@@ -288,37 +294,6 @@ end
 test(end).min='';
 test(end).ok=true;
 test(end).help='help PsychPortAudio';
-
-% test(end+1).name='Brightness applescript';
-% test(end).min='true';
-% try
-%     Brightness(0);
-%     test(end).value='true';
-%     test(end).ok=true;
-% catch me
-%     test(end).value='false';
-%     test(end).ok=false;
-%     warning(me.message);
-%     test(end).help='help Brightness';
-% end
-
-if 0
-    test(end+1).name='AutoBrightness applescript';
-    test(end).min='true';
-    try
-        fprintf('Testing AutoBrightness(0) ...\n');
-        s=GetSecs;
-        AutoBrightness(0);
-        test(end).value='true';
-        test(end).ok=true;
-    catch me
-        test(end).value='false';
-        test(end).ok=false;
-        warning(me.message);
-    end
-    fprintf('(%.0f s)\n',GetSecs-s);
-    test(end).help='help AutoBrightness';
-end
 
 %% TRY-CATCH BLOCK CONTAINS ALL CODE IN WHICH THE WINDOW IS OPEN
 try
@@ -605,7 +580,7 @@ end % function InstallationCheck(screen)
 %% CloseWindowsAndCleanup
 function CloseWindowsAndCleanup
 % Close any window opened by the Psychtoolbox Screen command, re-enable
-% keyboard, show cursor, and restore AutoBrightness.
+% keyboard, show cursor, and restore MacDisplaySettings.
 global window
 
 if ~isempty(Screen('Windows'))
@@ -615,7 +590,7 @@ if ~isempty(Screen('Windows'))
     window=[];
     fprintf('Done (%.1f s).\n',GetSecs-s); % Closing all windows.
 end
-
+MacDisplaySettings(macDisplaySettings)
 Screen('Preference','Verbosity',2); % Restore default level.
 ListenChar; % May already be done by Screen('CloseAll').
 ShowCursor; % May already be done by Screen('CloseAll').
