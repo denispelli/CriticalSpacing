@@ -596,19 +596,12 @@ end
 if length(serialNumber)<11
     error('serialNumber string must be more than 10 characters long.');
 end
-[~,report]=system(...
+[err,report]=system(...
     ['bash -c ''curl -s https://support-sp.apple.com/sp/product?cc=' ...
     serialNumber(9:end-1) '''']);
 x=regexp(report,'<configCode>(?<description>.*)</configCode>','names');
 if isempty(x)
-    if isempty(err)
-        % warning(['Apple serial number lookup failed, '...
-        % 'possibly because of no internet access.']);
-    else
-        % Probably tried to look up a non-Apple product.
-        warning('Apple serial number lookup failed with error ''%s''.',...
-            err.error);
-    end
+    warning('Apple serial number lookup (by internet) failed. "system" error %d.',err);
     modelDescription='';
 else
     modelDescription=x.description;
