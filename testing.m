@@ -73,9 +73,9 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.isFixationBlankedNearTarget=1;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.nearPointXYInUnitSquare=[0.5 0.5];
 o.markTargetLocation=false; % 1 to mark target location
 
@@ -125,9 +125,9 @@ o.eccentricityXYDeg=[60 0];
 o.viewingDistanceCm=30;
 o.targetDeg=4;
 o.repeatedTargets=0; % Repeat targets for immunity to fixation errors.
-o.fixationCrossBlankedNearTarget=0;
-o.fixationCrossDeg=3; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.1;
+o.isFixationBlankedNearTarget=0;
+o.fixationMarkDeg=3; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.1;
 o.nearPointXYInUnitSquare=[0.8  0.5];
 o.experimenter='Denis';
 o.observer='denis';

@@ -75,9 +75,9 @@ o.borderLetter='$';
 % o.targetFont='Retina Micro';
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=1;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
+o.isFixationBlankedNearTarget=1;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.02;
 o.markTargetLocation=0; % 1 to mark target location
 o.useFixation=1;
 
