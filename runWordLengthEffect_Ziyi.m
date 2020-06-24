@@ -96,10 +96,10 @@ else
     o.thresholdParameter='spacing';
 end
 o.useFixation=true;
-o.fixationCrossBlankedNearTarget=true;
-o.blankingRadiusReTargetHeight=4;
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.04;
+o.isFixationBlankedNearTarget=true;
+o.fixationBlankingRadiusReTargetHeight=4;
+o.fixationMarkDeg=inf; % 0, 3, and inf are a typical values.
+o.fixationThicknessDeg=0.04;
 
 %% Snapshots
 o.takeSnapshot=true; % run TakeSnapshotWordLengthEffect, not TakeSnapshot
