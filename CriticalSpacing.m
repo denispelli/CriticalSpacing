@@ -135,16 +135,19 @@ function oo=CriticalSpacing(oIn)
 % A WIRELESS OR LONG-CABLE KEYBOARD is highly desirable because a normally
 % sighted observer viewing foveally has excellent vision and must be many
 % meters away from the screen in order for us to measure her acuity limit.
-% At this distance their hands can't reach the built-in keyboard attached
+% At this distance she can't reach the built-in keyboard attached
 % to the screen. If you must use the built-in keyboard, then have the
 % experimenter type the observer's verbal answers. Instead, I like the
-% Logitech K760 $86 solar-powered wireless keyboard, because its batteries
-% never run out. It's no longer made, but still available on Amazon and
-% eBay (below). To "pair" the keyboard with your computer's blue tooth,
-% press the tiny button on the back of the keyboard.
+% Logitech K760 solar-powered wireless keyboard, because its batteries
+% never run out. It's no longer made, but still available on Amazon, New
+% Egg, and eBay (below). To "pair" the keyboard with your computer's blue
+% tooth, press the tiny button on the back of the keyboard.
 %
 % Logitech Wireless Solar Keyboard K760 for Mac/iPad/iPhone
 % http://www.amazon.com/gp/product/B007VL8Y2C
+% https://www.newegg.com/logitech-wireless-solar-keyboard-k760-bluetooth-wireless/p/N82E16823126283?Item=9SIA4RE7ZV9401
+% https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=Logitech+K760+Wireless+Solar+Keyboard+&_sacat=0
+% https://www.logitech.com/assets/44407/wireless-solar-keyboard-k760-quickstart-guide.pdf
 %
 % TAPE OR LASER MEASURE FOR VIEWING DISTANCE. The viewing distance will
 % typically be several meters, and it's important that you set it
@@ -240,7 +243,7 @@ function oo=CriticalSpacing(oIn)
 % centimeter) of your display. This is Eq. 4 in the Pelli et al. (2016)
 % paper cited at the beginning,
 %
-% minViewingDistanceCm=57*(minimumTargetPix/letterDeg)/(screenWidthPix/screenWidthCm);
+% minRecommendedViewingDistanceCm=57*(minimumTargetPix/letterDeg)/(screenWidthPix/screenWidthCm);
 %
 % where minimumTargetPix=8 and letterDeg=0.02 for the healthy adult fovea.
 %
@@ -420,9 +423,9 @@ function oo=CriticalSpacing(oIn)
 % what resolution we get. This suggests that I shouldn't bother to set
 % resolution to native, since Screen is already doing that for me.
 %
-% March 30, 2020. DGP. Added work around for bug in Screen Resolution. The
-% second call, nominally of no effect, is a work around for a bug in
-% Screen. Otherwise when we change resolution, subsequent calls to
+% March 30, 2020. DGP. Added work around for bug in Screen Resolution.
+% Repeating the call to set, nominally of no effect, is a work around for a
+% bug in Screen. Otherwise after we change resolution, subsequent calls to
 % OpenWindow put the window in the wrong place. With the extra call, window
 % placement is correct. Bug reported March 28, 2020.
 
@@ -484,7 +487,7 @@ function oo=CriticalSpacing(oIn)
 % MacBook Air with attached Dell display."
 %
 % -mario
-
+Screen('Preference','SkipSyncTests',1);
 [~,v]=PsychtoolboxVersion;
 if v.major*10000 + v.minor*100 + v.point < 30012
     error('CriticalSpacing: Your Psychtoolbox is too old. Please run "UpdatePsychtoolbox".');
@@ -501,7 +504,7 @@ mainFolder=fileparts(mfilename('fullpath'));
 if ~exist('TextSizeToFit','file') && ...
         ~exist([mainFolder filesep 'lib' filesep 'TextSizeToFit.m'],'file')
     error(['Please run me from inside the "CriticalSpacing" folder. '...
-        'That allows me to find other routines.']);
+        'That allows me to find needed subroutines.']);
 end
 addpath(fullfile(mainFolder,'lib'));
 addpath(fullfile(mainFolder,'utilities'));
@@ -518,13 +521,13 @@ plusMinus=char(177);
 
 % Once we call onCleanup, until CriticalSpacing ends,
 % CloseWindowsAndCleanup will run (closing any open windows) when this
-% function terminates for any reason, whether by reaching the end, the
-% posting of an error here (or in any function called from here), or the
-% user hitting control-C.
+% function terminates for any reason, whether by reaching the end, throwing
+% an error here (or in any function called from here), or the user hitting
+% control-C.
 cleanup=onCleanup(@() CloseWindowsAndCleanup);
 global skipScreenCalibration ff
 global window keepWindowOpen % Keep window open until end of last block.
-global isSoundOpen
+global isSoundOpen oldDisplaySettings
 global scratchWindow
 global screenRect % For ProcessEscape
 persistent drawTextWarning
@@ -570,6 +573,8 @@ o.trialsSkipped=0;
 o.askForPartingComments=true;
 o.partingComments='';
 o.spacings=[]; % For o.procedure='Constant stimuli'.
+o.fixationCheck=false; % True designates condition as a fixation check.
+o.fixationCheckMakeupPresentations=1; % After a mistake, how many correct presentation to require.
 
 % SOUND & FEEDBACK
 o.beepNegativeFeedback=false;
@@ -578,7 +583,7 @@ o.showProgressBar=true;
 o.speakEachLetter=true;
 o.speakEncouragement=false;
 o.speakViewingDistance=false;
-o.usePurring=false;
+o.usePurring=true;
 o.useSpeech=false;
 o.showCounter=true;
 o.soundVolume=0.25;
@@ -601,7 +606,7 @@ o.repeatedTargets=false;
 o.maxLines=inf; % When repeatedTargets==true, max number of lines, including borders. Must be 1,3,4, ... inf.
 o.maxFixationErrorXYDeg=[3 3]; % Repeat targets enough to cope with errors up to this size.
 o.practicePresentations=0; % 0 for none. Adds easy trials at the beginning that are not recorded.
-o.setTargetHeightOverWidth=0; % Stretch font to achieve a particular aspect ratio.
+o.setTargetHeightOverWidth=false; % Stretch font to achieve a particular aspect ratio.
 o.spacingDeg=nan;
 o.spacingGuessDeg=nan;
 o.targetDeg=nan;
@@ -659,20 +664,30 @@ o.nearPointXYDeg=[0 0]; % Set this explicitly if you set setNearPointEccentricit
 o.setNearPointEccentricityTo='fixation'; % 'target' or 'fixation' or 'value'
 
 % FIXATION
-o.fixationCrossBlankedNearTarget=true;
-o.blankingRadiusReTargetHeight=2;
+o.useFixation=true;
+o.blankingClipRectInUnitSquare=[0.1 0.1 0.9 0.9];
+o.isFixationClippedToStimulusRect=false;
+o.isTargetLocationMarked=false; % true to mark target location
+o.fixationThicknessDeg=0.03; % Typically 0.03. Make it much thicker for scotopic testing.
+o.fixationMarkDeg=1;      % Diameter of fixation mark +
+o.targetMarkDeg=0.5;      % Diameter of target mark X
+o.isFixationBlankedNearTarget=true;
+o.fixationBlankingRadiusReTargetHeight=2;
+o.fixationBlankingRadiusReEccentricity=0.5;
+o.blankingClipRectInUnitSquare=[0.1 0.1 0.9 0.9]; 
 o.fixationOffsetBeforeTargetOnsetSecs=0;
 o.fixationOnsetAfterTargetOffsetSecs=0.2; % Pause after stimulus before display of fixation.
-o.fixationCrossDeg=inf; % 0, 3, and inf are a typical values.
-o.fixationLineWeightDeg=0.02;
-o.fixationLineMinimumLengthDeg=0.2;
-o.markTargetLocation=false; % true to mark target location
-o.useFixation=true;
 o.forceFixationOffScreen=false;
-o.fixationCoreSizeDeg=1; % We protect this diameter from clipping by screen edge.
+% CriticalSpacing requires that the on-screen fixation mark be at least
+% o.fixationCoreSizeDeg/2 away from edge of clipping rect. (Implemented in
+% CriticalSpacing.m, not in ComputeFixationLines3.m.)
+o.fixationCoreSizeDeg=1; % Fixation-centered diameter cannot be clipped.
 o.recordGaze=false;
-o.fixationCheck=false; % True designates condition as a fixation check.
-o.fixationCheckMakeupPresentations=1; % After a mistake, how many correct presentation to require.
+o.useFixationDots=false;
+o.fixationDotsNumber=100;
+o.fixationDotsWithinRadiusDeg=2;
+o.fixationDotsColor=0;
+o.fixationDotsWeightDeg=0.05;
 
 % RESPONSE
 o.labelAnswers=false; % Useful for non-Roman fonts, like Chinese and Animals.
@@ -681,14 +696,24 @@ o.alphabetPlacement='bottom'; % 'top' placement currently collides with instruct
 o.instructionPlacement='topLeft'; % 'topLeft' 'bottomLeft'. NOT YET IMPLEMENTED.
 o.counterPlacement='bottomRight'; % 'bottomLeft' 'bottomCenter' 'bottomRight'
 
+% GROUP
+o.group=''; % A "group" of conditions is defined by having the same
+% nonempty string in o.group. This designation requests that all conditions
+% in the group be presented with the same fixation and noise, which
+% considers all possible target positions. Empty o.group requests that the
+% condition be presented independently of the rest. All conditions were
+% independent in CriticalSpacing until June 21, 2020.
+
 % SIMULATE OBSERVER
 o.simulateObserver=false;
 o.simulatedLogThreshold=0;
-o.dontWait=false;
+% o.dontWait must be double 0 or 1. Screen gives a fatal error if it's logical
+% boolean.
+o.dontWait=0;
 
 % QUEST threshold estimation
 % QUEST INPUT
-o.beta=3;
+o.beta=2.3; % Mean for Gus & Ashley for radial crowding distance.
 o.delta=0.01;
 o.measureBeta=false;
 o.pThreshold=nan;
@@ -827,7 +852,7 @@ outputFields={'beginSecs' 'beginningTime' 'cal' 'dataFilename' ...
     'pixPerCm' 'pixPerDeg' 'stimulusRect' 'targetXYPix' 'textLineLength' ...
     'speakInstructions' 'fixationOnScreen' 'fixationIsOffscreen' ...
     'okToShiftCoordinates' 'responseTextWidth' ...
-    'eccentricityDegVector' 'flankingDegVector'
+    'eccentricityDegVector' 'flankingDegVector' 'minRecommendedViewingDistanceCm' 'screenSizeCm' 'screenSizeDeg' ...
     };
 unknownFields=cell(0);
 for oi=1:conditions
@@ -905,7 +930,14 @@ if oo(1).soundVolume>0 && ~isempty(soundMuting) && soundMuting
     warning('SoundVolume %.2f is greater than zero, but SoundMuting is true.',oo(1).soundVolume);
 end
 
-%% Set up KbCheck. 
+% Unfortunately Screen requires that this true/false argument be cast as
+% double.
+for oi=1:length(oo)
+    if islogical(oo(oi).dontWait)
+        oo(oi).dontWait=double(oo(oi).dontWait);
+    end
+end
+%% Set up KbCheck.
 % Calling ListenChar(2) tells the MATLAB console/editor to ignore what we
 % type, so we don't inadvertently echo observer responses into the Command
 % window or any open file. We use this mode while use the KbCheck family of
@@ -1031,18 +1063,21 @@ else
         fprintf('WARNING: Trying to optimize screen resolution for this test. ... ');
         if ~isempty(Screen('windows'))
             fprintf('\n');
-            warning('Closing all open window(s), as required, before changing screen resolution.');
+            warning(['Closing all open window(s), as required, '...
+                'before changing screen resolution.']);
             Screen('CloseAll');
             window=[];
             oo(1).pleaseReopenWindow=true;
         end
-        oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
-        % This second call to Screen Resolution, nominally of no effect, is
-        % a work-around for a bug in Screen. Otherwise when we change
-        % resolution, subsequent calls to OpenWindow put the window in the
-        % wrong place. With the extra call, window placement is correct.
-        % Bug reported to Psychtoolbox github March 28, 2020.
-        Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+        oo(1).oldResolution=Screen('Resolution',...
+            oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+        % This repeat of the call to set Screen Resolution, nominally of no
+        % effect, is a work-around for a bug in Screen. Otherwise when we
+        % change resolution, subsequent calls to OpenWindow put the window
+        % in the wrong place. With the extra call, window placement is
+        % correct. Bug reported to Psychtoolbox github March 28, 2020.
+        Screen('Resolution',...
+            oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
         res=Screen('Resolution',oo(1).screen);
         fprintf('Done (%.1f s). ',GetSecs-s);
         if res.width==oo(1).nativeWidth
@@ -1119,6 +1154,44 @@ if isempty(isMicrophonePermissionGranted)
     isMicrophonePermissionGranted=true;
 end
 
+%% CONDITION GROUPS
+% Consider all the conditions that have the same nonempty string in
+% o.group as our condition does. Across all conditions within such a
+% group, we combine all the fixation marks and noise, so the combined
+% marks and noise are common to all conditions in the group, so the
+% conditions differ solely in their target. We retain the old
+% independent (not combined) behavior for conditions with a unique or
+% empty (default) o.group field. As in the past, such conditions are
+% generated without reference to other conditions. May 1, 2020.
+%
+% The group rule is active in blanking of fixation and marking of
+% possible target locations. We have yet to combine noise across
+% conditions.
+%
+% To implement the condition group, we compute a new field
+% o.groupConditions that lists the condition numbers "oi" of
+% all conditions in the group. This field always contains at least
+% the condition itself.
+for oi=1:length(oo)
+    if ~isempty(oo(oi).group)
+        oo(oi).groupConditions=find(ismember({oo.group},oo(oi).group));
+    else
+        oo(oi).groupConditions=oi;
+    end
+    fprintf('condition %d, group ''%s''\n',oi,oo(oi).group);
+end
+groups=unique({oo.group});
+for iGroup=1:length(groups)
+    group=groups{iGroup};
+    if isempty(group)
+        continue
+    end
+    fprintf('group ''%s'' consists of conditions',group);
+    ii=find(ismember({oo.group},group));
+    fprintf(' %d',ii);
+    fprintf('\n');
+end
+
 %% MAIN BLOCK
 try
     computer=Screen('Computer');
@@ -1126,9 +1199,17 @@ try
     if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration
         if IsOSX
             % Do this BEFORE opening the window, so user can see any alerts.
-            ffprintf(ff,'%d: Turning AutoBrightness off. ... ',MFileLineNr);
             s=GetSecs;
-            AutoBrightness(oo(1).screen,0); % Takes 25 s.
+            if ~isfinite(oo(1).brightnessSetting)
+                [oo.brightnessSetting]=deal(0.87); % default value
+            end
+			ffprintf(ff,'%d: Calling MacDisplaySettings. ... ',MFileLineNr);
+			newDisplaySettings.brightness=oo(1).brightnessSetting;
+			newDisplaySettings.automatically=false;
+			newDisplaySettings.trueTone=false;
+			newDisplaySettings.nightShiftSchedule='Off';
+			newDisplaySettings.nightShiftManual=false;
+			oldDisplaySettings=MacDisplaySettings(oo(1).screen,newDisplaySettings);
             ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
         end
     end
@@ -1201,7 +1282,7 @@ try
                 Screen('DrawText',window,'Testing DrawText (and caching fonts) ...',...
                     2*oo(1).textSize,2.5*oo(1).textSize);
             end
-            Screen('Flip',window);
+            Screen('Flip',window,0,0,oo(1).dontWait);
         end
         ffprintf(ff,'Testing DrawText (and caching fonts) ... '); s=GetSecs;
         drawTextWarningFileName=fullfile(oo(1).dataFolder,'drawTextWarning');
@@ -1341,6 +1422,7 @@ try
         end
         pixPerDeg=0.05*screenHeightPix/atan2d(0.05*screenHeightCm,oo(1).viewingDistanceCm);
         for oi=1:conditions
+            oo(oi).screenRect=screenRect;
             oo(oi).viewingDistanceCm=oo(1).viewingDistanceCm;
             oo(oi).pixPerDeg=pixPerDeg;
             oo(oi).pixPerCm=pixPerCm;
@@ -1414,8 +1496,7 @@ try
             % fixation. The user can assign any visual coordinate to the
             % near point, and can explicitly request that it be that of
             % fixation or target. We take o.nearPointXYInUnitSquare as the
-            % user's preferred designation the near point's location on the
-            % screen.
+            % user's designation the near point's location on the screen.
             %
             % If the user selects setNearPointEccentricityTo='target' then,
             % if necessary, we adjust the visual coordinate of the near
@@ -1424,8 +1505,7 @@ try
             % on-screen, then the fixation mark is placed off-screen.
             % o.nearPointXYInUnitSquare and o.eccentricityXYDeg are
             % requirements. We'll error-exit if they cannot be achieved,
-            % while o.nearPointXYInUnitSquare is merely a preference for
-            % fixation to be on-screen.
+            % while ?? is merely a preference for fixation to be on-screen.
             
             % If setNearPointEccentricityTo='target' we adjust the visual
             % coordinate of the near point, if necessary to bring fixation
@@ -1443,7 +1523,7 @@ try
             % desired spot, o.nearPointXYInUnitSquare.
             %
             % We don't mind allowing the screen edge to partially clip
-            % the fixation mark, 0.5 deg from its center, but the target
+            % the fixation mark 0.5 deg from its center, but the target
             % must not be clipped by the screen edge, and, further more,
             % since this is a crowding test, there should be enough room to
             % place a radial flanker beyond the target and not clip it. To
@@ -1557,7 +1637,7 @@ try
             % In addition to its argument xyDeg, the returned value of
             % XYPixOfXYDeg(xyDeg) depends solely on o.nearPointXYDeg and
             % o.nearPointXYPix.
-            % fix.xy is a screen coordinate.
+            % oo(oi).fix.xy is a screen coordinate.
             oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]);
             % eccentricityXYPix is a vector from fixation to target.
             oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
@@ -1569,6 +1649,16 @@ try
                 minimumScreenSizeXYDeg=max(minimumScreenSizeXYDeg,totalSizeXYDeg);
             end
         end % for oi=1:conditions
+        for oi=1:conditions
+            if any(oo(oi).nearPointXYDeg~=oo(1).nearPointXYDeg)
+                if any(ismember({oo.setNearPointEccentricityTo},{'target'}))
+                    if any(oo(oi).eccentricityXYDeg~=oo(1).eccentricityXYDeg)
+                        warning('We advise against setting o.setNearPointEccentricityTo=''target'' when your conditions have multiple eccentricities.');
+                    end
+                end
+                error('All conditions must have the same o.nearPointXYDeg.');
+            end
+        end
         stimulusWidthHeightCm=[RectWidth(oo(1).stimulusRect) RectHeight(oo(1).stimulusRect)]/pixPerCm;
         % This refers to max possible, for this condition. Don't confuse it
         % with o.maxViewingDistanceCm which is max of o.viewingDistanceCm
@@ -1647,10 +1737,10 @@ try
                 color=red;
                 string=sprintf(['\n\nKEYBOARD: ' ...
                     'The maximum viewing distance required '...
-                    'in the remaining blocks is %.0f cm. '...
+                    'in the remaining blocks is %.0f cm. \n'...
                     'At that distance, you may need a wireless keyboard, ' ...
-                    'but I can''t detect any. After connecting a new keyboard, ' ...
-                    'use your old keyboard to type "k" below, followed by RETURN, ' ...
+                    'but I can''t detect any. \nAfter connecting a new keyboard, ' ...
+                    'use your old keyboard to type "k" below, \nfollowed by RETURN, ' ...
                     'and I''ll recreate the keyboard list.'],...
                     oo(1).maxViewingDistanceCm);
                 Screen('TextSize',window,round(oo(1).textSize*scalar));
@@ -1661,9 +1751,10 @@ try
                     [],[],1.1);
                 string='';
                 warning backtrace off
-                warning('The long o.maxViewingDistanceCm %.0f cm may demand an external keyboard,',...
+                msg=sprintf(['The long o.maxViewingDistanceCm %.0f cm may demand an external keyboard,\n' ...
+                    'yet your only keyboard is not "wireless" or "bluetooth".'],...
                     oo(1).maxViewingDistanceCm);
-                warning('yet your only keyboard is not "wireless" or "bluetooth".');
+                warning(msg);
                 warning backtrace on
             end
         else
@@ -1782,7 +1873,7 @@ try
             2*oo(1).textSize,0.86*screenRect(4)+scalar*oo(1).textSize*(0.5-1.1),...
             black,white);
         DrawCounter(oo);
-        Screen('Flip',window,[],1);
+        Screen('Flip',window,[],1,oo(1).dontWait);
         if ~isempty(speech) && oo(1).useSpeech
             Speak(speech);
         end
@@ -1831,6 +1922,15 @@ try
                             warning('Trying to change your screen resolution to be optimal for this test.');
                             warning backtrace on
                             oo(1).oldResolution=Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
+                            % This repeat of the call to set Screen
+                            % Resolution, nominally of no effect, is a
+                            % work-around for a bug in Screen. Otherwise,
+                            % after we change resolution, subsequent calls
+                            % to OpenWindow put the window in the wrong
+                            % place. With the extra call, window placement
+                            % is correct. Bug reported to Psychtoolbox
+                            % github March 28, 2020.
+                            Screen('Resolution',oo(1).screen,oo(1).nativeWidth,oo(1).nativeHeight);
                             res=Screen('Resolution',oo(1).screen);
                             if res.width==oo(1).nativeWidth
                                 oo(1).permissionToChangeResolution=true;
@@ -2037,7 +2137,7 @@ try
     Screen('DrawLine',oo(1).window,black,x-a,y-a,x+a,y+a,widthPix);
     Screen('DrawLine',oo(1).window,black,x+a,y-a,x-a,y+a,widthPix);
     DrawCounter(oo);
-    Screen('Flip',oo(1).window); % Display request.
+    Screen('Flip',oo(1).window,0,0,oo(1).dontWait); % Display request.
     oo(1).speakInstructions=false;
     if oo(1).speakInstructions
         string=strrep(string,'.0','');
@@ -2071,12 +2171,11 @@ try
         oldViewingDistanceCm=oo(1).viewingDistanceCm;
     end
     Screen('FillRect',oo(1).window);
-    Screen('Flip',oo(1).window); % Blank, to acknowledge response.
+    Screen('Flip',oo(1).window,0,0,oo(1).dontWait); % Blank, to acknowledge response.
     
     %% START TIMER
     oo(1).beginSecs=GetSecs;
     oo(1).beginningTime=now;
-    timeVector=datevec(oo(1).beginningTime);
     
     %% SAVE SCRIPT
     stack=dbstack;
@@ -2106,9 +2205,10 @@ try
     end
     
     %% CREATE DATA FILE
+    timeVector=datevec(oo(1).beginningTime);
     oo(1).dataFilename=sprintf('%s-%s-%s.%d.%d.%d.%d.%d.%d',...
         oo(1).functionNames,oo(1).experimenter,oo(1).observer,round(timeVector));
-    if ismember(oo(1).task, {'partialReport'})
+    if ismember(oo(1).task,{'partialReport'})
         oo(1).dataFolder=fullfile(mainFolder,'partialReport');
     else
         oo(1).dataFolder=fullfile(mainFolder,'data');
@@ -2242,24 +2342,12 @@ try
                 oo(oi).flankingDirection='tangential';
             end
         end % if ecc==0
-        % Prepare to draw fixation cross.
-        fixationCrossPix=round(oo(oi).fixationCrossDeg*pixPerDeg);
-        fixationLineWeightPix=round(oo(oi).fixationLineWeightDeg*pixPerDeg);
-        fixationLineWeightPix=max(1,fixationLineWeightPix);
-        fixationLineWeightPix=min(fixationLineWeightPix,7); % Max width supported by video driver.
-        oo(oi).fixationLineWeightDeg=fixationLineWeightPix/pixPerDeg;
-        oo(oi).fix.clipRect=screenRect;
-        oo(oi).fix.fixationCrossPix=fixationCrossPix;
-        oo(oi).fix.xy=XYPixOfXYDeg(oo(oi),[0 0]); % Fixation screen location.
-        oo(oi).eccentricityXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg)-oo(oi).fix.xy;
-        oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
-        
-        oo(oi).responseCount=1; % When we have two targets we get two responses for each display.
+        oo(oi).responseCount=1; % When we have two targets we get two responses to each presentation.
         if streq(oo(oi).thresholdParameter,'size')
             if isfield(oo(oi),'targetGuessDeg') && isfinite(oo(oi).targetGuessDeg)
                 oo(oi).targetDeg=oo(oi).targetGuessDeg;
             else
-                oo(oi).targetDeg=2*oo(oi).normalAcuityDeg; % initial guess for threshold size.
+                oo(oi).targetDeg=2*oo(oi).normalAcuityDeg; % Initial guess for threshold size.
             end
         end
         if oi==1
@@ -2290,21 +2378,22 @@ try
             oo(oi).spacingDeg=oo(oi).spacingGuessDeg;
         else
             % Initial guess for distance from center of middle letter.
-            oo(oi).spacingDeg=oo(oi).normalCrowdingDistanceDeg; 
+            oo(oi).spacingDeg=oo(oi).normalCrowdingDistanceDeg;
         end
         switch oo(oi).task
             case {'read' 'readAloud' 'partialReport'}
                 oo(oi).spacingDeg=oo(oi).readSpacingDeg;
         end
         if isempty(oo(oi).spacings)
-            % Seven spacings, logarithmically spaced, centered on the guess,
-            % spacingDeg.
+            % Eight spacings, logarithmically spaced, centered slightly
+            % below the guess, spacingDeg.
             oo(oi).spacings=oo(oi).spacingDeg*2.^[-4:3];
         end
-        % Make a random list, repeating the set of spacingsSequence enough
-        % to achieve the desired number of presentations.
+        % Make a random list, repeating the set in spacingsSequence to
+        % achieve the desired number of presentations. We shuffle it a bit
+        % further down, before the loop.
         oo(oi).spacingsSequence=repmat(oo(oi).spacings,...
-            1,ceil(oo(oi).presentations/length(oo(oi).spacings))); 
+            1,ceil(oo(oi).presentations/length(oo(oi).spacings)));
         switch oo(oi).thresholdParameter
             case 'size'
                 if oo(oi).targetSizeIsHeight
@@ -2364,36 +2453,12 @@ try
             end
         end
         
-        % Prepare to draw fixation cross.
-        oo(oi).fix.eccentricityXYPix=oo(oi).eccentricityXYPix;
-        assert(all(isfinite(oo(oi).fix.eccentricityXYPix)));
-        oo(oi).fix.clipRect=screenRect;
-        oo(oi).fix.fixationCrossPix=fixationCrossPix; % Diameter of fixation cross.
-        oo(oi).fix.fixationLineMinimumLengthPix= ...
-            round(oo(oi).fixationLineMinimumLengthDeg*oo(oi).pixPerDeg);
-        if oo(oi).markTargetLocation
-            oo(oi).fix.markTargetLocationPix=oo(oi).targetDeg*pixPerDeg*2;
-        else
-            oo(oi).fix.markTargetLocationPix=0;
-        end
-        oo(oi).fix.targetHeightPix=round(oo(oi).targetDeg*pixPerDeg);
-        switch oo(oi).task
-            case 'readAloud'
-                switch oo(oi).thresholdParameter
-                    case 'spacing'
-                        oo(oi).fix.targetHeightPix=round(oo(oi).readSpacingDeg*pixPerDeg);
-                end
-        end
-        if oo(oi).fixationCrossBlankedNearTarget
-            oo(oi).fix.blankingRadiusPix=[]; % Automatic.
-        else
-            oo(oi).fix.blankingRadiusPix=0; % None.
-        end
-        oo(oi).fix.blankingRadiusReTargetHeight=oo(oi).blankingRadiusReTargetHeight;
-        % Calling ComputeFixationLines2 now (it's quick) just to make sure
-        % it works. We'll call it again (line 2629), with the same
-        % argument, during each trial of this condition.
-        fixationLines=ComputeFixationLines2(oo(oi).fix);
+        % Call ComputeFixationLines3 now (it's quick) just to make sure
+        % it works. We'll call it again (lines 3544 ??), with more or less
+        % the same argument, during each trial of this condition.
+        % DISABLED BECAUSE o.targetDeg is still nan.
+        % oo(oi).fix=ComputeFixationStruct(oo,oi);
+        % fixationLines=ComputeFixationLines3(oo(oi).fix); % Takes 0.6 ms.
         
         oo(1).quitBlock=false;
         
@@ -2542,11 +2607,7 @@ try
         cal.macModelName=MacModelName;
     end
     cal.screenOutput=[]; % only for Linux
-    if isfinite(oo(oi).brightnessSetting)
-        cal.brightnessSetting=oo(oi).brightnessSetting;
-    else
-        cal.brightnessSetting=0.87; % default value
-    end
+    cal.brightnessSetting=oo(oi).brightnessSetting;
     cal.brightnessRMSError=0; % default value
     [screenWidthMm,screenHeightMm]=Screen('DisplaySize',cal.screen);
     cal.screenWidthCm=screenWidthMm/10;
@@ -2571,7 +2632,7 @@ try
     v=oo(1).psychtoolbox;
     ffprintf(ff,':: %s, MATLAB %s, Psychtoolbox %d.%d.%d\n',computer.system,oo(1).matlab,v.major,v.minor,v.point);
     assert(cal.screenWidthCm==screenWidthMm/10);
-    if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration
+    if oo(1).isFirstBlock && ~oo(1).skipScreenCalibration && isempty(oldDisplaySettings)
         %% SET BRIGHTNESS, COPIED FROM NoiseDiscrimination
         % Currently, in December 2018, my Brightness function writes
         % reliably but seems to always fail when reading, returning -1. So
@@ -2587,15 +2648,14 @@ try
                 Screen('DrawText',window,'Setting brightness ...',...
                     2*oo(1).textSize,2.5*oo(1).textSize);
                 DrawCounter(oo);
-                Screen('Flip',window);
+                Screen('Flip',window,0,0,oo(1).dontWait);
                 ffprintf(ff,'%d: Brightness. ... ',MFileLineNr); s=GetSecs;
-                Brightness(cal.screen,cal.brightnessSetting); % Set
-                %                                               brightness.
+                Brightness(cal.screen,oo(oi).brightnessSetting); % Set brightness.
                 for i=1:5
-                    % cal.brightnessReading=Brightness(cal.screen); % Read brightness.
-                    cal.brightnessReading=Screen('ConfigureDisplay',...
+                    % oo(oi).brightnessReading=Brightness(cal.screen); % Read brightness.
+                    oo(oi).brightnessReading=Screen('ConfigureDisplay',...
                         'Brightness',cal.screen,cal.screenOutput);
-                    if cal.brightnessReading>=0
+                    if oo(oi).brightnessReading>=0
                         break
                     end
                     % If it failed, try again. The first attempt sometimes
@@ -2605,9 +2665,9 @@ try
                 % Darshan discovered that some MacBook Pros are missing by
                 % a few percent, which doesn't matter, so I increased the
                 % tolerance from 1% to 10%. DGP April 2019
-                if isfinite(cal.brightnessReading) && abs(cal.brightnessSetting-cal.brightnessReading)>0.1
+                if isfinite(oo(oi).brightnessReading) && abs(oo(oi).brightnessSetting-oo(oi).brightnessReading)>0.1
                     error('Set brightness to %.2f, but read back %.2f',...
-                        cal.brightnessSetting,cal.brightnessReading);
+                        oo(oi).brightnessSetting,oo(oi).brightnessReading);
                 end
             end
         else
@@ -2627,20 +2687,20 @@ try
             try
                 if ~IsWin
                     for i=1:3
-                        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,cal.brightnessSetting);
-                        cal.brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
-                        if abs(cal.brightnessSetting-cal.brightnessReading)<0.01
+                        Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput,oo(oi).brightnessSetting);
+                        oo(oi).brightnessReading=Screen('ConfigureDisplay','Brightness',cal.screen,cal.screenOutput);
+                        if abs(oo(oi).brightnessSetting-oo(oi).brightnessReading)<0.01
                             break;
                         elseif i==3
                             error('Tried three times to set brightness to %.2f, but read back %.2f',...
-                                cal.brightnessSetting,cal.brightnessReading);
+                                oo(oi).brightnessSetting,oo(oi).brightnessReading);
                         end
                     end
                 end
             catch e
                 warning('Screen ConfigureDisplay Brightness failed.');
                 warning(e.message);
-                cal.brightnessReading=NaN;
+                oo(oi).brightnessReading=NaN;
             end
             ffprintf(ff,'Done (%.1f s)\n',GetSecs-s);
             % END OF SET BRIGHTNESS
@@ -2653,11 +2713,21 @@ try
         oo(oi).cal=cal;
     end
     
+    % PREPARE AUDIO
+    % Mario Kleiner (2020) says not to clear individual Psychtoolbox
+    % drivers. Use "clear all" or nothing.
+    % clear PsychPortAudio    % When it's confused, this may fix it. 
     rightBeep=0.05*MakeBeep(2000,0.05,44100);
     rightBeep(end)=0;
     wrongBeep=0.05*MakeBeep(500,0.5,44100);
     wrongBeep(end)=0;
-    purr=MakeBeep(140,1.0,44100);
+    %     purr=MakeBeep(140,1.0,44100); Before April, 2020.
+    try
+        purr=MakeBeep(200,0.6); % Since April 2020. From NoiseDiscrimination.
+    catch ME
+        warning('Failure of PsychPortAudio (called by MakeBeep) is usually fixed by typing ''clear all'' and trying again from scratch.');
+        rethrow(ME);
+    end
     purr(end)=0;
     Snd('Open');
     
@@ -2728,7 +2798,7 @@ try
             2*oo(1).textSize,2.5*oo(1).textSize,black,...
             oo(oi).textLineLength,[],[],1.3);
         DrawCounter(oo);
-        Screen('Flip',window,[],1);
+        Screen('Flip',window,[],1,oo(1).dontWait);
         if false && oo(oi).useSpeech
             string=strrep(string,'\n','');
             string=strrep(string,'eye(s)','eyes');
@@ -2809,7 +2879,7 @@ try
             string='';
             DrawCounter(oo);
             % 'Notice the green progress bar ... hit RETURN.
-            Screen('Flip',window,[],1); % Don't clear buffer.
+            Screen('Flip',window,[],1,oo(1).dontWait); % Don't clear buffer.
             if oo(oi).takeSnapshot
                 TakeSnapshot(oo);
             end
@@ -2868,7 +2938,7 @@ try
             string='';
             DrawCounter(oo);
             % 'IMPORTANT: ... hit RETURN.
-            Screen('Flip',window,[],1); % Don't clear buffer.
+            Screen('Flip',window,[],1,oo(1).dontWait); % Don't clear buffer.
             if oo(oi).takeSnapshot
                 TakeSnapshot(oo);
             end
@@ -2907,7 +2977,8 @@ try
         if ~oo(oi).fixationCheck
             condList=[condList repmat(oi,1,oo(oi).presentations)];
         else
-            % Hold back one instance to place at beginning.
+            % We'll later place the first instance of fixation check at the
+            % beginning.
             condList=[condList repmat(oi,1,oo(oi).presentations-1)];
         end
         oo(oi).spacingsSequence=shuffle(oo(oi).spacingsSequence);
@@ -2917,9 +2988,10 @@ try
         oo(oi).condition=oi;
     end % for oi=1:conditions
     condList=shuffle(condList);
+    % Finally, prepend one instance of each fixationCheck.
+    % They are not shuffled.
     for oi=conditions:-1:1
         if oo(oi).fixationCheck
-            % Insert a fixationCheck at the beginning.
             condList=[oi condList];
         end
     end
@@ -2986,37 +3058,52 @@ try
     end
     
     if ismember(oo(1).task, {'partialReport'})
-        
         randS = RandStream('mt19937ar', 'Seed', 'shuffle');
         keyCodeAlphabet = zeros(1, length(oo(1).alphabet));
         for i = 1:length(oo(1).alphabet)
             keyCodeAlphabet(i) = KbName(oo(1).alphabet(i));
         end
-        
-        % cut the fixation lines by 0.3
-        % only do this in 'partialReport'
-        fixationLines(1, 2) = fixationLines(1, 2) * 0.7;
-        fixationLines(1, 3) = fixationLines(1, 4) - 0.7 * (fixationLines(1, 4)-fixationLines(1, 3));
-        fixationLines(2, 6) = fixationLines(2, 6) * 0.7;
-        fixationLines(2, 7) = fixationLines(2, 8) - 0.7 * (fixationLines(2, 8)-fixationLines(2, 7));
+        % Cut the fixation lines by 0.3, only in 'partialReport'.
+        fixationLines(1,2) = fixationLines(1,2)*0.7;
+        fixationLines(1,3) = fixationLines(1,4) - 0.7*(fixationLines(1,4)-fixationLines(1,3));
+        fixationLines(2,6) = fixationLines(2,6)*0.7;
+        fixationLines(2,7) = fixationLines(2,8) - 0.7*(fixationLines(2,8)-fixationLines(2,7));
     end
     
     
     %% THIS IS THE MAIN LOOP
     while presentation<length(condList)
+        if ~isempty(oo(oi).spacingsSequence) && length(oo(oi).spacingsSequence)~=sum(condList==oi)
+            ffprintf(ff,'presentation %d of %d in block %d. ',...
+                presentation,length(condList),oo(oi).block);
+            ffprintf(ff,'%d conditions with [',length(oo));
+            for oii=1:length(oo)
+                ffprintf(ff,'%d ',sum(condList==oii));
+            end
+            ffprintf(ff,'] trials. trialsSkipped [');
+            ffprintf(ff,'%d ',[oo.trialsSkipped]);
+            ffprintf(ff,'], fixationaCheck [');
+            ffprintf(ff,'%d ',[oo.fixationCheck]);
+            ffprintf(ff,'].\n');
+            error('presentation %d. condition %d. Mismatching length of spacingsSequence %d and sum(condList==%d) %d',...
+                presentation,oi,length(oo(oi).spacingsSequence),oi,sum(condList==oi));
+        end
         if skipTrial
             % We arrive here if user canceled (or mispronounced) last
             % presentation. In that case, we don't count that presentation
             % and reshuffle all the remaining conditions, including that of
-            % the last presentation.
-            % [Strictly speaking, the presentation might have represented
-            % two trials, but it's still one cancellation. Perhaps the flag
-            % should be called "skipPresentation".]
-            oo(oi).trialsSkipped=oo(oi).trialsSkipped+1;
-            condList(presentation:end)=shuffle(condList(presentation:end));
-            i=oo(oi).responseCount;
+            % the last presentation. [Strictly speaking, the presentation
+            % might have represented two trials, but it's still one
+            % cancellation. Perhaps the flag should be called
+            % "skipPresentation".
+            % i counts the number of trials of condition oi up to and
+            % including the current trial .
+            i=sum(condList(1:presentation)==oi);
+            % Shuffle all trials not yet completed.
             oo(oi).spacingsSequence(i:end)=...
                 shuffle(oo(oi).spacingsSequence(i:end));
+            condList(presentation:end)=shuffle(condList(presentation:end));
+            oo(oi).trialsSkipped=oo(oi).trialsSkipped+1;
         else
             presentation=presentation+1;
         end
@@ -3081,24 +3168,37 @@ try
                             case 'none'
                                 oo(oi).spacingDeg=max(oo(oi).spacingDeg,1.1*oo(oi).targetDeg);
                             case 'fixed by font'
+                            otherwise
+                                error('o.relationOfSpacingToSize has unknown value ''%s''.',oo(oi).relationOfSpacingToSize);
                         end
                     case 'size'
                         if ~oo(oi).fixationCheck
                             oo(oi).targetDeg=10^intensity;
                         end
                 end
+                % fprintf('%d: %-21s: %d:%d:%d of %d: o.targetDeg %.0f, o.fix.targetHeightPix %.0f\n',...
+                %     MFileLineNr,'QuestQuantile',oo(oi).block,oi,blockTrial,blockTrials,oo(oi).targetDeg,oo(oi).fix.targetHeightPix);
             case 'Constant stimuli'
                 switch oo(oi).thresholdParameter
                     case 'spacing'
-                        if oo(oi).responseCount>length(oo(oi).spacingsSequence)
-                            warning('Index exceeds the number of array elements.');
-                            oi=oi;
+                        i=sum(condList(1:presentation)==oi);
+                        if i<1 || i>length(oo(oi).spacingsSequence)
+                            % Monitor condList.
+                            ffprintf(ff,'presentation %d of %d in block %d. ',...
+                                presentation,length(condList),oo(oi).block);
+                            ffprintf(ff,'%d conditions with [',length(oo));
+                            for oii=1:length(oo)
+                                ffprintf(ff,'%d ',sum(condList==oii));
+                            end
+                            ffprintf(ff,'] trials. trialsSkipped [');
+                            ffprintf(ff,'%d ',[oo.trialsSkipped]);
+                            ffprintf(ff,'], fixationaCheck [');
+                            ffprintf(ff,'%d ',[oo.fixationCheck]);
+                            ffprintf(ff,'].\n');
+                            error('Index i=%d out of bounds for spacingsSequence with length %d.',...
+                                i,length(oo(oi).spacingsSequence));
                         end
-                        if oo(oi).responseCount<=0
-                            warning('Array index must be >0.');
-                            oi=oi;
-                        end
-                        oo(oi).spacingDeg=oo(oi).spacingsSequence(oo(oi).responseCount);
+                        oo(oi).spacingDeg=oo(oi).spacingsSequence(i);
                     otherwise
                         error('Can''t cope with o.thresholdParameter ''%s''.',oo(oi).thresholdParameter);
                 end
@@ -3149,9 +3249,9 @@ try
                 minSpacesX=2;
             else
                 % Height/width ratio of target exceeds that of screen.
-                % Tightest case is three letters, with one target sandwiched
-                % between two margin characters. We need four letters to
-                % show 2 targets.
+                % Tightest case is three letters, with one target
+                % sandwiched between two margin characters. We need four
+                % letters to show 2 targets.
                 minSpacesY=2;
                 minSpacesX=3;
             end
@@ -3275,18 +3375,30 @@ try
                 height=pix*oo(oi).targetHeightOverWidth;
             end
             r=InsetRect(oo(oi).stimulusRect,0.5*height/oo(oi).targetHeightOverWidth,0.5*height);
+            r=round(r); % Helps debugging, because the integer values are easier to read.
+            % Add 1 to cope with rounding error, and fact that IsXYInRect
+            % seems to return false when the rect is empty.
+            r=InsetRect(r,-1,-1);
             if ~IsXYInRect(tXY,r)
-                ffprintf(ff,'ERROR: the target fell off the screen. Please reduce the viewing distance.\n');
-                ffprintf(ff,'NOTE: Perhaps this would be fixed by enhancing CriticalSpacing with another call to ShiftPointInRect. Ask denis.pelli@nyu.edu.');
+                height
+                tXY
+                r=round(r)
+                screenRect
+                oo(oi).stimulusRect
+                ffprintf(ff,'ERROR: The target fell off the screen. Please reduce the viewing distance.\n');
+                ffprintf(ff,['NOTE: Perhaps this would be fixed by enhancing CriticalSpacing with another call to ShiftPointInRect.\n'...
+                    'Ask denis.pelli@nyu.edu.\n']);
                 stimulusSize=[RectWidth(oo(oi).stimulusRect) RectHeight(oo(oi).stimulusRect)];
                 ffprintf(ff,'o.stimulusRect %.0fx%.0f pix, %.0fx%.0f deg, fixation at (%.0f,%.0f) deg, eccentricity (%.0f,%.0f) deg, target at (%0.f,%0.f) deg.\n',...
                     stimulusSize,stimulusSize/pixPerDeg,...
                     oo(oi).fix.xy/pixPerDeg,...
                     oo(oi).eccentricityXYDeg,...
                     tXY/pixPerDeg);
-                error(['Sorry, the target (eccentricity [%.0f %.0f] deg)'...
+                sca
+                error(['Sorry, the target (%.0f pix=%.0f deg high at eccentricity [%.0f %.0f] deg)'...
                     ' is falling off the screen. ' ...
                     'Please reduce the viewing distance.'],...
+                    height,height/pixPerDeg,...
                     oo(oi).eccentricityXYDeg(1),oo(oi).eccentricityXYDeg(2));
             end
             assert(length(spacingPix)==1);
@@ -3405,6 +3517,7 @@ try
             fprintf('%d: %d: targetPix %.0f, targetDeg %.2f, spacingPix %.0f, spacingDeg %.2f\n',...
                 oi,MFileLineNr,oo(oi).targetPix,oo(oi).targetDeg,spacingPix,oo(oi).spacingDeg);
         end
+
         % This tryAgain loop presents instructions and waits for the
         % observer to press SPACE. If there is fixation we ask the observer
         % to fixate while pressing space. There are three occasions for
@@ -3435,6 +3548,21 @@ try
                 % only display of the string. The redundancy is inelegant,
                 % but harmless.
                 % May 2019.
+                % Update fixationLines.
+                if oo(oi).useFixation
+                    % o.targetDeg differs across conditions and from trial
+                    % to trial. We present fixation before considering
+                    % which condition is next and before computing that
+                    % condition's new o.targetDeg. 
+                    %
+                    % fprintf('%d: %-21s: %d:%d:%2d of %d: o.targetDeg %4.1f, o.fix.targetHeightPix %4.0f, pix/deg %3.0f\n',...
+                    %     MFileLineNr,'ComputeFixationLines3',...
+                    %     oo(oi).block,oi,blockTrial,blockTrials,...
+                    %     oo(oi).targetDeg,oo(oi).fix.targetHeightPix,...
+                    %     oo(oi).fix.targetHeightPix/oo(oi).targetDeg);
+                    oo(oi).fix=ComputeFixationStruct(oo,oi);
+                    fixationLines=ComputeFixationLines3(oo(oi).fix);
+                end
                 Screen('FillRect',window); % DGP June 6, 2019.
                 string=[string 'Now, while fixating the cross, hit SPACE. '];
                 Screen('TextSize',window,oo(oi).textSize);
@@ -3447,8 +3575,7 @@ try
                 string='';
                 encourageFixation=false;
                 encourageFixationString='';
-                % Compute fixation lines during first trial, for the
-                % remaining trials in the block.
+                % Compute fixation lines for first trial.
                 % switch oo(oi).task
                 %     case 'readAloud'
                 %         % Blank a disk with radius of 5 character widths.
@@ -3459,12 +3586,14 @@ try
                 %         assert(isfinite(radius));
                 %         oo(oi).fix.blankingRadiusPix=round(radius);
                 % end
-                fixationLines=ComputeFixationLines2(oo(oi).fix);
+                % fixationLines=ComputeFixationLines3(oo(oi).fix);
+                %
                 % Draw fixation.
                 if ~oo(oi).repeatedTargets && oo(oi).useFixation
                     % Draw fixation.
                     if ~isempty(fixationLines)
-                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                        Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                     end
                 end
                 if oo(oi).showProgressBar
@@ -3477,7 +3606,7 @@ try
                     DrawCounter(oo);
                 end
                 % 'Now, while fixating the cross, hit SPACE.'
-                Screen('Flip',window,[],1); % Display instructions and fixation.
+                Screen('Flip',window,[],1,oo(1).dontWait); % Display instructions and fixation.
                 if oo(oi).useFixation && ~oo(oi).simulateObserver
                     SetMouse(screenRect(3),screenRect(4),window);
                     answer=GetKeypressWithHelp([spaceKeyCode escapeKeyCode graveAccentKeyCode],oo(oi),window,oo(oi).stimulusRect);
@@ -3495,14 +3624,15 @@ try
                     if ~oo(oi).repeatedTargets && oo(oi).useFixation
                         % Draw fixation.
                         if ~isempty(fixationLines)
-                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                            % Black line with white borders.
+                            Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                            Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                         end
                     end
                     if oo(1).showCounter
                         DrawCounter(oo);
                     end
-                    Screen('Flip',window,[],1); % Display just fixation.
+                    Screen('Flip',window,[],1,oo(1).dontWait); % Display just fixation.
                     if ~oo(oi).dontWait
                         WaitSecs(1); % Duration of fixation display, before stimulus appears.
                     end
@@ -3511,9 +3641,9 @@ try
                     if ~oo(oi).repeatedTargets && oo(oi).useFixation
                         % Draw fixation.
                         if ~isempty(fixationLines) && oo(oi).fixationOnsetAfterTargetOffsetSecs==0
-                            % Paint white border next to the black line.
-                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                            % Black line with white borders.
+                            Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                            Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                         end
                     end
                 else
@@ -3522,7 +3652,6 @@ try
             end % while tryAgain
         end % if o.useFixation && (presentation==1 || skipTrial || encourageFixation)
         skipTrial=false;
-        % switch task (1) font and size
         switch oo(oi).task
             case {'read' 'readAloud' 'partialReport'}
                 % Compute desired font size o.readSize for the text to be read.
@@ -3561,7 +3690,7 @@ try
         end
         if(oo(oi).fixationOffsetBeforeTargetOnsetSecs>0)
             Screen('FillRect',oo(1).window,white,oo(oi).stimulusRect);
-            [fixationOffsetVBLSec,fixationOffsetSec]=Screen('Flip',oo(1).window,0,1);
+            [fixationOffsetVBLSec,fixationOffsetSec]=Screen('Flip',oo(1).window,0,1,oo(1).dontWait);
         else
             fixationOffsetVBLSec=[];
             fixationOffsetSec=[];
@@ -3577,7 +3706,7 @@ try
                     DrawFormattedText(window,msg,...
                         oo(1).textSize,1.5*oo(1).textSize,black);
                     DrawCounter(oo);
-                    Screen('Flip',window);
+                    Screen('Flip',window,0,0,oo(1).dontWait);
                     AnalyzeCorpusFrequency(oo(oi));
                 end
                 % Display instructions.
@@ -3667,7 +3796,7 @@ try
                     if oo(1).showCounter
                         DrawCounter(oo);
                     end
-                    Screen('Flip',window);
+                    Screen('Flip',window,0,0,oo(1).dontWait);
                     if oo(1).useSpeech
                         Speak('Alphabet. Click.');
                     end
@@ -3921,7 +4050,7 @@ try
                         end
                         if oo(oi).showLineOfLetters
                             DrawCounter(oo);
-                            Screen('Flip',window);
+                            Screen('Flip',window,0,0,oo(1).dontWait);
                             if oo(1).useSpeech
                                 Speak(sprintf('Line %d. Click.',lineIndex));
                             end
@@ -3982,9 +4111,6 @@ try
             r(4)=round(r(4)*(1-presentation/length(condList)));
             Screen('FillRect',window,[220 220 220],r); % grey background
         end
-        if oo(oi).usePurring
-            Snd('Play',purr);
-        end
         if oo(1).showCounter
             DrawCounter(oo);
         end
@@ -3996,11 +4122,15 @@ try
                 oo(oi).fixationOffsetBeforeTargetOnsetSecs- ...
                 oo(1).flipIntervalSec/2);
         end
+        if oo(oi).usePurring
+            % Pre-announce that image is up, awaiting response.
+            Snd('Play',purr);
+        end
         % If o.task=='read' then ask observer to press and hold the SPACE
         % bar and silently read the revealed page. If o.task=='readAloud'
         % then ask observer to press space bar and read one word aloud.
         % Otherwise display both the stimulus & the optional fixation.
-        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1);
+        [stimulusBeginVBLSec,stimulusBeginSec]=Screen('Flip',window,[],1,oo(1).dontWait);
         stimulusFlipSecs=GetSecs;
         if oo(oi).recordGaze
             img=snapshot(cam);
@@ -4022,13 +4152,31 @@ try
                 targets=stimulus(2);
             end
         end
+        % Update fixationLines.
+        if oo(oi).useFixation
+            % o.targetDeg may change from trial to trial, so use
+            % current value.
+            if oo(oi).targetSizeIsHeight
+                heightDeg=oo(oi).targetDeg;
+            else
+                heightDeg=oo(oi).targetDeg*oo(oi).targetHeightOverWidth;
+            end
+            oo(oi).oo(oi).fix.targetHeightPix=round(heightDeg*pixPerDeg);
+            % fprintf('%d: %-21s: %d:%d:%2d of %d: o.targetDeg %4.1f, o.fix.targetHeightPix %4.0f, pix/deg %3.0f\n',...
+            %     MFileLineNr,'ComputeFixationLines3',...
+            %     oo(oi).block,oi,blockTrial,blockTrials,...
+            %     oo(oi).targetDeg,oo(oi).fix.targetHeightPix,...
+            %     oo(oi).fix.targetHeightPix/oo(oi).targetDeg);
+            oo(oi).fix=ComputeFixationStruct(oo,oi);
+            fixationLines=ComputeFixationLines3(oo(oi).fix);
+		end
         if isfinite(oo(oi).durationSec) && ~ismember(oo(oi).task,{'read' 'readAloud' 'partialReport'})
             Screen('FillRect',window,white,oo(oi).stimulusRect); % Clear letters.
             % fprintf('Stimulus duration %.3f ms\n',1000*(GetSecs-stimulusFlipSecs));
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 if ~isempty(fixationLines) && oo(oi).fixationOnsetAfterTargetOffsetSecs==0
-                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                    Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                 end
             end
             % Do not DrawCounter here, because it takes 200 ms.
@@ -4040,14 +4188,15 @@ try
             % desired. Flip waits for the next flip after the requested
             % time. This ought to extend our interval by a random sample
             % from the uniform distribution from 0 to 1 frame, with a mean
-            % of half a frame. This should give us a mean duration equal to
-            % that desired. We assess that in three ways, and print it out
-            % at the end of the block.
+            % of half a frame. Reducing our request half a frame below what
+            % we desire should give us a mean duration equal to that
+            % desired. We assess that in three ways, and print it out at
+            % the end of the block.
             deadSec=GetSecs-stimulusFlipSecs;
             [stimulusEndVBLSec,stimulusEndSec]=...
                 Screen('Flip',window,...
                 stimulusBeginSec+oo(oi).durationSec-oo(1).flipIntervalSec,...
-                1); % Remove stimulus. Eventually display fixation.
+                1,oo(1).dontWait); % Remove stimulus. Eventually display fixation.
             % fprintf('Dead time between flips %.0f ms.\n',1000*deadSec);
             % We measure stimulus duration in three slightly different
             % ways. We use the VBLTimestamp and StimulusOnsetTime values
@@ -4063,8 +4212,8 @@ try
             Screen('FillRect',window,white,oo(oi).stimulusRect);
             if ~isempty(fixationLines)
                 % Paint black line with white borders.
-                Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
             end
             Screen('TextFont',window,oo(oi).textFont,0);
             Screen('TextSize',window,oo(oi).textSize);
@@ -4165,19 +4314,19 @@ try
             Screen('TextFont',window,oo(oi).textFont,0);
             if ~oo(oi).repeatedTargets && oo(oi).useFixation
                 if ~isempty(fixationLines)
-                    Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                    Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                    Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                    Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                 end
             end
             if oo(1).showCounter
-                DrawCounter(oo);
+                DrawCounter(oo); % I hope this is brief.
             end
             % Pause before response screen.
             % Minus half a frame, so the flip occurs on the desired frame.
             if ~oo(oi).dontWait
                 WaitSecs('UntilTime',stimulusEndSec+oo(oi).fixationOnsetAfterTargetOffsetSecs-oo(1).flipIntervalSec/2);
             end
-            Screen('Flip',window,[],1); % Display fixation & response instructions.
+            Screen('Flip',window,[],1,oo(1).dontWait); % Display fixation & response instructions.
             % Don't clear screen back buffer until after we've called
             % GetKeypressWithHelp, because it needs it.
             % Screen('FillRect',window,white,oo(oi).stimulusRect);
@@ -4249,7 +4398,7 @@ try
                             [preface readInstructions],...
                             oo(1).textSize,1.5*oo(1).textSize,black,...
                             oo(1).textLineLength,[],[],1.3);
-                        Screen('Flip',window);
+                        Screen('Flip',window,0,0,oo(1).dontWait);
                         
                         % ffprintf(ff,'Dead time %.2f s since asking for SPACE before ready to sense it.\n',...
                         %      GetSecs-stimulusFlipSecs); % XYZ
@@ -4267,7 +4416,7 @@ try
                                 %     2*oo(oi).textSize,2.5*oo(oi).textSize,black,...
                                 %     oo(oi).textLineLength,[],[],1.3);
                                 % preface='';
-                                % Screen('Flip',window);
+                                % Screen('Flip',window,0,0,oo(1).dontWait);
                                 continue % while true
                             else
                                 oo=SortFields(oo);
@@ -4286,7 +4435,7 @@ try
                     [~,y]=DrawFormattedText(window,double(string),...
                         2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                         oo(oi).readCharPerLine,[],[],1.5);
-                    Screen('Flip',window,[],1);
+                    Screen('Flip',window,[],1,oo(1).dontWait);
                     if false
                         cmPerDeg=0.1/atand(0.1/oo(oi).viewingDistanceCm); % 0.1 cm subtense.
                         fprintf('%.2f cm/deg at %.1f cm, size %.0f.\n',...
@@ -4304,7 +4453,7 @@ try
                     endSecs=KbReleaseWait(oo(oi).deviceIndex);
                     RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
                     Screen('FillRect',window,white,oo(oi).stimulusRect);
-                    Screen('Flip',window,[],1);
+                    Screen('Flip',window,[],1,oo(1).dontWait);
                     i=length(oo(oi).readString);
                     oo(oi).readSecs(i)=endSecs-beginSecs;
                     oo(oi).readChars(i)=length(oo(oi).readString{i});
@@ -4412,7 +4561,7 @@ try
                             2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                             oo(oi).textLineLength,[],[],1.5);
                         DrawCounter(oo);
-                        Screen('Flip',window);
+                        Screen('Flip',window,0,0,oo(1).dontWait);
                         choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#') escapeKeyCode graveAccentKeyCode];
                         response=GetKeypress(choiceKeycodes);
                         if ismember(response,[escapeChar graveAccentChar])
@@ -4511,11 +4660,11 @@ try
                         oo(1).textLineLength,[],[],1.3);
                     if oo(oi).useFixation
                         if ~isempty(fixationLines)
-                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                            Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                            Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                         end
                     end
-                    Screen('Flip',window);
+                    Screen('Flip',window,0,0,oo(1).dontWait);
                     oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
                     [keySecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
                     answer=KbName(keyCode);
@@ -4540,8 +4689,8 @@ try
                 Screen('FillRect',window);
                 if oo(oi).useFixation
                     if ~isempty(fixationLines)
-                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                        Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                     end
                 end
                 % Display word to be read.
@@ -4562,7 +4711,7 @@ try
                 % F., Judica, A., & Spinelli, D. (2005). Word length
                 % effect in early reading and in developmental
                 % dyslexia. Brain and language, 93(3), 369-373.
-                beginSecs=Screen('Flip',window,[],1);
+                beginSecs=Screen('Flip',window,[],1,oo(1).dontWait);
                 % Time the interval from image to speech.
                 endSecs=WaitForSpeech('measure',{[string '-' oo(oi).observer], beginSecs},true); % Save audio & waveplot
                 RestrictKeysForKbCheck(oldEnableKeyCodes); % Restore.
@@ -4599,7 +4748,7 @@ try
                 % (2007). The English lexicon project. Behavior
                 % research methods, 39(3), 445-459.
                 % https://link.springer.com/content/pdf/10.3758/BF03193014.pdf
-                Screen('Flip',window,[],1);
+                Screen('Flip',window,[],1,oo(1).dontWait);
                 i=length(oo(oi).readString);
                 oo(oi).readSecs(i)=endSecs-beginSecs;
                 oo(oi).readChars(i)=length(oo(oi).readString{i});
@@ -4642,7 +4791,7 @@ try
                     2*oo(oi).textSize,1.5*oo(oi).textSize,black,...
                     oo(oi).textLineLength,[],[],1.5);
                 DrawCounter(oo);
-                Screen('Flip',window);
+                Screen('Flip',window,0,0,oo(1).dontWait);
                 choiceKeycodes=[KbName('1!') KbName('2@') KbName('3#') KbName('4$') escapeKeyCode graveAccentKeyCode];
                 response=GetKeypress(choiceKeycodes);
                 switch response
@@ -4711,11 +4860,11 @@ try
                         oo(1).textLineLength,[],[],1.3);
                     if oo(oi).useFixation
                         if ~isempty(fixationLines)
-                            Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                            Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                            Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                            Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                         end
                     end
-                    Screen('Flip',window);
+                    Screen('Flip',window,0,0,oo(1).dontWait);
                     % wait for keyboard input
                     oldEnableKeyCodes=RestrictKeysForKbCheck([spaceKeyCode escapeKeyCode graveAccentKeyCode]);
                     [keySecs,keyCode]=KbPressWait(oo(oi).deviceIndex);
@@ -4742,8 +4891,8 @@ try
                 Screen('FillRect',window);
                 if oo(oi).useFixation
                     if ~isempty(fixationLines)
-                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                        Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                     end
                 end
                 boundsRect= Screen('TextBounds',window,'aaaaa',100,100,1);
@@ -4755,19 +4904,19 @@ try
                 if ~oo(oi).dontWait
                     WaitSecs('UntilTime',keySecs+0.8);
                 end
-                stringBeginSecs=Screen('Flip',window,[],1); % display string
+                stringBeginSecs=Screen('Flip',window,[],1,oo(1).dontWait); % display string
                 Screen('FillRect',window);
                 if ~oo(oi).dontWait
                     WaitSecs('UntilTime',stringBeginSecs+oo(oi).durationSec);
                 end
-                whiteBeginSec=Screen('Flip',window,[],1); % clear string
+                whiteBeginSec=Screen('Flip',window,[],1,oo(1).dontWait); % clear string
                 if ~oo(oi).dontWait
                     WaitSecs('UntilTime',whiteBeginSec+oo(oi).PRIntervalSec);
                 end
                 if oo(oi).useFixation
                     if ~isempty(fixationLines)
-                        Screen('DrawLines',window,fixationLines,min(7,3*fixationLineWeightPix),white);
-                        Screen('DrawLines',window,fixationLines,fixationLineWeightPix,black);
+                        Screen('DrawLines',window,fixationLines,min(7,3*oo(oi).fix.fixationThicknessPix),white);
+                        Screen('DrawLines',window,fixationLines,oo(oi).fix.fixationThicknessPix,black);
                     end
                 end
                 DrawFormattedText(window,double(stringWithMissing),...
@@ -4783,10 +4932,10 @@ try
                     validLetters = [validLetters, oo(oi).alphabet(i)]; %#ok
                     validLetterCode = [validLetterCode, keyCodeAlphabet(i)];
                 end
-                Screen('TextSize',window,oo(oi).readSize*1.2);
+                Screen('TextSize',window,round(oo(oi).readSize*1.2));
                 DrawFormattedText(window,double(validLetters),...
                     'right',[],black);
-                stringMissingBeginSec=Screen('Flip',window,[],1); % display string with missing
+                stringMissingBeginSec=Screen('Flip',window,[],1,oo(1).dontWait); % display string with missing
                 %% Wait for keyboard response
                 oldEnableKeyCodes=RestrictKeysForKbCheck([validLetterCode escapeKeyCode graveAccentKeyCode]);
                 while true % wait use response to stimuli
@@ -4993,6 +5142,8 @@ try
                 case 'size'
                     intensity=log10(oo(oi).targetDeg);
             end
+            % fprintf('%d: %-21s: %d:%d:%d of %d: o.targetDeg %.0f, o.fix.targetHeightPix %.0f\n',...
+            %     MFileLineNr,'QuestUpdate',oo(oi).block,oi,blockTrial,blockTrials,oo(oi).targetDeg,oo(oi).fix.targetHeightPix);
             if oo(oi).practiceCountdown==0
                 oo(oi).responseCount=oo(oi).responseCount+1;
                 oo(oi).q=QuestUpdate(oo(oi).q,intensity,responseScore);
@@ -5041,6 +5192,9 @@ try
             for i=1:oo(oi).fixationCheckMakeupPresentations
                 % Repeat the fixationCheck.
                 condList(presentation+1:end+1)=condList(presentation:end);
+                % Do the same to this list, to keep indexing coherent.
+                ii=sum(condList(1:presentation)==oi);
+                oo(oi).spacingsSequence(ii+1:end+1)=oo(oi).spacingsSequence(ii:end);
             end
         else
             encourageFixation=false;
@@ -5058,7 +5212,7 @@ try
     end
     Screen('FillRect',window);
     DrawCounter(oo);
-    Screen('Flip',window);
+    Screen('Flip',window,0,0,oo(1).dontWait);
     if oo(1).useSpeech
         if ~oo(1).quitBlock
             Speak('Congratulations.  This block is done.');
@@ -5205,7 +5359,7 @@ try
     end % for oi=1:conditions
     Snd('Close');
     ListenChar;
-%     ShowCursor;
+    % ShowCursor;
     a=[];
     for oi=1:conditions
         ffprintf(ff,'%d: duration "%.0f ms" actually %.0f%c%.0f ms, range [%.0f %.0f] ms. Flip\n',...
@@ -5286,7 +5440,8 @@ try
         fclose(dataFid);
         dataFid=-1;
     end
-    fprintf('Results for all %d conditions saved in %s.txt and "".mat\n',length(oo),oo(1).dataFilename);
+    fprintf('Results for all %d conditions saved in %s.txt and "".mat\n',...
+        length(oo),oo(1).dataFilename);
     if exist('vidWriter','var')
         close(vidWriter);
         clear cam
@@ -5433,7 +5588,7 @@ else
         Screen('DrawLine',window,black,x-a,y,x+a,y,a/20);
         Screen('DrawLine',window,black,x,y-a,x,y+a,a/20);
         DrawCounter(oo);
-        Screen('Flip',window); % Display question.
+        Screen('Flip',window,0,0,oo(1).dontWait); % Display question.
         if false && oo(oi).speakInstructions
             string=strrep(string,'below ','');
             string=strrep(string,'.0','');
@@ -5450,7 +5605,7 @@ else
         end
         Screen('FillRect',window,white);
         DrawCounter(oo);
-        Screen('Flip',window); % Blank the screen, to acknowledge response.
+        Screen('Flip',window,0,0,oo(1).dontWait); % Blank the screen, to acknowledge response.
         if answer
             oo(oi).fixationIsOffscreen = 1;
             ffprintf(ff,'%d: Offscreen fixation mark (%.1f,%.1f) cm from near point of display.\n',oi,fixationOffsetXYCm);
@@ -5467,7 +5622,7 @@ else
     end
 end
 oo(oi).targetXYPix=XYPixOfXYDeg(oo(oi),oo(oi).eccentricityXYDeg);
-if oo(oi).fixationCrossBlankedNearTarget
+if oo(oi).isFixationBlankedNearTarget
     ffprintf(ff,'%d: Fixation cross is blanked near target. No delay in showing fixation after target.\n',oi);
 else
     if oo(oi).fixationOffsetBeforeTargetOnsetSecs>0
