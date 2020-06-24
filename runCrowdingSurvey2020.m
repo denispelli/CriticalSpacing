@@ -41,9 +41,9 @@ o.spacingGuessDeg=nan;
 o.targetGuessDeg=nan;
 o.fixedSpacingOverSize=1.4;
 o.spacingDeg=[];
-o.fixationLineWeightDeg=0.02;
-o.fixationCrossDeg=inf;
-o.fixationCrossBlankedNearTarget=true;
+o.fixationThicknessDeg=0.02;
+o.fixationMarkDeg=inf;
+o.isFixationBlankedNearTarget=true;
 
 ooo={};
 
@@ -97,9 +97,9 @@ if true
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         o.minimumTargetPix=8;
-        o.fixationLineWeightDeg=0.03;
-        o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=false;
+        o.fixationThicknessDeg=0.03;
+        o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=false;
         o.flankingDirection='radial';
         o.viewingDistanceCm=40;
         % Mirror the condition to negative eccentricity.
@@ -113,10 +113,12 @@ if true
             oo(1).viewingDistanceCm=40;
             oo(2).viewingDistanceCm=40;
         end
-        % Do both radial and tangential.
-        oo(3:4)=oo;
-        oo(3).flankingDirection='tangential';
-        oo(4).flankingDirection='tangential';
+        if false
+			% Do both radial and tangential.
+			oo(3:4)=oo;
+			oo(3).flankingDirection='tangential';
+			oo(4).flankingDirection='tangential';
+        end
         ooo{end+1}=oo;
         if false
             % Exchange x and y, so we go from horizontal to vertical meridian.
@@ -156,15 +158,15 @@ if false
         o.alphabet='DHKNORSVZ'; % Sloan alphabet, excluding C
         o.borderLetter='X';
         if ecc>0
-            o.fixationLineWeightDeg=0.03;
-            o.fixationCrossDeg=1; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=false;
+            o.fixationThicknessDeg=0.03;
+            o.fixationMarkDeg=1; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=false;
             o.flankingDirection='radial';
             o.viewingDistanceCm=100;
         else
-            o.fixationLineWeightDeg=0.02;
-            o.fixationCrossDeg=inf; % 0, 3, and inf are typical values.
-            o.fixationCrossBlankedNearTarget=true;
+            o.fixationThicknessDeg=0.02;
+            o.fixationMarkDeg=inf; % 0, 3, and inf are typical values.
+            o.isFixationBlankedNearTarget=true;
             o.flankingDirection='horizontal';
             o.viewingDistanceCm=100;
         end
@@ -173,7 +175,7 @@ if false
         ooo{end+1}=[o o2];
     end
 end
-if false
+if true
     for ecc=0
         o.conditionName='crowding';
         o.task='identify';
@@ -185,9 +187,9 @@ if false
         o.alphabet='123456789';
         o.borderLetter='$';
         o.minimumTargetPix=4;
-        o.fixationLineWeightDeg=0.02;
-        o.fixationCrossDeg=40; % 0, 3, and inf are typical values.
-        o.fixationCrossBlankedNearTarget=true;
+        o.fixationThicknessDeg=0.02;
+        o.fixationMarkDeg=40; % 0, 3, and inf are typical values.
+        o.isFixationBlankedNearTarget=true;
         o.flankingDirection='horizontal';
         o.viewingDistanceCm=250;
         o2=o; % Copy the condition
@@ -297,7 +299,7 @@ disp(t(:,{'block' 'endsAtMin' 'experiment' 'conditionName' ...
 fprintf('Total of %d trials should take about %.0f minutes to run.\n',...
     sum([oo.trialsDesired]),sum([oo.trialsDesired])/10);
 
-ooo{end}(end)
+% ooo{end}(end)
 % return
 
 %% RUN.
