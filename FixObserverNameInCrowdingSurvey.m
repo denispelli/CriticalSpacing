@@ -33,9 +33,9 @@ dataFolder=fullfile(fileparts(mfilename('fullpath')),'data');
 cd(dataFolder);
 close all
 %% READ ALL DATA OF EXPERIMENT FILES INTO A LIST OF THRESHOLDS "oo".
-vars={'condition' 'conditionName' 'dataFilename' ... % 'experiment' 
+vars={'condition' 'conditionName' 'dataFilename' ... % 'experiment'
     'experimenter' 'observer' 'localHostName' 'trials' 'thresholdParameter' ...
-    'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'... 
+    'eccentricityXYDeg' 'targetDeg' 'spacingDeg' 'flankingDirection'...
     'viewingDistanceCm' 'durationSec'  ...
     'contrast' 'pixPerCm'  'nearPointXYPix'  'beginningTime' 'beginSecs' 'block' 'blocksDesired' };
 oo=ReadExperimentData(experiment,vars); % Adds date and missingFields.
@@ -61,7 +61,7 @@ delta(height(t))=nan;
 t(:,'s')=array2table(delta');
 t(:,{'dataFilename' 'experimenter' 'observer' 'localHostName' 's' 'block'})
 %     return
-    
+
 % Replace o.observer oldName by newName.
 localHostName='';
 oldName='janet  gu';
@@ -106,11 +106,11 @@ for f=1:height(tt)
     end
 end
 return
-   
+
 if 0
-% THE FIX: For 2019 files before April 3, when observer is Darshan or Sam
-% Coleman, then set observer to Sam Colman and experimenter to Darshan.
-        if ~ismember(oo(1).observer,{'Darshan' 'darshan'})
+    % THE FIX: For 2019 files before April 3, when observer is Darshan or Sam
+    % Coleman, then set observer to Sam Colman and experimenter to Darshan.
+    if ~ismember(oo(1).observer,{'Darshan' 'darshan'})
         % This block's observer valid, save for next block.
         if s(f)<1000
             observer=oo(1).observer;
@@ -140,18 +140,18 @@ if 0
     end
 end
 if 0
-for nameCell=list
-    name=nameCell{1};
-    load([name '.mat'],'oo');
-    assert(streq(oo(1).dataFilename,name));
-%     delete([name '.mat'])
-    name=strrep(name,'-Darshan-Darshan','-Darshan-Sam Colman');
-    name=strrep(name,'--Sam Colman','-Darshan-Sam Colman');
-    for oi=1:length(oo)
-        oo(oi).observer='Sam Colman';
-        oo(oi).experimenter='Darshan';
-        oo(oi).dataFilename=name;
+    for nameCell=list
+        name=nameCell{1};
+        load([name '.mat'],'oo');
+        assert(streq(oo(1).dataFilename,name));
+        %     delete([name '.mat'])
+        name=strrep(name,'-Darshan-Darshan','-Darshan-Sam Colman');
+        name=strrep(name,'--Sam Colman','-Darshan-Sam Colman');
+        for oi=1:length(oo)
+            oo(oi).observer='Sam Colman';
+            oo(oi).experimenter='Darshan';
+            oo(oi).dataFilename=name;
+        end
+        save([name '.mat'],'oo');
     end
-    save([name '.mat'],'oo');
-end
 end
